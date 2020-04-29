@@ -1,0 +1,323 @@
+/**
+ * Created: 13.11.2018
+ */
+
+package de.freese.jsync.util;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.channels.AsynchronousChannelGroup;
+import java.nio.channels.SocketChannel;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import de.freese.jsync.Options;
+
+/**
+ * @author Thomas Freese
+ */
+public final class JSyncUtils
+{
+    /**
+    *
+    */
+    private static final char[] HEX_CHARS =
+    {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
+
+    /**
+     *
+     */
+    private static final String[] SIZE_UNITS = new String[]
+    {
+            "B", "KB", "MB", "GB", "TB"
+    };
+
+    /**
+     * String hex = javax.xml.bind.DatatypeConverter.printHexBinary(checksum);<br>
+     * String hex = org.apache.commons.codec.binary.Hex.encodeHexString(messageDigest);<br>
+     * String hex = String.format("%02x", element);<br>
+     *
+     * @param bytes byte[]
+     * @return String
+     */
+    public static String bytesToHex(final byte[] bytes)
+    {
+        StringBuilder sbuf = new StringBuilder(bytes.length * 2);
+
+        for (byte b : bytes)
+        {
+            // int temp = b & 0xFF;
+            //
+            // sbuf.append(HEX_CHARS[temp >> 4]);
+            // sbuf.append(HEX_CHARS[temp & 0x0F]);
+
+            sbuf.append(HEX_CHARS[(b & 0xF0) >>> 4]);
+            sbuf.append(HEX_CHARS[b & 0x0F]);
+        }
+
+        return sbuf.toString().toUpperCase();
+    }
+
+    /**
+     * SocketChannels werden NICHT geschlossen !
+     *
+     * @param closeable {@link Closeable}
+     */
+    public static void closeSilently(final Closeable closeable)
+    {
+        try
+        {
+            if ((closeable != null) && !(closeable instanceof SocketChannel))
+            {
+                closeable.close();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Ignore
+        }
+    }
+
+    /**
+     * Mit 2 Nachkommastellen.
+     *
+     * @param value long
+     * @param max long
+     * @return float 0.0 - 100.0
+     */
+    public static float getPercent(final long value, final long max)
+    {
+        float progress = getProgress(value, max);
+        float percentage = progress * 100F;
+
+        return percentage;
+    }
+
+    /**
+     * @param value long
+     * @param max long
+     * @return float 0.0 - 1.0
+     */
+    public static float getProgress(final long value, final long max)
+    {
+        if ((value <= 0) || (value > max))
+        {
+            // throw new IllegalArgumentException("invalid value: " + value);
+            return 0.0F;
+        }
+
+        float progress = (float) value / (float) max;
+
+        // // Nachkommastellen
+        // int rounded = Math.round(progress * 100);
+        // progress = rounded / 100F;
+
+        return progress;
+    }
+
+    /**
+     * @param hexString {@link CharSequence}
+     * @return byte[]
+     */
+    public static byte[] hexToBytes(final CharSequence hexString)
+    {
+        if ((hexString.length() % 2) == 1)
+        {
+            throw new IllegalArgumentException("Invalid hexadecimal String supplied.");
+        }
+
+        byte[] bytes = new byte[hexString.length() / 2];
+
+        for (int i = 0; i < hexString.length(); i += 2)
+        {
+            int firstDigit = Character.digit(hexString.charAt(i), 16);
+            int secondDigit = Character.digit(hexString.charAt(i + 1), 16);
+
+            if ((firstDigit < 0) || (secondDigit < 0))
+            {
+                throw new IllegalArgumentException("Invalid Hexadecimal Character in: " + hexString);
+            }
+
+            bytes[i / 2] = (byte) ((firstDigit << 4) + secondDigit);
+        }
+
+        return bytes;
+    }
+
+    /**
+     * Normalisiert den {@link URI#getPath()} je nach Betriebssystem.
+     *
+     * @param uri {@link URI}
+     * @return String
+     */
+    public static String normalizedPath(final URI uri)
+    {
+        String path = uri.getPath();
+
+        if (Options.IS_WINDOWS)
+        {
+            path = path.replace("\\", "/");
+
+            if (path.startsWith("/"))
+            {
+                path = path.substring(1);
+            }
+        }
+        else if (Options.IS_LINUX)
+        {
+            if (path.startsWith("//"))
+            {
+                path = path.substring(1);
+            }
+            else if (!path.startsWith("/"))
+            {
+                path = "/" + path;
+            }
+        }
+
+        return path;
+    }
+
+    /**
+     * Shutdown der {@link AsynchronousChannelGroup}.
+     *
+     * @param channelGroup {@link AsynchronousChannelGroup}
+     * @param logger {@link Logger}
+     */
+    public static void shutdown(final AsynchronousChannelGroup channelGroup, final Logger logger)
+    {
+        logger.info("shutdown AsynchronousChannelGroup");
+
+        if (channelGroup == null)
+        {
+            return;
+        }
+
+        channelGroup.shutdown();
+
+        try
+        {
+            // Wait a while for existing tasks to terminate.
+            if (!channelGroup.awaitTermination(10, TimeUnit.SECONDS))
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Timed out while waiting for channelGroup");
+                }
+
+                channelGroup.shutdownNow(); // Cancel currently executing tasks
+
+                // Wait a while for tasks to respond to being cancelled
+                if (!channelGroup.awaitTermination(5, TimeUnit.SECONDS))
+                {
+                    logger.error("ChannelGroup did not terminate");
+                }
+            }
+        }
+        catch (InterruptedException | IOException ex)
+        {
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("Interrupted while waiting for ChannelGroup");
+            }
+
+            // (Re-)Cancel if current thread also interrupted
+            try
+            {
+                channelGroup.shutdownNow();
+            }
+            catch (IOException ex2)
+            {
+                logger.error("ChannelGroup did not terminate");
+            }
+
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Shutdown des {@link ExecutorService}.
+     *
+     * @param executorService {@link ExecutorService}
+     * @param logger {@link Logger}
+     */
+    public static void shutdown(final ExecutorService executorService, final Logger logger)
+    {
+        logger.info("shutdown ExecutorService");
+
+        if (executorService == null)
+        {
+            return;
+        }
+
+        executorService.shutdown();
+
+        try
+        {
+            // Wait a while for existing tasks to terminate.
+            if (!executorService.awaitTermination(10, TimeUnit.SECONDS))
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Timed out while waiting for executorService");
+                }
+
+                // Cancel currently executing tasks.
+                for (Runnable remainingTask : executorService.shutdownNow())
+                {
+                    if (remainingTask instanceof Future)
+                    {
+                        ((Future<?>) remainingTask).cancel(true);
+                    }
+                }
+
+                // Wait a while for tasks to respond to being cancelled
+                if (!executorService.awaitTermination(5, TimeUnit.SECONDS))
+                {
+                    logger.error("Pool did not terminate");
+                }
+            }
+        }
+        catch (InterruptedException iex)
+        {
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("Interrupted while waiting for executorService");
+            }
+
+            // (Re-)Cancel if current thread also interrupted
+            executorService.shutdownNow();
+
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * @param size long
+     * @return String, z.B. '___,___ MB'
+     */
+    public static String toHumanReadableSize(final long size)
+    {
+        int unitIndex = (int) (Math.log10(size) / 3);
+        double unitValue = 1 << (unitIndex * 10);
+
+        // String readableSize = new DecimalFormat("#,##0.#").format(size / unitValue) + " " + SIZE_UNITS[unitIndex];
+        String readableSize = String.format("%7.3f %s", size / unitValue, SIZE_UNITS[unitIndex]);
+
+        return readableSize;
+    }
+
+    /**
+     * Erstellt ein neues {@link JSyncUtils} Object.
+     */
+    private JSyncUtils()
+    {
+        super();
+    }
+}
