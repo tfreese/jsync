@@ -2,20 +2,17 @@
 package de.freese.jsync;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.util.JSyncUtils;
 
 /**
  * @author Thomas Freese
@@ -111,7 +108,7 @@ public abstract class AbstractJSyncTest
     @AfterAll
     public static void afterAll() throws Exception
     {
-        deleteDirectoryRecursiv(PATH_BASE);
+        JSyncUtils.deleteDirectoryRecursive(PATH_BASE);
     }
 
     /**
@@ -195,48 +192,6 @@ public abstract class AbstractJSyncTest
                 writer.print("file2.txt");
             }
         }
-    }
-
-    /**
-     * Löscht das Verzeichnis rekursiv inklusive Dateien und Unterverzeichnisse.
-     *
-     * @param path {@link Path}
-     * @throws IOException Falls was schief geht.
-     */
-    public static void deleteDirectoryRecursiv(final Path path) throws IOException
-    {
-        if (!Files.exists(path))
-        {
-            return;
-        }
-
-        if (!Files.isDirectory(path))
-        {
-            throw new IllegalArgumentException("path is not a dirctory: " + path);
-        }
-
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>()
-        {
-            /**
-             * @see java.nio.file.SimpleFileVisitor#postVisitDirectory(java.lang.Object, java.io.IOException)
-             */
-            @Override
-            public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
-            {
-                Files.delete(dir);
-                return FileVisitResult.CONTINUE;
-            }
-
-            /**
-             * @see java.nio.file.SimpleFileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
-             */
-            @Override
-            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
-            {
-                Files.delete(file);
-                return FileVisitResult.CONTINUE;
-            }
-        });
     }
 
     /**
