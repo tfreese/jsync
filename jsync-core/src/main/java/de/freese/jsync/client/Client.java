@@ -4,8 +4,8 @@
 package de.freese.jsync.client;
 
 import java.util.List;
+import de.freese.jsync.filesystem.destination.Target;
 import de.freese.jsync.filesystem.source.Source;
-import de.freese.jsync.filesystem.target.Target;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncPair;
 

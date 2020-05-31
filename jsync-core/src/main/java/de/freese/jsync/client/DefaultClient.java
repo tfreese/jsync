@@ -8,8 +8,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
+import de.freese.jsync.filesystem.destination.Target;
 import de.freese.jsync.filesystem.source.Source;
-import de.freese.jsync.filesystem.target.Target;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
@@ -35,7 +35,7 @@ public class DefaultClient extends AbstractClient
 
     /**
      * @see de.freese.jsync.client.Client#createSyncList(de.freese.jsync.filesystem.source.Source, de.freese.jsync.generator.listener.GeneratorListener,
-     *      de.freese.jsync.filesystem.target.Target, de.freese.jsync.generator.listener.GeneratorListener)
+     *      de.freese.jsync.filesystem.destination.Target, de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
     public List<SyncPair> createSyncList(final Source source, final GeneratorListener sourceGeneratorListener, final Target target,
@@ -63,7 +63,7 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.source.Source, de.freese.jsync.filesystem.target.Target, java.util.List)
+     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.source.Source, de.freese.jsync.filesystem.destination.Target, java.util.List)
      */
     @Override
     public void syncReceiver(final Source source, final Target target, final List<SyncPair> syncList) throws Exception

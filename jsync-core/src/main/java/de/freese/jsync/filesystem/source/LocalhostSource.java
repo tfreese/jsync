@@ -69,7 +69,7 @@ public class LocalhostSource extends AbstractSource
     }
 
     /**
-     * @see de.freese.jsync.filesystem.target.Target#disconnect()
+     * @see de.freese.jsync.filesystem.destination.Target#disconnect()
      */
     @Override
     public void disconnect() throws Exception

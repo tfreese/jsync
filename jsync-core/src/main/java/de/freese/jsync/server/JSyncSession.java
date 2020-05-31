@@ -8,8 +8,8 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 import org.slf4j.Logger;
 import de.freese.jsync.Options;
+import de.freese.jsync.filesystem.destination.Target;
 import de.freese.jsync.filesystem.source.Source;
-import de.freese.jsync.filesystem.target.Target;
 import de.freese.jsync.model.FileSyncItem;
 
 /**
