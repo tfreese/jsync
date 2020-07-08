@@ -2,7 +2,7 @@
  * Created: 04.11.2018
  */
 
-package de.freese.jsync.util;
+package de.freese.jsync.utils;
 
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -19,7 +19,7 @@ public class NamePreservingRunnable implements Runnable
     /**
     *
     */
-    private final static Logger LOGGER = LoggerFactory.getLogger(NamePreservingRunnable.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NamePreservingRunnable.class);
 
     /**
     *

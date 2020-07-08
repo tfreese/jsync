@@ -4,14 +4,14 @@
 package de.freese.jsync.client;
 
 import java.util.List;
-import de.freese.jsync.filesystem.destination.Target;
+import de.freese.jsync.filesystem.sink.Sink;
 import de.freese.jsync.filesystem.source.Source;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncPair;
 
 /**
- * Koordiniert den Abgleich zwischen {@link Source} und {@link Target}.
- * 
+ * Koordiniert den Abgleich zwischen {@link Source} und {@link Sink}.
+ *
  * @author Thomas Freese
  */
 public interface Client
@@ -21,21 +21,21 @@ public interface Client
      *
      * @param source {@link Source}
      * @param sourceGeneratorListener {@link GeneratorListener}; optional.
-     * @param target {@link Target}
-     * @param targetGeneratorListener {@link GeneratorListener}; optional.
+     * @param sink {@link Sink}
+     * @param sinkGeneratorListener {@link GeneratorListener}; optional.
      * @return {@link List}
      * @throws Exception Falls was schief geht.
      */
-    public List<SyncPair> createSyncList(Source source, GeneratorListener sourceGeneratorListener, Target target, GeneratorListener targetGeneratorListener)
+    public List<SyncPair> createSyncList(Source source, GeneratorListener sourceGeneratorListener, Sink sink, GeneratorListener sinkGeneratorListener)
         throws Exception;
 
     /**
      * Synchronisiert das Ziel-Verzeichnis mit der Quelle.
      *
      * @param source {@link Source}
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncList {@link List}
      * @throws Exception Falls was schief geht.
      */
-    public void syncReceiver(Source source, Target target, List<SyncPair> syncList) throws Exception;
+    public void syncReceiver(Source source, Sink sink, List<SyncPair> syncList) throws Exception;
 }

@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -26,7 +25,7 @@ import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
-import de.freese.jsync.util.DigestUtils;
+import de.freese.jsync.utils.DigestUtils;
 
 /**
  * Default-Implementierung des {@link Generator}.
@@ -50,42 +49,42 @@ public class DefaultGenerator extends AbstractGenerator
      * @see de.freese.jsync.generator.Generator#createSyncItemTasks(de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public Callable<Map<String, SyncItem>> createSyncItemTasks(final GeneratorListener listener)
+    public Map<String, SyncItem> createSyncItemTasks(final GeneratorListener listener)
     {
         if (Files.notExists(getBase()))
         {
             // return CompletableFuture.completedFuture(Collections.emptyMap());
-            return Collections::emptyMap;
+            return Collections.emptyMap();
         }
 
+        FileVisitOption[] visitOption = getOptions().isFollowSymLinks() ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
+
+        Set<Path> paths = getPaths(getOptions(), getBase(), visitOption);
+
+        if (listener != null)
+        {
+            listener.pathCount(getBase(), paths.size());
+        }
+
+        LinkOption[] linkOption = getOptions().isFollowSymLinks() ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
+
         // @formatter:off
-        return () -> {
-
-            FileVisitOption[] visitOption = getOptions().isFollowSymLinks() ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
-
-            final Set<Path> paths = getPaths(getOptions(), getBase(), visitOption);
-
-            if(listener != null)
-            {
-                listener.pathCount(getBase(), paths.size());
-            }
-
-            LinkOption[] linkOption = getOptions().isFollowSymLinks() ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
-
-            return paths.stream()
-                    .map(path -> toItem(path, linkOption))
-                    .peek(syncItem -> {
-                        if(listener != null)
-                        {
-                            listener.processingSyncItem(syncItem);
-                        }
-                    })
-                    // .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
-                    .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity(),
-                            (v1, v2) -> { throw new IllegalStateException(String.format("Duplicate key %s", v1)); },
-                            TreeMap::new)); // () -> Collections.synchronizedMap(new TreeMap<>())
-        };
+        Map<String, SyncItem> map = paths.stream()
+                .map(path -> toItem(path, linkOption))
+                .peek(syncItem -> {
+                    if(listener != null)
+                    {
+                        listener.processingSyncItem(syncItem);
+                    }
+                })
+                // .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
+                .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity(),
+                        (v1, v2) -> { throw new IllegalStateException(String.format("Duplicate key %s", v1)); },
+                        TreeMap::new)) // () -> Collections.synchronizedMap(new TreeMap<>())
+        ;
         // @formatter:on
+
+        return map;
     }
 
     /**

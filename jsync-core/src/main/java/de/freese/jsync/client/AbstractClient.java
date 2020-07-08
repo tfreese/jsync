@@ -11,14 +11,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
-import de.freese.jsync.filesystem.destination.Target;
+import de.freese.jsync.filesystem.sink.Sink;
 import de.freese.jsync.filesystem.source.Source;
 import de.freese.jsync.model.DirectorySyncItem;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
-import de.freese.jsync.util.JSyncUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * Basis-Implementierung des {@link Client}.
@@ -58,14 +58,14 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * Kopieren der Dateien auf den {@link Target}<br>
+     * Kopieren der Dateien von der Quelle in die Senke<br>
      *
      * @param source {@link Source}
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncItem {@link SyncItem}
      */
     @SuppressWarnings("resource")
-    protected void copyFile(final Source source, final Target target, final FileSyncItem syncItem)
+    protected void copyFile(final Source source, final Sink sink, final FileSyncItem syncItem)
     {
         getClientListener().copyFile(getOptions(), syncItem);
 
@@ -83,7 +83,7 @@ public abstract class AbstractClient implements Client
             long fileBytesTransferred = 0;
 
             readableByteChannel = source.getChannel(syncItem);
-            writableByteChannel = target.getChannel(syncItem);
+            writableByteChannel = sink.getChannel(syncItem);
 
             if ((readableByteChannel == null) || (writableByteChannel == null))
             {
@@ -114,24 +114,22 @@ public abstract class AbstractClient implements Client
             // // writableByteChannel = new MonitoringWritableByteChannel(writableByteChannel, monitorWrite, fileSize);
             // }
 
-            ByteBuffer buffer = getBuffer();
-
             long bytesTransferred = 0;
 
             // while ((readableByteChannel.read(buffer) != -1) || (fileBytesTransferred < fileSize))
             while (fileBytesTransferred < fileSize)
             {
-                bytesTransferred += readableByteChannel.read(buffer);
-                buffer.flip();
+                bytesTransferred += readableByteChannel.read(getBuffer());
+                getBuffer().flip();
 
                 getClientListener().copyFileProgress(syncItem, bytesTransferred, fileSize);
 
-                while (buffer.hasRemaining())
+                while (getBuffer().hasRemaining())
                 {
-                    fileBytesTransferred += writableByteChannel.write(buffer);
+                    fileBytesTransferred += writableByteChannel.write(getBuffer());
                 }
 
-                buffer.clear();
+                getBuffer().clear();
             }
         }
         catch (Exception ex)
@@ -150,18 +148,18 @@ public abstract class AbstractClient implements Client
         {
             // Datei überprüfen.
             getClientListener().validateFile(getOptions(), syncItem);
-            target.validateFile(syncItem);
+            sink.validateFile(syncItem);
 
             // Attribute aktualisieren.
             getClientListener().updateFile(getOptions(), syncItem);
-            target.updateFile(syncItem);
+            sink.updateFile(syncItem);
         }
         catch (Exception ex)
         {
             getClientListener().error(null, ex);
         }
 
-        // Files.copy(getBase().resolve(file), ((TargetImpl) target).getBase().resolve(file), StandardCopyOption.REPLACE_EXISTING,
+        // Files.copy(getBase().resolve(file), ((SinkImpl) sink).getBase().resolve(file), StandardCopyOption.REPLACE_EXISTING,
         // StandardCopyOption.COPY_ATTRIBUTES);
         //
         // try (FileInputStream inStream = new FileInputStream(aSourceFile);
@@ -179,17 +177,17 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * Kopieren der Dateien auf den {@link Target}<br>
+     * Kopieren der Dateien auf den {@link Sink}<br>
      * {@link SyncStatus#ONLY_IN_SOURCE}<br>
      * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
      * {@link SyncStatus#DIFFERENT_SIZE}<br>
      * {@link SyncStatus#DIFFERENT_CHECKSUM}<br>
      *
      * @param source Sender
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncList {@link List}
      */
-    protected void copyFiles(final Source source, final Target target, final List<SyncPair> syncList)
+    protected void copyFiles(final Source source, final Sink sink, final List<SyncPair> syncList)
     {
         Predicate<SyncPair> isFile = p -> p.getSource() instanceof FileSyncItem;
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
@@ -200,18 +198,18 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isFile.and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFile(source,target, (FileSyncItem) pair.getSource()));
+                .forEach(pair -> copyFile(source,sink, (FileSyncItem) pair.getSource()));
         //@formatter:on
     }
 
     /**
-     * Erstellen von Verzeichnissen auf dem {@link Target}.<br>
+     * Erstellen von Verzeichnissen auf dem {@link Sink}.<br>
      * {@link SyncStatus#ONLY_IN_SOURCE}<br>
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncList {@link List}
      */
-    protected void createDirectories(final Target target, final List<SyncPair> syncList)
+    protected void createDirectories(final Sink sink, final List<SyncPair> syncList)
     {
         Predicate<SyncPair> isDirectory = p -> p.getSource() instanceof DirectorySyncItem;
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
@@ -219,17 +217,17 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isDirectory.and(isOnlyInSource))
-                .forEach(pair -> createDirectory(target,  pair.getSource().getRelativePath()));
+                .forEach(pair -> createDirectory(sink,  pair.getSource().getRelativePath()));
         //@formatter:on
     }
 
     /**
-     * Erstellen von Verzeichnissen auf dem {@link Target}.<br>
+     * Erstellen von Verzeichnissen auf dem {@link Sink}.<br>
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param directory String
      */
-    protected void createDirectory(final Target target, final String directory)
+    protected void createDirectory(final Sink sink, final String directory)
     {
         getClientListener().createDirectory(getOptions(), directory);
 
@@ -240,7 +238,7 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            target.createDirectory(directory);
+            sink.createDirectory(directory);
         }
         catch (Exception ex)
         {
@@ -252,10 +250,10 @@ public abstract class AbstractClient implements Client
      * Löschen der Verzeichnisse und Dateien mit relativem Pfad zum Basis-Verzeichnis.<br>
      * {@link SyncStatus#ONLY_IN_TARGET}<br>
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncList {@link List}
      */
-    protected void deleteDirectories(final Target target, final List<SyncPair> syncList)
+    protected void deleteDirectories(final Sink sink, final List<SyncPair> syncList)
     {
         Predicate<SyncPair> isDirectory = p -> p.getTarget() instanceof DirectorySyncItem;
         Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_TARGET.equals(p.getStatus());
@@ -264,17 +262,17 @@ public abstract class AbstractClient implements Client
         syncList.stream()
                 .filter(isDirectory.and(isOnlyInTarget))
                 //.sorted(Comparator.comparing(SyncPair::getRelativePath).reversed())
-                .forEach(pair -> deleteDirectory(target, pair.getTarget().getRelativePath()));
+                .forEach(pair -> deleteDirectory(sink, pair.getTarget().getRelativePath()));
         // @formatter:on
     }
 
     /**
      * Löscht ein Verzeichnismit relativem Pfad zum Basis-Verzeichnis.
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param directory String
      */
-    protected void deleteDirectory(final Target target, final String directory)
+    protected void deleteDirectory(final Sink sink, final String directory)
     {
         getClientListener().deleteDirectory(getOptions(), directory);
 
@@ -285,7 +283,7 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            target.deleteDirectory(directory);
+            sink.deleteDirectory(directory);
         }
         catch (Exception ex)
         {
@@ -296,10 +294,10 @@ public abstract class AbstractClient implements Client
     /**
      * Löscht eine Datei mit relativem Pfad zum Basis-Verzeichnis.
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param file String
      */
-    protected void deleteFile(final Target target, final String file)
+    protected void deleteFile(final Sink sink, final String file)
     {
         getClientListener().deleteFile(getOptions(), file);
 
@@ -310,7 +308,7 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            target.deleteFile(file);
+            sink.deleteFile(file);
         }
         catch (Exception ex)
         {
@@ -322,10 +320,10 @@ public abstract class AbstractClient implements Client
      * Löschen der Dateien mit relativem Pfad zum Basis-Verzeichnis.<br>
      * {@link SyncStatus#ONLY_IN_TARGET}<br>
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncList {@link List}
      */
-    protected void deleteFiles(final Target target, final List<SyncPair> syncList)
+    protected void deleteFiles(final Sink sink, final List<SyncPair> syncList)
     {
         Predicate<SyncPair> isFile = p -> p.getTarget() instanceof FileSyncItem;
         Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_TARGET.equals(p.getStatus());
@@ -334,7 +332,7 @@ public abstract class AbstractClient implements Client
         syncList.stream()
                 .filter(isFile.and(isOnlyInTarget))
                 //.sorted(Comparator.comparing(SyncPair::getRelativePath).reversed())
-                .forEach(pair -> deleteFile(target, pair.getTarget().getRelativePath()));
+                .forEach(pair -> deleteFile(sink, pair.getTarget().getRelativePath()));
         // @formatter:on
     }
 
@@ -365,26 +363,26 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * Vereinigt die Ergebnisse vom {@link Source} und vom {@link Target}.<br>
+     * Vereinigt die Ergebnisse vom {@link Source} und vom {@link Sink}.<br>
      * Die Einträge des Senders sind die Referenz.<br>
      * Ist ein Item im Receiver nicht enthalten, muss er kopiert werden.<br>
      * Ist ein Item nur Receiver enthalten, muss er dort gelöscht werden.<br>
      *
      * @param fileMapSource {@link Map}
-     * @param fileMapTarget {@link Map}
+     * @param fileMapSink {@link Map}
      * @return {@link List}
      */
-    protected List<SyncPair> mergeSyncItems(final Map<String, SyncItem> fileMapSource, final Map<String, SyncItem> fileMapTarget)
+    protected List<SyncPair> mergeSyncItems(final Map<String, SyncItem> fileMapSource, final Map<String, SyncItem> fileMapSink)
     {
         // @formatter:off
         List<SyncPair> fileList = fileMapSource.entrySet()
                 .parallelStream()
-                .map(entry -> new SyncPair(entry.getValue(), fileMapTarget.remove(entry.getKey())))
+                .map(entry -> new SyncPair(entry.getValue(), fileMapSink.remove(entry.getKey())))
                 .collect(Collectors.toList());
         // @formatter:on
 
         // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
-        fileMapTarget.forEach((key, value) -> fileList.add(new SyncPair(null, value)));
+        fileMapSink.forEach((key, value) -> fileList.add(new SyncPair(null, value)));
 
         // SyncStatus ermitteln.
         // @formatter:off
@@ -399,17 +397,17 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * Aktualisieren von Verzeichniss-Attributen auf dem {@link Target}.<br>
+     * Aktualisieren von Verzeichniss-Attributen auf dem {@link Sink}.<br>
      * {@link SyncStatus#ONLY_IN_SOURCE}<br>
      * {@link SyncStatus#DIFFERENT_PERMISSIONS}<br>
      * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
      * {@link SyncStatus#DIFFERENT_USER}<br>
      * {@link SyncStatus#DIFFERENT_GROUP}<br>
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncList {@link List}
      */
-    protected void updateDirectories(final Target target, final List<SyncPair> syncList)
+    protected void updateDirectories(final Sink sink, final List<SyncPair> syncList)
     {
         Predicate<SyncPair> isDirectory = p -> p.getSource() instanceof DirectorySyncItem;
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
@@ -421,17 +419,17 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isDirectory.and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> updateDirectory(target, (DirectorySyncItem) pair.getSource()));
+                .forEach(pair -> updateDirectory(sink, (DirectorySyncItem) pair.getSource()));
         // @formatter:on
     }
 
     /**
-     * Aktualisieren von Verzeichniss-Attributen auf dem {@link Target}.<br>
+     * Aktualisieren von Verzeichniss-Attributen auf dem {@link Sink}.<br>
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncItem {@link DirectorySyncItem}
      */
-    protected void updateDirectory(final Target target, final DirectorySyncItem syncItem)
+    protected void updateDirectory(final Sink sink, final DirectorySyncItem syncItem)
     {
         getClientListener().updateDirectory(getOptions(), syncItem);
 
@@ -442,7 +440,7 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            target.updateDirectory(syncItem);
+            sink.updateDirectory(syncItem);
         }
         catch (Exception ex)
         {
@@ -451,12 +449,12 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * Aktualisieren von Datei-Attributen auf dem {@link Target}.<br>
+     * Aktualisieren von Datei-Attributen auf dem {@link Sink}.<br>
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncItem {@link FileSyncItem}
      */
-    protected void updateFile(final Target target, final FileSyncItem syncItem)
+    protected void updateFile(final Sink sink, final FileSyncItem syncItem)
     {
         getClientListener().updateFile(getOptions(), syncItem);
 
@@ -467,7 +465,7 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            target.updateFile(syncItem);
+            sink.updateFile(syncItem);
         }
         catch (Exception ex)
         {
@@ -476,15 +474,15 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * Aktualisieren von Datei-Attributen auf dem {@link Target}.<br>
+     * Aktualisieren von Datei-Attributen auf dem {@link Sink}.<br>
      * {@link SyncStatus#DIFFERENT_PERMISSIONS}<br>
      * {@link SyncStatus#DIFFERENT_USER}<br>
      * {@link SyncStatus#DIFFERENT_GROUP}<br>
      *
-     * @param target {@link Target}
+     * @param sink {@link Sink}
      * @param syncList {@link List}
      */
-    protected void updateFiles(final Target target, final List<SyncPair> syncList)
+    protected void updateFiles(final Sink sink, final List<SyncPair> syncList)
     {
         Predicate<SyncPair> isFile = p -> p.getSource() instanceof FileSyncItem;
         Predicate<SyncPair> isDifferentPermission = p -> SyncStatus.DIFFERENT_PERMISSIONS.equals(p.getStatus());
@@ -494,7 +492,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isFile.and(isDifferentPermission.or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> updateFile(target, (FileSyncItem) pair.getSource()));
+                .forEach(pair -> updateFile(sink, (FileSyncItem) pair.getSource()));
         // @formatter:on
     }
 }

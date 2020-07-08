@@ -8,11 +8,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.util.JSyncUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
@@ -137,7 +138,7 @@ public abstract class AbstractJSyncTest
             }
         }
 
-        Thread.sleep(delay);
+        TimeUnit.MILLISECONDS.sleep(delay);
 
         path = PATH_QUELLE.resolve("v1");
         pathFile = path.resolve("file.txt");
@@ -152,7 +153,7 @@ public abstract class AbstractJSyncTest
             }
         }
 
-        Thread.sleep(delay);
+        TimeUnit.MILLISECONDS.sleep(delay);
 
         pathFile = PATH_QUELLE.resolve("largeFile.bin");
 
@@ -165,7 +166,7 @@ public abstract class AbstractJSyncTest
             }
         }
 
-        Thread.sleep(delay);
+        TimeUnit.MILLISECONDS.sleep(delay);
 
         // Ziel-Dateien anlegen
         path = PATH_ZIEL.resolve("v2");
@@ -181,7 +182,7 @@ public abstract class AbstractJSyncTest
             }
         }
 
-        Thread.sleep(delay);
+        TimeUnit.MILLISECONDS.sleep(delay);
 
         pathFile = path.resolve("file2.txt");
 

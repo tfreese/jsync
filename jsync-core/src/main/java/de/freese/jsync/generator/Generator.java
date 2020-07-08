@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
 
@@ -53,7 +52,7 @@ public interface Generator
      * Der Task wird jedoch noch nicht ausgeführt.<br>
      *
      * @param listener {@link GeneratorListener}; optional.
-     * @return {@link Callable}
+     * @return {@link Map}
      */
-    public Callable<Map<String, SyncItem>> createSyncItemTasks(GeneratorListener listener);
+    public Map<String, SyncItem> createSyncItemTasks(GeneratorListener listener);
 }

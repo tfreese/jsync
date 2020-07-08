@@ -1,5 +1,5 @@
 // Created: 11.01.2017
-package de.freese.jsync.util.io;
+package de.freese.jsync.utils.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

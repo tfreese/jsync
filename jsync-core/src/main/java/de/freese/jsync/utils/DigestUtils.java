@@ -2,7 +2,7 @@
  * Created: 17.11.2018
  */
 
-package de.freese.jsync.util;
+package de.freese.jsync.utils;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -8,7 +8,7 @@ import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.model.FileSyncItem;
 
 /**
- * Source-Filesystem.
+ * Datenquelle.
  *
  * @author Thomas Freese
  */

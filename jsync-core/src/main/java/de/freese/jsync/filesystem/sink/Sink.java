@@ -1,7 +1,7 @@
 /**
  * Created on 22.10.2016 10:42:26
  */
-package de.freese.jsync.filesystem.destination;
+package de.freese.jsync.filesystem.sink;
 
 import java.nio.channels.WritableByteChannel;
 import de.freese.jsync.filesystem.FileSystem;
@@ -9,11 +9,11 @@ import de.freese.jsync.model.DirectorySyncItem;
 import de.freese.jsync.model.FileSyncItem;
 
 /**
- * Target-Filesystem.
+ * Datensenke.
  *
  * @author Thomas Freese
  */
-public interface Target extends FileSystem
+public interface Sink extends FileSystem
 {
     /**
      * Erstellt ein Verzeichnis.

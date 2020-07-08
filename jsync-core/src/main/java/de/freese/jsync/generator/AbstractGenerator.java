@@ -2,6 +2,7 @@
 package de.freese.jsync.generator;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,13 +21,13 @@ import de.freese.jsync.Options;
 public abstract class AbstractGenerator implements Generator
 {
     /**
-    *
-    */
+     *
+     */
     private final Path base;
 
     /**
-    *
-    */
+     *
+     */
     private final Options options;
 
     /**
@@ -68,15 +69,18 @@ public abstract class AbstractGenerator implements Generator
      * @param base {@link Path}
      * @param visitOption {@link FileVisitOption}
      * @return {@link Set}
-     * @throws IOException Falls was schief geht.
      */
-    protected Set<Path> getPaths(final Options options, final Path base, final FileVisitOption[] visitOption) throws IOException
+    protected Set<Path> getPaths(final Options options, final Path base, final FileVisitOption[] visitOption)
     {
         final Set<Path> set;
 
         try (Stream<Path> stream = Files.walk(getBase(), visitOption))
         {
             set = stream.collect(Collectors.toCollection(TreeSet::new));
+        }
+        catch (IOException iex)
+        {
+            throw new UncheckedIOException(iex);
         }
 
         return set;

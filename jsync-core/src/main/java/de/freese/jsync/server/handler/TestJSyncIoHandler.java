@@ -13,8 +13,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
-import de.freese.jsync.util.JSyncUtils;
-import de.freese.jsync.util.io.MonitoringReadableByteChannel;
+import de.freese.jsync.utils.JSyncUtils;
+import de.freese.jsync.utils.io.MonitoringReadableByteChannel;
 
 /**
  * Verarbeitet den Request und Response.<br>

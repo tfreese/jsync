@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 import org.slf4j.Logger;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.destination.Target;
+import de.freese.jsync.filesystem.sink.Sink;
 import de.freese.jsync.filesystem.source.Source;
 import de.freese.jsync.model.FileSyncItem;
 
@@ -45,14 +45,14 @@ public class JSyncSession
     private final Options options;
 
     /**
+     *
+     */
+    private Sink sink = null;
+
+    /**
     *
     */
     private Source source = null;
-
-    /**
-     *
-     */
-    private Target target = null;
 
     /**
      * Erstellt ein neues {@link JSyncSession} Object.
@@ -110,19 +110,19 @@ public class JSyncSession
     }
 
     /**
+     * @return {@link Sink}
+     */
+    public Sink getSink()
+    {
+        return this.sink;
+    }
+
+    /**
      * @return {@link Source}
      */
     public Source getSource()
     {
         return this.source;
-    }
-
-    /**
-     * @return {@link Target}
-     */
-    public Target getTarget()
-    {
-        return this.target;
     }
 
     /**
@@ -142,18 +142,18 @@ public class JSyncSession
     }
 
     /**
+     * @param sink {@link Sink}
+     */
+    public void setSink(final Sink sink)
+    {
+        this.sink = sink;
+    }
+
+    /**
      * @param source {@link Source}
      */
     public void setSource(final Source source)
     {
         this.source = source;
-    }
-
-    /**
-     * @param target {@link Target}
-     */
-    public void setTarget(final Target target)
-    {
-        this.target = target;
     }
 }

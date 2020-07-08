@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -34,9 +33,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.server.handler.IoHandler;
 import de.freese.jsync.server.handler.TestJSyncIoHandler;
-import de.freese.jsync.util.JSyncUtils;
-import de.freese.jsync.util.NamePreservingRunnable;
-import de.freese.jsync.util.io.MonitoringReadableByteChannel;
+import de.freese.jsync.utils.JSyncUtils;
+import de.freese.jsync.utils.NamePreservingRunnable;
+import de.freese.jsync.utils.io.MonitoringReadableByteChannel;
 
 /**
  * Der Server nimmt nur die neuen Client-Verbindungen entgegen und übergibt sie einem {@link Processor}.<br>
@@ -52,7 +51,7 @@ public class JSyncServer
     /**
     *
     */
-    private final static Logger LOGGER = LoggerFactory.getLogger(JSyncServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncServer.class);
 
     /**
      * @param args String[]
@@ -82,7 +81,7 @@ public class JSyncServer
         System.setIn(pis);
 
         // Client Task starten
-        executorService.submit((Callable<Void>) () -> {
+        executorService.submit(() -> {
 
             Thread.sleep(1000);
 
@@ -358,9 +357,8 @@ public class JSyncServer
      * Liefert den nächsten {@link Processor} im RoundRobin-Verfahren.<br>
      *
      * @return {@link Processor}
-     * @throws IOException Falls was schief geht.
      */
-    private synchronized Processor nextProcessor() throws IOException
+    private synchronized Processor nextProcessor()
     {
         if (this.isShutdown)
         {

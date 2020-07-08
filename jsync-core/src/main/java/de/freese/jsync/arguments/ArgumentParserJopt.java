@@ -36,8 +36,8 @@
 // private final OptionSpec<String> optionSpecSource =
 // this.optionParser.acceptsAll(Arrays.asList("s", "source"), "Quell-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
 //
-// private final OptionSpec<String> optionSpectarget =
-// this.optionParser.acceptsAll(Arrays.asList("t", "target"), "Ziel-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
+// private final OptionSpec<String> optionSpecSink =
+// this.optionParser.acceptsAll(Arrays.asList("sk", "sink"), "Ziel-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
 //
 // /**
 // * Erstellt ein neues {@link ArgumentParserJopt} Object.
@@ -59,7 +59,7 @@
 // }
 //
 // /**
-// * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+// * @see de.freese.jsync.arguments.ArgumentParser#delete()
 // */
 // @Override
 // public boolean delete()
@@ -68,7 +68,7 @@
 // }
 //
 // /**
-// * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+// * @see de.freese.jsync.arguments.ArgumentParser#dryRun()
 // */
 // @Override
 // public boolean dryRun()
@@ -77,7 +77,7 @@
 // }
 //
 // /**
-// * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+// * @see de.freese.jsync.arguments.ArgumentParser#followSymlinks()
 // */
 // @Override
 // public boolean followSymlinks()
@@ -86,7 +86,7 @@
 // }
 //
 // /**
-// * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+// * @see de.freese.jsync.arguments.ArgumentParser#hasArgs()
 // */
 // @Override
 // public boolean hasArgs()
@@ -95,7 +95,7 @@
 // }
 //
 // /**
-// * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+// * @see de.freese.jsync.arguments.ArgumentParser#printHelp()
 // */
 // @Override
 // public void printHelp(final PrintStream printStream)
@@ -114,7 +114,7 @@
 // }
 //
 // /**
-// * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+// * @see de.freese.jsync.arguments.ArgumentParser#source()
 // */
 // @Override
 // public String source()
@@ -123,11 +123,11 @@
 // }
 //
 // /**
-// * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+// * @see de.freese.jsync.arguments.ArgumentParser#sink()
 // */
 // @Override
-// public String target()
+// public String sink()
 // {
-// return this.optionSet.valueOf(this.optionSpectarget);
+// return this.optionSet.valueOf(this.optionSpecsink);
 // }
 // }

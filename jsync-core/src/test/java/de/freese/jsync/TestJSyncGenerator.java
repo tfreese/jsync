@@ -11,7 +11,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -26,12 +25,12 @@ import de.freese.jsync.model.User;
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
-public class TestJSyncGenerator extends AbstractJSyncTest
+class TestJSyncGenerator extends AbstractJSyncTest
 {
     /**
      * @author Thomas Freese
      */
-    public static class TestGenerator extends DefaultGenerator
+    static class TestGenerator extends DefaultGenerator
     {
         /**
          * Erzeugt eine neue Instanz von {@link DefaultGenerator}.
@@ -39,7 +38,7 @@ public class TestJSyncGenerator extends AbstractJSyncTest
          * @param options {@link Options}
          * @param base {@link Path}
          */
-        public TestGenerator(final Options options, final Path base)
+        TestGenerator(final Options options, final Path base)
         {
             super(options, base);
         }
@@ -55,18 +54,10 @@ public class TestJSyncGenerator extends AbstractJSyncTest
     };
 
     /**
-     * Erstellt ein neues {@link TestJSyncGenerator} Object.
-     */
-    public TestJSyncGenerator()
-    {
-        super();
-    }
-
-    /**
      * @throws Exception Falls was schief geht.
      */
     @Test
-    public void test010GeneratorQuelle() throws Exception
+    void test010GeneratorQuelle() throws Exception
     {
         System.out.println();
 
@@ -78,9 +69,7 @@ public class TestJSyncGenerator extends AbstractJSyncTest
 
         Generator generator = new DefaultGenerator(options, base);
 
-        Callable<Map<String, SyncItem>> callable = generator.createSyncItemTasks(GENERATORLISTENER);
-
-        Map<String, SyncItem> fileMap = callable.call();
+        Map<String, SyncItem> fileMap = generator.createSyncItemTasks(GENERATORLISTENER);
 
         assertNotNull(fileMap);
         assertEquals(5, fileMap.size());
@@ -92,7 +81,7 @@ public class TestJSyncGenerator extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    public void test020GeneratorZiel() throws Exception
+    void test020GeneratorZiel() throws Exception
     {
         System.out.println();
 
@@ -104,9 +93,7 @@ public class TestJSyncGenerator extends AbstractJSyncTest
 
         Generator generator = new DefaultGenerator(options, base);
 
-        Callable<Map<String, SyncItem>> callable = generator.createSyncItemTasks(GENERATORLISTENER);
-
-        Map<String, SyncItem> fileMap = callable.call();
+        Map<String, SyncItem> fileMap = generator.createSyncItemTasks(GENERATORLISTENER);
 
         assertNotNull(fileMap);
         assertEquals(4, fileMap.size());
@@ -118,7 +105,7 @@ public class TestJSyncGenerator extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    public void test030FileAttributes() throws Exception
+    void test030FileAttributes() throws Exception
     {
         Path base = Paths.get(System.getProperty("user.dir"));
 
@@ -141,15 +128,15 @@ public class TestJSyncGenerator extends AbstractJSyncTest
             assertNotNull(fileSyncItem.getGroup().getName());
             assertTrue(fileSyncItem.getGroup().getGid() > (Group.ROOT.getGid() - 1));
             assertTrue(fileSyncItem.getGroup().getGid() < (Group.ID_MAX + 1));
-            assertEquals(fileSyncItem.getGroup().getName(), "tommy");
-            assertEquals(fileSyncItem.getGroup().getGid(), 1000); // tommy
+            assertEquals("tommy", fileSyncItem.getGroup().getName());
+            assertEquals(1000, fileSyncItem.getGroup().getGid()); // tommy
 
             assertNotNull(fileSyncItem.getUser());
             assertNotNull(fileSyncItem.getUser().getName());
             assertTrue(fileSyncItem.getUser().getUid() > (User.ROOT.getUid() - 1));
             assertTrue(fileSyncItem.getUser().getUid() < (User.ID_MAX + 1));
-            assertEquals(fileSyncItem.getUser().getName(), "tommy");
-            assertEquals(fileSyncItem.getUser().getUid(), 1000); // tommy
+            assertEquals("tommy", fileSyncItem.getUser().getName());
+            assertEquals(1000, fileSyncItem.getUser().getUid()); // tommy
         }
     }
 }

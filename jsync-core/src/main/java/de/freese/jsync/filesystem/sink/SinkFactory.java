@@ -1,49 +1,49 @@
 // Created: 05.04.2018
-package de.freese.jsync.filesystem.source;
+package de.freese.jsync.filesystem.sink;
 
 import java.net.URI;
 import de.freese.jsync.Options;
 
 /**
- * Factory für den {@link Source}.<br>
+ * Factory für den {@link Sink}.<br>
  * Liefert die konkrete Implementierung gemäß {@link URI}.
  *
  * @author Thomas Freese
  */
-public final class SourceFactory
+public final class SinkFactory
 {
     /**
      * Liefert die konkrete Implementierung gemäß {@link URI}.
      *
      * @param options {@link Options}
      * @param baseUri {@link URI}
-     * @return {@link Source}
+     * @return {@link Sink}
      */
-    public static Source createSourceFromURI(final Options options, final URI baseUri)
+    public static Sink createSinkFromURI(final Options options, final URI baseUri)
     {
-        Source source = null;
+        Sink sink = null;
 
         if (baseUri.getScheme().startsWith("file"))
         {
-            source = new LocalhostSource(options, baseUri);
+            sink = new LocalhostSink(options, baseUri);
         }
         else if (baseUri.getScheme().startsWith("jsync"))
         {
-            source = new RemoteSource(options, baseUri);
+            sink = new RemoteSink(options, baseUri);
         }
 
-        if (source == null)
+        if (sink == null)
         {
-            throw new IllegalStateException("no sender for URI: " + baseUri);
+            throw new IllegalStateException("no sink for URI: " + baseUri);
         }
 
-        return source;
+        return sink;
     }
 
     /**
-     * Erstellt ein neues {@link SourceFactory} Object.
+     * Erstellt ein neues {@link SinkFactory} Object.
      */
-    private SourceFactory()
+    private SinkFactory()
     {
         super();
     }

@@ -15,14 +15,14 @@ import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.ConsoleClientListener;
-import de.freese.jsync.filesystem.destination.Target;
-import de.freese.jsync.filesystem.destination.TargetFactory;
+import de.freese.jsync.filesystem.sink.Sink;
+import de.freese.jsync.filesystem.sink.SinkFactory;
 import de.freese.jsync.filesystem.source.Source;
 import de.freese.jsync.filesystem.source.SourceFactory;
 import de.freese.jsync.generator.listener.ConsoleGeneratorListener;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.util.JSyncUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * Main-Class für jsync.<br>
@@ -108,17 +108,17 @@ public class JSync
             senderUri = new URI(source);
         }
 
-        String target = argumentParser.target();
+        String sink = argumentParser.sink();
         URI receiverUri = null;
 
-        if (!target.startsWith("jsync"))
+        if (!sink.startsWith("jsync"))
         {
             // Kein Remote
-            receiverUri = new File(target).toURI();
+            receiverUri = new File(sink).toURI();
         }
         else
         {
-            receiverUri = new URI(target);
+            receiverUri = new URI(sink);
         }
 
         try
@@ -146,18 +146,18 @@ public class JSync
         throws Exception
     {
         Source source = SourceFactory.createSourceFromURI(options, senderUri);
-        Target target = TargetFactory.createReceiverFromURI(options, receiverUri);
+        Sink sink = SinkFactory.createSinkFromURI(options, receiverUri);
 
         source.connect();
-        target.connect();
+        sink.connect();
 
         Client client = new DefaultClient(options, clientListener);
 
-        List<SyncPair> syncList = client.createSyncList(source, senderGeneratorListener, target, receiverGeneratorListener);
+        List<SyncPair> syncList = client.createSyncList(source, senderGeneratorListener, sink, receiverGeneratorListener);
 
-        client.syncReceiver(source, target, syncList);
+        client.syncReceiver(source, sink, syncList);
 
         source.disconnect();
-        target.disconnect();
+        sink.disconnect();
     }
 }

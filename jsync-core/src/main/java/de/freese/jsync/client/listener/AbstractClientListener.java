@@ -9,7 +9,7 @@ import java.util.List;
 import de.freese.jsync.Options;
 import de.freese.jsync.model.DirectorySyncItem;
 import de.freese.jsync.model.FileSyncItem;
-import de.freese.jsync.util.JSyncUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * Basis-Implementierung des {@link ClientListener}.

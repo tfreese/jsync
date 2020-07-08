@@ -1,5 +1,5 @@
 // Created: 05.04.2018
-package de.freese.jsync.filesystem.destination;
+package de.freese.jsync.filesystem.sink;
 
 import java.net.URI;
 import java.nio.channels.WritableByteChannel;
@@ -17,7 +17,6 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
@@ -26,15 +25,15 @@ import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.DirectorySyncItem;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.util.DigestUtils;
-import de.freese.jsync.util.JSyncUtils;
+import de.freese.jsync.utils.DigestUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
- * {@link Target} für Localhost-Filesysteme.
+ * {@link Sink} für Localhost-Filesysteme.
  *
  * @author Thomas Freese
  */
-public class LocalhostTarget extends AbstractTarget
+public class LocalhostSink extends AbstractSink
 {
     /**
     *
@@ -42,12 +41,12 @@ public class LocalhostTarget extends AbstractTarget
     private final Path base;
 
     /**
-     * Erzeugt eine neue Instanz von {@link LocalhostTarget}.
+     * Erzeugt eine neue Instanz von {@link LocalhostSink}.
      *
      * @param options {@link Options}
      * @param baseUri {@link URI}
      */
-    public LocalhostTarget(final Options options, final URI baseUri)
+    public LocalhostSink(final Options options, final URI baseUri)
     {
         super(options);
 
@@ -57,7 +56,7 @@ public class LocalhostTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#connect()
+     * @see de.freese.jsync.filesystem.sink.Sink#connect()
      */
     @Override
     public void connect() throws Exception
@@ -66,14 +65,14 @@ public class LocalhostTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#createDirectory(java.lang.String)
+     * @see de.freese.jsync.filesystem.sink.Sink#createDirectory(java.lang.String)
      */
     @Override
     public void createDirectory(final String dir) throws Exception
     {
         Path path = getBase().resolve(dir);
 
-        getLogger().debug("create Directory: {}", path.toString());
+        getLogger().debug("create Directory: {}", path);
 
         if (!Files.exists(path))
         {
@@ -85,25 +84,25 @@ public class LocalhostTarget extends AbstractTarget
      * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public Callable<Map<String, SyncItem>> createSyncItems(final GeneratorListener listener)
+    public Map<String, SyncItem> createSyncItems(final GeneratorListener listener)
     {
-        getLogger().debug("create SyncItems: {}", getBase().toString());
+        getLogger().debug("create SyncItems: {}", getBase());
 
         Generator generator = new DefaultGenerator(getOptions(), getBase());
-        Callable<Map<String, SyncItem>> callable = generator.createSyncItemTasks(listener);
+        Map<String, SyncItem> map = generator.createSyncItemTasks(listener);
 
-        return callable;
+        return map;
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#deleteDirectory(java.lang.String)
+     * @see de.freese.jsync.filesystem.sink.Sink#deleteDirectory(java.lang.String)
      */
     @Override
     public void deleteDirectory(final String dir) throws Exception
     {
         Path path = getBase().resolve(dir);
 
-        getLogger().debug("create Directory: {}", path.toString());
+        getLogger().debug("create Directory: {}", path);
 
         JSyncUtils.deleteDirectoryRecursive(path);
 
@@ -128,25 +127,25 @@ public class LocalhostTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#deleteFile(java.lang.String)
+     * @see de.freese.jsync.filesystem.sink.Sink#deleteFile(java.lang.String)
      */
     @Override
     public void deleteFile(final String file) throws Exception
     {
         Path path = getBase().resolve(file);
 
-        getLogger().debug("delete File: {}", path.toString());
+        getLogger().debug("delete File: {}", path);
 
         Files.delete(path);
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#disconnect()
+     * @see de.freese.jsync.filesystem.sink.Sink#disconnect()
      */
     @Override
     public void disconnect() throws Exception
     {
-        // NO-OP
+        // Empty
     }
 
     /**
@@ -160,14 +159,14 @@ public class LocalhostTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sink.Sink#getChannel(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public WritableByteChannel getChannel(final FileSyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
-        getLogger().debug("get WritableByteChannel: {}", path.toString());
+        getLogger().debug("get WritableByteChannel: {}", path);
 
         // Ist bereits erfolgt.
         // if (!Files.exists(path.getParent()))
@@ -215,14 +214,14 @@ public class LocalhostTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#updateDirectory(de.freese.jsync.model.DirectorySyncItem)
+     * @see de.freese.jsync.filesystem.sink.Sink#updateDirectory(de.freese.jsync.model.DirectorySyncItem)
      */
     @Override
     public void updateDirectory(final DirectorySyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
-        getLogger().debug("update Directory: {}", path.toString());
+        getLogger().debug("update Directory: {}", path);
 
         String permissions = syncItem.getPermissionsToString();
         long lastModifiedTime = syncItem.getLastModifiedTime();
@@ -233,14 +232,14 @@ public class LocalhostTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#updateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sink.Sink#updateFile(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public void updateFile(final FileSyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
-        getLogger().debug("update File: {}", path.toString());
+        getLogger().debug("update File: {}", path);
 
         String permissions = syncItem.getPermissionsToString();
         long lastModifiedTime = syncItem.getLastModifiedTime();
@@ -251,14 +250,14 @@ public class LocalhostTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#validateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sink.Sink#validateFile(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public void validateFile(final FileSyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
-        getLogger().debug("validate File: {}", path.toString());
+        getLogger().debug("validate File: {}", path);
 
         if (Files.size(path) != syncItem.getSize())
         {
@@ -268,7 +267,7 @@ public class LocalhostTarget extends AbstractTarget
 
         if (getOptions().isChecksum())
         {
-            getLogger().debug("create Checksum: {}", path.toString());
+            getLogger().debug("create Checksum: {}", path);
 
             String checksum = DigestUtils.sha256DigestAsHex(path, getOptions().getBufferSize());
 

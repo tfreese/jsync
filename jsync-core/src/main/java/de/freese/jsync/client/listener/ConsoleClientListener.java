@@ -104,7 +104,7 @@ public class ConsoleClientListener extends AbstractClientListener
     @Override
     public void debugSyncPair(final SyncPair syncPair)
     {
-        // NO-OP
+        // Empty
     }
 
     /**

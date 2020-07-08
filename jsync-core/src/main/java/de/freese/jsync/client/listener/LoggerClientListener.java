@@ -49,7 +49,7 @@ public class LoggerClientListener extends AbstractClientListener
     @Override
     public void copyFileFinished(final FileSyncItem syncItem)
     {
-        // NO-OP
+        // Empty
     }
 
     /**

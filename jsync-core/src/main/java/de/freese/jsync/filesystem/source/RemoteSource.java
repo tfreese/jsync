@@ -17,7 +17,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import de.freese.jsync.Options;
@@ -28,7 +27,7 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.JSyncCommandSerializer;
 import de.freese.jsync.model.serializer.Serializers;
 import de.freese.jsync.server.JSyncCommand;
-import de.freese.jsync.util.JSyncUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * {@link Source} für Remote-Filesysteme.
@@ -177,16 +176,16 @@ public class RemoteSource extends AbstractSource
         Future<Void> futureConnect = this.client.connect(hostAddress);
         futureConnect.get();
 
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        Serializers.writeTo(buffer, JSyncCommand.CONNECT);
+        Serializers.writeTo(buf, JSyncCommand.CONNECT);
 
         // Options senden.
-        Serializers.writeTo(buffer, getOptions());
+        Serializers.writeTo(buf, getOptions());
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         handleResponse();
     }
@@ -195,26 +194,28 @@ public class RemoteSource extends AbstractSource
      * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public Callable<Map<String, SyncItem>> createSyncItems(final GeneratorListener listener)
+    public Map<String, SyncItem> createSyncItems(final GeneratorListener listener)
     {
-        return () -> {
-            Map<String, SyncItem> syncItems = new TreeMap<>();
-            ByteBuffer buffer = getBuffer();
+        Map<String, SyncItem> syncItems = new TreeMap<>();
+
+        try
+        {
+            ByteBuffer buf = getBuffer();
 
             // JSyncCommand senden.
-            Serializers.writeTo(buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+            Serializers.writeTo(buf, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
 
             byte[] bytes = getBase().toString().getBytes(getCharset());
-            buffer.putInt(bytes.length);
-            buffer.put(bytes);
+            buf.putInt(bytes.length);
+            buf.put(bytes);
 
-            buffer.flip();
-            write(buffer);
+            buf.flip();
+            write(buf);
 
-            buffer.clear();
+            buf.clear();
 
             // Response lesen.
-            Future<Integer> futureResponse = getClient().read(buffer);
+            Future<Integer> futureResponse = getClient().read(buf);
 
             boolean sizeRead = false;
             boolean finished = false;
@@ -222,11 +223,11 @@ public class RemoteSource extends AbstractSource
             // while (getClient().read(buffer) > 0)
             while (futureResponse.get() > 0)
             {
-                buffer.flip();
+                buf.flip();
 
                 if (!sizeRead)
                 {
-                    int size = buffer.getInt();
+                    int size = buf.getInt();
                     sizeRead = true;
 
                     if (listener != null)
@@ -235,19 +236,19 @@ public class RemoteSource extends AbstractSource
                     }
                 }
 
-                while (buffer.hasRemaining())
+                while (buf.hasRemaining())
                 {
                     SyncItem syncItem = null;
 
-                    byte b = buffer.get();
+                    byte b = buf.get();
 
                     if (b == 0)
                     {
-                        syncItem = Serializers.readFrom(buffer, FileSyncItem.class);
+                        syncItem = Serializers.readFrom(buf, FileSyncItem.class);
                     }
                     else if (b == 1)
                     {
-                        syncItem = Serializers.readFrom(buffer, DirectorySyncItem.class);
+                        syncItem = Serializers.readFrom(buf, DirectorySyncItem.class);
                     }
                     else if (b == Byte.MIN_VALUE)
                     {
@@ -269,12 +270,20 @@ public class RemoteSource extends AbstractSource
                     break;
                 }
 
-                buffer.clear();
-                futureResponse = getClient().read(buffer);
+                buf.clear();
+                futureResponse = getClient().read(buf);
             }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
 
-            return syncItems;
-        };
+        return syncItems;
     }
 
     /**
@@ -317,31 +326,31 @@ public class RemoteSource extends AbstractSource
     @Override
     public ReadableByteChannel getChannel(final FileSyncItem syncItem) throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
+        Serializers.writeTo(buf, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
 
-        buffer.putLong(syncItem.getSize());
+        buf.putLong(syncItem.getSize());
 
         byte[] bytes = syncItem.getRelativePath().getBytes(getCharset());
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
+        buf.putInt(bytes.length);
+        buf.put(bytes);
 
         // if (syncItem.getChecksum() == null)
         // {
-        // buffer.put((byte) 0);
+        // buf.put((byte) 0);
         // }
         // else
         // {
         // buffer.put((byte) 1);
         // bytes = syncItem.getChecksum().getBytes(getCharset());
-        // buffer.putInt(bytes.length);
-        // buffer.put(bytes);
+        // buf.putInt(bytes.length);
+        // buf.put(bytes);
         // }
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         return new AsyncReadableByteChannelAdapter(getClient());
     }
@@ -377,15 +386,15 @@ public class RemoteSource extends AbstractSource
      */
     protected void handleResponse() throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
-        Future<Integer> futureResponse = getClient().read(buffer);
+        Future<Integer> futureResponse = getClient().read(buf);
 
         futureResponse.get();
 
-        buffer.flip();
+        buf.flip();
 
-        byte b = buffer.get();
+        byte b = buf.get();
 
         if (b != Byte.MIN_VALUE)
         {
@@ -394,21 +403,21 @@ public class RemoteSource extends AbstractSource
     }
 
     /**
-     * @param buffer {@link ByteBuffer}
+     * @param buf {@link ByteBuffer}
      * @throws Exception Falls was schief geht.
      */
-    protected void write(final ByteBuffer buffer) throws Exception
+    protected void write(final ByteBuffer buf) throws Exception
     {
-        // while (buffer.hasRemaining())
+        // while (buf.hasRemaining())
         // {
-        // getClient().write(buffer);
+        // getClient().write(buf);
         // }
 
-        Future<Integer> futureRequest = getClient().write(buffer);
+        Future<Integer> futureRequest = getClient().write(buf);
 
         while (futureRequest.get() > 0)
         {
-            futureRequest = getClient().write(buffer);
+            futureRequest = getClient().write(buf);
         }
     }
 }

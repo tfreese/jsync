@@ -51,7 +51,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
         this.options.addOption(Option.builder("c").longOpt("checksum").desc("Zusätzlich Prüfsumme für Vergleich berechnen").build());
 
         this.options.addOption(Option.builder("s").longOpt("source").hasArg().argName("DIR").desc("Quell-Verzeichnis").required().build());
-        this.options.addOption(Option.builder("t").longOpt("target").hasArg().argName("DIR").desc("Ziel-Verzeichnis").required().build());
+        this.options.addOption(Option.builder("sk").longOpt("sink").hasArg().argName("DIR").desc("Ziel-Verzeichnis").required().build());
 
         CommandLineParser parser = new DefaultParser();
 
@@ -77,7 +77,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
     }
 
     /**
-     * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+     * @see de.freese.jsync.arguments.ArgumentParser#delete()
      */
     @Override
     public boolean delete()
@@ -86,7 +86,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
     }
 
     /**
-     * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+     * @see de.freese.jsync.arguments.ArgumentParser#dryRun()
      */
     @Override
     public boolean dryRun()
@@ -95,7 +95,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
     }
 
     /**
-     * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+     * @see de.freese.jsync.arguments.ArgumentParser#followSymlinks()
      */
     @Override
     public boolean followSymlinks()
@@ -104,18 +104,18 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
     }
 
     /**
-     * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+     * @see de.freese.jsync.arguments.ArgumentParser#hasArgs()
      */
     @Override
     public boolean hasArgs()
     {
-        Option[] options = this.line.getOptions();
+        Option[] opts = this.line.getOptions();
 
-        return (options != null) && (options.length > 0);
+        return (opts != null) && (opts.length > 0);
     }
 
     /**
-     * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+     * @see de.freese.jsync.arguments.ArgumentParser#printHelp(java.io.PrintStream)
      */
     @Override
     public void printHelp(final PrintStream printStream)
@@ -135,20 +135,20 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
     }
 
     /**
-     * @see de.freese.jsync.arguments.ArgumentParser#checksum()
+     * @see de.freese.jsync.arguments.ArgumentParser#sink()
+     */
+    @Override
+    public String sink()
+    {
+        return this.line.getOptionValue("sink");
+    }
+
+    /**
+     * @see de.freese.jsync.arguments.ArgumentParser#source()
      */
     @Override
     public String source()
     {
         return this.line.getOptionValue("source");
-    }
-
-    /**
-     * @see de.freese.jsync.arguments.ArgumentParser#checksum()
-     */
-    @Override
-    public String target()
-    {
-        return this.line.getOptionValue("target");
     }
 }

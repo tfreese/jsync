@@ -3,12 +3,11 @@ package de.freese.jsync.client;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
-import de.freese.jsync.filesystem.destination.Target;
+import de.freese.jsync.filesystem.sink.Sink;
 import de.freese.jsync.filesystem.source.Source;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
@@ -35,38 +34,35 @@ public class DefaultClient extends AbstractClient
 
     /**
      * @see de.freese.jsync.client.Client#createSyncList(de.freese.jsync.filesystem.source.Source, de.freese.jsync.generator.listener.GeneratorListener,
-     *      de.freese.jsync.filesystem.destination.Target, de.freese.jsync.generator.listener.GeneratorListener)
+     *      de.freese.jsync.filesystem.sink.Sink, de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public List<SyncPair> createSyncList(final Source source, final GeneratorListener sourceGeneratorListener, final Target target,
-                                         final GeneratorListener targetGeneratorListener)
+    public List<SyncPair> createSyncList(final Source source, final GeneratorListener sourceGeneratorListener, final Sink sink,
+                                         final GeneratorListener sinkGeneratorListener)
         throws Exception
     {
         getClientListener().dryRunInfo(getOptions());
         getClientListener().generatingFileListInfo();
 
-        Callable<Map<String, SyncItem>> callableSource = source.createSyncItems(sourceGeneratorListener);
-        Callable<Map<String, SyncItem>> callableTarget = target.createSyncItems(targetGeneratorListener);
+        Map<String, SyncItem> fileMapSource = source.createSyncItems(sourceGeneratorListener);
+        Map<String, SyncItem> fileMapSink = sink.createSyncItems(sinkGeneratorListener);
 
         // FutureTask<Map<String, SyncItem>> futureTask = new FutureTask<>(callable);
         // futureTask.run(); // Synchron laufen Lassen.
         // CompletableFuture.runAsync(futureTask);
         // Future<Map<String, SyncItem>> futureTask = getOptions().getExecutorService().submit(callable);
 
-        Map<String, SyncItem> fileMapSource = callableSource.call();
-        Map<String, SyncItem> fileMapTarget = callableTarget.call();
-
         // Listen mergen.
-        List<SyncPair> syncList = mergeSyncItems(fileMapSource, fileMapTarget);
+        List<SyncPair> syncList = mergeSyncItems(fileMapSource, fileMapSink);
 
         return syncList;
     }
 
     /**
-     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.source.Source, de.freese.jsync.filesystem.destination.Target, java.util.List)
+     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.source.Source, de.freese.jsync.filesystem.sink.Sink, java.util.List)
      */
     @Override
-    public void syncReceiver(final Source source, final Target target, final List<SyncPair> syncList) throws Exception
+    public void syncReceiver(final Source source, final Sink sink, final List<SyncPair> syncList) throws Exception
     {
         getClientListener().syncStartInfo();
 
@@ -77,21 +73,21 @@ public class DefaultClient extends AbstractClient
         // Löschen
         if (getOptions().isDelete())
         {
-            deleteFiles(target, list);
-            deleteDirectories(target, list);
+            deleteFiles(sink, list);
+            deleteDirectories(sink, list);
         }
 
         // Neue Verzeichnisse erstellen.
-        createDirectories(target, list);
+        createDirectories(sink, list);
 
         // Neue oder geänderte Dateien kopieren.
-        copyFiles(source, target, list);
+        copyFiles(source, sink, list);
 
         // Aktualisieren von Datei-Attributen.
-        updateFiles(target, list);
+        updateFiles(sink, list);
 
         // Aktualisieren von Verzeichniss-Attributen.
-        updateDirectories(target, list);
+        updateDirectories(sink, list);
 
         getClientListener().syncFinishedInfo();
     }

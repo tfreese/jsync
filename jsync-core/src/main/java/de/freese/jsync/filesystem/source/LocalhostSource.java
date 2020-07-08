@@ -9,14 +9,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.util.JSyncUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * {@link Source} für Localhost-Filesysteme.
@@ -58,18 +57,18 @@ public class LocalhostSource extends AbstractSource
      * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public Callable<Map<String, SyncItem>> createSyncItems(final GeneratorListener listener)
+    public Map<String, SyncItem> createSyncItems(final GeneratorListener listener)
     {
-        getLogger().debug("create SyncItems: {}", getBase().toString());
+        getLogger().debug("create SyncItems: {}", getBase());
 
         Generator generator = new DefaultGenerator(getOptions(), getBase());
-        Callable<Map<String, SyncItem>> callable = generator.createSyncItemTasks(listener);
+        Map<String, SyncItem> map = generator.createSyncItemTasks(listener);
 
-        return callable;
+        return map;
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#disconnect()
+     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
      */
     @Override
     public void disconnect() throws Exception
@@ -95,7 +94,7 @@ public class LocalhostSource extends AbstractSource
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
-        getLogger().debug("get ReadableByteChannel: {}", path.toString());
+        getLogger().debug("get ReadableByteChannel: {}", path);
 
         if (!Files.exists(path))
         {

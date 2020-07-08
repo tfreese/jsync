@@ -19,13 +19,13 @@ import de.freese.jsync.model.SyncItem;
 public class LoggerGeneratorListener extends AbstractGeneratorListener
 {
     /**
-     * /**
+     *
      */
     private final Logger logger = LoggerFactory.getLogger("Generator");
 
     /**
-    *
-    */
+     *
+     */
     private final String prefix;
 
     /**

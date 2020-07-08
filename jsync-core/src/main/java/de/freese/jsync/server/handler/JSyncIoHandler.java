@@ -12,12 +12,10 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.destination.LocalhostTarget;
-import de.freese.jsync.filesystem.destination.Target;
+import de.freese.jsync.filesystem.sink.LocalhostSink;
+import de.freese.jsync.filesystem.sink.Sink;
 import de.freese.jsync.filesystem.source.LocalhostSource;
 import de.freese.jsync.filesystem.source.Source;
 import de.freese.jsync.generator.listener.GeneratorListener;
@@ -240,7 +238,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         ByteBuffer buffer = session.getBuffer();
 
         Source source = session.getSource();
-        Callable<Map<String, SyncItem>> callable = source.createSyncItems(new GeneratorListener()
+        source.createSyncItems(new GeneratorListener()
         {
             /**
              * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
@@ -296,33 +294,6 @@ public class JSyncIoHandler extends AbstractIoHandler
                 }
             }
         });
-
-        callable.call();
-        // Map<String, SyncItem> syncItems = callable.call();
-
-        // Diese Map kann sehr groß werden, daher die SyncItems einzeln übertragen.
-        // for (SyncItem syncItem : syncItems.values())
-        // {
-        // buffer.clear();
-        //
-        // if (syncItem instanceof FileSyncItem)
-        // {
-        // buffer.put((byte) 0);
-        // FileSyncItem.BB_TRANSFERABLE.writeTo(buffer, (FileSyncItem) syncItem);
-        // }
-        // else
-        // {
-        // buffer.put((byte) 1);
-        // DirectorySyncItem.BB_TRANSFERABLE.writeTo(buffer, (DirectorySyncItem) syncItem);
-        // }
-        //
-        // buffer.flip();
-        //
-        // while (buffer.hasRemaining())
-        // {
-        // channel.write(buffer);
-        // }
-        // }
 
         session.getLogger().debug("sender response: Create SyncItems written");
     }
@@ -396,7 +367,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         buffer.get(bytes);
         String directory = new String(bytes, getCharset());
 
-        session.getTarget().createDirectory(directory);
+        session.getSink().createDirectory(directory);
         session.setLastCommand(JSyncCommand.TARGET_CREATE_DIRECTORY);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
@@ -420,8 +391,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         Path base = Paths.get(basePath);
 
-        Target target = new LocalhostTarget(session.getOptions(), base.toUri());
-        session.setTarget(target);
+        Sink sink = new LocalhostSink(session.getOptions(), base.toUri());
+        session.setSink(sink);
 
         buffer.clear();
         session.setLastCommand(JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
@@ -445,7 +416,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         buffer.get(bytes);
         String directory = new String(bytes, getCharset());
 
-        session.getTarget().deleteDirectory(directory);
+        session.getSink().deleteDirectory(directory);
         session.setLastCommand(JSyncCommand.TARGET_DELETE_DIRECTORY);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
@@ -467,7 +438,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         buffer.get(bytes);
         String file = new String(bytes, getCharset());
 
-        session.getTarget().deleteFile(file);
+        session.getSink().deleteFile(file);
         session.setLastCommand(JSyncCommand.TARGET_DELETE_FILE);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
@@ -503,7 +474,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         // syncItem.setChecksum(checksum);
         // }
 
-        Target target = session.getTarget();
+        Sink sink = session.getSink();
 
         long fileBytesTransferred = 0;
 
@@ -516,7 +487,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         // MessageDigest messageDigest = DigestUtils.createSha256Digest();
         // DigestUtils.digest(messageDigest, buffer);
 
-        try (WritableByteChannel outChannel = target.getChannel(syncItem))
+        try (WritableByteChannel outChannel = sink.getChannel(syncItem))
         // try (WritableByteChannel outChannel = new MonitoringWritableByteChannel(receiver.getChannel(syncItem), monitor, fileSize))
         {
             // Restlichen Buffer in die Datei schreiben.
@@ -568,8 +539,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         DirectorySyncItem syncItem = Serializers.readFrom(buffer, DirectorySyncItem.class);
 
-        Target target = session.getTarget();
-        target.updateDirectory(syncItem);
+        Sink sink = session.getSink();
+        sink.updateDirectory(syncItem);
 
         session.setLastCommand(JSyncCommand.TARGET_UPDATE_DIRECTORY);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
@@ -590,8 +561,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         FileSyncItem syncItem = Serializers.readFrom(buffer, FileSyncItem.class);
 
-        Target target = session.getTarget();
-        target.updateFile(syncItem);
+        Sink sink = session.getSink();
+        sink.updateFile(syncItem);
 
         session.setLastCommand(JSyncCommand.TARGET_UPDATE_FILE);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
@@ -628,11 +599,11 @@ public class JSyncIoHandler extends AbstractIoHandler
             syncItem.setChecksum(checksum);
         }
 
-        Target target = session.getTarget();
+        Sink sink = session.getSink();
 
         try
         {
-            target.validateFile(syncItem);
+            sink.validateFile(syncItem);
         }
         catch (Exception ex)
         {
@@ -656,10 +627,9 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         ByteBuffer buffer = session.getBuffer();
 
-        Target target = session.getTarget();
-        Callable<Map<String, SyncItem>> callable = target.createSyncItems(new GeneratorListener()
+        Sink sink = session.getSink();
+        sink.createSyncItems(new GeneratorListener()
         {
-
             /**
              * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
              */
@@ -714,34 +684,6 @@ public class JSyncIoHandler extends AbstractIoHandler
                 }
             }
         });
-
-        callable.call();
-
-        // Map<String, SyncItem> syncItems = callable.call();
-
-        // Diese Map kann sehr groß werden, daher die SyncItems einzeln übertragen.
-        // for (SyncItem syncItem : syncItems.values())
-        // {
-        // buffer.clear();
-        //
-        // if (syncItem instanceof FileSyncItem)
-        // {
-        // buffer.put((byte) 0);
-        // FileSyncItem.BB_TRANSFERABLE.writeTo(buffer, (FileSyncItem) syncItem);
-        // }
-        // else
-        // {
-        // buffer.put((byte) 1);
-        // DirectorySyncItem.BB_TRANSFERABLE.writeTo(buffer, (DirectorySyncItem) syncItem);
-        // }
-        //
-        // buffer.flip();
-        //
-        // while (buffer.hasRemaining())
-        // {
-        // channel.write(buffer);
-        // }
-        // }
 
         session.getLogger().debug("receiver response: Create SyncItems written");
     }

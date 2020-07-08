@@ -1,5 +1,5 @@
 // Created: 05.04.2018
-package de.freese.jsync.filesystem.destination;
+package de.freese.jsync.filesystem.sink;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import de.freese.jsync.Options;
@@ -25,15 +24,15 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.JSyncCommandSerializer;
 import de.freese.jsync.model.serializer.Serializers;
 import de.freese.jsync.server.JSyncCommand;
-import de.freese.jsync.util.JSyncUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
- * {@link Target} für Remote-Filesysteme.
+ * {@link Sink} für Remote-Filesysteme.
  *
  * @author Thomas Freese
  */
 @SuppressWarnings("resource")
-public class RemoteTarget extends AbstractTarget
+public class RemoteSink extends AbstractSink
 {
     /**
      * @author Thomas Freese
@@ -69,13 +68,12 @@ public class RemoteTarget extends AbstractTarget
             {
                 handleResponse();
             }
+            catch (IOException iex)
+            {
+                throw iex;
+            }
             catch (Exception ex)
             {
-                if (ex instanceof IOException)
-                {
-                    throw (IOException) ex;
-                }
-
                 throw new IOException(ex);
             }
         }
@@ -139,12 +137,12 @@ public class RemoteTarget extends AbstractTarget
     private final URI serverUri;
 
     /**
-     * Erzeugt eine neue Instanz von {@link RemoteTarget}.
+     * Erzeugt eine neue Instanz von {@link RemoteSink}.
      *
      * @param options {@link Options}
      * @param serverUri {@link URI}
      */
-    public RemoteTarget(final Options options, final URI serverUri)
+    public RemoteSink(final Options options, final URI serverUri)
     {
         super(options);
 
@@ -154,7 +152,7 @@ public class RemoteTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#connect()
+     * @see de.freese.jsync.filesystem.sink.Sink#connect()
      */
     @Override
     public void connect() throws Exception
@@ -174,37 +172,37 @@ public class RemoteTarget extends AbstractTarget
         Future<Void> futureConnect = this.client.connect(hostAddress);
         futureConnect.get();
 
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        JSyncCommandSerializer.getInstance().writeTo(buffer, JSyncCommand.CONNECT);
+        JSyncCommandSerializer.getInstance().writeTo(buf, JSyncCommand.CONNECT);
 
         // Options senden.
-        Serializers.writeTo(buffer, getOptions());
+        Serializers.writeTo(buf, getOptions());
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         handleResponse();
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#createDirectory(java.lang.String)
+     * @see de.freese.jsync.filesystem.sink.Sink#createDirectory(java.lang.String)
      */
     @Override
     public void createDirectory(final String dir) throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        JSyncCommandSerializer.getInstance().writeTo(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
+        JSyncCommandSerializer.getInstance().writeTo(buf, JSyncCommand.TARGET_CREATE_DIRECTORY);
 
         byte[] bytes = dir.getBytes(getCharset());
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
+        buf.putInt(bytes.length);
+        buf.put(bytes);
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         handleResponse();
     }
@@ -213,26 +211,28 @@ public class RemoteTarget extends AbstractTarget
      * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public Callable<Map<String, SyncItem>> createSyncItems(final GeneratorListener listener)
+    public Map<String, SyncItem> createSyncItems(final GeneratorListener listener)
     {
-        return () -> {
-            Map<String, SyncItem> syncItems = new TreeMap<>();
-            ByteBuffer buffer = getBuffer();
+        Map<String, SyncItem> syncItems = new TreeMap<>();
+
+        try
+        {
+            ByteBuffer buf = getBuffer();
 
             // JSyncCommand senden.
-            JSyncCommandSerializer.getInstance().writeTo(buffer, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
+            JSyncCommandSerializer.getInstance().writeTo(buf, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
 
             byte[] bytes = getBase().toString().getBytes(getCharset());
-            buffer.putInt(bytes.length);
-            buffer.put(bytes);
+            buf.putInt(bytes.length);
+            buf.put(bytes);
 
-            buffer.flip();
-            write(buffer);
+            buf.flip();
+            write(buf);
 
-            buffer.clear();
+            buf.clear();
 
             // Response lesen.
-            Future<Integer> futureResponse = getClient().read(buffer);
+            Future<Integer> futureResponse = getClient().read(buf);
 
             boolean sizeRead = false;
             boolean finished = false;
@@ -240,11 +240,11 @@ public class RemoteTarget extends AbstractTarget
             // while (getClient().read(buffer) > 0)
             while (futureResponse.get() > 0)
             {
-                buffer.flip();
+                buf.flip();
 
                 if (!sizeRead)
                 {
-                    int size = buffer.getInt();
+                    int size = buf.getInt();
                     sizeRead = true;
 
                     if (listener != null)
@@ -253,19 +253,19 @@ public class RemoteTarget extends AbstractTarget
                     }
                 }
 
-                while (buffer.hasRemaining())
+                while (buf.hasRemaining())
                 {
                     SyncItem syncItem = null;
 
-                    byte b = buffer.get();
+                    byte b = buf.get();
 
                     if (b == 0)
                     {
-                        syncItem = Serializers.readFrom(buffer, FileSyncItem.class);
+                        syncItem = Serializers.readFrom(buf, FileSyncItem.class);
                     }
                     else if (b == 1)
                     {
-                        syncItem = Serializers.readFrom(buffer, DirectorySyncItem.class);
+                        syncItem = Serializers.readFrom(buf, DirectorySyncItem.class);
                     }
                     else if (b == Byte.MIN_VALUE)
                     {
@@ -287,58 +287,66 @@ public class RemoteTarget extends AbstractTarget
                     break;
                 }
 
-                buffer.clear();
-                futureResponse = getClient().read(buffer);
+                buf.clear();
+                futureResponse = getClient().read(buf);
             }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
 
-            return syncItems;
-        };
+        return syncItems;
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#deleteDirectory(java.lang.String)
+     * @see de.freese.jsync.filesystem.sink.Sink#deleteDirectory(java.lang.String)
      */
     @Override
     public void deleteDirectory(final String dir) throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        JSyncCommandSerializer.getInstance().writeTo(buffer, JSyncCommand.TARGET_DELETE_DIRECTORY);
+        JSyncCommandSerializer.getInstance().writeTo(buf, JSyncCommand.TARGET_DELETE_DIRECTORY);
 
         byte[] bytes = dir.getBytes(getCharset());
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
+        buf.putInt(bytes.length);
+        buf.put(bytes);
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         handleResponse();
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#deleteFile(java.lang.String)
+     * @see de.freese.jsync.filesystem.sink.Sink#deleteFile(java.lang.String)
      */
     @Override
     public void deleteFile(final String file) throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        JSyncCommandSerializer.getInstance().writeTo(buffer, JSyncCommand.TARGET_DELETE_FILE);
+        JSyncCommandSerializer.getInstance().writeTo(buf, JSyncCommand.TARGET_DELETE_FILE);
 
         byte[] bytes = file.getBytes(getCharset());
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
+        buf.putInt(bytes.length);
+        buf.put(bytes);
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         handleResponse();
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#disconnect()
+     * @see de.freese.jsync.filesystem.sink.Sink#disconnect()
      */
     @Override
     public void disconnect() throws Exception
@@ -372,36 +380,36 @@ public class RemoteTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sink.Sink#getChannel(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public WritableByteChannel getChannel(final FileSyncItem syncItem) throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        JSyncCommandSerializer.getInstance().writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
+        JSyncCommandSerializer.getInstance().writeTo(buf, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
 
-        buffer.putLong(syncItem.getSize());
+        buf.putLong(syncItem.getSize());
 
         byte[] bytes = syncItem.getRelativePath().getBytes(getCharset());
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
+        buf.putInt(bytes.length);
+        buf.put(bytes);
 
         // if (syncItem.getChecksum() == null)
         // {
-        // buffer.put((byte) 0);
+        // buf.put((byte) 0);
         // }
         // else
         // {
-        // buffer.put((byte) 1);
+        // buf.put((byte) 1);
         // bytes = syncItem.getChecksum().getBytes(getCharset());
-        // buffer.putInt(bytes.length);
-        // buffer.put(bytes);
+        // buf.putInt(bytes.length);
+        // buf.put(bytes);
         // }
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         return new AsyncWritableByteChannelAdapter(getClient());
     }
@@ -437,15 +445,15 @@ public class RemoteTarget extends AbstractTarget
      */
     protected void handleResponse() throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
-        Future<Integer> futureResponse = getClient().read(buffer);
+        Future<Integer> futureResponse = getClient().read(buf);
 
         futureResponse.get();
 
-        buffer.flip();
+        buf.flip();
 
-        byte b = buffer.get();
+        byte b = buf.get();
 
         if (b != Byte.MIN_VALUE)
         {
@@ -454,94 +462,94 @@ public class RemoteTarget extends AbstractTarget
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#updateDirectory(de.freese.jsync.model.DirectorySyncItem)
+     * @see de.freese.jsync.filesystem.sink.Sink#updateDirectory(de.freese.jsync.model.DirectorySyncItem)
      */
     @Override
     public void updateDirectory(final DirectorySyncItem syncItem) throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        JSyncCommandSerializer.getInstance().writeTo(buffer, JSyncCommand.TARGET_UPDATE_DIRECTORY);
+        JSyncCommandSerializer.getInstance().writeTo(buf, JSyncCommand.TARGET_UPDATE_DIRECTORY);
 
-        Serializers.writeTo(buffer, syncItem);
+        Serializers.writeTo(buf, syncItem);
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         handleResponse();
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#updateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sink.Sink#updateFile(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public void updateFile(final FileSyncItem syncItem) throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        JSyncCommandSerializer.getInstance().writeTo(buffer, JSyncCommand.TARGET_UPDATE_FILE);
+        JSyncCommandSerializer.getInstance().writeTo(buf, JSyncCommand.TARGET_UPDATE_FILE);
 
-        Serializers.writeTo(buffer, syncItem);
+        Serializers.writeTo(buf, syncItem);
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         handleResponse();
     }
 
     /**
-     * @see de.freese.jsync.filesystem.destination.Target#validateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sink.Sink#validateFile(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public void validateFile(final FileSyncItem syncItem) throws Exception
     {
-        ByteBuffer buffer = getBuffer();
+        ByteBuffer buf = getBuffer();
 
         // JSyncCommand senden.
-        JSyncCommandSerializer.getInstance().writeTo(buffer, JSyncCommand.TARGET_VALIDATE_FILE);
+        JSyncCommandSerializer.getInstance().writeTo(buf, JSyncCommand.TARGET_VALIDATE_FILE);
 
-        buffer.putLong(syncItem.getSize());
+        buf.putLong(syncItem.getSize());
 
         byte[] bytes = syncItem.getRelativePath().getBytes(getCharset());
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
+        buf.putInt(bytes.length);
+        buf.put(bytes);
 
         if (syncItem.getChecksum() == null)
         {
-            buffer.put((byte) 0);
+            buf.put((byte) 0);
         }
         else
         {
-            buffer.put((byte) 1);
+            buf.put((byte) 1);
             bytes = syncItem.getChecksum().getBytes(getCharset());
-            buffer.putInt(bytes.length);
-            buffer.put(bytes);
+            buf.putInt(bytes.length);
+            buf.put(bytes);
         }
 
-        buffer.flip();
-        write(buffer);
+        buf.flip();
+        write(buf);
 
         handleResponse();
     }
 
     /**
-     * @param buffer {@link ByteBuffer}
+     * @param buf {@link ByteBuffer}
      * @throws Exception Falls was schief geht.
      */
-    protected void write(final ByteBuffer buffer) throws Exception
+    protected void write(final ByteBuffer buf) throws Exception
     {
-        // while (buffer.hasRemaining())
+        // while (buf.hasRemaining())
         // {
-        // getClient().write(buffer);
+        // getClient().write(buf);
         // }
 
-        Future<Integer> futureRequest = getClient().write(buffer);
+        Future<Integer> futureRequest = getClient().write(buf);
 
         while (futureRequest.get() > 0)
         {
-            futureRequest = getClient().write(buffer);
+            futureRequest = getClient().write(buf);
         }
     }
 }

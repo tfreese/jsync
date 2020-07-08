@@ -8,7 +8,6 @@ import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
@@ -29,9 +28,9 @@ public interface FileSystem
      * Erzeugt die Map aller SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      *
      * @param listener {@link GeneratorListener}; optional.
-     * @return {@link Callable}
+     * @return {@link Map}
      */
-    public Callable<Map<String, SyncItem>> createSyncItems(GeneratorListener listener);
+    public Map<String, SyncItem> createSyncItems(GeneratorListener listener);
 
     /**
      * Trennt die Verbindung zum Dateisystem .

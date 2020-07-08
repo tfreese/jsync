@@ -26,13 +26,6 @@ public interface ArgumentParser
     public boolean delete();
 
     /**
-     * Option: -t; --target
-     *
-     * @return String
-     */
-    public String target();
-
-    /**
      * Option: -n; --dry-run
      *
      * @return boolean
@@ -57,6 +50,13 @@ public interface ArgumentParser
      * @param printStream {@link PrintStream}
      */
     public void printHelp(PrintStream printStream);
+
+    /**
+     * Option: -sk; --sink
+     *
+     * @return String
+     */
+    public String sink();
 
     /**
      * Option: -s; --source

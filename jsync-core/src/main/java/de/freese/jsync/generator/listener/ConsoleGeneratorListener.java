@@ -19,18 +19,18 @@ import de.freese.jsync.model.SyncItem;
 public class ConsoleGeneratorListener extends AbstractGeneratorListener
 {
     /**
-        *
-        */
+     *
+     */
     private final String prefix;
 
     /**
-    *
-    */
+     *
+     */
     private final PrintStream printStream;
 
     /**
-    *
-    */
+     *
+     */
     private final PrintStream printStreamError;
 
     /**
