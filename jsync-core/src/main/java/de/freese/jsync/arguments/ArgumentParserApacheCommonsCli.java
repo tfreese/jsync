@@ -50,8 +50,8 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
         this.options.addOption(Option.builder("n").longOpt("dry-run").desc("Synchronisation nur Simulieren").build());
         this.options.addOption(Option.builder("c").longOpt("checksum").desc("Zusätzlich Prüfsumme für Vergleich berechnen").build());
 
-        this.options.addOption(Option.builder("s").longOpt("source").hasArg().argName("DIR").desc("Quell-Verzeichnis").required().build());
-        this.options.addOption(Option.builder("sk").longOpt("sink").hasArg().argName("DIR").desc("Ziel-Verzeichnis").required().build());
+        this.options.addOption(Option.builder("s").longOpt("sender").hasArg().argName("DIR").desc("Quell-Verzeichnis").required().build());
+        this.options.addOption(Option.builder("r").longOpt("receiver").hasArg().argName("DIR").desc("Ziel-Verzeichnis").required().build());
 
         CommandLineParser parser = new DefaultParser();
 
@@ -135,20 +135,20 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
     }
 
     /**
-     * @see de.freese.jsync.arguments.ArgumentParser#sink()
+     * @see de.freese.jsync.arguments.ArgumentParser#receiver()
      */
     @Override
-    public String sink()
+    public String receiver()
     {
-        return this.line.getOptionValue("sink");
+        return this.line.getOptionValue("receiver");
     }
 
     /**
-     * @see de.freese.jsync.arguments.ArgumentParser#source()
+     * @see de.freese.jsync.arguments.ArgumentParser#sender()
      */
     @Override
-    public String source()
+    public String sender()
     {
-        return this.line.getOptionValue("source");
+        return this.line.getOptionValue("sender");
     }
 }

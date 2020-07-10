@@ -33,26 +33,6 @@ public class LoggerClientListener extends AbstractClientListener
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#copyFile(de.freese.jsync.Options, de.freese.jsync.model.FileSyncItem)
-     */
-    @Override
-    public void copyFile(final Options options, final FileSyncItem syncItem)
-    {
-        String message = copyFileMessage(options, syncItem);
-
-        getLogger().info(message);
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#copyFileFinished(de.freese.jsync.model.FileSyncItem)
-     */
-    @Override
-    public void copyFileFinished(final FileSyncItem syncItem)
-    {
-        // Empty
-    }
-
-    /**
      * @see de.freese.jsync.client.listener.ClientListener#copyFileProgress(de.freese.jsync.model.FileSyncItem, long, long)
      */
     @Override

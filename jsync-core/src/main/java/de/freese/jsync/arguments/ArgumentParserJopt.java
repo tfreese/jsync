@@ -33,11 +33,11 @@
 // private final OptionSpec<Void> optionSpecFollowSymlinks =
 // this.optionParser.acceptsAll(Arrays.asList("f", "follow-symlinks"), "Dateien von SymLinks kopieren");
 //
-// private final OptionSpec<String> optionSpecSource =
-// this.optionParser.acceptsAll(Arrays.asList("s", "source"), "Quell-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
+// private final OptionSpec<String> optionSpecSender =
+// this.optionParser.acceptsAll(Arrays.asList("s", "sender"), "Quell-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
 //
-// private final OptionSpec<String> optionSpecSink =
-// this.optionParser.acceptsAll(Arrays.asList("sk", "sink"), "Ziel-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
+// private final OptionSpec<String> optionSpecReceiver =
+// this.optionParser.acceptsAll(Arrays.asList("r", "receiver"), "Ziel-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
 //
 // /**
 // * Erstellt ein neues {@link ArgumentParserJopt} Object.
@@ -114,20 +114,20 @@
 // }
 //
 // /**
-// * @see de.freese.jsync.arguments.ArgumentParser#source()
+// * @see de.freese.jsync.arguments.ArgumentParser#sender()
 // */
 // @Override
-// public String source()
+// public String sender()
 // {
-// return this.optionSet.valueOf(this.optionSpecSource);
+// return this.optionSet.valueOf(this.optionSpecSender);
 // }
 //
 // /**
-// * @see de.freese.jsync.arguments.ArgumentParser#sink()
+// * @see de.freese.jsync.arguments.ArgumentParser#receiver()
 // */
 // @Override
-// public String sink()
+// public String receiver()
 // {
-// return this.optionSet.valueOf(this.optionSpecsink);
+// return this.optionSet.valueOf(this.optionSpecReceiver);
 // }
 // }

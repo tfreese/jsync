@@ -15,10 +15,10 @@ import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.ConsoleClientListener;
-import de.freese.jsync.filesystem.sink.Sink;
-import de.freese.jsync.filesystem.sink.SinkFactory;
-import de.freese.jsync.filesystem.source.Source;
-import de.freese.jsync.filesystem.source.SourceFactory;
+import de.freese.jsync.filesystem.receiver.Receiver;
+import de.freese.jsync.filesystem.receiver.ReceiverFactory;
+import de.freese.jsync.filesystem.sender.Sender;
+import de.freese.jsync.filesystem.sender.SenderFactory;
 import de.freese.jsync.generator.listener.ConsoleGeneratorListener;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncPair;
@@ -95,30 +95,30 @@ public class JSync
         int poolSize = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         options.setExecutorService(Executors.newFixedThreadPool(poolSize));
 
-        String source = argumentParser.source();
+        String sender = argumentParser.sender();
         URI senderUri = null;
 
-        if (!source.startsWith("jsync"))
+        if (!sender.startsWith("jsync"))
         {
             // Kein Remote
-            senderUri = new File(source).toURI();
+            senderUri = new File(sender).toURI();
         }
         else
         {
-            senderUri = new URI(source);
+            senderUri = new URI(sender);
         }
 
-        String sink = argumentParser.sink();
+        String receiver = argumentParser.receiver();
         URI receiverUri = null;
 
-        if (!sink.startsWith("jsync"))
+        if (!receiver.startsWith("jsync"))
         {
             // Kein Remote
-            receiverUri = new File(sink).toURI();
+            receiverUri = new File(receiver).toURI();
         }
         else
         {
-            receiverUri = new URI(sink);
+            receiverUri = new URI(receiver);
         }
 
         try
@@ -137,27 +137,27 @@ public class JSync
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
      * @param clientListener {@link ClientListener}
-     * @param senderGeneratorListener {@link GeneratorListener}; optional.
-     * @param receiverGeneratorListener {@link GeneratorListener}; optional.
+     * @param senderListener {@link GeneratorListener}; optional.
+     * @param receiverListener {@link GeneratorListener}; optional.
      * @throws Exception Falls was schief geht.
      */
     public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener,
-                                final GeneratorListener senderGeneratorListener, final GeneratorListener receiverGeneratorListener)
+                                final GeneratorListener senderListener, final GeneratorListener receiverListener)
         throws Exception
     {
-        Source source = SourceFactory.createSourceFromURI(options, senderUri);
-        Sink sink = SinkFactory.createSinkFromURI(options, receiverUri);
+        Sender sender = SenderFactory.createFromURI(options, senderUri);
+        Receiver receiver = ReceiverFactory.createFromURI(options, receiverUri);
 
-        source.connect();
-        sink.connect();
+        sender.connect();
+        receiver.connect();
 
         Client client = new DefaultClient(options, clientListener);
 
-        List<SyncPair> syncList = client.createSyncList(source, senderGeneratorListener, sink, receiverGeneratorListener);
+        List<SyncPair> syncList = client.createSyncList(sender, senderListener, receiver, receiverListener);
 
-        client.syncReceiver(source, sink, syncList);
+        client.syncReceiver(sender, receiver, syncList);
 
-        source.disconnect();
-        sink.disconnect();
+        sender.disconnect();
+        receiver.disconnect();
     }
 }

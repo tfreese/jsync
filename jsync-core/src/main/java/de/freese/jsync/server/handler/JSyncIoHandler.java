@@ -14,10 +14,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.slf4j.Logger;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.sink.LocalhostSink;
-import de.freese.jsync.filesystem.sink.Sink;
-import de.freese.jsync.filesystem.source.LocalhostSource;
-import de.freese.jsync.filesystem.source.Source;
+import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
+import de.freese.jsync.filesystem.receiver.Receiver;
+import de.freese.jsync.filesystem.sender.LocalhostSender;
+import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.DirectorySyncItem;
 import de.freese.jsync.model.FileSyncItem;
@@ -179,8 +179,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         Path base = Paths.get(basePath);
 
-        Source source = new LocalhostSource(session.getOptions(), base.toUri());
-        session.setSource(source);
+        Sender source = new LocalhostSender(session.getOptions(), base.toUri());
+        session.setSender(source);
 
         buffer.clear();
         session.setLastCommand(JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
@@ -237,8 +237,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         ByteBuffer buffer = session.getBuffer();
 
-        Source source = session.getSource();
-        source.createSyncItems(new GeneratorListener()
+        Sender sender = session.getSender();
+        sender.createSyncItems(new GeneratorListener()
         {
             /**
              * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
@@ -310,7 +310,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         session.getLogger().debug("sender response: FileChannel");
 
         ByteBuffer buffer = session.getBuffer();
-        Source source = session.getSource();
+        Sender sender = session.getSender();
         FileSyncItem syncItem = session.getFileSyncItem();
 
         long fileSize = syncItem.getSize();
@@ -327,7 +327,7 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         buffer.clear();
 
-        try (ReadableByteChannel inChannel = source.getChannel(syncItem))
+        try (ReadableByteChannel inChannel = sender.getChannel(syncItem))
         // try (ReadableByteChannel inChannel = new MonitoringReadableByteChannel(sender.getChannel(syncItem), monitor, fileSize))
         {
             // while ((inChannel.read(buffer) > 0) || (fileBytesTransferred < fileSize))
@@ -367,7 +367,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         buffer.get(bytes);
         String directory = new String(bytes, getCharset());
 
-        session.getSink().createDirectory(directory);
+        session.getReceiver().createDirectory(directory);
         session.setLastCommand(JSyncCommand.TARGET_CREATE_DIRECTORY);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
@@ -391,8 +391,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         Path base = Paths.get(basePath);
 
-        Sink sink = new LocalhostSink(session.getOptions(), base.toUri());
-        session.setSink(sink);
+        Receiver receiver = new LocalhostReceiver(session.getOptions(), base.toUri());
+        session.setReceiver(receiver);
 
         buffer.clear();
         session.setLastCommand(JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
@@ -416,7 +416,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         buffer.get(bytes);
         String directory = new String(bytes, getCharset());
 
-        session.getSink().deleteDirectory(directory);
+        session.getReceiver().deleteDirectory(directory);
         session.setLastCommand(JSyncCommand.TARGET_DELETE_DIRECTORY);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
@@ -438,7 +438,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         buffer.get(bytes);
         String file = new String(bytes, getCharset());
 
-        session.getSink().deleteFile(file);
+        session.getReceiver().deleteFile(file);
         session.setLastCommand(JSyncCommand.TARGET_DELETE_FILE);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
@@ -474,7 +474,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         // syncItem.setChecksum(checksum);
         // }
 
-        Sink sink = session.getSink();
+        Receiver receiver = session.getReceiver();
 
         long fileBytesTransferred = 0;
 
@@ -487,7 +487,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         // MessageDigest messageDigest = DigestUtils.createSha256Digest();
         // DigestUtils.digest(messageDigest, buffer);
 
-        try (WritableByteChannel outChannel = sink.getChannel(syncItem))
+        try (WritableByteChannel outChannel = receiver.getChannel(syncItem))
         // try (WritableByteChannel outChannel = new MonitoringWritableByteChannel(receiver.getChannel(syncItem), monitor, fileSize))
         {
             // Restlichen Buffer in die Datei schreiben.
@@ -539,8 +539,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         DirectorySyncItem syncItem = Serializers.readFrom(buffer, DirectorySyncItem.class);
 
-        Sink sink = session.getSink();
-        sink.updateDirectory(syncItem);
+        Receiver receiver = session.getReceiver();
+        receiver.updateDirectory(syncItem);
 
         session.setLastCommand(JSyncCommand.TARGET_UPDATE_DIRECTORY);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
@@ -561,8 +561,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         FileSyncItem syncItem = Serializers.readFrom(buffer, FileSyncItem.class);
 
-        Sink sink = session.getSink();
-        sink.updateFile(syncItem);
+        Receiver receiver = session.getReceiver();
+        receiver.updateFile(syncItem);
 
         session.setLastCommand(JSyncCommand.TARGET_UPDATE_FILE);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
@@ -599,11 +599,11 @@ public class JSyncIoHandler extends AbstractIoHandler
             syncItem.setChecksum(checksum);
         }
 
-        Sink sink = session.getSink();
+        Receiver receiver = session.getReceiver();
 
         try
         {
-            sink.validateFile(syncItem);
+            receiver.validateFile(syncItem);
         }
         catch (Exception ex)
         {
@@ -627,8 +627,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         ByteBuffer buffer = session.getBuffer();
 
-        Sink sink = session.getSink();
-        sink.createSyncItems(new GeneratorListener()
+        Receiver receiver = session.getReceiver();
+        receiver.createSyncItems(new GeneratorListener()
         {
             /**
              * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)

@@ -7,8 +7,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
-import de.freese.jsync.filesystem.sink.Sink;
-import de.freese.jsync.filesystem.source.Source;
+import de.freese.jsync.filesystem.receiver.Receiver;
+import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
@@ -33,19 +33,19 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @see de.freese.jsync.client.Client#createSyncList(de.freese.jsync.filesystem.source.Source, de.freese.jsync.generator.listener.GeneratorListener,
-     *      de.freese.jsync.filesystem.sink.Sink, de.freese.jsync.generator.listener.GeneratorListener)
+     * @see de.freese.jsync.client.Client#createSyncList(de.freese.jsync.filesystem.sender.Sender, de.freese.jsync.generator.listener.GeneratorListener,
+     *      de.freese.jsync.filesystem.receiver.Receiver, de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public List<SyncPair> createSyncList(final Source source, final GeneratorListener sourceGeneratorListener, final Sink sink,
-                                         final GeneratorListener sinkGeneratorListener)
+    public List<SyncPair> createSyncList(final Sender sender, final GeneratorListener senderListener, final Receiver receiver,
+                                         final GeneratorListener receiverListener)
         throws Exception
     {
         getClientListener().dryRunInfo(getOptions());
         getClientListener().generatingFileListInfo();
 
-        Map<String, SyncItem> fileMapSource = source.createSyncItems(sourceGeneratorListener);
-        Map<String, SyncItem> fileMapSink = sink.createSyncItems(sinkGeneratorListener);
+        Map<String, SyncItem> fileMapSender = sender.createSyncItems(senderListener);
+        Map<String, SyncItem> fileMapReceiver = receiver.createSyncItems(receiverListener);
 
         // FutureTask<Map<String, SyncItem>> futureTask = new FutureTask<>(callable);
         // futureTask.run(); // Synchron laufen Lassen.
@@ -53,16 +53,16 @@ public class DefaultClient extends AbstractClient
         // Future<Map<String, SyncItem>> futureTask = getOptions().getExecutorService().submit(callable);
 
         // Listen mergen.
-        List<SyncPair> syncList = mergeSyncItems(fileMapSource, fileMapSink);
+        List<SyncPair> syncList = mergeSyncItems(fileMapSender, fileMapReceiver);
 
         return syncList;
     }
 
     /**
-     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.source.Source, de.freese.jsync.filesystem.sink.Sink, java.util.List)
+     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.sender.Sender, de.freese.jsync.filesystem.receiver.Receiver, java.util.List)
      */
     @Override
-    public void syncReceiver(final Source source, final Sink sink, final List<SyncPair> syncList) throws Exception
+    public void syncReceiver(final Sender sender, final Receiver receiver, final List<SyncPair> syncList) throws Exception
     {
         getClientListener().syncStartInfo();
 
@@ -73,21 +73,21 @@ public class DefaultClient extends AbstractClient
         // Löschen
         if (getOptions().isDelete())
         {
-            deleteFiles(sink, list);
-            deleteDirectories(sink, list);
+            deleteFiles(receiver, list);
+            deleteDirectories(receiver, list);
         }
 
         // Neue Verzeichnisse erstellen.
-        createDirectories(sink, list);
+        createDirectories(receiver, list);
 
         // Neue oder geänderte Dateien kopieren.
-        copyFiles(source, sink, list);
+        copyFiles(sender, receiver, list);
 
         // Aktualisieren von Datei-Attributen.
-        updateFiles(sink, list);
+        updateFiles(receiver, list);
 
         // Aktualisieren von Verzeichniss-Attributen.
-        updateDirectories(sink, list);
+        updateDirectories(receiver, list);
 
         getClientListener().syncFinishedInfo();
     }

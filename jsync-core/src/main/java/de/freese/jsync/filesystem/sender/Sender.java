@@ -1,7 +1,7 @@
 /**
  * Created on 22.10.2016 10:42:26
  */
-package de.freese.jsync.filesystem.source;
+package de.freese.jsync.filesystem.sender;
 
 import java.nio.channels.ReadableByteChannel;
 import de.freese.jsync.filesystem.FileSystem;
@@ -12,7 +12,7 @@ import de.freese.jsync.model.FileSyncItem;
  *
  * @author Thomas Freese
  */
-public interface Source extends FileSystem
+public interface Sender extends FileSystem
 {
     /**
      * @see de.freese.jsync.filesystem.FileSystem#getChannel(de.freese.jsync.model.FileSyncItem)

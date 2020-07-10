@@ -8,8 +8,8 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 import org.slf4j.Logger;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.sink.Sink;
-import de.freese.jsync.filesystem.source.Source;
+import de.freese.jsync.filesystem.receiver.Receiver;
+import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.FileSyncItem;
 
 /**
@@ -47,12 +47,12 @@ public class JSyncSession
     /**
      *
      */
-    private Sink sink = null;
+    private Receiver receiver = null;
 
     /**
     *
     */
-    private Source source = null;
+    private Sender sender = null;
 
     /**
      * Erstellt ein neues {@link JSyncSession} Object.
@@ -110,19 +110,19 @@ public class JSyncSession
     }
 
     /**
-     * @return {@link Sink}
+     * @return {@link Receiver}
      */
-    public Sink getSink()
+    public Receiver getReceiver()
     {
-        return this.sink;
+        return this.receiver;
     }
 
     /**
-     * @return {@link Source}
+     * @return {@link Sender}
      */
-    public Source getSource()
+    public Sender getSender()
     {
-        return this.source;
+        return this.sender;
     }
 
     /**
@@ -142,18 +142,18 @@ public class JSyncSession
     }
 
     /**
-     * @param sink {@link Sink}
+     * @param receiver {@link Receiver}
      */
-    public void setSink(final Sink sink)
+    public void setReceiver(final Receiver receiver)
     {
-        this.sink = sink;
+        this.receiver = receiver;
     }
 
     /**
-     * @param source {@link Source}
+     * @param sender {@link Sender}
      */
-    public void setSource(final Source source)
+    public void setSender(final Sender sender)
     {
-        this.source = source;
+        this.sender = sender;
     }
 }

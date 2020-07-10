@@ -25,19 +25,19 @@ class TestJSync extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test010RemoteSourceRemoteTarget() throws Exception
+    void test010RemoteSenderRemoteReceiver() throws Exception
     {
         System.out.println();
 
         IoHandler jsyncIoHandler = new JSyncIoHandler();
 
-        JSyncServer serverSource = new JSyncServer(8001, 1);
-        serverSource.setIoHandler(jsyncIoHandler);
-        serverSource.start();
+        JSyncServer serverSender = new JSyncServer(8001, 1);
+        serverSender.setIoHandler(jsyncIoHandler);
+        serverSender.start();
 
-        JSyncServer serverTarget = new JSyncServer(8002, 1);
-        serverTarget.setIoHandler(jsyncIoHandler);
-        serverTarget.start();
+        JSyncServer serverReceiver = new JSyncServer(8002, 1);
+        serverReceiver.setIoHandler(jsyncIoHandler);
+        serverReceiver.start();
 
         Options options = new Options();
         options.setDelete(true);
@@ -46,17 +46,17 @@ class TestJSync extends AbstractJSyncTest
         options.setChecksum(true);
         // options.setBufferSize(2);
 
-        // URI source = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
-        // URI target = new URI("jsync", null, "localhost", 8002, "/" + PATH_ZIEL.toString(), null, null);
-        URI source = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
-        URI target = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
+        // URI sender = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
+        // URI receiver = new URI("jsync", null, "localhost", 8002, "/" + PATH_ZIEL.toString(), null, null);
+        URI sender = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
+        URI receiver = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
         JSync jSync = new JSync();
-        jSync.syncDirectories(options, source, target, new ConsoleClientListener(), new ConsoleGeneratorListener("Source"),
-                new ConsoleGeneratorListener("Target"));
+        jSync.syncDirectories(options, sender, receiver, new ConsoleClientListener(), new ConsoleGeneratorListener("Sender"),
+                new ConsoleGeneratorListener("Receiver"));
 
-        serverSource.stop();
-        serverTarget.stop();
+        serverSender.stop();
+        serverReceiver.stop();
 
         assertTrue(true);
     }
@@ -65,7 +65,7 @@ class TestJSync extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test020LocalSourceLocalTarget() throws Exception
+    void test020LocalSenderLocalReceiver() throws Exception
     {
         System.out.println();
 
@@ -76,12 +76,12 @@ class TestJSync extends AbstractJSyncTest
         options.setChecksum(true);
         // options.setBufferSize(2);
 
-        URI source = PATH_QUELLE.toUri();
-        URI target = PATH_ZIEL.toUri();
+        URI sender = PATH_QUELLE.toUri();
+        URI receiver = PATH_ZIEL.toUri();
 
         JSync jSync = new JSync();
-        jSync.syncDirectories(options, source, target, new ConsoleClientListener(), new ConsoleGeneratorListener("Source"),
-                new ConsoleGeneratorListener("Target"));
+        jSync.syncDirectories(options, sender, receiver, new ConsoleClientListener(), new ConsoleGeneratorListener("Sender"),
+                new ConsoleGeneratorListener("Receiver"));
 
         assertTrue(true);
     }

@@ -1,7 +1,7 @@
 /**
  * Created on 22.10.2016 10:42:26
  */
-package de.freese.jsync.filesystem.sink;
+package de.freese.jsync.filesystem.receiver;
 
 import java.nio.channels.WritableByteChannel;
 import de.freese.jsync.filesystem.FileSystem;
@@ -13,7 +13,7 @@ import de.freese.jsync.model.FileSyncItem;
  *
  * @author Thomas Freese
  */
-public interface Sink extends FileSystem
+public interface Receiver extends FileSystem
 {
     /**
      * Erstellt ein Verzeichnis.

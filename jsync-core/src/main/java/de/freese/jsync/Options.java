@@ -65,6 +65,8 @@ public class Options
     }
 
     /**
+     * Default: 4 MB
+     * 
      * @return int
      */
     public int getBufferSize()

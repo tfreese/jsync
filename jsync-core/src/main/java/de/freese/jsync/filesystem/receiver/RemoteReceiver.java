@@ -1,5 +1,5 @@
 // Created: 05.04.2018
-package de.freese.jsync.filesystem.sink;
+package de.freese.jsync.filesystem.receiver;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -27,12 +27,12 @@ import de.freese.jsync.server.JSyncCommand;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
- * {@link Sink} für Remote-Filesysteme.
+ * {@link Receiver} für Remote-Filesysteme.
  *
  * @author Thomas Freese
  */
 @SuppressWarnings("resource")
-public class RemoteSink extends AbstractSink
+public class RemoteReceiver extends AbstractReceiver
 {
     /**
      * @author Thomas Freese
@@ -137,12 +137,12 @@ public class RemoteSink extends AbstractSink
     private final URI serverUri;
 
     /**
-     * Erzeugt eine neue Instanz von {@link RemoteSink}.
+     * Erzeugt eine neue Instanz von {@link RemoteReceiver}.
      *
      * @param options {@link Options}
      * @param serverUri {@link URI}
      */
-    public RemoteSink(final Options options, final URI serverUri)
+    public RemoteReceiver(final Options options, final URI serverUri)
     {
         super(options);
 
@@ -152,7 +152,7 @@ public class RemoteSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#connect()
+     * @see de.freese.jsync.filesystem.receiver.Receiver#connect()
      */
     @Override
     public void connect() throws Exception
@@ -187,7 +187,7 @@ public class RemoteSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#createDirectory(java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#createDirectory(java.lang.String)
      */
     @Override
     public void createDirectory(final String dir) throws Exception
@@ -304,7 +304,7 @@ public class RemoteSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#deleteDirectory(java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#deleteDirectory(java.lang.String)
      */
     @Override
     public void deleteDirectory(final String dir) throws Exception
@@ -325,7 +325,7 @@ public class RemoteSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#deleteFile(java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#deleteFile(java.lang.String)
      */
     @Override
     public void deleteFile(final String file) throws Exception
@@ -346,7 +346,7 @@ public class RemoteSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#disconnect()
+     * @see de.freese.jsync.filesystem.receiver.Receiver#disconnect()
      */
     @Override
     public void disconnect() throws Exception
@@ -380,7 +380,7 @@ public class RemoteSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public WritableByteChannel getChannel(final FileSyncItem syncItem) throws Exception
@@ -462,7 +462,7 @@ public class RemoteSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#updateDirectory(de.freese.jsync.model.DirectorySyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#updateDirectory(de.freese.jsync.model.DirectorySyncItem)
      */
     @Override
     public void updateDirectory(final DirectorySyncItem syncItem) throws Exception
@@ -481,7 +481,7 @@ public class RemoteSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#updateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#updateFile(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public void updateFile(final FileSyncItem syncItem) throws Exception
@@ -500,7 +500,7 @@ public class RemoteSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#validateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#validateFile(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public void validateFile(final FileSyncItem syncItem) throws Exception

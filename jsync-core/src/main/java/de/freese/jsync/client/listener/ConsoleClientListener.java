@@ -55,26 +55,6 @@ public class ConsoleClientListener extends AbstractClientListener
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#copyFile(de.freese.jsync.Options, de.freese.jsync.model.FileSyncItem)
-     */
-    @Override
-    public void copyFile(final Options options, final FileSyncItem syncItem)
-    {
-        String message = copyFileMessage(options, syncItem);
-
-        getPrintStream().println(message);
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#copyFileFinished(de.freese.jsync.model.FileSyncItem)
-     */
-    @Override
-    public void copyFileFinished(final FileSyncItem syncItem)
-    {
-        getPrintStream().println();
-    }
-
-    /**
      * @see de.freese.jsync.client.listener.ClientListener#copyFileProgress(de.freese.jsync.model.FileSyncItem, long, long)
      */
     @Override

@@ -1,5 +1,5 @@
 // Created: 05.04.2018
-package de.freese.jsync.filesystem.source;
+package de.freese.jsync.filesystem.sender;
 
 import java.net.URI;
 import java.nio.channels.ReadableByteChannel;
@@ -18,11 +18,11 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
- * {@link Source} für Localhost-Filesysteme.
+ * {@link Sender} für Localhost-Filesysteme.
  *
  * @author Thomas Freese
  */
-public class LocalhostSource extends AbstractSource
+public class LocalhostSender extends AbstractSender
 {
     /**
     *
@@ -30,12 +30,12 @@ public class LocalhostSource extends AbstractSource
     private final Path base;
 
     /**
-     * Erzeugt eine neue Instanz von {@link LocalhostSource}.
+     * Erzeugt eine neue Instanz von {@link LocalhostSender}.
      *
      * @param options {@link Options}
      * @param baseUri {@link URI}
      */
-    public LocalhostSource(final Options options, final URI baseUri)
+    public LocalhostSender(final Options options, final URI baseUri)
     {
         super(options);
 
@@ -45,12 +45,12 @@ public class LocalhostSource extends AbstractSource
     }
 
     /**
-     * @see de.freese.jsync.filesystem.source.Source#connect()
+     * @see de.freese.jsync.filesystem.sender.Sender#connect()
      */
     @Override
     public void connect() throws Exception
     {
-        // NO-OP
+        // Empty
     }
 
     /**
@@ -73,7 +73,7 @@ public class LocalhostSource extends AbstractSource
     @Override
     public void disconnect() throws Exception
     {
-        // NO-OP
+        // Empty
     }
 
     /**
@@ -87,7 +87,7 @@ public class LocalhostSource extends AbstractSource
     }
 
     /**
-     * @see de.freese.jsync.filesystem.source.Source#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public ReadableByteChannel getChannel(final FileSyncItem syncItem) throws Exception

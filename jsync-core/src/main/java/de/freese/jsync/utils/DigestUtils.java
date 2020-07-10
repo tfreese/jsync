@@ -120,17 +120,17 @@ public final class DigestUtils
     }
 
     /**
-     * @param file {@link Path}
+     * @param path {@link Path}
      * @param bufferSize int
      * @return byte[]
      * @throws IOException Falls was schief geht.
      */
-    public static byte[] sha256Digest(final Path file, final int bufferSize) throws IOException
+    public static byte[] sha256Digest(final Path path, final int bufferSize) throws IOException
     {
         final MessageDigest messageDigest = createSha256Digest();
         byte[] bytes = null;
 
-        try (ReadableByteChannel channel = Files.newByteChannel(file, StandardOpenOption.READ))
+        try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
         {
             final ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
 
@@ -150,14 +150,14 @@ public final class DigestUtils
     }
 
     /**
-     * @param file {@link Path}
+     * @param path {@link Path}
      * @param bufferSize int
      * @return String
      * @throws IOException Falls was schief geht.
      */
-    public static String sha256DigestAsHex(final Path file, final int bufferSize) throws IOException
+    public static String sha256DigestAsHex(final Path path, final int bufferSize) throws IOException
     {
-        final byte[] bytes = sha256Digest(file, bufferSize);
+        final byte[] bytes = sha256Digest(path, bufferSize);
 
         final String hex = JSyncUtils.bytesToHex(bytes);
 

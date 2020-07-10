@@ -52,7 +52,7 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String copyFileMessage(final Options options, final FileSyncItem syncItem)
     {
-        String message = String.format("copy file: %s", syncItem.getRelativePath());
+        String message = String.format("copy: %s", syncItem.getRelativePath());
 
         message = appendDryRun(options, message);
 
@@ -67,7 +67,7 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String copyFileProgressMessage(final FileSyncItem syncItem, final long transferred, final long fileSize)
     {
-        String message = String.format("Transfer data for %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(transferred),
+        String message = String.format("copy %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(transferred),
                 JSyncUtils.getPercent(transferred, fileSize));
 
         return message;
@@ -80,7 +80,7 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String createDirectoryMessage(final Options options, final String directory)
     {
-        String message = String.format("create directory: %s", directory);
+        String message = String.format("create: %s", directory);
 
         message = appendDryRun(options, message);
 
@@ -94,7 +94,7 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String deleteDirectoryMessage(final Options options, final String directory)
     {
-        String message = String.format("delete directory: %s", directory);
+        String message = String.format("delete: %s", directory);
 
         message = appendDryRun(options, message);
 
@@ -108,7 +108,7 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String deleteFileMessage(final Options options, final String file)
     {
-        String message = String.format("delete file: %s", file);
+        String message = String.format("delete: %s", file);
 
         message = appendDryRun(options, message);
 
@@ -170,7 +170,7 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String updateDirectoryMessage(final Options options, final DirectorySyncItem syncItem)
     {
-        String message = String.format("update directory attributes: %s", syncItem.getRelativePath());
+        String message = String.format("update attributes: %s", syncItem.getRelativePath());
 
         message = appendDryRun(options, message);
 
@@ -184,7 +184,7 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String updateFileMessage(final Options options, final FileSyncItem syncItem)
     {
-        String message = String.format("update file attributes: %s", syncItem.getRelativePath());
+        String message = String.format("update attributes: %s", syncItem.getRelativePath());
 
         message = appendDryRun(options, message);
 
@@ -198,7 +198,7 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String validateFileMessage(final Options options, final FileSyncItem syncItem)
     {
-        String message = String.format("validate file: %s", syncItem.getRelativePath());
+        String message = String.format("validate: %s", syncItem.getRelativePath());
 
         message = appendDryRun(options, message);
 

@@ -2,7 +2,7 @@
  * Created: 18.11.2018
  */
 
-package de.freese.jsync.filesystem.source;
+package de.freese.jsync.filesystem.sender;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -30,12 +30,12 @@ import de.freese.jsync.server.JSyncCommand;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
- * {@link Source} für Remote-Filesysteme.
+ * {@link Sender} für Remote-Filesysteme.
  *
  * @author Thomas Freese
  */
 @SuppressWarnings("resource")
-public class RemoteSource extends AbstractSource
+public class RemoteSender extends AbstractSender
 {
     /**
      * @author Thomas Freese
@@ -141,12 +141,12 @@ public class RemoteSource extends AbstractSource
     private final URI serverUri;
 
     /**
-     * Erstellt ein neues {@link RemoteSource} Object.
+     * Erstellt ein neues {@link RemoteSender} Object.
      *
      * @param options {@link Options}
      * @param serverUri {@link URI}
      */
-    public RemoteSource(final Options options, final URI serverUri)
+    public RemoteSender(final Options options, final URI serverUri)
     {
         super(options);
 
@@ -156,7 +156,7 @@ public class RemoteSource extends AbstractSource
     }
 
     /**
-     * @see de.freese.jsync.filesystem.source.Source#connect()
+     * @see de.freese.jsync.filesystem.sender.Sender#connect()
      */
     @Override
     public void connect() throws Exception
@@ -287,7 +287,7 @@ public class RemoteSource extends AbstractSource
     }
 
     /**
-     * @see de.freese.jsync.filesystem.source.Source#disconnect()
+     * @see de.freese.jsync.filesystem.sender.Sender#disconnect()
      */
     @Override
     public void disconnect() throws Exception
@@ -321,7 +321,7 @@ public class RemoteSource extends AbstractSource
     }
 
     /**
-     * @see de.freese.jsync.filesystem.source.Source#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public ReadableByteChannel getChannel(final FileSyncItem syncItem) throws Exception

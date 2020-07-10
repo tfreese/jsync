@@ -19,19 +19,6 @@ import de.freese.jsync.model.SyncPair;
 public interface ClientListener extends EventListener
 {
     /**
-     * @param options {@link Options}
-     * @param syncItem {@link FileSyncItem}
-     */
-    public void copyFile(Options options, final FileSyncItem syncItem);
-
-    /**
-     * Wird nur aufgerufen, wenn DRY-RUN = false ist.
-     *
-     * @param syncItem {@link FileSyncItem}
-     */
-    public void copyFileFinished(final FileSyncItem syncItem);
-
-    /**
      * Wird nur aufgerufen, wenn DRY-RUN = false ist.
      *
      * @param syncItem {@link FileSyncItem}

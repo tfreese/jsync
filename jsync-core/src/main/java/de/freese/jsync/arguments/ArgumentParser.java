@@ -52,16 +52,16 @@ public interface ArgumentParser
     public void printHelp(PrintStream printStream);
 
     /**
-     * Option: -sk; --sink
+     * Option: -r; --receiver
      *
      * @return String
      */
-    public String sink();
+    public String receiver();
 
     /**
-     * Option: -s; --source
+     * Option: -s; --sender
      *
      * @return String
      */
-    public String source();
+    public String sender();
 }

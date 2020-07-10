@@ -1,5 +1,5 @@
 // Created: 05.04.2018
-package de.freese.jsync.filesystem.sink;
+package de.freese.jsync.filesystem.receiver;
 
 import java.net.URI;
 import java.nio.channels.WritableByteChannel;
@@ -22,6 +22,7 @@ import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.generator.listener.GeneratorListener;
+import de.freese.jsync.model.AbstractSyncItem;
 import de.freese.jsync.model.DirectorySyncItem;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
@@ -29,11 +30,11 @@ import de.freese.jsync.utils.DigestUtils;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
- * {@link Sink} für Localhost-Filesysteme.
+ * {@link Receiver} für Localhost-Filesysteme.
  *
  * @author Thomas Freese
  */
-public class LocalhostSink extends AbstractSink
+public class LocalhostReceiver extends AbstractReceiver
 {
     /**
     *
@@ -41,12 +42,12 @@ public class LocalhostSink extends AbstractSink
     private final Path base;
 
     /**
-     * Erzeugt eine neue Instanz von {@link LocalhostSink}.
+     * Erzeugt eine neue Instanz von {@link LocalhostReceiver}.
      *
      * @param options {@link Options}
      * @param baseUri {@link URI}
      */
-    public LocalhostSink(final Options options, final URI baseUri)
+    public LocalhostReceiver(final Options options, final URI baseUri)
     {
         super(options);
 
@@ -56,23 +57,23 @@ public class LocalhostSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#connect()
+     * @see de.freese.jsync.filesystem.receiver.Receiver#connect()
      */
     @Override
     public void connect() throws Exception
     {
-        // NO-OP
+        // Empty
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#createDirectory(java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#createDirectory(java.lang.String)
      */
     @Override
     public void createDirectory(final String dir) throws Exception
     {
         Path path = getBase().resolve(dir);
 
-        getLogger().debug("create Directory: {}", path);
+        getLogger().debug("create: {}", path);
 
         if (!Files.exists(path))
         {
@@ -95,14 +96,14 @@ public class LocalhostSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#deleteDirectory(java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#deleteDirectory(java.lang.String)
      */
     @Override
     public void deleteDirectory(final String dir) throws Exception
     {
         Path path = getBase().resolve(dir);
 
-        getLogger().debug("create Directory: {}", path);
+        getLogger().debug("create: {}", path);
 
         JSyncUtils.deleteDirectoryRecursive(path);
 
@@ -127,20 +128,20 @@ public class LocalhostSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#deleteFile(java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#deleteFile(java.lang.String)
      */
     @Override
     public void deleteFile(final String file) throws Exception
     {
         Path path = getBase().resolve(file);
 
-        getLogger().debug("delete File: {}", path);
+        getLogger().debug("delete: {}", path);
 
         Files.delete(path);
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#disconnect()
+     * @see de.freese.jsync.filesystem.receiver.Receiver#disconnect()
      */
     @Override
     public void disconnect() throws Exception
@@ -159,7 +160,7 @@ public class LocalhostSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public WritableByteChannel getChannel(final FileSyncItem syncItem) throws Exception
@@ -183,16 +184,24 @@ public class LocalhostSink extends AbstractSink
      * Aktualisiert ein Verzeichnis oder Datei.
      *
      * @param path {@link Path}
-     * @param lastModifiedTime long; TimeUnit = SECONDS
-     * @param permissions String; In der Form "rwxr-xr-x"; optional, kann unter Windows null sein.
-     * @param groupName String; optional, kann unter Windows null sein.
-     * @param userName String; optional, kann unter Windows null sein.
+     * @param syncItem {@link AbstractSyncItem}
      * @throws Exception Falls was schief geht.
      */
     @SuppressWarnings("resource")
-    protected void update(final Path path, final long lastModifiedTime, final String permissions, final String groupName, final String userName)
-        throws Exception
+    protected void update(final Path path, final AbstractSyncItem syncItem) throws Exception
     {
+        // In der Form "rwxr-xr-x"; optional, kann unter Windows null sein.
+        String permissions = syncItem.getPermissionsToString();
+
+        // TimeUnit = SECONDS
+        long lastModifiedTime = syncItem.getLastModifiedTime();
+
+        // Optional, kann unter Windows null sein.
+        String groupName = syncItem.getGroup() == null ? null : syncItem.getGroup().getName();
+
+        // Optional, kann unter Windows null sein.
+        String userName = syncItem.getUser() == null ? null : syncItem.getUser().getName();
+
         Files.setLastModifiedTime(path, FileTime.from(lastModifiedTime, TimeUnit.SECONDS));
 
         if (Options.IS_LINUX)
@@ -214,50 +223,40 @@ public class LocalhostSink extends AbstractSink
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#updateDirectory(de.freese.jsync.model.DirectorySyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#updateDirectory(de.freese.jsync.model.DirectorySyncItem)
      */
     @Override
     public void updateDirectory(final DirectorySyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
-        getLogger().debug("update Directory: {}", path);
+        getLogger().debug("update: {}", path);
 
-        String permissions = syncItem.getPermissionsToString();
-        long lastModifiedTime = syncItem.getLastModifiedTime();
-        String groupName = syncItem.getGroup() == null ? null : syncItem.getGroup().getName();
-        String userName = syncItem.getUser() == null ? null : syncItem.getUser().getName();
-
-        update(path, lastModifiedTime, permissions, groupName, userName);
+        update(path, syncItem);
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#updateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#updateFile(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public void updateFile(final FileSyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
-        getLogger().debug("update File: {}", path);
+        getLogger().debug("update: {}", path);
 
-        String permissions = syncItem.getPermissionsToString();
-        long lastModifiedTime = syncItem.getLastModifiedTime();
-        String groupName = syncItem.getGroup() == null ? null : syncItem.getGroup().getName();
-        String userName = syncItem.getUser() == null ? null : syncItem.getUser().getName();
-
-        update(path, lastModifiedTime, permissions, groupName, userName);
+        update(path, syncItem);
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sink.Sink#validateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#validateFile(de.freese.jsync.model.FileSyncItem)
      */
     @Override
     public void validateFile(final FileSyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
-        getLogger().debug("validate File: {}", path);
+        getLogger().debug("validate: {}", path);
 
         if (Files.size(path) != syncItem.getSize())
         {

@@ -1,49 +1,49 @@
 // Created: 05.04.2018
-package de.freese.jsync.filesystem.source;
+package de.freese.jsync.filesystem.sender;
 
 import java.net.URI;
 import de.freese.jsync.Options;
 
 /**
- * Factory für den {@link Source}.<br>
+ * Factory für den {@link Sender}.<br>
  * Liefert die konkrete Implementierung gemäß {@link URI}.
  *
  * @author Thomas Freese
  */
-public final class SourceFactory
+public final class SenderFactory
 {
     /**
      * Liefert die konkrete Implementierung gemäß {@link URI}.
      *
      * @param options {@link Options}
      * @param baseUri {@link URI}
-     * @return {@link Source}
+     * @return {@link Sender}
      */
-    public static Source createSourceFromURI(final Options options, final URI baseUri)
+    public static Sender createFromURI(final Options options, final URI baseUri)
     {
-        Source source = null;
+        Sender sender = null;
 
         if (baseUri.getScheme().startsWith("file"))
         {
-            source = new LocalhostSource(options, baseUri);
+            sender = new LocalhostSender(options, baseUri);
         }
         else if (baseUri.getScheme().startsWith("jsync"))
         {
-            source = new RemoteSource(options, baseUri);
+            sender = new RemoteSender(options, baseUri);
         }
 
-        if (source == null)
+        if (sender == null)
         {
             throw new IllegalStateException("no sender for URI: " + baseUri);
         }
 
-        return source;
+        return sender;
     }
 
     /**
-     * Erstellt ein neues {@link SourceFactory} Object.
+     * Erstellt ein neues {@link SenderFactory} Object.
      */
-    private SourceFactory()
+    private SenderFactory()
     {
         super();
     }

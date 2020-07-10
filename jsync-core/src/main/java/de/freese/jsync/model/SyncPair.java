@@ -98,14 +98,12 @@ public class SyncPair
 
     /**
      * Vergleicht die Datei in der Quelle (Source) mit dem Ziel (Target).
-     *
-     * @throws IllegalStateException Falls was schief geht.
      */
-    public void validateStatus() throws IllegalStateException
+    public void validateStatus()
     {
         if ((getSource() == null) && (getTarget() != null))
         {
-            // Löschen: In der Quelle nicht mehr vorhanden, aber im Ziel.
+            // Löschen: In der Quelle nicht vorhanden, aber im Ziel.
             this.status = SyncStatus.ONLY_IN_TARGET;
         }
         else if ((getSource() != null) && (getTarget() == null))
