@@ -13,7 +13,7 @@
 	<packaging>jar</packaging>
 
 	<name>${project.groupId} - ${project.artifactId}</name>
-	<description>A Java rsync clone: JavaFX-Package</description>
+	<description>A Java rsync clone: JavaFX-GUI</description>
 
 	<build>
 		<plugins>

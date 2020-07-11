@@ -12,6 +12,95 @@ import java.util.concurrent.ForkJoinPool;
 public class Options
 {
     /**
+     * @author Thomas Freese
+     */
+    public static class Builder
+    {
+        /**
+         *
+         */
+        private final Options options;
+
+        /**
+         * Erstellt ein neues {@link Builder} Object.
+         */
+        public Builder()
+        {
+            super();
+
+            this.options = new Options();
+        }
+
+        /**
+         * @param size int
+         * @return {@link Builder}
+         */
+        public Builder bufferSize(final int size)
+        {
+            this.options.setBufferSize(size);
+            return this;
+        }
+
+        /**
+         * @return {@link Options}
+         */
+        public Options build()
+        {
+            return this.options;
+        }
+
+        /**
+         * @param checksum boolean
+         * @return {@link Builder}
+         */
+        public Builder checksum(final boolean checksum)
+        {
+            this.options.setChecksum(checksum);
+            return this;
+        }
+
+        /**
+         * @param delete boolean
+         * @return {@link Builder}
+         */
+        public Builder delete(final boolean delete)
+        {
+            this.options.setDelete(delete);
+            return this;
+        }
+
+        /**
+         * @param dryRun boolean
+         * @return {@link Builder}
+         */
+        public Builder dryRun(final boolean dryRun)
+        {
+            this.options.setDryRun(dryRun);
+            return this;
+        }
+
+        /**
+         * @param executorService {@link ExecutorService}
+         * @return {@link Builder}
+         */
+        public Builder executorService(final ExecutorService executorService)
+        {
+            this.options.setExecutorService(executorService);
+            return this;
+        }
+
+        /**
+         * @param followSymLinks boolean
+         * @return {@link Builder}
+         */
+        public Builder followSymLinks(final boolean followSymLinks)
+        {
+            this.options.setFollowSymLinks(followSymLinks);
+            return this;
+        }
+    }
+
+    /**
     *
     */
     public static final String EMPTY_STRING = "";
@@ -59,14 +148,14 @@ public class Options
     /**
      * Erzeugt eine neue Instanz von {@link Options}
      */
-    public Options()
+    private Options()
     {
         super();
     }
 
     /**
      * Default: 4 MB
-     * 
+     *
      * @return int
      */
     public int getBufferSize()
@@ -117,7 +206,7 @@ public class Options
     /**
      * @param bufferSize int
      */
-    public void setBufferSize(final int bufferSize)
+    private void setBufferSize(final int bufferSize)
     {
         this.bufferSize = bufferSize;
     }
@@ -125,7 +214,7 @@ public class Options
     /**
      * @param checksum boolean
      */
-    public void setChecksum(final boolean checksum)
+    private void setChecksum(final boolean checksum)
     {
         this.checksum = checksum;
     }
@@ -133,7 +222,7 @@ public class Options
     /**
      * @param delete boolean
      */
-    public void setDelete(final boolean delete)
+    private void setDelete(final boolean delete)
     {
         this.delete = delete;
     }
@@ -141,7 +230,7 @@ public class Options
     /**
      * @param dryRun boolean
      */
-    public void setDryRun(final boolean dryRun)
+    private void setDryRun(final boolean dryRun)
     {
         this.dryRun = dryRun;
     }
@@ -149,7 +238,7 @@ public class Options
     /**
      * @param executorService {@link ExecutorService}
      */
-    public void setExecutorService(final ExecutorService executorService)
+    private void setExecutorService(final ExecutorService executorService)
     {
         this.executorService = executorService;
     }
@@ -157,7 +246,7 @@ public class Options
     /**
      * @param followSymLinks boolean
      */
-    public void setFollowSymLinks(final boolean followSymLinks)
+    private void setFollowSymLinks(final boolean followSymLinks)
     {
         this.followSymLinks = followSymLinks;
     }

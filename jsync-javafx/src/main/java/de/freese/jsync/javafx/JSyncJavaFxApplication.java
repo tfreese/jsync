@@ -34,12 +34,14 @@ public class JSyncJavaFxApplication extends Application
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncJavaFxApplication.class);
 
     /**
-     * @return int
+     * @return int; Beispiel: 14.0.1 = 014.000.001 = 14000001
      */
     private static int getJavaVersion()
     {
         // String javaVersion = SystemUtils.JAVA_VERSION;
         String javaVersion = System.getProperty("java.version");
+        // String javaVersionDate = System.getProperty("java.version.date");
+        // String vmVersion = System.getProperty("java.vm.version");
         String[] splits = javaVersion.toLowerCase().split("[._]");
 
         // Major
@@ -98,17 +100,17 @@ public class JSyncJavaFxApplication extends Application
             launch(args);
             // LauncherImpl.launchApplication(JSyncJavaFxApplication.class, JSyncJavaFxApplicationPreloader.class, args);
         };
-        // task.run();
+        task.run();
 
-        // Eigene ThreadGroup für Handling von Runtime-Exceptions.
-        ThreadGroup threadGroup = new ThreadGroup("jsync");
-
-        // Kein Thread des gesamten Clients kann eine höhere Prio haben.
-        threadGroup.setMaxPriority(Thread.NORM_PRIORITY + 1);
-
-        Thread thread = new Thread(threadGroup, task, "JSyncJavaFx-Startup");
-        // thread.setDaemon(false);
-        thread.start();
+        // // Eigene ThreadGroup für Handling von Runtime-Exceptions.
+        // ThreadGroup threadGroup = new ThreadGroup("jsync");
+        //
+        // // Kein Thread des gesamten Clients kann eine höhere Prio haben.
+        // threadGroup.setMaxPriority(Thread.NORM_PRIORITY + 1);
+        //
+        // Thread thread = new Thread(threadGroup, task, "JSyncJavaFx-Startup");
+        // // thread.setDaemon(false);
+        // thread.start();
     }
 
     /**
@@ -125,7 +127,7 @@ public class JSyncJavaFxApplication extends Application
     @Override
     public void init() throws Exception
     {
-        getLogger().info("JSyncJavaFxApplication.init()");
+        getLogger().info("init");
     }
 
     /**
@@ -134,13 +136,13 @@ public class JSyncJavaFxApplication extends Application
     @Override
     public void start(final Stage primaryStage) throws Exception
     {
-        getLogger().info("JSyncJavaFxApplication.start()");
+        getLogger().info("start");
 
         // Scene
         Scene scene = null;
 
         BorderPane pane = new BorderPane();
-        pane.setCenter(new Label("jsync JavaFX GUI"));
+        pane.setCenter(new Label("jSync JavaFX GUI"));
 
         // Momentan kein Antialising wegen JavaFX-Bug.
         int javaVersion = getJavaVersion();
@@ -159,7 +161,7 @@ public class JSyncJavaFxApplication extends Application
 
         // scene.getStylesheets().add("styles/styles.css");
 
-        primaryStage.setTitle("JavaFX Scene Graph Demo");
+        primaryStage.setTitle("jSync JavaFX GUI");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -170,7 +172,7 @@ public class JSyncJavaFxApplication extends Application
     @Override
     public void stop() throws Exception
     {
-        getLogger().info("JSyncJavaFxApplication.stop()");
+        getLogger().info("stop");
         System.exit(0);
     }
 }

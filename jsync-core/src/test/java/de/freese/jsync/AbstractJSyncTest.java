@@ -198,7 +198,7 @@ public abstract class AbstractJSyncTest
     /**
      * Erzeugt eine neue Instanz von {@link AbstractJSyncTest}.
      */
-    public AbstractJSyncTest()
+    protected AbstractJSyncTest()
     {
         super();
     }

@@ -14,6 +14,7 @@ import java.util.Map;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import de.freese.jsync.Options.Builder;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.FileSyncItem;
@@ -64,8 +65,7 @@ class TestJSyncGenerator extends AbstractJSyncTest
         Path base = PATH_QUELLE;
         System.out.printf("Quelle: %s", base);
 
-        Options options = new Options();
-        options.setChecksum(false);
+        Options options = new Builder().checksum(false).build();
 
         Generator generator = new DefaultGenerator(options, base);
 
@@ -88,8 +88,7 @@ class TestJSyncGenerator extends AbstractJSyncTest
         Path base = PATH_ZIEL;
         System.out.printf("Ziel: %s", base);
 
-        Options options = new Options();
-        options.setChecksum(false);
+        Options options = new Builder().checksum(false).build();
 
         Generator generator = new DefaultGenerator(options, base);
 
@@ -109,7 +108,7 @@ class TestJSyncGenerator extends AbstractJSyncTest
     {
         Path base = Paths.get(System.getProperty("user.dir"));
 
-        Options options = new Options();
+        Options options = new Builder().build();
 
         TestGenerator generator = new TestGenerator(options, base);
 

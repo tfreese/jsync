@@ -9,33 +9,37 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>jsync-core</artifactId>
+	<artifactId>jsync-remote</artifactId>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId} - ${project.artifactId}</name>
-	<description>A Java rsync clone: Core-Package</description>
+	<description>A Java rsync clone: Server</description>
 
 	<properties>
 		<skipTest>false</skipTest>
 	</properties>
-	
+
 	<dependencies>
 		<!-- compile scope -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>jsync-core</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- runtime scope -->
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<scope>runtime</scope>
-		</dependency>
 
 		<!-- provided scope -->
 
 		<!-- test scope -->
+		<dependency>
+			<groupId>${project.parent.groupId}</groupId>
+			<artifactId>jsync-core</artifactId>
+			<version>${project.parent.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>

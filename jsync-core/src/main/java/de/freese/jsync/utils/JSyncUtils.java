@@ -362,7 +362,13 @@ public final class JSyncUtils
      */
     public static String toHumanReadableSize(final long size)
     {
-        int unitIndex = (int) (Math.log10(size) / 3);
+        int unitIndex = 0;
+
+        if (size > 0)
+        {
+            unitIndex = (int) (Math.log10(size) / 3);
+        }
+
         double unitValue = 1 << (unitIndex * 10);
 
         // String readableSize = new DecimalFormat("#,##0.#").format(size / unitValue) + " " + SIZE_UNITS[unitIndex];

@@ -1,7 +1,9 @@
 // Created: 05.04.2018
 package de.freese.jsync.filesystem.sender;
 
+import java.lang.reflect.Constructor;
 import java.net.URI;
+import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
 
 /**
@@ -29,7 +31,17 @@ public final class SenderFactory
         }
         else if (baseUri.getScheme().startsWith("jsync"))
         {
-            sender = new RemoteSender(options, baseUri);
+            try
+            {
+                Class<?> clazz = Class.forName("de.freese.jsync.filesystem.receiver.RemoteSender");
+                Constructor<?> constructor = clazz.getConstructor(Options.class, URI.class);
+
+                sender = (Sender) constructor.newInstance(options, baseUri);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.getLogger(SenderFactory.class).error("ClassNotFound: {}", ex.getMessage());
+            }
         }
 
         if (sender == null)

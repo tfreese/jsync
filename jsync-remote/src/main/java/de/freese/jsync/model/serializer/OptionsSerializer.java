@@ -6,6 +6,7 @@ package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
 import de.freese.jsync.Options;
+import de.freese.jsync.Options.Builder;
 
 /**
  * @author Thomas Freese
@@ -43,23 +44,27 @@ class OptionsSerializer implements Serializer<Options>
         int bufferSize = buffer.getInt();
 
         // checksum
-        boolean checksum = buffer.get() == 1 ? true : false;
+        boolean checksum = buffer.get() == 1;
 
         // delete
-        boolean delete = buffer.get() == 1 ? true : false;
+        boolean delete = buffer.get() == 1;
 
         // dryRun
-        boolean dryRun = buffer.get() == 1 ? true : false;
+        boolean dryRun = buffer.get() == 1;
 
         // followSymLinks
-        boolean followSymLinks = buffer.get() == 1 ? true : false;
+        boolean followSymLinks = buffer.get() == 1;
 
-        Options options = new Options();
-        options.setBufferSize(bufferSize);
-        options.setChecksum(checksum);
-        options.setDelete(delete);
-        options.setDryRun(dryRun);
-        options.setFollowSymLinks(followSymLinks);
+        // @formatter:off
+        Options options = new Builder()
+                .bufferSize(bufferSize)
+                .checksum(checksum)
+                .delete(delete)
+                .dryRun(dryRun)
+                .followSymLinks(followSymLinks)
+                .build()
+                ;
+        // @formatter:on
 
         return options;
     }
