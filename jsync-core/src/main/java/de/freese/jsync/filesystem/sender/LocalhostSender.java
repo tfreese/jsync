@@ -61,8 +61,8 @@ public class LocalhostSender extends AbstractSender
     {
         getLogger().debug("create SyncItems: {}", getBase());
 
-        Generator generator = new DefaultGenerator(getOptions(), getBase());
-        Map<String, SyncItem> map = generator.createSyncItemTasks(listener);
+        Generator generator = new DefaultGenerator();
+        Map<String, SyncItem> map = generator.createSyncItems(getOptions(), getBase(), listener);
 
         return map;
     }

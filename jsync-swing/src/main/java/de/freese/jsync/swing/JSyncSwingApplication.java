@@ -9,9 +9,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Locale;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -19,6 +18,8 @@ import javax.swing.WindowConstants;
 import javax.swing.plaf.FontUIResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import de.freese.jsync.swing.messages.Messages;
+import de.freese.jsync.swing.view.SyncView;
 
 /**
  * @author Thomas Freese
@@ -44,14 +45,19 @@ public class JSyncSwingApplication
     }
 
     /**
-    *
-    */
+     *
+     */
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwingApplication.class);
 
     /**
-    *
+     *
+     */
+    private static JFrame mainFrame = null;
+
+    /**
+      *
     */
-    public static JFrame MAIN_FRAME = null;
+    private static Messages messages = null;
 
     /**
      * @return {@link Logger}
@@ -66,7 +72,15 @@ public class JSyncSwingApplication
      */
     public static JFrame getMainFrame()
     {
-        return MAIN_FRAME;
+        return mainFrame;
+    }
+
+    /**
+     * @return {@link Messages}
+     */
+    public static Messages getMessages()
+    {
+        return messages;
     }
 
     /**
@@ -132,19 +146,25 @@ public class JSyncSwingApplication
     {
         getLogger().info("init");
 
+        messages = new Messages(Locale.getDefault());
+
         initUIDefaults();
 
         JFrame frame = new JFrame();
-        frame.setTitle("jSync Swing GUI");
+        frame.setTitle(messages.getString("jsync.title"));
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new MainFrameListener());
         frame.setLayout(new BorderLayout());
 
-        JLabel label = new JLabel("jSync Swing GUI", SwingConstants.CENTER);
+        // JLabel label = new JLabel("jSync Swing GUI", SwingConstants.CENTER);
+        // frame.add(label, BorderLayout.CENTER);
+        SyncView syncView = new SyncView();
+        syncView.initGUI();
 
-        frame.add(label, BorderLayout.CENTER);
+        frame.add(syncView.getPanel(), BorderLayout.CENTER);
 
         // frame.setSize(800, 600);
+        // frame.setSize(1024, 768);
         // frame.setSize(1280, 768);
         // frame.setSize(1280, 1024);
         // frame.setSize(1680, 1050);
@@ -152,7 +172,7 @@ public class JSyncSwingApplication
         // frame.setExtendedState(Frame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        MAIN_FRAME = frame;
+        mainFrame = frame;
     }
 
     /**

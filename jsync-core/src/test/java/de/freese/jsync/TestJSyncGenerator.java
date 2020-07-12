@@ -35,22 +35,19 @@ class TestJSyncGenerator extends AbstractJSyncTest
     {
         /**
          * Erzeugt eine neue Instanz von {@link DefaultGenerator}.
-         *
-         * @param options {@link Options}
-         * @param base {@link Path}
          */
-        TestGenerator(final Options options, final Path base)
+        TestGenerator()
         {
-            super(options, base);
+            super();
         }
 
         /**
-         * @see de.freese.jsync.generator.DefaultGenerator#toItem(java.nio.file.Path, java.nio.file.LinkOption[])
+         * @see de.freese.jsync.generator.DefaultGenerator#toItem(de.freese.jsync.Options, java.nio.file.Path, java.nio.file.Path, java.nio.file.LinkOption[])
          */
         @Override
-        protected SyncItem toItem(final Path path, final LinkOption[] linkOption)
+        public SyncItem toItem(final Options options, final Path base, final Path path, final LinkOption[] linkOption)
         {
-            return super.toItem(path, linkOption);
+            return super.toItem(options, base, path, linkOption);
         }
     };
 
@@ -67,9 +64,9 @@ class TestJSyncGenerator extends AbstractJSyncTest
 
         Options options = new Builder().checksum(false).build();
 
-        Generator generator = new DefaultGenerator(options, base);
+        Generator generator = new DefaultGenerator();
 
-        Map<String, SyncItem> fileMap = generator.createSyncItemTasks(GENERATORLISTENER);
+        Map<String, SyncItem> fileMap = generator.createSyncItems(options, base, GENERATORLISTENER);
 
         assertNotNull(fileMap);
         assertEquals(5, fileMap.size());
@@ -90,9 +87,9 @@ class TestJSyncGenerator extends AbstractJSyncTest
 
         Options options = new Builder().checksum(false).build();
 
-        Generator generator = new DefaultGenerator(options, base);
+        Generator generator = new DefaultGenerator();
 
-        Map<String, SyncItem> fileMap = generator.createSyncItemTasks(GENERATORLISTENER);
+        Map<String, SyncItem> fileMap = generator.createSyncItems(options, base, GENERATORLISTENER);
 
         assertNotNull(fileMap);
         assertEquals(4, fileMap.size());
@@ -110,11 +107,11 @@ class TestJSyncGenerator extends AbstractJSyncTest
 
         Options options = new Builder().build();
 
-        TestGenerator generator = new TestGenerator(options, base);
+        TestGenerator generator = new TestGenerator();
 
         LinkOption[] linkOption = options.isFollowSymLinks() ? Generator.LINKOPTION_WITH_SYMLINKS : Generator.LINKOPTION_NO_SYMLINKS;
 
-        FileSyncItem fileSyncItem = (FileSyncItem) generator.toItem(base.resolve("pom.xml"), linkOption);
+        FileSyncItem fileSyncItem = (FileSyncItem) generator.toItem(options, base, base.resolve("pom.xml"), linkOption);
 
         assertTrue(fileSyncItem.getLastModifiedTime() > 0);
         assertTrue(fileSyncItem.getSize() > 0);

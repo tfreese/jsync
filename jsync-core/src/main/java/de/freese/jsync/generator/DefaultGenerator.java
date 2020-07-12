@@ -20,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.listener.GeneratorListener;
+import de.freese.jsync.generator.listener.NoOpGeneratorListener;
 import de.freese.jsync.model.DirectorySyncItem;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.Group;
@@ -36,47 +37,38 @@ public class DefaultGenerator extends AbstractGenerator
 {
     /**
      * Erzeugt eine neue Instanz von {@link DefaultGenerator}.
-     *
-     * @param options {@link Options}
-     * @param base {@link Path}
      */
-    public DefaultGenerator(final Options options, final Path base)
+    public DefaultGenerator()
     {
-        super(options, base);
+        super();
     }
 
     /**
-     * @see de.freese.jsync.generator.Generator#createSyncItemTasks(de.freese.jsync.generator.listener.GeneratorListener)
+     * @see de.freese.jsync.generator.Generator#createSyncItems(de.freese.jsync.Options, java.nio.file.Path,
+     *      de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public Map<String, SyncItem> createSyncItemTasks(final GeneratorListener listener)
+    public Map<String, SyncItem> createSyncItems(final Options options, final Path base, final GeneratorListener listener)
     {
-        if (Files.notExists(getBase()))
+        if (Files.notExists(base))
         {
             // return CompletableFuture.completedFuture(Collections.emptyMap());
             return Collections.emptyMap();
         }
 
-        FileVisitOption[] visitOption = getOptions().isFollowSymLinks() ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
+        final GeneratorListener gl = listener == null ? NoOpGeneratorListener.INSTANCE : listener;
 
-        Set<Path> paths = getPaths(getOptions(), getBase(), visitOption);
+        FileVisitOption[] visitOption = options.isFollowSymLinks() ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
 
-        if (listener != null)
-        {
-            listener.pathCount(getBase(), paths.size());
-        }
+        Set<Path> paths = getPaths(options, base, visitOption);
+        gl.pathCount(base, paths.size());
 
-        LinkOption[] linkOption = getOptions().isFollowSymLinks() ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
+        LinkOption[] linkOption = options.isFollowSymLinks() ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
 
         // @formatter:off
         Map<String, SyncItem> map = paths.stream()
-                .map(path -> toItem(path, linkOption))
-                .peek(syncItem -> {
-                    if(listener != null)
-                    {
-                        listener.processingSyncItem(syncItem);
-                    }
-                })
+                .map(path -> toItem(options,base,path, linkOption))
+                .peek(gl::processingSyncItem)
                 // .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
                 .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity(),
                         (v1, v2) -> { throw new IllegalStateException(String.format("Duplicate key %s", v1)); },
@@ -88,14 +80,16 @@ public class DefaultGenerator extends AbstractGenerator
     }
 
     /**
+     * @param options {@link Options}
+     * @param base {@link Path}; Basis-Verzeichnis
      * @param directory {@link Path}
      * @param linkOption {@link LinkOption}; wenn {@value LinkOption#NOFOLLOW_LINKS} null dann Follow
      * @return {@link SyncItem}
      * @throws IOException Falls was schief geht.
      */
-    protected SyncItem toDirectoryItem(final Path directory, final LinkOption[] linkOption) throws IOException
+    protected SyncItem toDirectoryItem(final Options options, final Path base, final Path directory, final LinkOption[] linkOption) throws IOException
     {
-        DirectorySyncItem syncItem = new DirectorySyncItem(getBase().relativize(directory).toString());
+        DirectorySyncItem syncItem = new DirectorySyncItem(base.relativize(directory).toString());
 
         if (Options.IS_WINDOWS)
         {
@@ -131,14 +125,16 @@ public class DefaultGenerator extends AbstractGenerator
     }
 
     /**
+     * @param options {@link Options}
+     * @param base {@link Path}; Basis-Verzeichnis
      * @param file {@link Path}
      * @param linkOption {@link LinkOption}; wenn {@value LinkOption#NOFOLLOW_LINKS} null dann Follow
      * @return {@link SyncItem}
      * @throws IOException Falls was schief geht.
      */
-    protected SyncItem toFileItem(final Path file, final LinkOption[] linkOption) throws IOException
+    protected SyncItem toFileItem(final Options options, final Path base, final Path file, final LinkOption[] linkOption) throws IOException
     {
-        FileSyncItem syncItem = new FileSyncItem(getBase().relativize(file).toString());
+        FileSyncItem syncItem = new FileSyncItem(base.relativize(file).toString());
 
         if (Options.IS_WINDOWS)
         {
@@ -178,9 +174,9 @@ public class DefaultGenerator extends AbstractGenerator
             // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
         }
 
-        if (getOptions().isChecksum())
+        if (options.isChecksum())
         {
-            String checksum = DigestUtils.sha256DigestAsHex(file, getOptions().getBufferSize());
+            String checksum = DigestUtils.sha256DigestAsHex(file, options.getBufferSize());
             syncItem.setChecksum(checksum);
         }
 
@@ -190,20 +186,22 @@ public class DefaultGenerator extends AbstractGenerator
     /**
      * Wenn die {@link Options#isFollowSymLinks} true ist, werden SymLinks verfolgt.
      *
+     * @param options {@link Options}
+     * @param base {@link Path}; Basis-Verzeichnis
      * @param path {@link Path}
      * @param linkOption {@link LinkOption}
      * @return {@link SyncItem}
      */
-    protected SyncItem toItem(final Path path, final LinkOption[] linkOption)
+    protected SyncItem toItem(final Options options, final Path base, final Path path, final LinkOption[] linkOption)
     {
         try
         {
             if (Files.isDirectory(path))
             {
-                return toDirectoryItem(path, linkOption);
+                return toDirectoryItem(options, base, path, linkOption);
             }
 
-            return toFileItem(path, linkOption);
+            return toFileItem(options, base, path, linkOption);
         }
         catch (IOException ioex)
         {

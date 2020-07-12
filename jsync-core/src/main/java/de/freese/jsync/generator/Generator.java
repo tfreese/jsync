@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Map;
+import de.freese.jsync.Options;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
 
@@ -50,9 +51,11 @@ public interface Generator
     /**
      * Erzeugt die Map aller SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      * Der Task wird jedoch noch nicht ausgeführt.<br>
-     *
+     * 
+     * @param options {@link Options}
+     * @param base {@link Path}; Basis-Verzeichnis
      * @param listener {@link GeneratorListener}; optional.
      * @return {@link Map}
      */
-    public Map<String, SyncItem> createSyncItemTasks(GeneratorListener listener);
+    public Map<String, SyncItem> createSyncItems(Options options, final Path base, GeneratorListener listener);
 }
