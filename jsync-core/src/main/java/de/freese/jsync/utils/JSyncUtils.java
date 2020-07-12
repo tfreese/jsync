@@ -372,7 +372,8 @@ public final class JSyncUtils
         double unitValue = 1 << (unitIndex * 10);
 
         // String readableSize = new DecimalFormat("#,##0.#").format(size / unitValue) + " " + SIZE_UNITS[unitIndex];
-        String readableSize = String.format("%7.3f %s", size / unitValue, SIZE_UNITS[unitIndex]);
+
+        String readableSize = String.format("%7.0f %s", size / unitValue, SIZE_UNITS[unitIndex]);
 
         return readableSize;
     }

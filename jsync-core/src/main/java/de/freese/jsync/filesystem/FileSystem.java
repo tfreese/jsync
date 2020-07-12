@@ -7,7 +7,7 @@ package de.freese.jsync.filesystem;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Map;
+import java.util.NavigableMap;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
@@ -26,11 +26,12 @@ public interface FileSystem
 
     /**
      * Erzeugt die Map aller SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
+     * Die Map ist nach relativem Pfad aufsteigend sortiert.
      *
      * @param listener {@link GeneratorListener}; optional.
-     * @return {@link Map}
+     * @return {@link NavigableMap}
      */
-    public Map<String, SyncItem> createSyncItems(GeneratorListener listener);
+    public NavigableMap<String, SyncItem> createSyncItems(GeneratorListener listener);
 
     /**
      * Trennt die Verbindung zum Dateisystem .

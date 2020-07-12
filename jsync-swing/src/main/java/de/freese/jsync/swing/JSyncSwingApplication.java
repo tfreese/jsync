@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
 import java.util.Locale;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -18,6 +19,7 @@ import javax.swing.WindowConstants;
 import javax.swing.plaf.FontUIResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import de.freese.jsync.swing.controller.JsyncController;
 import de.freese.jsync.swing.messages.Messages;
 import de.freese.jsync.swing.view.SyncView;
 
@@ -26,6 +28,27 @@ import de.freese.jsync.swing.view.SyncView;
  */
 public class JSyncSwingApplication
 {
+    /**
+     * ThreadSafe Singleton-Pattern.
+     *
+     * @author Thomas Freese
+     */
+    private static class InstanceHolder
+    {
+        /**
+         *
+         */
+        private static final JSyncSwingApplication INSTANCE = new JSyncSwingApplication();
+
+        /**
+         * Erstellt ein neues {@link InstanceHolder} Object.
+         */
+        private InstanceHolder()
+        {
+            super();
+        }
+    }
+
     /**
      * WindowListener zum Beenden.
      *
@@ -50,14 +73,12 @@ public class JSyncSwingApplication
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwingApplication.class);
 
     /**
-     *
+     * @return {@link JSyncSwingApplication}
      */
-    private static JFrame mainFrame = null;
-
-    /**
-      *
-    */
-    private static Messages messages = null;
+    public static JSyncSwingApplication getInstance()
+    {
+        return InstanceHolder.INSTANCE;
+    }
 
     /**
      * @return {@link Logger}
@@ -65,22 +86,6 @@ public class JSyncSwingApplication
     public static Logger getLogger()
     {
         return LOGGER;
-    }
-
-    /**
-     * @return JFrame
-     */
-    public static JFrame getMainFrame()
-    {
-        return mainFrame;
-    }
-
-    /**
-     * @return {@link Messages}
-     */
-    public static Messages getMessages()
-    {
-        return messages;
     }
 
     /**
@@ -99,11 +104,9 @@ public class JSyncSwingApplication
         // System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
         SwingUtilities.invokeLater(() -> {
-            JSyncSwingApplication application = new JSyncSwingApplication();
-
             try
             {
-                application.init(args);
+                getInstance().init(args);
             }
             catch (Exception ex)
             {
@@ -129,11 +132,42 @@ public class JSyncSwingApplication
     }
 
     /**
+     *
+     */
+    private JsyncController controller = null;
+
+    /**
+     *
+     */
+    private JFrame mainFrame = null;
+
+    /**
+     *
+     */
+    private Messages messages = null;
+
+    /**
      * Erstellt ein neues {@link JSyncSwingApplication} Object.
      */
-    public JSyncSwingApplication()
+    private JSyncSwingApplication()
     {
         super();
+    }
+
+    /**
+     * @return JFrame
+     */
+    public JFrame getMainFrame()
+    {
+        return this.mainFrame;
+    }
+
+    /**
+     * @return {@link Messages}
+     */
+    public Messages getMessages()
+    {
+        return this.messages;
     }
 
     /**
@@ -144,14 +178,21 @@ public class JSyncSwingApplication
      */
     private void init(final String[] args) throws Exception
     {
-        getLogger().info("init");
+        if (args == null)
+        {
+            getLogger().info("init");
+        }
+        else
+        {
+            getLogger().info("init: {}", Arrays.toString(args));
+        }
 
-        messages = new Messages(Locale.getDefault());
+        this.messages = new Messages(Locale.getDefault());
 
         initUIDefaults();
 
         JFrame frame = new JFrame();
-        frame.setTitle(messages.getString("jsync.title"));
+        frame.setTitle(this.messages.getString("jsync.title"));
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new MainFrameListener());
         frame.setLayout(new BorderLayout());
@@ -160,6 +201,9 @@ public class JSyncSwingApplication
         // frame.add(label, BorderLayout.CENTER);
         SyncView syncView = new SyncView();
         syncView.initGUI();
+
+        this.controller = new JsyncController();
+        this.controller.init(syncView);
 
         frame.add(syncView.getPanel(), BorderLayout.CENTER);
 
@@ -172,7 +216,7 @@ public class JSyncSwingApplication
         // frame.setExtendedState(Frame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        mainFrame = frame;
+        this.mainFrame = frame;
     }
 
     /**
@@ -197,8 +241,8 @@ public class JSyncSwingApplication
         // Farben
         Color color = new Color(215, 215, 215);
         UIManager.put("Table.alternatingBackground", color);
-        UIManager.put("Table.alternateRowColor", color);
-        UIManager.put("List.alternatingBackground", color);
+        // UIManager.put("Table.alternateRowColor", color);
+        // UIManager.put("List.alternatingBackground", color);
         // defaults.put("Tree.alternatingBackground", color);
 
         // Fonts: Dialog, Monospaced, Arial, DejaVu Sans
@@ -222,8 +266,8 @@ public class JSyncSwingApplication
         });
 
         // Ausnahmen
-        Font fontBold = font.deriveFont(Font.BOLD);
-        UIManager.put("TitledBorder.font", fontBold);
+        // Font fontBold = font.deriveFont(Font.BOLD);
+        // UIManager.put("TitledBorder.font", fontBold);
 
         // UIDefaults defaults = UIManager.getLookAndFeelDefaults();
         //

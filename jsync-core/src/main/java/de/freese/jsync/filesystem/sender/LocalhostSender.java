@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
@@ -57,12 +57,12 @@ public class LocalhostSender extends AbstractSender
      * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public Map<String, SyncItem> createSyncItems(final GeneratorListener listener)
+    public NavigableMap<String, SyncItem> createSyncItems(final GeneratorListener listener)
     {
         getLogger().debug("create SyncItems: {}", getBase());
 
         Generator generator = new DefaultGenerator();
-        Map<String, SyncItem> map = generator.createSyncItems(getOptions(), getBase(), listener);
+        NavigableMap<String, SyncItem> map = generator.createSyncItems(getOptions(), getBase(), listener);
 
         return map;
     }

@@ -13,6 +13,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.Collections;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
@@ -48,12 +49,11 @@ public class DefaultGenerator extends AbstractGenerator
      *      de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public Map<String, SyncItem> createSyncItems(final Options options, final Path base, final GeneratorListener listener)
+    public NavigableMap<String, SyncItem> createSyncItems(final Options options, final Path base, final GeneratorListener listener)
     {
         if (Files.notExists(base))
         {
-            // return CompletableFuture.completedFuture(Collections.emptyMap());
-            return Collections.emptyMap();
+            return Collections.emptyNavigableMap();
         }
 
         final GeneratorListener gl = listener == null ? NoOpGeneratorListener.INSTANCE : listener;
@@ -66,7 +66,7 @@ public class DefaultGenerator extends AbstractGenerator
         LinkOption[] linkOption = options.isFollowSymLinks() ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
 
         // @formatter:off
-        Map<String, SyncItem> map = paths.stream()
+        NavigableMap<String, SyncItem> map = paths.stream()
                 .map(path -> toItem(options,base,path, linkOption))
                 .peek(gl::processingSyncItem)
                 // .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));

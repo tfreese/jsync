@@ -18,14 +18,17 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import de.freese.jsync.swing.GbcBuilder;
-import de.freese.jsync.swing.JSyncSwingApplication;
-import de.freese.jsync.swing.messages.Messages;
 
 /**
  * @author Thomas Freese
  */
-public abstract class AbstractFileSystemView
+public abstract class AbstractFileSystemView extends AbstractView
 {
+    /**
+     *
+     */
+    private JButton buttonPath = null;
+
     /**
      *
      */
@@ -35,6 +38,16 @@ public abstract class AbstractFileSystemView
      *
      */
     private final JPanel panel;
+
+    /**
+     *
+     */
+    private JTable table = null;
+
+    /**
+     *
+     */
+    private JTextField textFieldPath = null;
 
     /**
      * Erstellt ein neues {@link AbstractFileSystemView} Object.
@@ -47,6 +60,14 @@ public abstract class AbstractFileSystemView
     }
 
     /**
+     * @return {@link JButton}
+     */
+    public JButton getButtonPath()
+    {
+        return this.buttonPath;
+    }
+
+    /**
      * @return {@link JLabel}
      */
     protected JLabel getLabelDirChooser()
@@ -55,19 +76,27 @@ public abstract class AbstractFileSystemView
     }
 
     /**
-     * @return {@link Messages}
-     */
-    protected Messages getMessages()
-    {
-        return JSyncSwingApplication.getMessages();
-    }
-
-    /**
      * @return {@link JPanel}
      */
     public JPanel getPanel()
     {
         return this.panel;
+    }
+
+    /**
+     * @return {@link JTable}
+     */
+    public JTable getTable()
+    {
+        return this.table;
+    }
+
+    /**
+     * @return {@link JTextField}
+     */
+    public JTextField getTextFieldPathPath()
+    {
+        return this.textFieldPath;
     }
 
     /**
@@ -81,40 +110,74 @@ public abstract class AbstractFileSystemView
         this.labelDirChooser = new JLabel("Sender/Receiver");
         this.panel.add(this.labelDirChooser, new GbcBuilder(0, 0));
 
-        JTextField textField = new JTextField();
-        this.panel.add(textField, new GbcBuilder(1, 0).fillHorizontal());
+        this.textFieldPath = new JTextField();
+        this.textFieldPath.setEditable(false);
+        this.panel.add(this.textFieldPath, new GbcBuilder(1, 0).fillHorizontal());
 
-        JButton button = new JButton(getMessages().getString("jsync.oeffnen"));
-        this.panel.add(button, new GbcBuilder(2, 0));
+        this.buttonPath = new JButton(getMessage("jsync.oeffnen"));
+        this.panel.add(this.buttonPath, new GbcBuilder(2, 0));
 
-        button.addActionListener(event -> {
-            JFileChooser fc = new JFileChooser();
-            fc.setDialogType(JFileChooser.OPEN_DIALOG);
-            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fc.setAcceptAllFileFilterUsed(false);
-            fc.setCurrentDirectory(Paths.get(System.getProperty("user.home")).toFile());
-            fc.setPreferredSize(new Dimension(1024, 768));
-            fc.setMultiSelectionEnabled(false);
-            fc.setDragEnabled(false);
-            fc.setControlButtonsAreShown(true);
+        this.buttonPath.addActionListener(event -> {
 
-            // UIManager.put("FileChooser.readOnly", Boolean.TRUE); // Disable NewFolderAction
-            // BasicFileChooserUI ui = (BasicFileChooserUI)fc.getUI();
-            // ui.getNewFolderAction().setEnabled(false);
+            File folder = selectFolder(this.textFieldPath.getText());
 
-            int choice = fc.showOpenDialog(JSyncSwingApplication.getMainFrame());
-
-            if (choice == JFileChooser.APPROVE_OPTION)
+            if (folder != null)
             {
-                File folder = fc.getSelectedFile();
-
-                System.out.println(folder);
+                this.textFieldPath.setText(folder.toString());
+            }
+            else
+            {
+                this.textFieldPath.setText(null);
             }
         });
 
-        JTable table = new JTable();
-        JScrollPane scrollPane = new JScrollPane(table);
+        this.table = new JTable();
+        JScrollPane scrollPane = new JScrollPane(this.table);
         this.panel.add(scrollPane, new GbcBuilder(0, 1).gridwidth(3).fillBoth());
+    }
 
+    /**
+     * @param selectedFolder String
+     * @return {@link File}
+     */
+    protected File selectFolder(final String selectedFolder)
+    {
+        JFileChooser fc = new JFileChooser();
+        fc.setDialogType(JFileChooser.OPEN_DIALOG);
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setAcceptAllFileFilterUsed(false);
+        fc.setPreferredSize(new Dimension(1024, 768));
+        fc.setMultiSelectionEnabled(false);
+        fc.setDragEnabled(false);
+        fc.setControlButtonsAreShown(true);
+
+        File currentDirectory = null;
+        File selectedDirectory = null;
+
+        if ((selectedFolder == null) || selectedFolder.isBlank())
+        {
+            currentDirectory = Paths.get(System.getProperty("user.home")).toFile();
+        }
+        else
+        {
+            selectedDirectory = Paths.get(selectedFolder).toFile();
+            currentDirectory = selectedDirectory.getParentFile();
+        }
+
+        fc.setCurrentDirectory(currentDirectory);
+        fc.setSelectedFile(selectedDirectory);
+
+        // UIManager.put("FileChooser.readOnly", Boolean.TRUE); // Disable NewFolderAction
+        // BasicFileChooserUI ui = (BasicFileChooserUI)fc.getUI();
+        // ui.getNewFolderAction().setEnabled(false);
+
+        int choice = fc.showOpenDialog(getMainFrame());
+
+        if (choice == JFileChooser.APPROVE_OPTION)
+        {
+            return fc.getSelectedFile();
+        }
+
+        return selectedDirectory;
     }
 }

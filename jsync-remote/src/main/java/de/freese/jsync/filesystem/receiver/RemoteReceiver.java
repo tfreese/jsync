@@ -11,7 +11,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
@@ -211,9 +211,9 @@ public class RemoteReceiver extends AbstractReceiver
      * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public Map<String, SyncItem> createSyncItems(final GeneratorListener listener)
+    public NavigableMap<String, SyncItem> createSyncItems(final GeneratorListener listener)
     {
-        Map<String, SyncItem> syncItems = new TreeMap<>();
+        NavigableMap<String, SyncItem> syncItems = new TreeMap<>();
 
         try
         {
