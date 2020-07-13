@@ -268,7 +268,7 @@ public class LocalhostReceiver extends AbstractReceiver
         {
             getLogger().debug("create Checksum: {}", path);
 
-            String checksum = DigestUtils.sha256DigestAsHex(path, getOptions().getBufferSize());
+            String checksum = DigestUtils.sha256DigestAsHex(path, getOptions().getBufferSize(), null);
 
             if (!checksum.equals(syncItem.getChecksum()))
             {

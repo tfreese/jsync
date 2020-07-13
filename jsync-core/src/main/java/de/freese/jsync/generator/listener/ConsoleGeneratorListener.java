@@ -61,6 +61,15 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
+     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
+     */
+    @Override
+    public void checksum(final long size, final long bytesRead)
+    {
+        // Empty
+    }
+
+    /**
      * @return {@link PrintStream}
      */
     protected PrintStream getPrintStream()
@@ -93,7 +102,7 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener
     @Override
     public void processingSyncItem(final SyncItem syncItem)
     {
-        // NO-OP
+        // Empty
         // String message = processingSyncItemMessage(syncItem, this.prefix);
         //
         // getPrintStream().println(message);

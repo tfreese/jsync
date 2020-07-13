@@ -15,11 +15,11 @@ public class DirectorySyncItem extends AbstractSyncItem
     /**
      * Erstellt ein neues {@link DirectorySyncItem} Object.
      *
-     * @param path String
+     * @param relativePath String
      */
-    public DirectorySyncItem(final String path)
+    public DirectorySyncItem(final String relativePath)
     {
-        super(path);
+        super(relativePath);
     }
 
     /**

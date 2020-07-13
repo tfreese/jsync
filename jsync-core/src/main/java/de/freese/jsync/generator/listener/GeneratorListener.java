@@ -17,8 +17,16 @@ import de.freese.jsync.model.SyncItem;
 public interface GeneratorListener extends EventListener
 {
     /**
+     * Liefert den Progress der Prüfsummenbildung.
+     *
+     * @param size long
+     * @param bytesRead long
+     */
+    public void checksum(long size, long bytesRead);
+
+    /**
      * Setzt die Anzahl zu verarbeitender Path-Objekte (Verzeichnisse, Dateien).
-     * 
+     *
      * @param path {@link Path}
      * @param pathCount int
      */

@@ -27,11 +27,11 @@ public class FileSyncItem extends AbstractSyncItem
     /**
      * Erstellt ein neues {@link FileSyncItem} Object.
      *
-     * @param path String
+     * @param relativePath String
      */
-    public FileSyncItem(final String path)
+    public FileSyncItem(final String relativePath)
     {
-        super(path);
+        super(relativePath);
     }
 
     /**

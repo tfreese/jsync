@@ -17,6 +17,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
+import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
@@ -42,12 +43,13 @@ class TestJSyncGenerator extends AbstractJSyncTest
         }
 
         /**
-         * @see de.freese.jsync.generator.DefaultGenerator#toItem(de.freese.jsync.Options, java.nio.file.Path, java.nio.file.Path, java.nio.file.LinkOption[])
+         * @see de.freese.jsync.generator.DefaultGenerator#toItem(de.freese.jsync.Options, java.nio.file.Path, java.nio.file.Path, java.nio.file.LinkOption[],
+         *      de.freese.jsync.generator.listener.GeneratorListener)
          */
         @Override
-        public SyncItem toItem(final Options options, final Path base, final Path path, final LinkOption[] linkOption)
+        public SyncItem toItem(final Options options, final Path base, final Path path, final LinkOption[] linkOption, final GeneratorListener listener)
         {
-            return super.toItem(options, base, path, linkOption);
+            return super.toItem(options, base, path, linkOption, listener);
         }
     };
 
@@ -111,7 +113,7 @@ class TestJSyncGenerator extends AbstractJSyncTest
 
         LinkOption[] linkOption = options.isFollowSymLinks() ? Generator.LINKOPTION_WITH_SYMLINKS : Generator.LINKOPTION_NO_SYMLINKS;
 
-        FileSyncItem fileSyncItem = (FileSyncItem) generator.toItem(options, base, base.resolve("pom.xml"), linkOption);
+        FileSyncItem fileSyncItem = (FileSyncItem) generator.toItem(options, base, base.resolve("pom.xml"), linkOption, GENERATORLISTENER);
 
         assertTrue(fileSyncItem.getLastModifiedTime() > 0);
         assertTrue(fileSyncItem.getSize() > 0);

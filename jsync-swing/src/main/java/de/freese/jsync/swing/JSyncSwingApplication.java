@@ -211,8 +211,8 @@ public class JSyncSwingApplication
         // frame.setSize(1024, 768);
         // frame.setSize(1280, 768);
         // frame.setSize(1280, 1024);
-        // frame.setSize(1680, 1050);
-        frame.setSize(1920, 1080);
+        frame.setSize(1680, 1050);
+        // frame.setSize(1920, 1080);
         // frame.setExtendedState(Frame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);

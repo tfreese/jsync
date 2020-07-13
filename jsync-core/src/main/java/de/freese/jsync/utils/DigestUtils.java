@@ -6,6 +6,7 @@ package de.freese.jsync.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
@@ -13,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.function.Consumer;
 
 /**
  * @author Thomas Freese
@@ -122,25 +124,36 @@ public final class DigestUtils
     /**
      * @param path {@link Path}
      * @param bufferSize int
+     * @param consumerBytesRead {@link Consumer}
      * @return byte[]
      * @throws IOException Falls was schief geht.
      */
-    public static byte[] sha256Digest(final Path path, final int bufferSize) throws IOException
+    public static byte[] sha256Digest(final Path path, final int bufferSize, final Consumer<Long> consumerBytesRead) throws IOException
     {
         final MessageDigest messageDigest = createSha256Digest();
         byte[] bytes = null;
+
+        Consumer<Long> consumer = consumerBytesRead != null ? consumerBytesRead : i -> {
+        };
 
         try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
         {
             final ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
 
+            long bytesReadSum = 0;
+            consumer.accept(bytesReadSum);
+
+            // long bytesRead = 0;
+
             while (channel.read(buffer) != -1)
             {
-                buffer.flip();
+                bytesReadSum += buffer.position();
+                consumer.accept(bytesReadSum);
 
                 messageDigest.update(buffer);
-
                 buffer.clear();
+
+                // bytesRead = channel.read(buffer);
             }
 
             bytes = messageDigest.digest();
@@ -152,16 +165,23 @@ public final class DigestUtils
     /**
      * @param path {@link Path}
      * @param bufferSize int
+     * @param consumerBytesRead {@link Consumer}
      * @return String
-     * @throws IOException Falls was schief geht.
      */
-    public static String sha256DigestAsHex(final Path path, final int bufferSize) throws IOException
+    public static String sha256DigestAsHex(final Path path, final int bufferSize, final Consumer<Long> consumerBytesRead)
     {
-        final byte[] bytes = sha256Digest(path, bufferSize);
+        try
+        {
+            final byte[] bytes = sha256Digest(path, bufferSize, consumerBytesRead);
 
-        final String hex = JSyncUtils.bytesToHex(bytes);
+            final String hex = JSyncUtils.bytesToHex(bytes);
 
-        return hex;
+            return hex;
+        }
+        catch (IOException iex)
+        {
+            throw new UncheckedIOException(iex);
+        }
     }
 
     /**

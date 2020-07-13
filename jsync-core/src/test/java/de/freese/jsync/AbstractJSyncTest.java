@@ -50,6 +50,15 @@ public abstract class AbstractJSyncTest
         }
 
         /**
+         * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
+         */
+        @Override
+        public void checksum(final long size, final long bytesRead)
+        {
+            // Empty
+        }
+
+        /**
          * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
          */
         @Override

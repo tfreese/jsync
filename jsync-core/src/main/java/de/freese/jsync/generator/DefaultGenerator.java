@@ -17,8 +17,6 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.generator.listener.NoOpGeneratorListener;
@@ -65,15 +63,38 @@ public class DefaultGenerator extends AbstractGenerator
 
         LinkOption[] linkOption = options.isFollowSymLinks() ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
 
+        NavigableMap<String, SyncItem> map = new TreeMap<>();
+
         // @formatter:off
-        NavigableMap<String, SyncItem> map = paths.stream()
-                .map(path -> toItem(options,base,path, linkOption))
-                .peek(gl::processingSyncItem)
-                // .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
-                .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity(),
-                        (v1, v2) -> { throw new IllegalStateException(String.format("Duplicate key %s", v1)); },
-                        TreeMap::new)) // () -> Collections.synchronizedMap(new TreeMap<>())
+        paths.stream()
+                .map(path -> toItem(options, base, path, linkOption, listener))
+                .forEach(syncItem -> {
+                    gl.processingSyncItem(syncItem);
+
+                    if(options.isChecksum() && (syncItem instanceof FileSyncItem))
+                    {
+                        FileSyncItem fileSyncItem = (FileSyncItem)syncItem;
+
+                        Path absolutePath = base.resolve(syncItem.getRelativePath());
+
+                        String checksum = DigestUtils.sha256DigestAsHex(absolutePath, options.getBufferSize(), bytesRead -> listener.checksum(fileSyncItem.getSize(), bytesRead));
+                        fileSyncItem.setChecksum(checksum);
+                    }
+
+                    map.put(syncItem.getRelativePath(), syncItem);
+                })
         ;
+        // @formatter:on
+
+        // @formatter:off
+//        NavigableMap<String, SyncItem> map = paths.stream()
+//                .map(path -> toItem(options,base,path, linkOption, listener))
+//                .peek(gl::processingSyncItem)
+//                // .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
+//                .collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity(),
+//                        (v1, v2) -> { throw new IllegalStateException(String.format("Duplicate key %s", v1)); },
+//                        TreeMap::new)) // () -> Collections.synchronizedMap(new TreeMap<>())
+//        ;
         // @formatter:on
 
         return map;
@@ -129,10 +150,12 @@ public class DefaultGenerator extends AbstractGenerator
      * @param base {@link Path}; Basis-Verzeichnis
      * @param file {@link Path}
      * @param linkOption {@link LinkOption}; wenn {@value LinkOption#NOFOLLOW_LINKS} null dann Follow
+     * @param listener {@link GeneratorListener}
      * @return {@link SyncItem}
      * @throws IOException Falls was schief geht.
      */
-    protected SyncItem toFileItem(final Options options, final Path base, final Path file, final LinkOption[] linkOption) throws IOException
+    protected SyncItem toFileItem(final Options options, final Path base, final Path file, final LinkOption[] linkOption, final GeneratorListener listener)
+        throws IOException
     {
         FileSyncItem syncItem = new FileSyncItem(base.relativize(file).toString());
 
@@ -174,12 +197,6 @@ public class DefaultGenerator extends AbstractGenerator
             // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
         }
 
-        if (options.isChecksum())
-        {
-            String checksum = DigestUtils.sha256DigestAsHex(file, options.getBufferSize());
-            syncItem.setChecksum(checksum);
-        }
-
         return syncItem;
     }
 
@@ -190,9 +207,10 @@ public class DefaultGenerator extends AbstractGenerator
      * @param base {@link Path}; Basis-Verzeichnis
      * @param path {@link Path}
      * @param linkOption {@link LinkOption}
+     * @param listener {@link GeneratorListener}
      * @return {@link SyncItem}
      */
-    protected SyncItem toItem(final Options options, final Path base, final Path path, final LinkOption[] linkOption)
+    protected SyncItem toItem(final Options options, final Path base, final Path path, final LinkOption[] linkOption, final GeneratorListener listener)
     {
         try
         {
@@ -201,7 +219,7 @@ public class DefaultGenerator extends AbstractGenerator
                 return toDirectoryItem(options, base, path, linkOption);
             }
 
-            return toFileItem(options, base, path, linkOption);
+            return toFileItem(options, base, path, linkOption, listener);
         }
         catch (IOException ioex)
         {

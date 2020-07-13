@@ -125,17 +125,17 @@ public class SyncView extends AbstractView
     }
 
     /**
-     * @return {@link AbstractFileSystemView}
+     * @return {@link ReceiverView}
      */
-    public AbstractFileSystemView getReceiverView()
+    public ReceiverView getReceiverView()
     {
         return this.receiverView;
     }
 
     /**
-     * @return {@link AbstractFileSystemView}
+     * @return {@link SenderView}
      */
-    public AbstractFileSystemView getSenderView()
+    public SenderView getSenderView()
     {
         return this.senderView;
     }

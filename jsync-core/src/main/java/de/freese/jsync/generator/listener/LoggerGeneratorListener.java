@@ -41,6 +41,15 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
+     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
+     */
+    @Override
+    public void checksum(final long size, final long bytesRead)
+    {
+        // Empty
+    }
+
+    /**
      * @return {@link Logger}
      */
     protected Logger getLogger()

@@ -241,6 +241,15 @@ public class JSyncIoHandler extends AbstractIoHandler
         sender.createSyncItems(new GeneratorListener()
         {
             /**
+             * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
+             */
+            @Override
+            public void checksum(final long size, final long bytesRead)
+            {
+                // Empty
+            }
+
+            /**
              * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
              */
             @Override
@@ -630,6 +639,15 @@ public class JSyncIoHandler extends AbstractIoHandler
         Receiver receiver = session.getReceiver();
         receiver.createSyncItems(new GeneratorListener()
         {
+            /**
+             * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
+             */
+            @Override
+            public void checksum(final long size, final long bytesRead)
+            {
+                // Empty
+            }
+
             /**
              * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
              */

@@ -9,7 +9,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * Leere Implementierung.
- * 
+ *
  * @author Thomas Freese
  */
 public class NoOpGeneratorListener implements GeneratorListener
@@ -25,6 +25,15 @@ public class NoOpGeneratorListener implements GeneratorListener
     private NoOpGeneratorListener()
     {
         super();
+    }
+
+    /**
+     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
+     */
+    @Override
+    public void checksum(final long size, final long bytesRead)
+    {
+        // Empty
     }
 
     /**
