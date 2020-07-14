@@ -22,10 +22,10 @@ public interface ClientListener extends EventListener
      * Wird nur aufgerufen, wenn DRY-RUN = false ist.
      *
      * @param syncItem {@link FileSyncItem}
-     * @param transferred long
-     * @param fileSize long
+     * @param size long
+     * @param bytesTransferred long
      */
-    public void copyFileProgress(final FileSyncItem syncItem, long transferred, long fileSize);
+    public void copyFileProgress(final FileSyncItem syncItem, long size, long bytesTransferred);
 
     /**
      * @param options {@link Options}

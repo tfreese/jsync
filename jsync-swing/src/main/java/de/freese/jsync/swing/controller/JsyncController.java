@@ -28,6 +28,110 @@ import de.freese.jsync.utils.JSyncUtils;
 public class JsyncController
 {
     /**
+     * @author Thomas Freese
+     */
+    private static class SwingGeneratorListener implements GeneratorListener
+    {
+        /**
+        *
+        */
+        private final JProgressBar progressBarChecksum;
+
+        /**
+         *
+         */
+        private final JProgressBar progressBarFiles;
+
+        /**
+         *
+         */
+        private final JTable table;
+
+        /**
+        *
+        */
+        private final SyncItemTableModel tableModel;
+
+        /**
+         * Erstellt ein neues {@link SwingGeneratorListener} Object.
+         *
+         * @param progressBarFiles {@link JProgressBar}
+         * @param progressBarChecksum {@link JProgressBar}
+         * @param table {@link JTable}
+         */
+        private SwingGeneratorListener(final JProgressBar progressBarFiles, final JProgressBar progressBarChecksum, final JTable table)
+        {
+            super();
+
+            this.progressBarFiles = progressBarFiles;
+            this.progressBarChecksum = progressBarChecksum;
+            this.table = table;
+            this.tableModel = (SyncItemTableModel) this.table.getModel();
+        }
+
+        /**
+         * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
+         */
+        @Override
+        public void checksum(final long size, final long bytesRead)
+        {
+            SwingUtilities.invokeLater(() -> {
+                if (bytesRead == 0)
+                {
+                    this.progressBarChecksum.setMinimum(0);
+                    this.progressBarChecksum.setMaximum(100);
+                    this.progressBarChecksum.setValue(0);
+                    this.progressBarChecksum.setString("Building Checksum...");
+                }
+
+                this.progressBarChecksum.setValue((int) JSyncUtils.getPercent(bytesRead, size));
+
+                if (bytesRead == size)
+                {
+                    this.progressBarChecksum.setString("Building Checksum...finished");
+                }
+            });
+        }
+
+        /**
+         * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
+         */
+        @Override
+        public void pathCount(final Path path, final int pathCount)
+        {
+            SwingUtilities.invokeLater(() -> {
+                this.progressBarFiles.setMinimum(0);
+                this.progressBarFiles.setMaximum(pathCount);
+                this.progressBarFiles.setValue(0);
+                this.progressBarFiles.setString("Processing Files...");
+            });
+        }
+
+        /**
+         * @see de.freese.jsync.generator.listener.GeneratorListener#syncItem(de.freese.jsync.model.SyncItem)
+         */
+        @Override
+        public void syncItem(final SyncItem syncItem)
+        {
+            SwingUtilities.invokeLater(() -> {
+                this.tableModel.add(syncItem);
+
+                // Rectangle rectangle = this.table.getCellRect(this.tableModel.getRowCount(), 0, false);
+                // this.table.scrollRectToVisible(rectangle);
+
+                this.progressBarFiles.setValue(this.progressBarFiles.getValue() + 1);
+
+                this.progressBarFiles.setString("Processing " + syncItem.getRelativePath());
+
+                if (this.progressBarFiles.getValue() == this.progressBarFiles.getMaximum())
+                {
+                    this.progressBarFiles.setString("Processing Files...finished");
+                }
+            });
+        }
+    }
+
+    /**
      *
      */
     public final Logger logger = LoggerFactory.getLogger(getClass());
@@ -74,13 +178,14 @@ public class JsyncController
         // @formatter:on
 
         JsyncController.this.syncView.getSenderView().getProgressBarChecksum().setVisible(options.isChecksum());
+        JsyncController.this.syncView.getReceiverView().getProgressBarChecksum().setVisible(options.isChecksum());
 
         if ((pathSender != null) && !pathSender.isBlank())
         {
             SyncItemTableModel tableModel = (SyncItemTableModel) this.tableSender.getModel();
             tableModel.clear();
 
-            SwingWorker<Void, SyncItem> swingWorker = new SwingWorker<>()
+            SwingWorker<Void, Void> swingWorker = new SwingWorker<>()
             {
                 /**
                  * @see javax.swing.SwingWorker#doInBackground()
@@ -88,74 +193,11 @@ public class JsyncController
                 @Override
                 protected Void doInBackground() throws Exception
                 {
-                    Generator generatorSender = new DefaultGenerator();
-                    generatorSender.createSyncItems(options, Paths.get(pathSender), new GeneratorListener()
-                    {
-                        /**
-                         * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
-                         */
-                        @Override
-                        public void checksum(final long size, final long bytesRead)
-                        {
-                            SwingUtilities.invokeLater(() -> {
-                                JProgressBar progressBar = JsyncController.this.syncView.getSenderView().getProgressBarChecksum();
+                    GeneratorListener listener = new SwingGeneratorListener(JsyncController.this.syncView.getSenderView().getProgressBarFiles(),
+                            JsyncController.this.syncView.getSenderView().getProgressBarChecksum(), JsyncController.this.tableSender);
 
-                                if (bytesRead == 0)
-                                {
-                                    progressBar.setMinimum(0);
-                                    progressBar.setMaximum(100);
-                                    progressBar.setValue(0);
-                                    progressBar.setString("Building Checksum...");
-                                }
-
-                                progressBar.setValue((int) JSyncUtils.getPercent(bytesRead, size));
-
-                                if (bytesRead == size)
-                                {
-                                    progressBar.setString("Building Checksum...finished");
-                                }
-                            });
-                        }
-
-                        /**
-                         * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
-                         */
-                        @Override
-                        public void pathCount(final Path path, final int pathCount)
-                        {
-                            SwingUtilities.invokeLater(() -> {
-                                JProgressBar progressBar = JsyncController.this.syncView.getSenderView().getProgressBarFiles();
-                                progressBar.setMinimum(0);
-                                progressBar.setMaximum(pathCount);
-                                progressBar.setValue(0);
-                                progressBar.setString("Processing Files...");
-                            });
-                        }
-
-                        /**
-                         * @see de.freese.jsync.generator.listener.GeneratorListener#processingSyncItem(de.freese.jsync.model.SyncItem)
-                         */
-                        @Override
-                        public void processingSyncItem(final SyncItem syncItem)
-                        {
-                            SwingUtilities.invokeLater(() -> {
-                                tableModel.add(syncItem);
-
-                                // Rectangle rectangle = JsyncController.this.tableSender.getCellRect(tableModel.getRowCount(), 0, false);
-                                // JsyncController.this.tableSender.scrollRectToVisible(rectangle);
-
-                                JProgressBar progressBar = JsyncController.this.syncView.getSenderView().getProgressBarFiles();
-                                progressBar.setValue(progressBar.getValue() + 1);
-
-                                progressBar.setString("Processing " + syncItem.getRelativePath());
-
-                                if (progressBar.getValue() == progressBar.getMaximum())
-                                {
-                                    progressBar.setString("Processing Files...finished");
-                                }
-                            });
-                        }
-                    });
+                    Generator generator = new DefaultGenerator();
+                    generator.createSyncItems(options, Paths.get(pathSender), listener);
 
                     return null;
                 }
@@ -181,7 +223,7 @@ public class JsyncController
             SyncItemTableModel tableModel = (SyncItemTableModel) this.tableReceiver.getModel();
             tableModel.clear();
 
-            SwingWorker<Void, SyncItem> swingWorker = new SwingWorker<>()
+            SwingWorker<Void, Void> swingWorker = new SwingWorker<>()
             {
                 /**
                  * @see javax.swing.SwingWorker#doInBackground()
@@ -189,39 +231,11 @@ public class JsyncController
                 @Override
                 protected Void doInBackground() throws Exception
                 {
-                    Generator generatorSender = new DefaultGenerator();
-                    generatorSender.createSyncItems(options, Paths.get(pathReceiver), new GeneratorListener()
-                    {
-                        /**
-                         * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
-                         */
-                        @Override
-                        public void checksum(final long size, final long bytesRead)
-                        {
-                            // TODO Auto-generated method stub
-                        }
+                    GeneratorListener listener = new SwingGeneratorListener(JsyncController.this.syncView.getReceiverView().getProgressBarFiles(),
+                            JsyncController.this.syncView.getReceiverView().getProgressBarChecksum(), JsyncController.this.tableReceiver);
 
-                        /**
-                         * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
-                         */
-                        @Override
-                        public void pathCount(final Path path, final int pathCount)
-                        {
-                            // TODO Auto-generated method stuby
-                        }
-
-                        /**
-                         * @see de.freese.jsync.generator.listener.GeneratorListener#processingSyncItem(de.freese.jsync.model.SyncItem)
-                         */
-                        @Override
-                        public void processingSyncItem(final SyncItem syncItem)
-                        {
-                            tableModel.add(syncItem);
-
-                            // Rectangle rectangle = JsyncController.this.tableReceiver.getCellRect(tableModel.getRowCount(), 0, false);
-                            // JsyncController.this.tableReceiver.scrollRectToVisible(rectangle);
-                        }
-                    });
+                    Generator generator = new DefaultGenerator();
+                    generator.createSyncItems(options, Paths.get(pathSender), listener);
 
                     return null;
                 }

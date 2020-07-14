@@ -49,8 +49,7 @@ public interface Generator
     public static final LinkOption[] LINKOPTION_WITH_SYMLINKS = new LinkOption[0];
 
     /**
-     * Erzeugt die Map aller SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
-     * Die Map ist nach relativem Pfad aufsteigend sortiert.
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      *
      * @param options {@link Options}
      * @param base {@link Path}; Basis-Verzeichnis

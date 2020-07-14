@@ -259,7 +259,7 @@ public class RemoteSender extends AbstractSender
 
                     if (listener != null)
                     {
-                        listener.processingSyncItem(syncItem);
+                        listener.syncItem(syncItem);
                     }
 
                     syncItems.put(syncItem.getRelativePath(), syncItem);

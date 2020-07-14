@@ -36,9 +36,9 @@ public class LoggerClientListener extends AbstractClientListener
      * @see de.freese.jsync.client.listener.ClientListener#copyFileProgress(de.freese.jsync.model.FileSyncItem, long, long)
      */
     @Override
-    public void copyFileProgress(final FileSyncItem syncItem, final long transferred, final long fileSize)
+    public void copyFileProgress(final FileSyncItem syncItem, final long size, final long bytesTransferred)
     {
-        String message = copyFileProgressMessage(syncItem, transferred, fileSize);
+        String message = copyFileProgressMessage(syncItem, size, bytesTransferred);
 
         getLogger().info(message);
     }

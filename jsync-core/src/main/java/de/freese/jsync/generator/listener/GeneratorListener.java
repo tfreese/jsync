@@ -37,5 +37,5 @@ public interface GeneratorListener extends EventListener
      *
      * @param syncItem {@link SyncItem}
      */
-    public void processingSyncItem(SyncItem syncItem);
+    public void syncItem(SyncItem syncItem);
 }

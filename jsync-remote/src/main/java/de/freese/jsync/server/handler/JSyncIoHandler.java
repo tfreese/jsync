@@ -270,10 +270,10 @@ public class JSyncIoHandler extends AbstractIoHandler
             }
 
             /**
-             * @see de.freese.jsync.generator.listener.GeneratorListener#processingSyncItem(de.freese.jsync.model.SyncItem)
+             * @see de.freese.jsync.generator.listener.GeneratorListener#syncItem(de.freese.jsync.model.SyncItem)
              */
             @Override
-            public void processingSyncItem(final SyncItem syncItem)
+            public void syncItem(final SyncItem syncItem)
             {
                 buffer.clear();
 
@@ -669,10 +669,10 @@ public class JSyncIoHandler extends AbstractIoHandler
             }
 
             /**
-             * @see de.freese.jsync.generator.listener.GeneratorListener#processingSyncItem(de.freese.jsync.model.SyncItem)
+             * @see de.freese.jsync.generator.listener.GeneratorListener#syncItem(de.freese.jsync.model.SyncItem)
              */
             @Override
-            public void processingSyncItem(final SyncItem syncItem)
+            public void syncItem(final SyncItem syncItem)
             {
                 buffer.clear();
 

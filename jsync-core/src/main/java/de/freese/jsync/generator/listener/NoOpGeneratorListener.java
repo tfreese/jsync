@@ -46,10 +46,10 @@ public class NoOpGeneratorListener implements GeneratorListener
     }
 
     /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#processingSyncItem(de.freese.jsync.model.SyncItem)
+     * @see de.freese.jsync.generator.listener.GeneratorListener#syncItem(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void processingSyncItem(final SyncItem syncItem)
+    public void syncItem(final SyncItem syncItem)
     {
         // Empty
     }

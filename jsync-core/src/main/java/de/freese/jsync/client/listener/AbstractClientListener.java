@@ -61,14 +61,14 @@ public abstract class AbstractClientListener implements ClientListener
 
     /**
      * @param syncItem {@link FileSyncItem}
-     * @param transferred long
-     * @param fileSize long
+     * @param size long
+     * @param bytesTransferred long
      * @return String
      */
-    protected String copyFileProgressMessage(final FileSyncItem syncItem, final long transferred, final long fileSize)
+    protected String copyFileProgressMessage(final FileSyncItem syncItem, final long size, final long bytesTransferred)
     {
-        String message = String.format("copy %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(transferred),
-                JSyncUtils.getPercent(transferred, fileSize));
+        String message = String.format("copy %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(bytesTransferred),
+                JSyncUtils.getPercent(bytesTransferred, size));
 
         return message;
     }

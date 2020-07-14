@@ -60,7 +60,7 @@ public abstract class AbstractClient implements Client
     protected void copyFile(final Sender sender, final Receiver receiver, final FileSyncItem syncItem)
     {
         long fileSize = syncItem.getSize();
-        getClientListener().copyFileProgress(syncItem, 0, fileSize);
+        getClientListener().copyFileProgress(syncItem, fileSize, 0);
 
         if (getOptions().isDryRun())
         {
@@ -89,7 +89,7 @@ public abstract class AbstractClient implements Client
                 while (buffer.hasRemaining())
                 {
                     bytesWrote += writableByteChannel.write(buffer);
-                    getClientListener().copyFileProgress(syncItem, bytesWrote, fileSize);
+                    getClientListener().copyFileProgress(syncItem, fileSize, bytesWrote);
                 }
 
                 buffer.clear();

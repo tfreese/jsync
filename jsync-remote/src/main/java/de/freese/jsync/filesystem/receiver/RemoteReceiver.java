@@ -276,7 +276,7 @@ public class RemoteReceiver extends AbstractReceiver
 
                     if (listener != null)
                     {
-                        listener.processingSyncItem(syncItem);
+                        listener.syncItem(syncItem);
                     }
 
                     syncItems.put(syncItem.getRelativePath(), syncItem);

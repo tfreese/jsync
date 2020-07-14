@@ -19,7 +19,6 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.listener.GeneratorListener;
-import de.freese.jsync.generator.listener.NoOpGeneratorListener;
 import de.freese.jsync.model.DirectorySyncItem;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.Group;
@@ -54,12 +53,10 @@ public class DefaultGenerator extends AbstractGenerator
             return Collections.emptyNavigableMap();
         }
 
-        final GeneratorListener gl = listener == null ? NoOpGeneratorListener.INSTANCE : listener;
-
         FileVisitOption[] visitOption = options.isFollowSymLinks() ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
 
         Set<Path> paths = getPaths(options, base, visitOption);
-        gl.pathCount(base, paths.size());
+        listener.pathCount(base, paths.size());
 
         LinkOption[] linkOption = options.isFollowSymLinks() ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
 
@@ -69,7 +66,7 @@ public class DefaultGenerator extends AbstractGenerator
         paths.stream()
                 .map(path -> toItem(options, base, path, linkOption, listener))
                 .forEach(syncItem -> {
-                    gl.processingSyncItem(syncItem);
+                    listener.syncItem(syncItem);
 
                     if(options.isChecksum() && (syncItem instanceof FileSyncItem))
                     {
