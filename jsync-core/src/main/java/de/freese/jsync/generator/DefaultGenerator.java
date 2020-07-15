@@ -11,11 +11,11 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.listener.GeneratorListener;
@@ -42,15 +42,15 @@ public class DefaultGenerator extends AbstractGenerator
     }
 
     /**
-     * @see de.freese.jsync.generator.Generator#createSyncItems(de.freese.jsync.Options, java.nio.file.Path,
+     * @see de.freese.jsync.generator.Generator#generateSyncItems(de.freese.jsync.Options, java.nio.file.Path,
      *      de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public NavigableMap<String, SyncItem> createSyncItems(final Options options, final Path base, final GeneratorListener listener)
+    public List<SyncItem> generateSyncItems(final Options options, final Path base, final GeneratorListener listener)
     {
         if (Files.notExists(base))
         {
-            return Collections.emptyNavigableMap();
+            return Collections.emptyList();
         }
 
         FileVisitOption[] visitOption = options.isFollowSymLinks() ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
@@ -60,13 +60,14 @@ public class DefaultGenerator extends AbstractGenerator
 
         LinkOption[] linkOption = options.isFollowSymLinks() ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
 
-        NavigableMap<String, SyncItem> map = new TreeMap<>();
+        List<SyncItem> syncItems = new ArrayList<>();
 
         // @formatter:off
         paths.stream()
                 .map(path -> toItem(options, base, path, linkOption, listener))
                 .forEach(syncItem -> {
-                    listener.syncItem(syncItem);
+                    // TODO Im JSyncIoHandler wird hier schon versendet !
+                    // listener.syncItem(syncItem);
 
                     if(options.isChecksum() && (syncItem instanceof FileSyncItem))
                     {
@@ -78,7 +79,9 @@ public class DefaultGenerator extends AbstractGenerator
                         fileSyncItem.setChecksum(checksum);
                     }
 
-                    map.put(syncItem.getRelativePath(), syncItem);
+                    listener.syncItem(syncItem);
+
+                    syncItems.add(syncItem);
                 })
         ;
         // @formatter:on
@@ -94,7 +97,7 @@ public class DefaultGenerator extends AbstractGenerator
 //        ;
         // @formatter:on
 
-        return map;
+        return syncItems;
     }
 
     /**

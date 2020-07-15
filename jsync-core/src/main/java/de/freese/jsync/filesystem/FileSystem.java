@@ -7,7 +7,7 @@ package de.freese.jsync.filesystem;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.NavigableMap;
+import java.util.List;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
@@ -25,13 +25,12 @@ public interface FileSystem
     public void connect() throws Exception;
 
     /**
-     * Erzeugt die Map aller SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
-     * Die Map ist nach relativem Pfad aufsteigend sortiert.
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      *
      * @param listener {@link GeneratorListener}; optional.
-     * @return {@link NavigableMap}
+     * @return {@link List}
      */
-    public NavigableMap<String, SyncItem> createSyncItems(GeneratorListener listener);
+    public List<SyncItem> createSyncItems(GeneratorListener listener);
 
     /**
      * Trennt die Verbindung zum Dateisystem .

@@ -14,7 +14,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
-import java.util.NavigableMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -85,14 +85,14 @@ public class LocalhostReceiver extends AbstractReceiver
      * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public NavigableMap<String, SyncItem> createSyncItems(final GeneratorListener listener)
+    public List<SyncItem> createSyncItems(final GeneratorListener listener)
     {
         getLogger().debug("create SyncItems: {}", getBase());
 
         Generator generator = new DefaultGenerator();
-        NavigableMap<String, SyncItem> map = generator.createSyncItems(getOptions(), getBase(), listener);
+        List<SyncItem> syncItems = generator.generateSyncItems(getOptions(), getBase(), listener);
 
-        return map;
+        return syncItems;
     }
 
     /**

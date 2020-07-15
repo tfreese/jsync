@@ -7,7 +7,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.util.NavigableMap;
+import java.util.List;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
@@ -54,7 +54,7 @@ public interface Generator
      * @param options {@link Options}
      * @param base {@link Path}; Basis-Verzeichnis
      * @param listener {@link GeneratorListener}; optional.
-     * @return {@link NavigableMap}
+     * @return {@link List}
      */
-    public NavigableMap<String, SyncItem> createSyncItems(Options options, final Path base, GeneratorListener listener);
+    public List<SyncItem> generateSyncItems(Options options, final Path base, GeneratorListener listener);
 }

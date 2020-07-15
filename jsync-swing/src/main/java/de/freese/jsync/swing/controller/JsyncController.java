@@ -197,7 +197,7 @@ public class JsyncController
                             JsyncController.this.syncView.getSenderView().getProgressBarChecksum(), JsyncController.this.tableSender);
 
                     Generator generator = new DefaultGenerator();
-                    generator.createSyncItems(options, Paths.get(pathSender), listener);
+                    generator.generateSyncItems(options, Paths.get(pathSender), listener);
 
                     return null;
                 }
@@ -235,7 +235,7 @@ public class JsyncController
                             JsyncController.this.syncView.getReceiverView().getProgressBarChecksum(), JsyncController.this.tableReceiver);
 
                     Generator generator = new DefaultGenerator();
-                    generator.createSyncItems(options, Paths.get(pathSender), listener);
+                    generator.generateSyncItems(options, Paths.get(pathSender), listener);
 
                     return null;
                 }

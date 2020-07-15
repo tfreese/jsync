@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
+import java.util.List;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -68,12 +68,12 @@ class TestJSyncGenerator extends AbstractJSyncTest
 
         Generator generator = new DefaultGenerator();
 
-        Map<String, SyncItem> fileMap = generator.createSyncItems(options, base, GENERATORLISTENER);
+        List<SyncItem> syncItems = generator.generateSyncItems(options, base, GENERATORLISTENER);
 
-        assertNotNull(fileMap);
-        assertEquals(5, fileMap.size());
+        assertNotNull(syncItems);
+        assertEquals(5, syncItems.size());
 
-        fileMap.forEach((key, value) -> System.out.printf("%s%n", key));
+        syncItems.forEach(syncItem -> System.out.printf("%s%n", syncItem));
     }
 
     /**
@@ -91,12 +91,12 @@ class TestJSyncGenerator extends AbstractJSyncTest
 
         Generator generator = new DefaultGenerator();
 
-        Map<String, SyncItem> fileMap = generator.createSyncItems(options, base, GENERATORLISTENER);
+        List<SyncItem> syncItems = generator.generateSyncItems(options, base, GENERATORLISTENER);
 
-        assertNotNull(fileMap);
-        assertEquals(4, fileMap.size());
+        assertNotNull(syncItems);
+        assertEquals(5, syncItems.size());
 
-        fileMap.forEach((key, value) -> System.out.printf("%s%n", key));
+        syncItems.forEach(syncItem -> System.out.printf("%s%n", syncItem));
     }
 
     /**

@@ -14,9 +14,9 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.NavigableMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import de.freese.jsync.Options;
@@ -194,9 +194,9 @@ public class RemoteSender extends AbstractSender
      * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
      */
     @Override
-    public NavigableMap<String, SyncItem> createSyncItems(final GeneratorListener listener)
+    public List<SyncItem> createSyncItems(final GeneratorListener listener)
     {
-        NavigableMap<String, SyncItem> syncItems = new TreeMap<>();
+        List<SyncItem> syncItems = new ArrayList<>();
 
         try
         {
@@ -262,7 +262,7 @@ public class RemoteSender extends AbstractSender
                         listener.syncItem(syncItem);
                     }
 
-                    syncItems.put(syncItem.getRelativePath(), syncItem);
+                    syncItems.add(syncItem);
                 }
 
                 if (finished)

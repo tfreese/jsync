@@ -2,7 +2,6 @@
 package de.freese.jsync.client;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
@@ -44,8 +43,8 @@ public class DefaultClient extends AbstractClient
         getClientListener().dryRunInfo(getOptions());
         getClientListener().generatingFileListInfo();
 
-        Map<String, SyncItem> fileMapSender = sender.createSyncItems(senderListener);
-        Map<String, SyncItem> fileMapReceiver = receiver.createSyncItems(receiverListener);
+        List<SyncItem> syncItemsSender = sender.createSyncItems(senderListener);
+        List<SyncItem> syncItemsReceiver = receiver.createSyncItems(receiverListener);
 
         // FutureTask<Map<String, SyncItem>> futureTask = new FutureTask<>(callable);
         // futureTask.run(); // Synchron laufen Lassen.
@@ -53,7 +52,7 @@ public class DefaultClient extends AbstractClient
         // Future<Map<String, SyncItem>> futureTask = getOptions().getExecutorService().submit(callable);
 
         // Listen mergen.
-        List<SyncPair> syncList = mergeSyncItems(fileMapSender, fileMapReceiver);
+        List<SyncPair> syncList = mergeSyncItems(syncItemsSender, syncItemsReceiver);
 
         return syncList;
     }

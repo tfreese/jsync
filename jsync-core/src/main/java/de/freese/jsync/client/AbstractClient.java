@@ -7,6 +7,7 @@ import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
@@ -298,28 +299,28 @@ public abstract class AbstractClient implements Client
      * Ist ein Item im Receiver nicht enthalten, muss er kopiert werden.<br>
      * Ist ein Item nur Receiver enthalten, muss er dort gelöscht werden.<br>
      *
-     * @param fileMapSender {@link Map}
-     * @param fileMapReceiver {@link Map}
+     * @param syncItemsSender {@link List}
+     * @param syncItemsReceiver {@link List}
      * @return {@link List}
      */
-    protected List<SyncPair> mergeSyncItems(final Map<String, SyncItem> fileMapSender, final Map<String, SyncItem> fileMapReceiver)
+    protected List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver)
     {
+        // Map der ReceiverItems bauen.
+        Map<String, SyncItem> mapReceiver = syncItemsReceiver.stream().collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
+
         // @formatter:off
-        List<SyncPair> fileList = fileMapSender.entrySet()
-                .parallelStream()
-                .map(entry -> new SyncPair(entry.getValue(), fileMapReceiver.remove(entry.getKey())))
+        List<SyncPair> fileList = syncItemsSender.stream()
+                .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
                 .collect(Collectors.toList());
         // @formatter:on
 
         // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
-        fileMapReceiver.forEach((key, value) -> fileList.add(new SyncPair(null, value)));
+        mapReceiver.forEach((key, value) -> fileList.add(new SyncPair(null, value)));
 
         // SyncStatus ermitteln.
         // @formatter:off
         fileList.stream()
-                .parallel()
                 .peek(SyncPair::validateStatus)
-                .sequential()
                 .forEach(getClientListener()::debugSyncPair);
         // @formatter:on
 
