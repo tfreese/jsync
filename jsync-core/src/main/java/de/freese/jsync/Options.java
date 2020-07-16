@@ -32,16 +32,6 @@ public class Options
         }
 
         /**
-         * @param size int
-         * @return {@link Builder}
-         */
-        public Builder bufferSize(final int size)
-        {
-            this.options.setBufferSize(size);
-            return this;
-        }
-
-        /**
          * @return {@link Options}
          */
         public Options build()
@@ -55,7 +45,7 @@ public class Options
          */
         public Builder checksum(final boolean checksum)
         {
-            this.options.setChecksum(checksum);
+            this.options.checksum = checksum;
             return this;
         }
 
@@ -65,7 +55,7 @@ public class Options
          */
         public Builder delete(final boolean delete)
         {
-            this.options.setDelete(delete);
+            this.options.delete = delete;
             return this;
         }
 
@@ -75,7 +65,7 @@ public class Options
          */
         public Builder dryRun(final boolean dryRun)
         {
-            this.options.setDryRun(dryRun);
+            this.options.dryRun = dryRun;
             return this;
         }
 
@@ -85,7 +75,7 @@ public class Options
          */
         public Builder executorService(final ExecutorService executorService)
         {
-            this.options.setExecutorService(executorService);
+            this.options.executorService = executorService;
             return this;
         }
 
@@ -95,10 +85,15 @@ public class Options
          */
         public Builder followSymLinks(final boolean followSymLinks)
         {
-            this.options.setFollowSymLinks(followSymLinks);
+            this.options.followSymLinks = followSymLinks;
             return this;
         }
     }
+
+    /**
+     * Default: 4 MB
+     */
+    public static final int BUFFER_SIZE = 4 * 1024 * 1024;
 
     /**
     *
@@ -114,11 +109,6 @@ public class Options
      *
      */
     public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
-
-    /**
-     * Default: 4 MB
-     */
-    private int bufferSize = 4 * 1024 * 1024;
 
     /**
     *
@@ -151,16 +141,6 @@ public class Options
     private Options()
     {
         super();
-    }
-
-    /**
-     * Default: 4 MB
-     *
-     * @return int
-     */
-    public int getBufferSize()
-    {
-        return this.bufferSize;
     }
 
     /**
@@ -201,53 +181,5 @@ public class Options
     public boolean isFollowSymLinks()
     {
         return this.followSymLinks;
-    }
-
-    /**
-     * @param bufferSize int
-     */
-    private void setBufferSize(final int bufferSize)
-    {
-        this.bufferSize = bufferSize;
-    }
-
-    /**
-     * @param checksum boolean
-     */
-    private void setChecksum(final boolean checksum)
-    {
-        this.checksum = checksum;
-    }
-
-    /**
-     * @param delete boolean
-     */
-    private void setDelete(final boolean delete)
-    {
-        this.delete = delete;
-    }
-
-    /**
-     * @param dryRun boolean
-     */
-    private void setDryRun(final boolean dryRun)
-    {
-        this.dryRun = dryRun;
-    }
-
-    /**
-     * @param executorService {@link ExecutorService}
-     */
-    private void setExecutorService(final ExecutorService executorService)
-    {
-        this.executorService = executorService;
-    }
-
-    /**
-     * @param followSymLinks boolean
-     */
-    private void setFollowSymLinks(final boolean followSymLinks)
-    {
-        this.followSymLinks = followSymLinks;
     }
 }

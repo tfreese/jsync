@@ -4,42 +4,19 @@
 
 package de.freese.jsync.model;
 
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Set;
-
 /**
- * Interface für ein Verzeichnis oder Datei, welche es zu Synchronisieren gilt.<br>
- * Der Pfad ist relativ zum Basis-Verzeichnis.
+ * Interface für ein Verzeichnis oder Datei.<br>
  *
  * @author Thomas Freese
  */
 public interface SyncItem
 {
     /**
-     * @return {@link Group}
-     */
-    public Group getGroup();
-
-    /**
-     * @return long
-     */
-    public long getLastModifiedTime();
-
-    /**
-     * Können unter Windows oder Netzlaufwerken null sein.
+     * Meta-Daten, GROUP, USER, Size etc...
      *
-     * @return {@link Set}
-     * @see PosixFilePermissions
+     * @return {@link SyncItemMeta}
      */
-    public Set<PosixFilePermission> getPermissions();
-
-    /**
-     * Können unter Windows oder Netzlaufwerken null sein.
-     *
-     * @return {@link Set}
-     */
-    public String getPermissionsToString();
+    public SyncItemMeta getMeta();
 
     /**
      * Verzeichnis/Datei relativ zum Basis-Verzeichnis.
@@ -49,7 +26,25 @@ public interface SyncItem
     public String getRelativePath();
 
     /**
-     * @return {@link User}
+     * @return boolean
      */
-    public User getUser();
+    public default boolean isDirectory()
+    {
+        return !isFile();
+    }
+
+    /**
+     * @return boolean
+     */
+    public default boolean isFile()
+    {
+        return getMeta().isFile();
+    }
+
+    /**
+     * Meta-Daten, GROUP, USER, Size etc...
+     *
+     * @param meta {@link SyncItemMeta}
+     */
+    public void setMeta(SyncItemMeta meta);
 }

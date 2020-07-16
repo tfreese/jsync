@@ -2,13 +2,14 @@
 package de.freese.jsync.client;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.Sender;
-import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
@@ -32,36 +33,39 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @see de.freese.jsync.client.Client#createSyncList(de.freese.jsync.filesystem.sender.Sender, de.freese.jsync.generator.listener.GeneratorListener,
-     *      de.freese.jsync.filesystem.receiver.Receiver, de.freese.jsync.generator.listener.GeneratorListener)
+     * @see de.freese.jsync.client.Client#mergeSyncItems(java.util.List, java.util.List)
      */
     @Override
-    public List<SyncPair> createSyncList(final Sender sender, final GeneratorListener senderListener, final Receiver receiver,
-                                         final GeneratorListener receiverListener)
-        throws Exception
+    public List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver)
     {
-        getClientListener().dryRunInfo(getOptions());
-        getClientListener().generatingFileListInfo();
+        // Map der ReceiverItems bauen.
+        Map<String, SyncItem> mapReceiver = syncItemsReceiver.stream().collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
 
-        List<SyncItem> syncItemsSender = sender.createSyncItems(senderListener);
-        List<SyncItem> syncItemsReceiver = receiver.createSyncItems(receiverListener);
+        // @formatter:off
+        List<SyncPair> fileList = syncItemsSender.stream()
+                .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
+                .collect(Collectors.toList());
+        // @formatter:on
 
-        // FutureTask<Map<String, SyncItem>> futureTask = new FutureTask<>(callable);
-        // futureTask.run(); // Synchron laufen Lassen.
-        // CompletableFuture.runAsync(futureTask);
-        // Future<Map<String, SyncItem>> futureTask = getOptions().getExecutorService().submit(callable);
+        // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
+        mapReceiver.forEach((key, value) -> fileList.add(new SyncPair(null, value)));
 
-        // Listen mergen.
-        List<SyncPair> syncList = mergeSyncItems(syncItemsSender, syncItemsReceiver);
+        // SyncStatus ermitteln.
+        // @formatter:off
+        fileList.stream()
+                .peek(SyncPair::validateStatus)
+                .forEach(getClientListener()::debugSyncPair);
+        // @formatter:on
 
-        return syncList;
+        return fileList;
     }
 
     /**
-     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.sender.Sender, de.freese.jsync.filesystem.receiver.Receiver, java.util.List)
+     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.sender.Sender, de.freese.jsync.filesystem.receiver.Receiver, java.util.List,
+     *      boolean)
      */
     @Override
-    public void syncReceiver(final Sender sender, final Receiver receiver, final List<SyncPair> syncList) throws Exception
+    public void syncReceiver(final Sender sender, final Receiver receiver, final List<SyncPair> syncList, final boolean withChecksum) throws Exception
     {
         getClientListener().syncStartInfo();
 
@@ -80,7 +84,7 @@ public class DefaultClient extends AbstractClient
         createDirectories(receiver, list);
 
         // Neue oder geänderte Dateien kopieren.
-        copyFiles(sender, receiver, list);
+        copyFiles(sender, receiver, list, withChecksum);
 
         // Aktualisieren von Datei-Attributen.
         updateFiles(receiver, list);

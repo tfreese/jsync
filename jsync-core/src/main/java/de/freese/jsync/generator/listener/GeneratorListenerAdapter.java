@@ -7,7 +7,6 @@ package de.freese.jsync.generator.listener;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
@@ -22,12 +21,12 @@ public class GeneratorListenerAdapter implements GeneratorListener
     /**
      *
      */
-    private BiConsumer<Path, Integer> pathCountConsumer = null;
+    private Consumer<String> currentMetaConsumer = null;
 
     /**
      *
      */
-    private Consumer<SyncItem> syncItemConsumer = null;
+    private BiConsumer<Path, Integer> itemCountConsumer = null;
 
     /**
      * Erstellt ein neues {@link GeneratorListenerAdapter} Object.
@@ -50,6 +49,18 @@ public class GeneratorListenerAdapter implements GeneratorListener
     }
 
     /**
+     * @see de.freese.jsync.generator.listener.GeneratorListener#currentMeta(java.lang.String)
+     */
+    @Override
+    public void currentMeta(final String relativePath)
+    {
+        if (this.currentMetaConsumer != null)
+        {
+            this.currentMetaConsumer.accept(relativePath);
+        }
+    }
+
+    /**
      * @param consumer {@link BiConsumer}
      */
     public void doOnChecksum(final BiConsumer<Long, Long> consumer)
@@ -58,42 +69,30 @@ public class GeneratorListenerAdapter implements GeneratorListener
     }
 
     /**
-     * @param consumer {@link BiConsumer}
-     */
-    public void doOnPathCount(final BiConsumer<Path, Integer> consumer)
-    {
-        this.pathCountConsumer = consumer;
-    }
-
-    /**
      * @param consumer {@link Consumer}
      */
-    public void doOnSyncItem(final Consumer<SyncItem> consumer)
+    public void doOnCurrentMeta(final Consumer<String> consumer)
     {
-        this.syncItemConsumer = consumer;
+        this.currentMetaConsumer = consumer;
     }
 
     /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
+     * @param consumer {@link BiConsumer}
      */
-    @Override
-    public final void pathCount(final Path path, final int pathCount)
+    public void doOnItemCount(final BiConsumer<Path, Integer> consumer)
     {
-        if (this.pathCountConsumer != null)
-        {
-            this.pathCountConsumer.accept(path, pathCount);
-        }
+        this.itemCountConsumer = consumer;
     }
 
     /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#syncItem(de.freese.jsync.model.SyncItem)
+     * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
      */
     @Override
-    public final void syncItem(final SyncItem syncItem)
+    public void itemCount(final Path path, final int itemCount)
     {
-        if (this.syncItemConsumer != null)
+        if (this.itemCountConsumer != null)
         {
-            this.syncItemConsumer.accept(syncItem);
+            this.itemCountConsumer.accept(path, itemCount);
         }
     }
 }

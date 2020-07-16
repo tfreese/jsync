@@ -7,8 +7,7 @@ package de.freese.jsync.client.listener;
 import java.util.EventListener;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
-import de.freese.jsync.model.DirectorySyncItem;
-import de.freese.jsync.model.FileSyncItem;
+import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 
 /**
@@ -21,11 +20,11 @@ public interface ClientListener extends EventListener
     /**
      * Wird nur aufgerufen, wenn DRY-RUN = false ist.
      *
-     * @param syncItem {@link FileSyncItem}
+     * @param syncItem {@link SyncItem}
      * @param size long
      * @param bytesTransferred long
      */
-    public void copyFileProgress(final FileSyncItem syncItem, long size, long bytesTransferred);
+    public void copyFileProgress(final SyncItem syncItem, long size, long bytesTransferred);
 
     /**
      * @param options {@link Options}
@@ -78,19 +77,19 @@ public interface ClientListener extends EventListener
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@link DirectorySyncItem}
+     * @param syncItem {@link SyncItem}
      */
-    public void updateDirectory(Options options, final DirectorySyncItem syncItem);
+    public void updateDirectory(Options options, final SyncItem syncItem);
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@link FileSyncItem}
+     * @param syncItem {@link SyncItem}
      */
-    public void updateFile(Options options, final FileSyncItem syncItem);
+    public void updateFile(Options options, final SyncItem syncItem);
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@link FileSyncItem}
+     * @param syncItem {@linkSyncItem}
      */
-    public void validateFile(Options options, final FileSyncItem syncItem);
+    public void validateFile(Options options, final SyncItem syncItem);
 }

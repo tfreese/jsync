@@ -6,7 +6,7 @@ package de.freese.jsync.client;
 import java.util.List;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.Sender;
-import de.freese.jsync.generator.listener.GeneratorListener;
+import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 
 /**
@@ -17,16 +17,16 @@ import de.freese.jsync.model.SyncPair;
 public interface Client
 {
     /**
-     * Ermittelt die Differenzen von Quelle und Ziel.
+     * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
+     * Die Einträge des Senders sind die Referenz.<br>
+     * Ist ein Item im Receiver nicht enthalten, muss er kopiert werden.<br>
+     * Ist ein Item nur Receiver enthalten, muss er dort gelöscht werden.<br>
      *
-     * @param sender {@link Sender}
-     * @param senderListener {@link GeneratorListener}; optional.
-     * @param receiver {@link Receiver}
-     * @param receiverListener {@link GeneratorListener}; optional.
+     * @param syncItemsSender {@link List}
+     * @param syncItemsReceiver {@link List}
      * @return {@link List}
-     * @throws Exception Falls was schief geht.
      */
-    public List<SyncPair> createSyncList(Sender sender, GeneratorListener senderListener, Receiver receiver, GeneratorListener receiverListener) throws Exception;
+    public List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver);
 
     /**
      * Synchronisiert das Ziel-Verzeichnis mit der Quelle.
@@ -34,7 +34,8 @@ public interface Client
      * @param sender {@link Sender}
      * @param receiver {@link Receiver}
      * @param syncList {@link List}
+     * @param withChecksum boolean
      * @throws Exception Falls was schief geht.
      */
-    public void syncReceiver(Sender sender, Receiver receiver, List<SyncPair> syncList) throws Exception;
+    public void syncReceiver(Sender sender, Receiver receiver, List<SyncPair> syncList, final boolean withChecksum) throws Exception;
 }

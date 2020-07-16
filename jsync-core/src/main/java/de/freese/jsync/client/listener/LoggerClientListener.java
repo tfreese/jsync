@@ -8,8 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
-import de.freese.jsync.model.DirectorySyncItem;
-import de.freese.jsync.model.FileSyncItem;
+import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 
 /**
@@ -33,10 +32,10 @@ public class LoggerClientListener extends AbstractClientListener
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#copyFileProgress(de.freese.jsync.model.FileSyncItem, long, long)
+     * @see de.freese.jsync.client.listener.ClientListener#copyFileProgress(de.freese.jsync.model.SyncItem, long, long)
      */
     @Override
-    public void copyFileProgress(final FileSyncItem syncItem, final long size, final long bytesTransferred)
+    public void copyFileProgress(final SyncItem syncItem, final long size, final long bytesTransferred)
     {
         String message = copyFileProgressMessage(syncItem, size, bytesTransferred);
 
@@ -150,10 +149,10 @@ public class LoggerClientListener extends AbstractClientListener
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#updateDirectory(de.freese.jsync.Options, de.freese.jsync.model.DirectorySyncItem)
+     * @see de.freese.jsync.client.listener.ClientListener#updateDirectory(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void updateDirectory(final Options options, final DirectorySyncItem syncItem)
+    public void updateDirectory(final Options options, final SyncItem syncItem)
     {
         String message = updateDirectoryMessage(options, syncItem);
 
@@ -161,10 +160,10 @@ public class LoggerClientListener extends AbstractClientListener
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#updateFile(de.freese.jsync.Options, de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.client.listener.ClientListener#updateFile(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void updateFile(final Options options, final FileSyncItem syncItem)
+    public void updateFile(final Options options, final SyncItem syncItem)
     {
         String message = updateFileMessage(options, syncItem);
 
@@ -172,10 +171,10 @@ public class LoggerClientListener extends AbstractClientListener
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#validateFile(de.freese.jsync.Options, de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.client.listener.ClientListener#validateFile(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void validateFile(final Options options, final FileSyncItem syncItem)
+    public void validateFile(final Options options, final SyncItem syncItem)
     {
         String message = validateFileMessage(options, syncItem);
 

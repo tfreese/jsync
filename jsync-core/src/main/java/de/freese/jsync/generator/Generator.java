@@ -3,14 +3,11 @@
  */
 package de.freese.jsync.generator;
 
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.List;
-import de.freese.jsync.Options;
 import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.model.SyncItemMeta;
 
 /**
  * Der Generator sammelt alle relevanten Informationens des Dateisystems für den gewählten {@link Path}.
@@ -21,40 +18,24 @@ import de.freese.jsync.model.SyncItem;
 public interface Generator
 {
     /**
-     * @see Files#walk(Path, FileVisitOption...)
-     */
-    public static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = new FileVisitOption[0];
-
-    /**
-     * @see Files#walk(Path, FileVisitOption...)
-     */
-    public static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = new FileVisitOption[]
-    {
-            FileVisitOption.FOLLOW_LINKS
-    };
-
-    /**
-     * @see Files#getLastModifiedTime(Path, LinkOption...)
-     * @see Files#readAttributes(Path, String, LinkOption...)
-     */
-    public static final LinkOption[] LINKOPTION_NO_SYMLINKS = new LinkOption[]
-    {
-            LinkOption.NOFOLLOW_LINKS
-    };
-
-    /**
-     * @see Files#getLastModifiedTime(Path, LinkOption...)
-     * @see Files#readAttributes(Path, String, LinkOption...)
-     */
-    public static final LinkOption[] LINKOPTION_WITH_SYMLINKS = new LinkOption[0];
-
-    /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      *
-     * @param options {@link Options}
-     * @param base {@link Path}; Basis-Verzeichnis
+     * @param basePath String
+     * @param followSymLinks boolean
      * @param listener {@link GeneratorListener}; optional.
      * @return {@link List}
      */
-    public List<SyncItem> generateSyncItems(Options options, final Path base, GeneratorListener listener);
+    public List<SyncItem> generateItems(final String basePath, boolean followSymLinks, GeneratorListener listener);
+
+    /**
+     * Erzeugt die Meta-Daten des SyncItems (Verzeichnisse, Dateien).<br>
+     *
+     * @param basePath String
+     * @param relativePath String
+     * @param followSymLinks boolean
+     * @param withChecksum boolean
+     * @param listener {@link GeneratorListener}; optional.
+     * @return {@link List}
+     */
+    public SyncItemMeta generateMeta(final String basePath, String relativePath, boolean followSymLinks, boolean withChecksum, GeneratorListener listener);
 }

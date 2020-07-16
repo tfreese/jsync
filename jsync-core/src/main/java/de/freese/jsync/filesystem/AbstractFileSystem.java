@@ -1,10 +1,13 @@
 // Created: 05.04.2018
 package de.freese.jsync.filesystem;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import de.freese.jsync.Options;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * Basis-Implementierung des {@link FileSystem}.
@@ -16,23 +19,33 @@ public abstract class AbstractFileSystem implements FileSystem
     /**
     *
     */
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Path base;
 
     /**
     *
     */
-    private final Options options;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Erzeugt eine neue Instanz von {@link AbstractFileSystem}.
-     *
-     * @param options {@link Options}
+     * 
+     * @param baseUri {@link URI}
      */
-    public AbstractFileSystem(final Options options)
+    public AbstractFileSystem(final URI baseUri)
     {
         super();
 
-        this.options = Objects.requireNonNull(options, "options required");
+        Objects.requireNonNull(baseUri, "baseUri required");
+
+        this.base = Paths.get(JSyncUtils.normalizedPath(baseUri));
+    }
+
+    /**
+     * @return {@link Path}
+     */
+    protected Path getBase()
+    {
+        return this.base;
     }
 
     /**
@@ -41,13 +54,5 @@ public abstract class AbstractFileSystem implements FileSystem
     protected Logger getLogger()
     {
         return this.logger;
-    }
-
-    /**
-     * @return {@link Options}
-     */
-    protected Options getOptions()
-    {
-        return this.options;
     }
 }

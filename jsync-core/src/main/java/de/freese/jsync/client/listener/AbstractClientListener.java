@@ -7,8 +7,7 @@ package de.freese.jsync.client.listener;
 import java.util.ArrayList;
 import java.util.List;
 import de.freese.jsync.Options;
-import de.freese.jsync.model.DirectorySyncItem;
-import de.freese.jsync.model.FileSyncItem;
+import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
@@ -47,10 +46,10 @@ public abstract class AbstractClientListener implements ClientListener
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@link FileSyncItem}
+     * @param syncItem {@link SyncItem}
      * @return String
      */
-    protected String copyFileMessage(final Options options, final FileSyncItem syncItem)
+    protected String copyFileMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("copy: %s", syncItem.getRelativePath());
 
@@ -60,12 +59,12 @@ public abstract class AbstractClientListener implements ClientListener
     }
 
     /**
-     * @param syncItem {@link FileSyncItem}
+     * @param syncItem {@linkSyncItem}
      * @param size long
      * @param bytesTransferred long
      * @return String
      */
-    protected String copyFileProgressMessage(final FileSyncItem syncItem, final long size, final long bytesTransferred)
+    protected String copyFileProgressMessage(final SyncItem syncItem, final long size, final long bytesTransferred)
     {
         String message = String.format("copy %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(bytesTransferred),
                 JSyncUtils.getPercent(bytesTransferred, size));
@@ -165,10 +164,10 @@ public abstract class AbstractClientListener implements ClientListener
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@link DirectorySyncItem}
+     * @param syncItem {@link SyncItem}
      * @return String
      */
-    protected String updateDirectoryMessage(final Options options, final DirectorySyncItem syncItem)
+    protected String updateDirectoryMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("update attributes: %s", syncItem.getRelativePath());
 
@@ -179,10 +178,10 @@ public abstract class AbstractClientListener implements ClientListener
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@link FileSyncItem}
+     * @param syncItem {@link SyncItem}
      * @return String
      */
-    protected String updateFileMessage(final Options options, final FileSyncItem syncItem)
+    protected String updateFileMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("update attributes: %s", syncItem.getRelativePath());
 
@@ -193,10 +192,10 @@ public abstract class AbstractClientListener implements ClientListener
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@link FileSyncItem}
+     * @param syncItem {@link SyncItem}
      * @return String
      */
-    protected String validateFileMessage(final Options options, final FileSyncItem syncItem)
+    protected String validateFileMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("validate: %s", syncItem.getRelativePath());
 

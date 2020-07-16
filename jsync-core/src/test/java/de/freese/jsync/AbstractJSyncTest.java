@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import de.freese.jsync.generator.listener.GeneratorListener;
-import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.generator.listener.GeneratorListenerAdapter;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
@@ -23,7 +23,7 @@ public abstract class AbstractJSyncTest
     /**
      * @author Thomas Freese
      */
-    private static class TestGeneratorListener implements GeneratorListener
+    private static class TestGeneratorListener extends GeneratorListenerAdapter
     {
         /**
          *
@@ -47,33 +47,9 @@ public abstract class AbstractJSyncTest
 
             this.countLogFormat = Objects.requireNonNull(countLogFormat, "countLogFormat required");
             this.syncItemLogFormat = Objects.requireNonNull(syncItemLogFormat, "syncItemLogFormat required");
-        }
 
-        /**
-         * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
-         */
-        @Override
-        public void checksum(final long size, final long bytesRead)
-        {
-            // Empty
-        }
-
-        /**
-         * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
-         */
-        @Override
-        public void pathCount(final Path path, final int pathCount)
-        {
-            System.out.printf(this.countLogFormat, path, pathCount);
-        }
-
-        /**
-         * @see de.freese.jsync.generator.listener.GeneratorListener#syncItem(de.freese.jsync.model.SyncItem)
-         */
-        @Override
-        public void syncItem(final SyncItem syncItem)
-        {
-            System.out.printf(this.syncItemLogFormat, syncItem);
+            doOnItemCount((path, pathCount) -> System.out.printf(this.countLogFormat, path, pathCount));
+            doOnCurrentMeta(relativePath -> System.out.printf(this.syncItemLogFormat, relativePath));
         }
     }
 

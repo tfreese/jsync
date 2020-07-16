@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import de.freese.jsync.Options;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Basis-Implementierung des {@link Generator}.
@@ -20,6 +22,39 @@ import de.freese.jsync.Options;
 public abstract class AbstractGenerator implements Generator
 {
     /**
+     * @see Files#walk(Path, FileVisitOption...)
+     */
+    protected static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = new FileVisitOption[0];
+
+    /**
+     * @see Files#walk(Path, FileVisitOption...)
+     */
+    protected static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = new FileVisitOption[]
+    {
+            FileVisitOption.FOLLOW_LINKS
+    };
+
+    /**
+     * @see Files#getLastModifiedTime(Path, LinkOption...)
+     * @see Files#readAttributes(Path, String, LinkOption...)
+     */
+    protected static final LinkOption[] LINKOPTION_NO_SYMLINKS = new LinkOption[]
+    {
+            LinkOption.NOFOLLOW_LINKS
+    };
+
+    /**
+     * @see Files#getLastModifiedTime(Path, LinkOption...)
+     * @see Files#readAttributes(Path, String, LinkOption...)
+     */
+    protected static final LinkOption[] LINKOPTION_WITH_SYMLINKS = new LinkOption[0];
+
+    /**
+    *
+    */
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
      * Erzeugt eine neue Instanz von {@link AbstractGenerator}.
      */
     public AbstractGenerator()
@@ -28,18 +63,25 @@ public abstract class AbstractGenerator implements Generator
     }
 
     /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
+    }
+
+    /**
      * Liefert ein Set mit allen Path-Objekten (Verzeichnisse, Dateien) das Basis-Verzeichnisses.
      *
-     * @param options {@link Options}
      * @param base {@link Path}
-     * @param visitOption {@link FileVisitOption}
+     * @param visitOptions {@link FileVisitOption}
      * @return {@link Set}
      */
-    protected Set<Path> getPaths(final Options options, final Path base, final FileVisitOption[] visitOption)
+    protected Set<Path> getPaths(final Path base, final FileVisitOption[] visitOptions)
     {
-        final Set<Path> set;
+        Set<Path> set = null;
 
-        try (Stream<Path> stream = Files.walk(base, visitOption))
+        try (Stream<Path> stream = Files.walk(base, visitOptions))
         {
             set = stream.collect(Collectors.toCollection(TreeSet::new));
         }

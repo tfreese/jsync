@@ -5,7 +5,6 @@ import java.net.URI;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
@@ -15,17 +14,14 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.generator.listener.GeneratorListener;
-import de.freese.jsync.model.AbstractSyncItem;
-import de.freese.jsync.model.DirectorySyncItem;
-import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.model.SyncItemMeta;
 import de.freese.jsync.utils.DigestUtils;
 import de.freese.jsync.utils.JSyncUtils;
 
@@ -37,23 +33,13 @@ import de.freese.jsync.utils.JSyncUtils;
 public class LocalhostReceiver extends AbstractReceiver
 {
     /**
-    *
-    */
-    private final Path base;
-
-    /**
      * Erzeugt eine neue Instanz von {@link LocalhostReceiver}.
      *
-     * @param options {@link Options}
      * @param baseUri {@link URI}
      */
-    public LocalhostReceiver(final Options options, final URI baseUri)
+    public LocalhostReceiver(final URI baseUri)
     {
-        super(options);
-
-        Objects.requireNonNull(baseUri, "baseUri required");
-
-        this.base = Paths.get(JSyncUtils.normalizedPath(baseUri));
+        super(baseUri);
     }
 
     /**
@@ -79,20 +65,6 @@ public class LocalhostReceiver extends AbstractReceiver
         {
             Files.createDirectories(path);
         }
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
-     */
-    @Override
-    public List<SyncItem> createSyncItems(final GeneratorListener listener)
-    {
-        getLogger().debug("create SyncItems: {}", getBase());
-
-        Generator generator = new DefaultGenerator();
-        List<SyncItem> syncItems = generator.generateSyncItems(getOptions(), getBase(), listener);
-
-        return syncItems;
     }
 
     /**
@@ -150,20 +122,10 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * Liefert das Basis-Verzeichnis.
-     *
-     * @return base {@link Path}
-     */
-    protected Path getBase()
-    {
-        return this.base;
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public WritableByteChannel getChannel(final FileSyncItem syncItem) throws Exception
+    public WritableByteChannel getChannel(final SyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
@@ -181,26 +143,52 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
+     * @see de.freese.jsync.filesystem.FileSystem#getSyncItemMeta(java.lang.String, boolean, boolean, de.freese.jsync.generator.listener.GeneratorListener)
+     */
+    @Override
+    public SyncItemMeta getSyncItemMeta(final String relativePath, final boolean followSymLinks, final boolean withChecksum, final GeneratorListener listener)
+    {
+        Generator generator = new DefaultGenerator();
+        SyncItemMeta meta = generator.generateMeta(getBase().toString(), relativePath, followSymLinks, withChecksum, listener);
+
+        return meta;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#getSyncItems(boolean, de.freese.jsync.generator.listener.GeneratorListener)
+     */
+    @Override
+    public List<SyncItem> getSyncItems(final boolean followSymLinks, final GeneratorListener listener)
+    {
+        Generator generator = new DefaultGenerator();
+        List<SyncItem> items = generator.generateItems(getBase().toString(), followSymLinks, listener);
+
+        return items;
+    }
+
+    /**
      * Aktualisiert ein Verzeichnis oder Datei.
      *
      * @param path {@link Path}
-     * @param syncItem {@link AbstractSyncItem}
+     * @param syncItem {@link SyncItem}
      * @throws Exception Falls was schief geht.
      */
     @SuppressWarnings("resource")
-    protected void update(final Path path, final AbstractSyncItem syncItem) throws Exception
+    protected void update(final Path path, final SyncItem syncItem) throws Exception
     {
+        SyncItemMeta meta = syncItem.getMeta();
+
         // In der Form "rwxr-xr-x"; optional, kann unter Windows null sein.
-        String permissions = syncItem.getPermissionsToString();
+        String permissions = meta.getPermissionsToString();
 
         // TimeUnit = SECONDS
-        long lastModifiedTime = syncItem.getLastModifiedTime();
+        long lastModifiedTime = meta.getLastModifiedTime();
 
         // Optional, kann unter Windows null sein.
-        String groupName = syncItem.getGroup() == null ? null : syncItem.getGroup().getName();
+        String groupName = meta.getGroup() == null ? null : meta.getGroup().getName();
 
         // Optional, kann unter Windows null sein.
-        String userName = syncItem.getUser() == null ? null : syncItem.getUser().getName();
+        String userName = meta.getUser() == null ? null : meta.getUser().getName();
 
         Files.setLastModifiedTime(path, FileTime.from(lastModifiedTime, TimeUnit.SECONDS));
 
@@ -223,10 +211,10 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#updateDirectory(de.freese.jsync.model.DirectorySyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#updateDirectory(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void updateDirectory(final DirectorySyncItem syncItem) throws Exception
+    public void updateDirectory(final SyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
@@ -236,10 +224,10 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#updateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#updateFile(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void updateFile(final FileSyncItem syncItem) throws Exception
+    public void updateFile(final SyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
@@ -249,28 +237,30 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#validateFile(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#validateFile(de.freese.jsync.model.SyncItem, boolean)
      */
     @Override
-    public void validateFile(final FileSyncItem syncItem) throws Exception
+    public void validateFile(final SyncItem syncItem, final boolean withChecksum) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
         getLogger().debug("validate: {}", path);
 
-        if (Files.size(path) != syncItem.getSize())
+        SyncItemMeta meta = syncItem.getMeta();
+
+        if (Files.size(path) != meta.getSize())
         {
             String message = String.format("fileSize does not match with source: %s", syncItem.getRelativePath());
             throw new IllegalStateException(message);
         }
 
-        if (getOptions().isChecksum())
+        if (withChecksum)
         {
-            getLogger().debug("create Checksum: {}", path);
+            getLogger().debug("building Checksum: {}", path);
 
-            String checksum = DigestUtils.sha256DigestAsHex(path, getOptions().getBufferSize(), null);
+            String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, null);
 
-            if (!checksum.equals(syncItem.getChecksum()))
+            if (!checksum.equals(meta.getChecksum()))
             {
                 String message = String.format("checksum does not match with source: %s", syncItem.getRelativePath());
                 throw new IllegalStateException(message);

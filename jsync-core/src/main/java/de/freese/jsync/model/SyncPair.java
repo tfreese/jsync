@@ -16,6 +16,11 @@ public class SyncPair
     /**
      *
      */
+    private final SyncItem receiver;
+
+    /**
+     *
+     */
     private final SyncItem source;
 
     /**
@@ -24,22 +29,27 @@ public class SyncPair
     private SyncStatus status = null;
 
     /**
-    *
-    */
-    private final SyncItem target;
-
-    /**
      * Erstellt ein neues {@link SyncPair} Object.
      *
      * @param source {@link SyncItem}; wenn null -> nur im Receiver enthalten
-     * @param target {@link SyncItem}; wenn null -> nur im Sender enthalten
+     * @param receiver {@link SyncItem}; wenn null -> nur im Sender enthalten
      */
-    public SyncPair(final SyncItem source, final SyncItem target)
+    public SyncPair(final SyncItem source, final SyncItem receiver)
     {
         super();
 
         this.source = source;
-        this.target = target;
+        this.receiver = receiver;
+    }
+
+    /**
+     * Wenn null -> nur im Sender enthalten.
+     *
+     * @return {@link SyncItem}
+     */
+    public SyncItem getReceiver()
+    {
+        return this.receiver;
     }
 
     /**
@@ -47,7 +57,7 @@ public class SyncPair
      */
     public String getRelativePath()
     {
-        return getSource() != null ? getSource().getRelativePath() : getTarget().getRelativePath();
+        return getSource() != null ? getSource().getRelativePath() : getReceiver().getRelativePath();
     }
 
     /**
@@ -71,16 +81,6 @@ public class SyncPair
     }
 
     /**
-     * Wenn null -> nur im Sender enthalten.
-     *
-     * @return {@link SyncItem}
-     */
-    public SyncItem getTarget()
-    {
-        return this.target;
-    }
-
-    /**
      * @see java.lang.Object#toString()
      */
     @Override
@@ -101,54 +101,49 @@ public class SyncPair
      */
     public void validateStatus()
     {
-        if ((getSource() == null) && (getTarget() != null))
+        if ((getSource() == null) && (getReceiver() != null))
         {
             // Löschen: In der Quelle nicht vorhanden, aber im Ziel.
             this.status = SyncStatus.ONLY_IN_TARGET;
         }
-        else if ((getSource() != null) && (getTarget() == null))
+        else if ((getSource() != null) && (getReceiver() == null))
         {
             // Kopieren: In der Quelle vorhanden, aber nicht im Ziel.
             this.status = SyncStatus.ONLY_IN_SOURCE;
         }
-        else if ((getSource() != null) && (getTarget() != null))
+        else if ((getSource() != null) && (getReceiver() != null))
         {
+            SyncItemMeta metaSource = getSource().getMeta();
+            SyncItemMeta metaReceiver = getReceiver().getMeta();
+
             // Kopieren: Datei-Attribute unterschiedlich.
-            if (getSource().getLastModifiedTime() != getTarget().getLastModifiedTime())
+            if (metaSource.getLastModifiedTime() != metaReceiver.getLastModifiedTime())
             {
                 this.status = SyncStatus.DIFFERENT_LAST_MODIFIEDTIME;
             }
-            else if (!Objects.equals(getSource().getPermissionsToString(), getTarget().getPermissionsToString()))
+            else if (!Objects.equals(metaSource.getPermissionsToString(), metaReceiver.getPermissionsToString()))
             {
                 this.status = SyncStatus.DIFFERENT_PERMISSIONS;
             }
-            else if (!Objects.equals(getSource().getUser(), getTarget().getUser()))
+            else if (!Objects.equals(metaSource.getUser(), metaReceiver.getUser()))
             {
                 this.status = SyncStatus.DIFFERENT_USER;
             }
-            else if (!Objects.equals(getSource().getGroup(), getTarget().getGroup()))
+            else if (!Objects.equals(metaSource.getGroup(), metaReceiver.getGroup()))
             {
                 this.status = SyncStatus.DIFFERENT_GROUP;
             }
-
-            if (getSource() instanceof FileSyncItem)
+            else if (metaSource.getSize() != metaReceiver.getSize())
             {
-                FileSyncItem src = (FileSyncItem) getSource();
-                FileSyncItem dst = (FileSyncItem) getTarget();
-
-                if (src.getSize() != dst.getSize())
-                {
-                    this.status = SyncStatus.DIFFERENT_SIZE;
-                }
-                else if (!Objects.equals(src.getChecksum(), dst.getChecksum()))
-                {
-                    this.status = SyncStatus.DIFFERENT_CHECKSUM;
-                }
+                this.status = SyncStatus.DIFFERENT_SIZE;
             }
-
-            // Alle Prüfungen ohne Unterschied.
-            if (this.status == null)
+            else if (!Objects.equals(metaSource.getChecksum(), metaReceiver.getChecksum()))
             {
+                this.status = SyncStatus.DIFFERENT_CHECKSUM;
+            }
+            else
+            {
+                // Alle Prüfungen ohne Unterschied.
                 this.status = SyncStatus.SYNCHRONIZED;
             }
         }

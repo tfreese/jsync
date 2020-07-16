@@ -5,17 +5,13 @@ import java.net.URI;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.Objects;
-import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.generator.listener.GeneratorListener;
-import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.utils.JSyncUtils;
+import de.freese.jsync.model.SyncItemMeta;
 
 /**
  * {@link Sender} für Localhost-Filesysteme.
@@ -25,23 +21,13 @@ import de.freese.jsync.utils.JSyncUtils;
 public class LocalhostSender extends AbstractSender
 {
     /**
-    *
-    */
-    private final Path base;
-
-    /**
      * Erzeugt eine neue Instanz von {@link LocalhostSender}.
      *
-     * @param options {@link Options}
      * @param baseUri {@link URI}
      */
-    public LocalhostSender(final Options options, final URI baseUri)
+    public LocalhostSender(final URI baseUri)
     {
-        super(options);
-
-        Objects.requireNonNull(baseUri, "baseUri required");
-
-        this.base = Paths.get(JSyncUtils.normalizedPath(baseUri));
+        super(baseUri);
     }
 
     /**
@@ -54,20 +40,6 @@ public class LocalhostSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
-     */
-    @Override
-    public List<SyncItem> createSyncItems(final GeneratorListener listener)
-    {
-        getLogger().debug("create SyncItems: {}", getBase());
-
-        Generator generator = new DefaultGenerator();
-        List<SyncItem> syncItems = generator.generateSyncItems(getOptions(), getBase(), listener);
-
-        return syncItems;
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.FileSystem#disconnect()
      */
     @Override
@@ -77,20 +49,10 @@ public class LocalhostSender extends AbstractSender
     }
 
     /**
-     * Liefert das Basis-Verzeichnis.
-     *
-     * @return base {@link Path}
-     */
-    protected Path getBase()
-    {
-        return this.base;
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public ReadableByteChannel getChannel(final FileSyncItem syncItem) throws Exception
+    public ReadableByteChannel getChannel(final SyncItem syncItem) throws Exception
     {
         Path path = getBase().resolve(syncItem.getRelativePath());
 
@@ -105,5 +67,29 @@ public class LocalhostSender extends AbstractSender
         }
 
         return Files.newByteChannel(path, StandardOpenOption.READ);
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#getSyncItemMeta(java.lang.String, boolean, boolean, de.freese.jsync.generator.listener.GeneratorListener)
+     */
+    @Override
+    public SyncItemMeta getSyncItemMeta(final String relativePath, final boolean followSymLinks, final boolean withChecksum, final GeneratorListener listener)
+    {
+        Generator generator = new DefaultGenerator();
+        SyncItemMeta meta = generator.generateMeta(getBase().toString(), relativePath, followSymLinks, withChecksum, listener);
+
+        return meta;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#getSyncItems(boolean, de.freese.jsync.generator.listener.GeneratorListener)
+     */
+    @Override
+    public List<SyncItem> getSyncItems(final boolean followSymLinks, final GeneratorListener listener)
+    {
+        Generator generator = new DefaultGenerator();
+        List<SyncItem> items = generator.generateItems(getBase().toString(), followSymLinks, listener);
+
+        return items;
     }
 }

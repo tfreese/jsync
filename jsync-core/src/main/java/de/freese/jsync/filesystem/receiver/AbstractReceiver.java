@@ -1,7 +1,7 @@
 // Created: 05.04.2018
 package de.freese.jsync.filesystem.receiver;
 
-import de.freese.jsync.Options;
+import java.net.URI;
 import de.freese.jsync.filesystem.AbstractFileSystem;
 
 /**
@@ -13,11 +13,11 @@ public abstract class AbstractReceiver extends AbstractFileSystem implements Rec
 {
     /**
      * Erzeugt eine neue Instanz von {@link AbstractReceiver}.
-     *
-     * @param options {@link Options}
+     * 
+     * @param baseUri {@link URI}
      */
-    public AbstractReceiver(final Options options)
+    public AbstractReceiver(final URI baseUri)
     {
-        super(options);
+        super(baseUri);
     }
 }

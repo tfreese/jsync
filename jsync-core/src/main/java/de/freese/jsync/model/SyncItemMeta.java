@@ -1,26 +1,34 @@
 /**
- * Created: 30.10.2016
+ * Created: 16.07.2020
  */
 
 package de.freese.jsync.model;
 
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Objects;
 import java.util.Set;
 
 /**
- * Basis-Implementierung für ein Verzeichnis / Datei, welche es zu Synchronisieren gilt.<br>
- * Der Pfad ist relativ zum Basis-Verzeichnis.
+ * Meta-Daten eines {@link SyncItem}.
  *
  * @author Thomas Freese
  */
-public abstract class AbstractSyncItem implements SyncItem
+public class SyncItemMeta
 {
     /**
     *
     */
+    private String checksum = null;
+
+    /**
+    *
+    */
     private Group group = null;
+
+    /**
+    *
+    */
+    private boolean isFile = false;
 
     /**
     *
@@ -35,7 +43,7 @@ public abstract class AbstractSyncItem implements SyncItem
     /**
     *
     */
-    private final String relativePath;
+    private long size = 0;
 
     /**
     *
@@ -43,48 +51,50 @@ public abstract class AbstractSyncItem implements SyncItem
     private User user = null;
 
     /**
-     * Erstellt ein neues {@link AbstractSyncItem} Object.
-     *
-     * @param relativePath String
+     * Erstellt ein neues {@link SyncItemMeta} Object.
      */
-    AbstractSyncItem(final String relativePath)
+    public SyncItemMeta()
     {
         super();
+    }
 
-        this.relativePath = Objects.requireNonNull(relativePath, "relativePath required");
+    /**
+     * @return String
+     */
+    public String getChecksum()
+    {
+        return this.checksum;
     }
 
     /**
      * @return {@link Group}
      */
-    @Override
     public Group getGroup()
     {
         return this.group;
     }
 
     /**
-     * @see de.freese.jsync.model.SyncItem#getLastModifiedTime()
+     * @return long
      */
-    @Override
     public long getLastModifiedTime()
     {
         return this.lastModifiedTime;
     }
 
     /**
-     * @see de.freese.jsync.model.SyncItem#getPermissions()
+     * @return Set<PosixFilePermission>
      */
-    @Override
     public Set<PosixFilePermission> getPermissions()
     {
         return this.permissions;
     }
 
     /**
-     * @see de.freese.jsync.model.SyncItem#getPermissionsToString()
+     * Können unter Windows oder Netzlaufwerken null sein.
+     *
+     * @return {@link Set}
      */
-    @Override
     public String getPermissionsToString()
     {
         if ((getPermissions() == null) || getPermissions().isEmpty())
@@ -96,21 +106,43 @@ public abstract class AbstractSyncItem implements SyncItem
     }
 
     /**
-     * @see de.freese.jsync.model.SyncItem#getRelativePath()
+     * @return long
      */
-    @Override
-    public String getRelativePath()
+    public long getSize()
     {
-        return this.relativePath;
+        return this.size;
     }
 
     /**
      * @return {@link User}
      */
-    @Override
     public User getUser()
     {
         return this.user;
+    }
+
+    /**
+     * @return boolean
+     */
+    public boolean isFile()
+    {
+        return this.isFile;
+    }
+
+    /**
+     * @param checksum String
+     */
+    public void setChecksum(final String checksum)
+    {
+        this.checksum = checksum;
+    }
+
+    /**
+     * @param isFile boolean
+     */
+    public void setFile(final boolean isFile)
+    {
+        this.isFile = isFile;
     }
 
     /**
@@ -118,7 +150,7 @@ public abstract class AbstractSyncItem implements SyncItem
      */
     public void setGroup(final Group group)
     {
-        this.group = Objects.requireNonNull(group, "group required");
+        this.group = group;
     }
 
     /**
@@ -130,11 +162,19 @@ public abstract class AbstractSyncItem implements SyncItem
     }
 
     /**
-     * @param permissions {@link Set}
+     * @param permissions Set<PosixFilePermission>
      */
     public void setPermissions(final Set<PosixFilePermission> permissions)
     {
-        this.permissions = Objects.requireNonNull(permissions, "permissions required");
+        this.permissions = permissions;
+    }
+
+    /**
+     * @param size long
+     */
+    public void setSize(final long size)
+    {
+        this.size = size;
     }
 
     /**
@@ -142,6 +182,6 @@ public abstract class AbstractSyncItem implements SyncItem
      */
     public void setUser(final User user)
     {
-        this.user = Objects.requireNonNull(user, "user required");
+        this.user = user;
     }
 }

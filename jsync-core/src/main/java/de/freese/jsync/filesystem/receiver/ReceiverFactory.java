@@ -4,7 +4,6 @@ package de.freese.jsync.filesystem.receiver;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import org.slf4j.LoggerFactory;
-import de.freese.jsync.Options;
 
 /**
  * Factory für den {@link Receiver}.<br>
@@ -17,26 +16,25 @@ public final class ReceiverFactory
     /**
      * Liefert die konkrete Implementierung gemäß {@link URI}.
      *
-     * @param options {@link Options}
      * @param baseUri {@link URI}
      * @return {@link Receiver}
      */
-    public static Receiver createFromURI(final Options options, final URI baseUri)
+    public static Receiver createFromURI(final URI baseUri)
     {
         Receiver receiver = null;
 
         if (baseUri.getScheme().startsWith("file"))
         {
-            receiver = new LocalhostReceiver(options, baseUri);
+            receiver = new LocalhostReceiver(baseUri);
         }
         else if (baseUri.getScheme().startsWith("jsync"))
         {
             try
             {
                 Class<?> clazz = Class.forName("de.freese.jsync.filesystem.receiver.RemoteReceiver");
-                Constructor<?> constructor = clazz.getConstructor(Options.class, URI.class);
+                Constructor<?> constructor = clazz.getConstructor(URI.class);
 
-                receiver = (Receiver) constructor.newInstance(options, baseUri);
+                receiver = (Receiver) constructor.newInstance(baseUri);
             }
             catch (Exception ex)
             {

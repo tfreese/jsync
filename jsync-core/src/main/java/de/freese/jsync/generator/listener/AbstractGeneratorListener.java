@@ -5,7 +5,6 @@
 package de.freese.jsync.generator.listener;
 
 import java.nio.file.Path;
-import de.freese.jsync.model.SyncItem;
 
 /**
  * Basis-Implementierung des {@link GeneratorListener}.
@@ -23,26 +22,26 @@ public abstract class AbstractGeneratorListener implements GeneratorListener
     }
 
     /**
-     * @param path {@link Path}
-     * @param pathCount int
+     * @param relativePath String
      * @param prefix String
      * @return String
      */
-    protected String pathCountMessage(final Path path, final int pathCount, final String prefix)
+    protected String currentMetaMessage(final String relativePath, final String prefix)
     {
-        String message = String.format("%s size of SyncItems in %s: %d", prefix, path.toString(), pathCount);
+        String message = String.format("%s current Meta-Info: %s", prefix, relativePath);
 
         return message;
     }
 
     /**
-     * @param syncItem {@link SyncItem}
+     * @param path {@link Path}
+     * @param itemCount int
      * @param prefix String
      * @return String
      */
-    protected String processingSyncItemMessage(final SyncItem syncItem, final String prefix)
+    protected String itemCountMessage(final Path path, final int itemCount, final String prefix)
     {
-        String message = String.format("%s current SyncItem: %s", prefix, syncItem);
+        String message = String.format("%s size of SyncItems in %s: %d", prefix, path.toString(), itemCount);
 
         return message;
     }

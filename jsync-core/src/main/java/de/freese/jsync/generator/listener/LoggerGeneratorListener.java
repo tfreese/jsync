@@ -9,7 +9,6 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.client.listener.ClientListener;
-import de.freese.jsync.model.SyncItem;
 
 /**
  * {@link Logger}-Implementierung des {@link ClientListener}.
@@ -50,6 +49,17 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
+     * @see de.freese.jsync.generator.listener.GeneratorListener#currentMeta(java.lang.String)
+     */
+    @Override
+    public void currentMeta(final String relativePath)
+    {
+        String message = currentMetaMessage(relativePath, this.prefix);
+
+        getLogger().debug(message);
+    }
+
+    /**
      * @return {@link Logger}
      */
     protected Logger getLogger()
@@ -58,24 +68,13 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
+     * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
      */
     @Override
-    public void pathCount(final Path path, final int pathCount)
+    public void itemCount(final Path path, final int itemCount)
     {
-        String message = pathCountMessage(path, pathCount, this.prefix);
+        String message = itemCountMessage(path, itemCount, this.prefix);
 
         getLogger().info(message);
-    }
-
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#syncItem(de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void syncItem(final SyncItem syncItem)
-    {
-        String message = processingSyncItemMessage(syncItem, this.prefix);
-
-        getLogger().debug(message);
     }
 }

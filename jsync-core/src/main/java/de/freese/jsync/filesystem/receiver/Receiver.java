@@ -5,8 +5,7 @@ package de.freese.jsync.filesystem.receiver;
 
 import java.nio.channels.WritableByteChannel;
 import de.freese.jsync.filesystem.FileSystem;
-import de.freese.jsync.model.DirectorySyncItem;
-import de.freese.jsync.model.FileSyncItem;
+import de.freese.jsync.model.SyncItem;
 
 /**
  * Datensenke.
@@ -40,32 +39,33 @@ public interface Receiver extends FileSystem
     public void deleteFile(String file) throws Exception;
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.FileSystem#getChannel(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public WritableByteChannel getChannel(final FileSyncItem syncItem) throws Exception;
+    public WritableByteChannel getChannel(final SyncItem syncItem) throws Exception;
 
     /**
      * Aktualisiert ein Verzeichnis.
      *
-     * @param syncItem {@link DirectorySyncItem}
+     * @param syncItem {@link SyncItem}
      * @throws Exception Falls was schief geht.
      */
-    public void updateDirectory(DirectorySyncItem syncItem) throws Exception;
+    public void updateDirectory(SyncItem syncItem) throws Exception;
 
     /**
      * Aktualisiert eine Datei.
      *
-     * @param syncItem {@link FileSyncItem}
+     * @param syncItem {@link SyncItem}
      * @throws Exception Falls was schief geht.
      */
-    public void updateFile(FileSyncItem syncItem) throws Exception;
+    public void updateFile(SyncItem syncItem) throws Exception;
 
     /**
      * Überprüfung der Datei auf Größe und Prüfsumme.
      *
-     * @param syncItem {@link FileSyncItem}
+     * @param syncItem {@link SyncItem}
+     * @param withChecksum boolean
      * @throws Exception Falls was schief geht.
      */
-    public void validateFile(final FileSyncItem syncItem) throws Exception;
+    public void validateFile(final SyncItem syncItem, boolean withChecksum) throws Exception;
 }
