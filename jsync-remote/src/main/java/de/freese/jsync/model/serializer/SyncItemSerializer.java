@@ -6,42 +6,52 @@ package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
 import java.nio.file.attribute.PosixFilePermissions;
-import de.freese.jsync.model.AbstractSyncItem;
+import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
+import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
 
 /**
  * @author Thomas Freese
- * @param <T> Entity-Type
  */
-abstract class AbstractSyncItemSerializer<T extends AbstractSyncItem> implements Serializer<T>
+class SyncItemSerializer implements Serializer<SyncItem>
 {
     /**
-     * Erstellt ein neues {@link AbstractSyncItemSerializer} Object.
+    *
+    */
+    private static final Serializer<SyncItem> INSTANCE = new SyncItemSerializer();
+
+    /**
+     * @return Serializer<Options>
      */
-    protected AbstractSyncItemSerializer()
+    static Serializer<SyncItem> getInstance()
+    {
+        return INSTANCE;
+    }
+
+    /**
+     * Erstellt ein neues {@link SyncItemSerializer} Object.
+     */
+    SyncItemSerializer()
     {
         super();
     }
 
     /**
-     * @param relativePath String
-     * @return {@link AbstractSyncItem}
-     */
-    protected abstract T createSyncItem(String relativePath);
-
-    /**
      * @see de.freese.jsync.model.serializer.Serializer#readFrom(java.nio.ByteBuffer)
      */
     @Override
-    public T readFrom(final ByteBuffer buffer)
+    public SyncItem readFrom(final ByteBuffer buffer)
     {
         // relativePath
         byte[] bytes = new byte[buffer.getInt()];
         buffer.get(bytes);
         String relativePath = new String(bytes, getCharset());
 
-        T syncItem = createSyncItem(relativePath);
+        SyncItem syncItem = new DefaultSyncItem(relativePath);
+
+        // is File / Directory
+        syncItem.setFile(buffer.get() == 1);
 
         // lastModifiedTime
         long lastModifiedTime = buffer.getLong();
@@ -72,6 +82,16 @@ abstract class AbstractSyncItemSerializer<T extends AbstractSyncItem> implements
             syncItem.setUser(user);
         }
 
+        // checksum
+        if (buffer.get() == 1)
+        {
+            bytes = new byte[buffer.getInt()];
+            buffer.get(bytes);
+            String checksum = new String(bytes, getCharset());
+
+            syncItem.setChecksum(checksum);
+        }
+
         return syncItem;
     }
 
@@ -79,12 +99,15 @@ abstract class AbstractSyncItemSerializer<T extends AbstractSyncItem> implements
      * @see de.freese.jsync.model.serializer.Serializer#writeTo(java.nio.ByteBuffer, java.lang.Object)
      */
     @Override
-    public void writeTo(final ByteBuffer buffer, final T obj)
+    public void writeTo(final ByteBuffer buffer, final SyncItem obj)
     {
         // relativePath
         byte[] bytes = obj.getRelativePath().getBytes(getCharset());
         buffer.putInt(bytes.length);
         buffer.put(bytes);
+
+        // is File / Directory
+        buffer.put(obj.isDirectory() ? (byte) 0 : (byte) 1);
 
         // lastModifiedTime
         buffer.putLong(obj.getLastModifiedTime());
@@ -99,6 +122,7 @@ abstract class AbstractSyncItemSerializer<T extends AbstractSyncItem> implements
         else
         {
             buffer.put((byte) 1);
+
             bytes = permissions.getBytes(getCharset());
             buffer.putInt(bytes.length);
             buffer.put(bytes);
@@ -124,6 +148,20 @@ abstract class AbstractSyncItemSerializer<T extends AbstractSyncItem> implements
         {
             buffer.put((byte) 1);
             UserSerializer.getInstance().writeTo(buffer, obj.getUser());
+        }
+
+        // checksum
+        if ((obj.getChecksum() == null) || obj.getChecksum().isBlank())
+        {
+            buffer.put((byte) 0);
+        }
+        else
+        {
+            buffer.put((byte) 1);
+
+            bytes = obj.getChecksum().getBytes(getCharset());
+            buffer.putInt(bytes.length);
+            buffer.put(bytes);
         }
     }
 }

@@ -5,9 +5,8 @@ package de.freese.jsync.generator;
 
 import java.nio.file.Path;
 import java.util.List;
-import de.freese.jsync.generator.listener.GeneratorListener;
+import java.util.function.LongConsumer;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.SyncItemMeta;
 
 /**
  * Der Generator sammelt alle relevanten Informationens des Dateisystems für den gewählten {@link Path}.
@@ -18,24 +17,21 @@ import de.freese.jsync.model.SyncItemMeta;
 public interface Generator
 {
     /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
-     *
-     * @param basePath String
-     * @param followSymLinks boolean
-     * @param listener {@link GeneratorListener}; optional.
-     * @return {@link List}
-     */
-    public List<SyncItem> generateItems(final String basePath, boolean followSymLinks, GeneratorListener listener);
-
-    /**
-     * Erzeugt die Meta-Daten des SyncItems (Verzeichnisse, Dateien).<br>
+     * Erzeugt die Prüfsumme einer Datei.<br>
      *
      * @param basePath String
      * @param relativePath String
+     * @param consumerBytesRead {@link LongConsumer}; optional
+     * @return String
+     */
+    public String generateChecksum(final String basePath, String relativePath, final LongConsumer consumerBytesRead);
+
+    /**
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses alphabetisch sortiert.<br>
+     *
+     * @param basePath String
      * @param followSymLinks boolean
-     * @param withChecksum boolean
-     * @param listener {@link GeneratorListener}; optional.
      * @return {@link List}
      */
-    public SyncItemMeta generateMeta(final String basePath, String relativePath, boolean followSymLinks, boolean withChecksum, GeneratorListener listener);
+    public List<SyncItem> generateItems(final String basePath, boolean followSymLinks);
 }

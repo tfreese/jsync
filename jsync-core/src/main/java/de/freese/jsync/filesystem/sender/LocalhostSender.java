@@ -7,11 +7,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.function.LongConsumer;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
-import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.SyncItemMeta;
 
 /**
  * {@link Sender} für Localhost-Filesysteme.
@@ -21,6 +20,11 @@ import de.freese.jsync.model.SyncItemMeta;
 public class LocalhostSender extends AbstractSender
 {
     /**
+     *
+     */
+    private final Generator generator;
+
+    /**
      * Erzeugt eine neue Instanz von {@link LocalhostSender}.
      *
      * @param baseUri {@link URI}
@@ -28,6 +32,8 @@ public class LocalhostSender extends AbstractSender
     public LocalhostSender(final URI baseUri)
     {
         super(baseUri);
+
+        this.generator = new DefaultGenerator();
     }
 
     /**
@@ -54,7 +60,7 @@ public class LocalhostSender extends AbstractSender
     @Override
     public ReadableByteChannel getChannel(final SyncItem syncItem) throws Exception
     {
-        Path path = getBase().resolve(syncItem.getRelativePath());
+        Path path = getBasePath().resolve(syncItem.getRelativePath());
 
         getLogger().debug("get ReadableByteChannel: {}", path);
 
@@ -70,25 +76,23 @@ public class LocalhostSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getSyncItemMeta(java.lang.String, boolean, boolean, de.freese.jsync.generator.listener.GeneratorListener)
+     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(de.freese.jsync.model.SyncItem, java.util.function.LongConsumer)
      */
     @Override
-    public SyncItemMeta getSyncItemMeta(final String relativePath, final boolean followSymLinks, final boolean withChecksum, final GeneratorListener listener)
+    public String getChecksum(final SyncItem syncItem, final LongConsumer consumerBytesRead)
     {
-        Generator generator = new DefaultGenerator();
-        SyncItemMeta meta = generator.generateMeta(getBase().toString(), relativePath, followSymLinks, withChecksum, listener);
+        String checksum = this.generator.generateChecksum(getBasePath().toString(), syncItem.getRelativePath(), consumerBytesRead);
 
-        return meta;
+        return checksum;
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getSyncItems(boolean, de.freese.jsync.generator.listener.GeneratorListener)
+     * @see de.freese.jsync.filesystem.FileSystem#getSyncItems(boolean)
      */
     @Override
-    public List<SyncItem> getSyncItems(final boolean followSymLinks, final GeneratorListener listener)
+    public List<SyncItem> getSyncItems(final boolean followSymLinks)
     {
-        Generator generator = new DefaultGenerator();
-        List<SyncItem> items = generator.generateItems(getBase().toString(), followSymLinks, listener);
+        List<SyncItem> items = this.generator.generateItems(getBasePath().toString(), followSymLinks);
 
         return items;
     }

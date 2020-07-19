@@ -8,9 +8,8 @@ import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
-import de.freese.jsync.generator.listener.GeneratorListener;
+import java.util.function.LongConsumer;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.SyncItemMeta;
 
 /**
  * @author Thomas Freese
@@ -43,22 +42,19 @@ public interface FileSystem
     public Channel getChannel(final SyncItem syncItem) throws Exception;
 
     /**
-     * Liefert die Meta-Daten des {@link SyncItem}.<br>
+     * Liefert die Prüfsumme einer Datei.<br>
      *
-     * @param relativePath String
-     * @param followSymLinks boolean
-     * @param withChecksum boolean
-     * @param listener {@link GeneratorListener}; optional.
-     * @return {@link SyncItemMeta}
+     * @param syncItem {@link SyncItem}
+     * @param consumerBytesRead {@link LongConsumer}; optional
+     * @return String
      */
-    public SyncItemMeta getSyncItemMeta(String relativePath, boolean followSymLinks, boolean withChecksum, GeneratorListener listener);
+    public String getChecksum(SyncItem syncItem, LongConsumer consumerBytesRead);
 
     /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses alphabetisch sortiert.<br>
      *
      * @param followSymLinks boolean
-     * @param listener {@link GeneratorListener}; optional.
      * @return {@link List}
      */
-    public List<SyncItem> getSyncItems(boolean followSymLinks, GeneratorListener listener);
+    public List<SyncItem> getSyncItems(boolean followSymLinks);
 }

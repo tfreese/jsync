@@ -12,17 +12,12 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import de.freese.jsync.Options;
-import de.freese.jsync.generator.listener.GeneratorListener;
-import de.freese.jsync.model.DirectorySyncItem;
-import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.JSyncCommandSerializer;
 import de.freese.jsync.model.serializer.Serializers;
@@ -118,11 +113,6 @@ public class RemoteSender extends AbstractSender
     /**
     *
     */
-    private final Path base;
-
-    /**
-    *
-    */
     private final ByteBuffer buffer;
 
     /**
@@ -136,23 +126,15 @@ public class RemoteSender extends AbstractSender
     private AsynchronousSocketChannel client = null;
 
     /**
-    *
-    */
-    private final URI serverUri;
-
-    /**
      * Erstellt ein neues {@link RemoteSender} Object.
      *
-     * @param options {@link Options}
      * @param serverUri {@link URI}
      */
-    public RemoteSender(final Options options, final URI serverUri)
+    public RemoteSender(final URI serverUri)
     {
-        super(options);
+        super(serverUri);
 
-        this.serverUri = Objects.requireNonNull(serverUri, "serverUri required");
-        this.base = Paths.get(JSyncUtils.normalizedPath(serverUri));
-        this.buffer = ByteBuffer.allocateDirect(getOptions().getBufferSize());
+        this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
     }
 
     /**
@@ -161,7 +143,7 @@ public class RemoteSender extends AbstractSender
     @Override
     public void connect() throws Exception
     {
-        InetSocketAddress hostAddress = new InetSocketAddress(getServerUri().getHost(), getServerUri().getPort());
+        InetSocketAddress hostAddress = new InetSocketAddress(getBaseUri().getHost(), getBaseUri().getPort());
 
         // this.client = SocketChannel.open(hostAddress);
         // this.client.configureBlocking(true);
@@ -191,102 +173,6 @@ public class RemoteSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#createSyncItems(de.freese.jsync.generator.listener.GeneratorListener)
-     */
-    @Override
-    public List<SyncItem> createSyncItems(final GeneratorListener listener)
-    {
-        List<SyncItem> syncItems = new ArrayList<>();
-
-        try
-        {
-            ByteBuffer buf = getBuffer();
-
-            // JSyncCommand senden.
-            Serializers.writeTo(buf, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
-
-            byte[] bytes = getBase().toString().getBytes(getCharset());
-            buf.putInt(bytes.length);
-            buf.put(bytes);
-
-            buf.flip();
-            write(buf);
-
-            buf.clear();
-
-            // Response lesen.
-            Future<Integer> futureResponse = getClient().read(buf);
-
-            boolean sizeRead = false;
-            boolean finished = false;
-
-            // while (getClient().read(buffer) > 0)
-            while (futureResponse.get() > 0)
-            {
-                buf.flip();
-
-                if (!sizeRead)
-                {
-                    int size = buf.getInt();
-                    sizeRead = true;
-
-                    if (listener != null)
-                    {
-                        listener.pathCount(getBase(), size);
-                    }
-                }
-
-                while (buf.hasRemaining())
-                {
-                    SyncItem syncItem = null;
-
-                    byte b = buf.get();
-
-                    if (b == 0)
-                    {
-                        syncItem = Serializers.readFrom(buf, FileSyncItem.class);
-                    }
-                    else if (b == 1)
-                    {
-                        syncItem = Serializers.readFrom(buf, DirectorySyncItem.class);
-                    }
-                    else if (b == Byte.MIN_VALUE)
-                    {
-                        // Finish-Flag.
-                        finished = true;
-                        break;
-                    }
-
-                    if (listener != null)
-                    {
-                        listener.syncItem(syncItem);
-                    }
-
-                    syncItems.add(syncItem);
-                }
-
-                if (finished)
-                {
-                    break;
-                }
-
-                buf.clear();
-                futureResponse = getClient().read(buf);
-            }
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
-        }
-
-        return syncItems;
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.sender.Sender#disconnect()
      */
     @Override
@@ -303,14 +189,6 @@ public class RemoteSender extends AbstractSender
     }
 
     /**
-     * @return {@link Path}
-     */
-    protected Path getBase()
-    {
-        return this.base;
-    }
-
-    /**
      * @return {@link ByteBuffer}
      */
     protected ByteBuffer getBuffer()
@@ -321,10 +199,10 @@ public class RemoteSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(de.freese.jsync.model.FileSyncItem)
+     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public ReadableByteChannel getChannel(final FileSyncItem syncItem) throws Exception
+    public ReadableByteChannel getChannel(final SyncItem syncItem) throws Exception
     {
         ByteBuffer buf = getBuffer();
 
@@ -372,11 +250,85 @@ public class RemoteSender extends AbstractSender
     }
 
     /**
-     * @return {@link URI}
+     * @see de.freese.jsync.filesystem.FileSystem#getSyncItems(boolean)
      */
-    protected URI getServerUri()
+    @Override
+    public List<SyncItem> getSyncItems(final boolean followSymLinks)
     {
-        return this.serverUri;
+        List<SyncItem> syncItems = new ArrayList<>();
+
+        try
+        {
+            ByteBuffer buf = getBuffer();
+
+            // JSyncCommand senden.
+            Serializers.writeTo(buf, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+
+            byte[] bytes = getBasePath().toString().getBytes(getCharset());
+            buf.putInt(bytes.length);
+            buf.put(bytes);
+
+            buf.flip();
+            write(buf);
+
+            buf.clear();
+            buf.put(followSymLinks ? (byte) 1 : (byte) 0);
+            buf.flip();
+            write(buf);
+
+            // Response lesen.
+            buf.clear();
+            Future<Integer> futureResponse = getClient().read(buf);
+
+            boolean sizeRead = false;
+            boolean finished = false;
+
+            // while (getClient().read(buffer) > 0)
+            while (futureResponse.get() > 0)
+            {
+                buf.flip();
+
+                if (!sizeRead)
+                {
+                    int size = buf.getInt();
+                    sizeRead = true;
+                }
+
+                while (buf.hasRemaining())
+                {
+                    byte b = buf.get();
+
+                    SyncItem syncItem = Serializers.readFrom(buf, SyncItem.class);
+
+                    if (b == Byte.MIN_VALUE)
+                    {
+                        // Finish-Flag.
+                        finished = true;
+                        break;
+                    }
+
+                    syncItems.add(syncItem);
+                }
+
+                if (finished)
+                {
+                    break;
+                }
+
+                buf.clear();
+                futureResponse = getClient().read(buf);
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+
+        return syncItems;
     }
 
     /**

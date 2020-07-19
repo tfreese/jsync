@@ -12,15 +12,14 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import org.slf4j.Logger;
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.filesystem.sender.Sender;
-import de.freese.jsync.generator.listener.GeneratorListener;
-import de.freese.jsync.model.DirectorySyncItem;
-import de.freese.jsync.model.FileSyncItem;
+import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.JSyncCommandSerializer;
 import de.freese.jsync.model.serializer.Serializers;
@@ -179,7 +178,7 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         Path base = Paths.get(basePath);
 
-        Sender source = new LocalhostSender(session.getOptions(), base.toUri());
+        Sender source = new LocalhostSender(base.toUri());
         session.setSender(source);
 
         buffer.clear();
@@ -206,7 +205,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         String fileName = new String(bytes, getCharset());
 
-        FileSyncItem syncItem = new FileSyncItem(fileName);
+        SyncItem syncItem = new DefaultSyncItem(fileName);
+        syncItem.setFile(true);
         syncItem.setSize(fileSize);
 
         // if (buffer.get() == 1)
@@ -238,69 +238,31 @@ public class JSyncIoHandler extends AbstractIoHandler
         ByteBuffer buffer = session.getBuffer();
 
         Sender sender = session.getSender();
-        sender.createSyncItems(new GeneratorListener()
-        {
-            /**
-             * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
-             */
-            @Override
-            public void checksum(final long size, final long bytesRead)
-            {
-                // Empty
-            }
+        List<SyncItem> syncItems = sender.getSyncItems(session.getOptions().isFollowSymLinks());
 
-            /**
-             * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
-             */
-            @Override
-            public void pathCount(final Path path, final int pathCount)
-            {
-                buffer.clear();
-                buffer.putInt(pathCount);
-                buffer.flip();
+        // Anzahl
+        buffer.clear();
+        buffer.putInt(syncItems.size());
+        buffer.flip();
+        channel.write(buffer);
 
-                try
+        syncItems.forEach(syncItem -> {
+            buffer.clear();
+
+            Serializers.writeTo(buffer, syncItem);
+
+            buffer.flip();
+
+            try
+            {
+                while (buffer.hasRemaining())
                 {
                     channel.write(buffer);
                 }
-                catch (IOException ioex)
-                {
-                    session.getLogger().error(null, ioex);
-                }
             }
-
-            /**
-             * @see de.freese.jsync.generator.listener.GeneratorListener#syncItem(de.freese.jsync.model.SyncItem)
-             */
-            @Override
-            public void syncItem(final SyncItem syncItem)
+            catch (IOException ioex)
             {
-                buffer.clear();
-
-                if (syncItem instanceof FileSyncItem)
-                {
-                    buffer.put((byte) 0);
-                    Serializers.writeTo(buffer, (FileSyncItem) syncItem);
-                }
-                else
-                {
-                    buffer.put((byte) 1);
-                    Serializers.writeTo(buffer, (DirectorySyncItem) syncItem);
-                }
-
-                buffer.flip();
-
-                try
-                {
-                    while (buffer.hasRemaining())
-                    {
-                        channel.write(buffer);
-                    }
-                }
-                catch (IOException ioex)
-                {
-                    session.getLogger().error(null, ioex);
-                }
+                session.getLogger().error(null, ioex);
             }
         });
 
@@ -320,7 +282,7 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         ByteBuffer buffer = session.getBuffer();
         Sender sender = session.getSender();
-        FileSyncItem syncItem = session.getFileSyncItem();
+        SyncItem syncItem = session.getSyncItem();
 
         long fileSize = syncItem.getSize();
         long fileBytesTransferred = 0;
@@ -400,7 +362,7 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         Path base = Paths.get(basePath);
 
-        Receiver receiver = new LocalhostReceiver(session.getOptions(), base.toUri());
+        Receiver receiver = new LocalhostReceiver(base.toUri());
         session.setReceiver(receiver);
 
         buffer.clear();
@@ -471,7 +433,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         String fileName = new String(bytes, getCharset());
 
-        FileSyncItem syncItem = new FileSyncItem(fileName);
+        SyncItem syncItem = new DefaultSyncItem(fileName);
+        syncItem.setFile(true);
         syncItem.setSize(fileSize);
 
         // if (buffer.get() == 1)
@@ -546,7 +509,7 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         ByteBuffer buffer = session.getBuffer();
 
-        DirectorySyncItem syncItem = Serializers.readFrom(buffer, DirectorySyncItem.class);
+        SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
 
         Receiver receiver = session.getReceiver();
         receiver.updateDirectory(syncItem);
@@ -568,7 +531,7 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         ByteBuffer buffer = session.getBuffer();
 
-        FileSyncItem syncItem = Serializers.readFrom(buffer, FileSyncItem.class);
+        SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
 
         Receiver receiver = session.getReceiver();
         receiver.updateFile(syncItem);
@@ -596,7 +559,8 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         String fileName = new String(bytes, getCharset());
 
-        FileSyncItem syncItem = new FileSyncItem(fileName);
+        SyncItem syncItem = new DefaultSyncItem(fileName);
+        syncItem.setFile(true);
         syncItem.setSize(fileSize);
 
         if (buffer.get() == 1)
@@ -612,7 +576,7 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         try
         {
-            receiver.validateFile(syncItem);
+            receiver.validateFile(syncItem, session.getOptions().isChecksum());
         }
         catch (Exception ex)
         {
@@ -637,69 +601,31 @@ public class JSyncIoHandler extends AbstractIoHandler
         ByteBuffer buffer = session.getBuffer();
 
         Receiver receiver = session.getReceiver();
-        receiver.createSyncItems(new GeneratorListener()
-        {
-            /**
-             * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
-             */
-            @Override
-            public void checksum(final long size, final long bytesRead)
-            {
-                // Empty
-            }
+        List<SyncItem> syncItems = receiver.getSyncItems(session.getOptions().isFollowSymLinks());
 
-            /**
-             * @see de.freese.jsync.generator.listener.GeneratorListener#pathCount(java.nio.file.Path, int)
-             */
-            @Override
-            public void pathCount(final Path path, final int pathCount)
-            {
-                buffer.clear();
-                buffer.putInt(pathCount);
-                buffer.flip();
+        // Anzahl
+        buffer.clear();
+        buffer.putInt(syncItems.size());
+        buffer.flip();
+        channel.write(buffer);
 
-                try
+        syncItems.forEach(syncItem -> {
+            buffer.clear();
+
+            Serializers.writeTo(buffer, syncItem);
+
+            buffer.flip();
+
+            try
+            {
+                while (buffer.hasRemaining())
                 {
                     channel.write(buffer);
                 }
-                catch (IOException ioex)
-                {
-                    session.getLogger().error(null, ioex);
-                }
             }
-
-            /**
-             * @see de.freese.jsync.generator.listener.GeneratorListener#syncItem(de.freese.jsync.model.SyncItem)
-             */
-            @Override
-            public void syncItem(final SyncItem syncItem)
+            catch (IOException ioex)
             {
-                buffer.clear();
-
-                if (syncItem instanceof FileSyncItem)
-                {
-                    buffer.put((byte) 0);
-                    Serializers.writeTo(buffer, (FileSyncItem) syncItem);
-                }
-                else
-                {
-                    buffer.put((byte) 1);
-                    Serializers.writeTo(buffer, (DirectorySyncItem) syncItem);
-                }
-
-                buffer.flip();
-
-                try
-                {
-                    while (buffer.hasRemaining())
-                    {
-                        channel.write(buffer);
-                    }
-                }
-                catch (IOException ioex)
-                {
-                    session.getLogger().error(null, ioex);
-                }
+                session.getLogger().error(null, ioex);
             }
         });
 

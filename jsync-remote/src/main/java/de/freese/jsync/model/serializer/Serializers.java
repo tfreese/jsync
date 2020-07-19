@@ -8,9 +8,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import de.freese.jsync.Options;
-import de.freese.jsync.model.DirectorySyncItem;
-import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.Group;
+import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
 import de.freese.jsync.server.JSyncCommand;
 
@@ -64,8 +63,7 @@ public final class Serializers
         this.serializerMap.put(User.class, UserSerializer.getInstance());
         this.serializerMap.put(Options.class, OptionsSerializer.getInstance());
         this.serializerMap.put(JSyncCommand.class, JSyncCommandSerializer.getInstance());
-        this.serializerMap.put(DirectorySyncItem.class, DirectorySyncItemSerializer.getInstance());
-        this.serializerMap.put(FileSyncItem.class, FileSyncItemSerializer.getInstance());
+        this.serializerMap.put(SyncItem.class, SyncItemSerializer.getInstance());
     }
 
     /**

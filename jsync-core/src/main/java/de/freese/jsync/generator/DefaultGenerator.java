@@ -18,13 +18,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongConsumer;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
-import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.SyncItemMeta;
 import de.freese.jsync.model.User;
 import de.freese.jsync.utils.DigestUtils;
 
@@ -44,10 +43,40 @@ public class DefaultGenerator extends AbstractGenerator
     }
 
     /**
-     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean, de.freese.jsync.generator.listener.GeneratorListener)
+     * @see de.freese.jsync.generator.Generator#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public List<SyncItem> generateItems(final String basePath, final boolean followSymLinks, final GeneratorListener listener)
+    public String generateChecksum(final String basePath, final String relativePath, final LongConsumer consumerBytesRead)
+    {
+        Path path = Paths.get(basePath, relativePath);
+
+        // String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, bytesRead -> listener.checksum(syncItem.getSize(), bytesRead));
+        String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, consumerBytesRead);
+
+        return checksum;
+    }
+
+    /**
+     * @param path {@link Path}
+     * @param relativePath String
+     * @param linkOptions {@link LinkOption}[]
+     * @return {@link SyncItem}
+     */
+    public SyncItem generateItem(final Path path, final String relativePath, final LinkOption[] linkOptions)
+    {
+        if (Files.isDirectory(path))
+        {
+            return toDirectoryItem(path, relativePath, linkOptions);
+        }
+
+        return toFileItem(path, relativePath, linkOptions);
+    }
+
+    /**
+     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean)
+     */
+    @Override
+    public List<SyncItem> generateItems(final String basePath, final boolean followSymLinks)
     {
         Path base = Paths.get(basePath);
 
@@ -60,55 +89,34 @@ public class DefaultGenerator extends AbstractGenerator
 
         Set<Path> paths = getPaths(base, visitOptions);
 
-        listener.itemCount(base, paths.size());
+        LinkOption[] linkOptions = followSymLinks ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
 
-        List<SyncItem> syncItems = paths.stream().map(p -> new DefaultSyncItem(base.relativize(p).toString())).collect(Collectors.toList());
+        // @formatter:off
+        List<SyncItem> syncItems = paths.stream()
+                .map(path -> {
+                    String relativePath = base.relativize(path).toString();
+
+
+                    SyncItem syncItem = generateItem(path, relativePath, linkOptions);
+
+                    return syncItem;
+                })
+                .collect(Collectors.toList())
+                ;
+        // @formatter:on
 
         return syncItems;
     }
 
     /**
-     * @see de.freese.jsync.generator.Generator#generateMeta(java.lang.String, java.lang.String, boolean, boolean,
-     *      de.freese.jsync.generator.listener.GeneratorListener)
-     */
-    @Override
-    public SyncItemMeta generateMeta(final String basePath, final String relativePath, final boolean followSymLinks, final boolean withChecksum,
-                                     final GeneratorListener listener)
-    {
-        Path path = Paths.get(basePath).resolve(relativePath);
-
-        if (Files.notExists(path))
-        {
-            getLogger().warn("Path not exist: {}", path);
-
-            return null;
-        }
-
-        listener.currentMeta(relativePath);
-
-        LinkOption[] linkOptions = followSymLinks ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
-        SyncItemMeta meta = null;
-
-        if (Files.isDirectory(path))
-        {
-            meta = toDirectoryItem(path, linkOptions);
-        }
-        else
-        {
-            meta = toFileItem(path, linkOptions, withChecksum, listener);
-        }
-
-        return meta;
-    }
-
-    /**
      * @param directory {@link Path}
+     * @param relativePath String
      * @param linkOptions {@link LinkOption}; wenn {@value LinkOption#NOFOLLOW_LINKS} null dann Follow
-     * @return {@link SyncItemMeta}
+     * @return {@link SyncItem}
      */
-    protected SyncItemMeta toDirectoryItem(final Path directory, final LinkOption[] linkOptions)
+    protected SyncItem toDirectoryItem(final Path directory, final String relativePath, final LinkOption[] linkOptions)
     {
-        SyncItemMeta meta = new SyncItemMeta();
+        SyncItem syncItem = new DefaultSyncItem(relativePath);
 
         try
         {
@@ -116,7 +124,7 @@ public class DefaultGenerator extends AbstractGenerator
             {
                 long lastModifiedTime = Files.getLastModifiedTime(directory, linkOptions).to(TimeUnit.SECONDS);
 
-                meta.setLastModifiedTime(lastModifiedTime);
+                syncItem.setLastModifiedTime(lastModifiedTime);
             }
             else if (Options.IS_LINUX)
             {
@@ -133,10 +141,10 @@ public class DefaultGenerator extends AbstractGenerator
                 int uid = (int) attributes.get("uid");
                 int gid = (int) attributes.get("gid");
 
-                meta.setLastModifiedTime(lastModifiedTime);
-                meta.setPermissions(filePermissions);
-                meta.setUser(new User(userName, uid));
-                meta.setGroup(new Group(groupName, gid));
+                syncItem.setLastModifiedTime(lastModifiedTime);
+                syncItem.setPermissions(filePermissions);
+                syncItem.setUser(new User(userName, uid));
+                syncItem.setGroup(new Group(groupName, gid));
 
                 // UserPrincipalLookupService lookupService = provider(path).getUserPrincipalLookupService();
                 // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
@@ -147,34 +155,31 @@ public class DefaultGenerator extends AbstractGenerator
             throw new UncheckedIOException(ioex);
         }
 
-        return meta;
+        return syncItem;
     }
 
     /**
      * @param file {@link Path}
+     * @param relativePath String
      * @param linkOptions {@link LinkOption}; wenn {@value LinkOption#NOFOLLOW_LINKS} null dann Follow
-     * @param withChecksum boolean checksum,
-     * @param listener {@link GeneratorListener}
-     * @return {@link SyncItemMeta}
+     * @return {@link SyncItem}
      */
-    protected SyncItemMeta toFileItem(final Path file, final LinkOption[] linkOptions, final boolean withChecksum, final GeneratorListener listener)
+    protected SyncItem toFileItem(final Path file, final String relativePath, final LinkOption[] linkOptions)
     {
-        SyncItemMeta meta = new SyncItemMeta();
-        meta.setFile(true);
+        SyncItem syncItem = new DefaultSyncItem(relativePath);
+        syncItem.setFile(true);
 
         try
         {
-            long size = 0L;
-
             if (Options.IS_WINDOWS)
             {
                 BasicFileAttributes basicFileAttributes = Files.readAttributes(file, BasicFileAttributes.class, linkOptions);
 
                 long lastModifiedTime = basicFileAttributes.lastModifiedTime().to(TimeUnit.SECONDS);
-                size = basicFileAttributes.size();
+                long size = basicFileAttributes.size();
 
-                meta.setLastModifiedTime(lastModifiedTime);
-                meta.setSize(size);
+                syncItem.setLastModifiedTime(lastModifiedTime);
+                syncItem.setSize(size);
             }
             else if (Options.IS_LINUX)
             {
@@ -184,7 +189,7 @@ public class DefaultGenerator extends AbstractGenerator
                 Map<String, Object> attributes = Files.readAttributes(file, "unix:lastModifiedTime,size,permissions,owner,group,uid,gid", linkOptions);
 
                 long lastModifiedTime = ((FileTime) attributes.get("lastModifiedTime")).to(TimeUnit.SECONDS);
-                size = (long) attributes.get("size");
+                long size = (long) attributes.get("size");
 
                 @SuppressWarnings("unchecked")
                 Set<PosixFilePermission> filePermissions = (Set<PosixFilePermission>) attributes.get("permissions");
@@ -194,20 +199,14 @@ public class DefaultGenerator extends AbstractGenerator
                 int uid = (int) attributes.get("uid");
                 int gid = (int) attributes.get("gid");
 
-                meta.setLastModifiedTime(lastModifiedTime);
-                meta.setSize(size);
-                meta.setPermissions(filePermissions);
-                meta.setUser(new User(userName, uid));
-                meta.setGroup(new Group(groupName, gid));
+                syncItem.setLastModifiedTime(lastModifiedTime);
+                syncItem.setSize(size);
+                syncItem.setPermissions(filePermissions);
+                syncItem.setUser(new User(userName, uid));
+                syncItem.setGroup(new Group(groupName, gid));
 
                 // UserPrincipalLookupService lookupService = provider(path).getUserPrincipalLookupService();
                 // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
-            }
-
-            if (withChecksum)
-            {
-                String checksum = DigestUtils.sha256DigestAsHex(file, Options.BUFFER_SIZE, bytesRead -> listener.checksum(meta.getSize(), bytesRead));
-                meta.setChecksum(checksum);
             }
         }
         catch (IOException ioex)
@@ -215,6 +214,6 @@ public class DefaultGenerator extends AbstractGenerator
             throw new UncheckedIOException(ioex);
         }
 
-        return meta;
+        return syncItem;
     }
 }

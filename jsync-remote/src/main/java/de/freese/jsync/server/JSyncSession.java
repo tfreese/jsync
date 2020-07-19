@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.Sender;
-import de.freese.jsync.model.FileSyncItem;
+import de.freese.jsync.model.SyncItem;
 
 /**
  * Session-Object für den Server.
@@ -23,11 +23,6 @@ public class JSyncSession
     *
     */
     private final ByteBuffer buffer;
-
-    /**
-    *
-    */
-    private FileSyncItem fileSyncItem = null;
 
     /**
      *
@@ -55,6 +50,11 @@ public class JSyncSession
     private Sender sender = null;
 
     /**
+    *
+    */
+    private SyncItem syncItem = null;
+
+    /**
      * Erstellt ein neues {@link JSyncSession} Object.
      *
      * @param options {@link Options}
@@ -65,7 +65,7 @@ public class JSyncSession
         super();
 
         this.options = Objects.requireNonNull(options, "options required");
-        this.buffer = ByteBuffer.allocateDirect(options.getBufferSize());
+        this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
         this.logger = Objects.requireNonNull(logger, "logger required");
     }
 
@@ -75,14 +75,6 @@ public class JSyncSession
     public ByteBuffer getBuffer()
     {
         return this.buffer;
-    }
-
-    /**
-     * @return {@link FileSyncItem}
-     */
-    public FileSyncItem getFileSyncItem()
-    {
-        return this.fileSyncItem;
     }
 
     /**
@@ -126,11 +118,19 @@ public class JSyncSession
     }
 
     /**
-     * @param fileSyncItem {@link FileSyncItem}
+     * @return {@link SyncItem}
      */
-    public void setFileSyncItem(final FileSyncItem fileSyncItem)
+    public SyncItem getSyncItem()
     {
-        this.fileSyncItem = fileSyncItem;
+        return this.syncItem;
+    }
+
+    /**
+     * @param syncItem {@link SyncItem}
+     */
+    public void setFileSyncItem(final SyncItem syncItem)
+    {
+        this.syncItem = syncItem;
     }
 
     /**

@@ -7,6 +7,8 @@ package de.freese.jsync.generator.listener;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.LongConsumer;
+import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
@@ -16,12 +18,12 @@ public class GeneratorListenerAdapter implements GeneratorListener
     /**
      *
      */
-    private BiConsumer<Long, Long> checksumConsumer = null;
+    private LongConsumer checksumConsumer = null;
 
     /**
      *
      */
-    private Consumer<String> currentMetaConsumer = null;
+    private Consumer<SyncItem> currentItemConsumer = null;
 
     /**
      *
@@ -37,33 +39,33 @@ public class GeneratorListenerAdapter implements GeneratorListener
     }
 
     /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
+     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long)
      */
     @Override
-    public final void checksum(final long size, final long bytesRead)
+    public final void checksum(final long bytesRead)
     {
         if (this.checksumConsumer != null)
         {
-            this.checksumConsumer.accept(size, bytesRead);
+            this.checksumConsumer.accept(bytesRead);
         }
     }
 
     /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#currentMeta(java.lang.String)
+     * @see de.freese.jsync.generator.listener.GeneratorListener#currentItem(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void currentMeta(final String relativePath)
+    public void currentItem(final SyncItem syncItem)
     {
-        if (this.currentMetaConsumer != null)
+        if (this.currentItemConsumer != null)
         {
-            this.currentMetaConsumer.accept(relativePath);
+            this.currentItemConsumer.accept(syncItem);
         }
     }
 
     /**
-     * @param consumer {@link BiConsumer}
+     * @param consumer {@link LongConsumer}
      */
-    public void doOnChecksum(final BiConsumer<Long, Long> consumer)
+    public void doOnChecksum(final LongConsumer consumer)
     {
         this.checksumConsumer = consumer;
     }
@@ -71,9 +73,9 @@ public class GeneratorListenerAdapter implements GeneratorListener
     /**
      * @param consumer {@link Consumer}
      */
-    public void doOnCurrentMeta(final Consumer<String> consumer)
+    public void doOnCurrentItem(final Consumer<SyncItem> consumer)
     {
-        this.currentMetaConsumer = consumer;
+        this.currentItemConsumer = consumer;
     }
 
     /**

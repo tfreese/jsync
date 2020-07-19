@@ -4,7 +4,6 @@
 
 package de.freese.jsync.swing.components;
 
-import de.freese.jsync.model.FileSyncItem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.utils.JSyncUtils;
 
@@ -93,9 +92,9 @@ public class SyncItemTableModel extends AbstractListTableModel<SyncItem>
                 value = syncItem.getRelativePath();
                 break;
             case 1:
-                if (syncItem instanceof FileSyncItem)
+                if (syncItem.isFile())
                 {
-                    value = JSyncUtils.toHumanReadableSize(((FileSyncItem) syncItem).getSize());
+                    value = JSyncUtils.toHumanReadableSize(syncItem.getSize());
                 }
                 break;
 

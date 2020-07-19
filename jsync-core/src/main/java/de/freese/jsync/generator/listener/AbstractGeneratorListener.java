@@ -5,6 +5,7 @@
 package de.freese.jsync.generator.listener;
 
 import java.nio.file.Path;
+import de.freese.jsync.model.SyncItem;
 
 /**
  * Basis-Implementierung des {@link GeneratorListener}.
@@ -22,13 +23,13 @@ public abstract class AbstractGeneratorListener implements GeneratorListener
     }
 
     /**
-     * @param relativePath String
+     * @param syncItem {@link SyncItem}
      * @param prefix String
      * @return String
      */
-    protected String currentMetaMessage(final String relativePath, final String prefix)
+    protected String currentItemMessage(final SyncItem syncItem, final String prefix)
     {
-        String message = String.format("%s current Meta-Info: %s", prefix, relativePath);
+        String message = String.format("%s current SyncItem: %s", prefix, syncItem.getRelativePath());
 
         return message;
     }

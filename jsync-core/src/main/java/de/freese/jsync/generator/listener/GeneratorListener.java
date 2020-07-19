@@ -7,7 +7,7 @@ package de.freese.jsync.generator.listener;
 import java.nio.file.Path;
 import java.util.EventListener;
 import de.freese.jsync.generator.Generator;
-import de.freese.jsync.model.SyncItemMeta;
+import de.freese.jsync.model.SyncItem;
 
 /**
  * Listener für den {@link Generator}.
@@ -19,17 +19,16 @@ public interface GeneratorListener extends EventListener
     /**
      * Progress der Prüfsummenbildung.
      *
-     * @param size long
      * @param bytesRead long
      */
-    public void checksum(long size, long bytesRead);
+    public void checksum(long bytesRead);
 
     /**
-     * {@link SyncItemMeta} (Verzeichnisse, Dateien), welches aktuell bearbeitet wird.
+     * Verzeichniss / Datei, was aktuell bearbeitet wird.
      *
-     * @param relativePath {@link String}
+     * @param syncItem {@link SyncItem}
      */
-    public void currentMeta(String relativePath);
+    public void currentItem(SyncItem syncItem);
 
     /**
      * Anzahl zu verarbeitender Path-Objekte (Verzeichnisse, Dateien).

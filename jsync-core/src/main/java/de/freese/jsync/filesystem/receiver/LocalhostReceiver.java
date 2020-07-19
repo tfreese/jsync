@@ -16,12 +16,11 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongConsumer;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
-import de.freese.jsync.generator.listener.GeneratorListener;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.SyncItemMeta;
 import de.freese.jsync.utils.DigestUtils;
 import de.freese.jsync.utils.JSyncUtils;
 
@@ -33,6 +32,11 @@ import de.freese.jsync.utils.JSyncUtils;
 public class LocalhostReceiver extends AbstractReceiver
 {
     /**
+    *
+    */
+    private final Generator generator;
+
+    /**
      * Erzeugt eine neue Instanz von {@link LocalhostReceiver}.
      *
      * @param baseUri {@link URI}
@@ -40,6 +44,8 @@ public class LocalhostReceiver extends AbstractReceiver
     public LocalhostReceiver(final URI baseUri)
     {
         super(baseUri);
+
+        this.generator = new DefaultGenerator();
     }
 
     /**
@@ -57,7 +63,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void createDirectory(final String dir) throws Exception
     {
-        Path path = getBase().resolve(dir);
+        Path path = getBasePath().resolve(dir);
 
         getLogger().debug("create: {}", path);
 
@@ -73,7 +79,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void deleteDirectory(final String dir) throws Exception
     {
-        Path path = getBase().resolve(dir);
+        Path path = getBasePath().resolve(dir);
 
         getLogger().debug("create: {}", path);
 
@@ -105,7 +111,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void deleteFile(final String file) throws Exception
     {
-        Path path = getBase().resolve(file);
+        Path path = getBasePath().resolve(file);
 
         getLogger().debug("delete: {}", path);
 
@@ -127,7 +133,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public WritableByteChannel getChannel(final SyncItem syncItem) throws Exception
     {
-        Path path = getBase().resolve(syncItem.getRelativePath());
+        Path path = getBasePath().resolve(syncItem.getRelativePath());
 
         getLogger().debug("get WritableByteChannel: {}", path);
 
@@ -143,25 +149,23 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getSyncItemMeta(java.lang.String, boolean, boolean, de.freese.jsync.generator.listener.GeneratorListener)
+     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(de.freese.jsync.model.SyncItem, java.util.function.LongConsumer)
      */
     @Override
-    public SyncItemMeta getSyncItemMeta(final String relativePath, final boolean followSymLinks, final boolean withChecksum, final GeneratorListener listener)
+    public String getChecksum(final SyncItem syncItem, final LongConsumer consumerBytesRead)
     {
-        Generator generator = new DefaultGenerator();
-        SyncItemMeta meta = generator.generateMeta(getBase().toString(), relativePath, followSymLinks, withChecksum, listener);
+        String checksum = this.generator.generateChecksum(getBasePath().toString(), syncItem.getRelativePath(), consumerBytesRead);
 
-        return meta;
+        return checksum;
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getSyncItems(boolean, de.freese.jsync.generator.listener.GeneratorListener)
+     * @see de.freese.jsync.filesystem.FileSystem#getSyncItems(boolean)
      */
     @Override
-    public List<SyncItem> getSyncItems(final boolean followSymLinks, final GeneratorListener listener)
+    public List<SyncItem> getSyncItems(final boolean followSymLinks)
     {
-        Generator generator = new DefaultGenerator();
-        List<SyncItem> items = generator.generateItems(getBase().toString(), followSymLinks, listener);
+        List<SyncItem> items = this.generator.generateItems(getBasePath().toString(), followSymLinks);
 
         return items;
     }
@@ -176,19 +180,17 @@ public class LocalhostReceiver extends AbstractReceiver
     @SuppressWarnings("resource")
     protected void update(final Path path, final SyncItem syncItem) throws Exception
     {
-        SyncItemMeta meta = syncItem.getMeta();
-
         // In der Form "rwxr-xr-x"; optional, kann unter Windows null sein.
-        String permissions = meta.getPermissionsToString();
+        String permissions = syncItem.getPermissionsToString();
 
         // TimeUnit = SECONDS
-        long lastModifiedTime = meta.getLastModifiedTime();
+        long lastModifiedTime = syncItem.getLastModifiedTime();
 
         // Optional, kann unter Windows null sein.
-        String groupName = meta.getGroup() == null ? null : meta.getGroup().getName();
+        String groupName = syncItem.getGroup() == null ? null : syncItem.getGroup().getName();
 
         // Optional, kann unter Windows null sein.
-        String userName = meta.getUser() == null ? null : meta.getUser().getName();
+        String userName = syncItem.getUser() == null ? null : syncItem.getUser().getName();
 
         Files.setLastModifiedTime(path, FileTime.from(lastModifiedTime, TimeUnit.SECONDS));
 
@@ -216,7 +218,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void updateDirectory(final SyncItem syncItem) throws Exception
     {
-        Path path = getBase().resolve(syncItem.getRelativePath());
+        Path path = getBasePath().resolve(syncItem.getRelativePath());
 
         getLogger().debug("update: {}", path);
 
@@ -229,7 +231,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void updateFile(final SyncItem syncItem) throws Exception
     {
-        Path path = getBase().resolve(syncItem.getRelativePath());
+        Path path = getBasePath().resolve(syncItem.getRelativePath());
 
         getLogger().debug("update: {}", path);
 
@@ -242,13 +244,11 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void validateFile(final SyncItem syncItem, final boolean withChecksum) throws Exception
     {
-        Path path = getBase().resolve(syncItem.getRelativePath());
+        Path path = getBasePath().resolve(syncItem.getRelativePath());
 
         getLogger().debug("validate: {}", path);
 
-        SyncItemMeta meta = syncItem.getMeta();
-
-        if (Files.size(path) != meta.getSize())
+        if (Files.size(path) != syncItem.getSize())
         {
             String message = String.format("fileSize does not match with source: %s", syncItem.getRelativePath());
             throw new IllegalStateException(message);
@@ -260,7 +260,7 @@ public class LocalhostReceiver extends AbstractReceiver
 
             String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, null);
 
-            if (!checksum.equals(meta.getChecksum()))
+            if (!checksum.equals(syncItem.getChecksum()))
             {
                 String message = String.format("checksum does not match with source: %s", syncItem.getRelativePath());
                 throw new IllegalStateException(message);

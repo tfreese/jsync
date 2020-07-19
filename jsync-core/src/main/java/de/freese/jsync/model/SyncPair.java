@@ -113,31 +113,28 @@ public class SyncPair
         }
         else if ((getSource() != null) && (getReceiver() != null))
         {
-            SyncItemMeta metaSource = getSource().getMeta();
-            SyncItemMeta metaReceiver = getReceiver().getMeta();
-
             // Kopieren: Datei-Attribute unterschiedlich.
-            if (metaSource.getLastModifiedTime() != metaReceiver.getLastModifiedTime())
+            if (getSource().getLastModifiedTime() != getReceiver().getLastModifiedTime())
             {
                 this.status = SyncStatus.DIFFERENT_LAST_MODIFIEDTIME;
             }
-            else if (!Objects.equals(metaSource.getPermissionsToString(), metaReceiver.getPermissionsToString()))
+            else if (!Objects.equals(getSource().getPermissionsToString(), getReceiver().getPermissionsToString()))
             {
                 this.status = SyncStatus.DIFFERENT_PERMISSIONS;
             }
-            else if (!Objects.equals(metaSource.getUser(), metaReceiver.getUser()))
+            else if (!Objects.equals(getSource().getUser(), getReceiver().getUser()))
             {
                 this.status = SyncStatus.DIFFERENT_USER;
             }
-            else if (!Objects.equals(metaSource.getGroup(), metaReceiver.getGroup()))
+            else if (!Objects.equals(getSource().getGroup(), getReceiver().getGroup()))
             {
                 this.status = SyncStatus.DIFFERENT_GROUP;
             }
-            else if (metaSource.getSize() != metaReceiver.getSize())
+            else if (getSource().getSize() != getReceiver().getSize())
             {
                 this.status = SyncStatus.DIFFERENT_SIZE;
             }
-            else if (!Objects.equals(metaSource.getChecksum(), metaReceiver.getChecksum()))
+            else if (!Objects.equals(getSource().getChecksum(), getReceiver().getChecksum()))
             {
                 this.status = SyncStatus.DIFFERENT_CHECKSUM;
             }

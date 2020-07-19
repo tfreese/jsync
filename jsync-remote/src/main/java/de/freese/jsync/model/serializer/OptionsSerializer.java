@@ -40,8 +40,8 @@ class OptionsSerializer implements Serializer<Options>
     @Override
     public Options readFrom(final ByteBuffer buffer)
     {
-        // bufferSize
-        int bufferSize = buffer.getInt();
+        // // bufferSize
+        // int bufferSize = buffer.getInt();
 
         // checksum
         boolean checksum = buffer.get() == 1;
@@ -57,7 +57,7 @@ class OptionsSerializer implements Serializer<Options>
 
         // @formatter:off
         Options options = new Builder()
-                .bufferSize(bufferSize)
+                //.bufferSize(bufferSize)
                 .checksum(checksum)
                 .delete(delete)
                 .dryRun(dryRun)
@@ -76,7 +76,7 @@ class OptionsSerializer implements Serializer<Options>
     public void writeTo(final ByteBuffer buffer, final Options obj)
     {
         // bufferSize
-        buffer.putInt(obj.getBufferSize());
+        // buffer.putInt(obj.getBufferSize());
 
         // checksum
         buffer.put((byte) (obj.isChecksum() ? 1 : 0));

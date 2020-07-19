@@ -7,6 +7,7 @@ package de.freese.jsync;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -17,7 +18,6 @@ import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.SyncItemMeta;
 import de.freese.jsync.model.User;
 
 /**
@@ -38,9 +38,12 @@ class TestJSyncGenerator extends AbstractJSyncTest
         System.out.printf("Quelle: %s%n", base);
 
         Generator generator = new DefaultGenerator();
-        List<SyncItem> syncItems = generator.generateItems(base.toString(), false, GENERATORLISTENER);
+        List<SyncItem> syncItems = generator.generateItems(base.toString(), false);
 
         assertNotNull(syncItems);
+
+        System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
+
         assertEquals(5, syncItems.size());
 
         syncItems.forEach(syncItem -> System.out.printf("%s%n", syncItem));
@@ -58,9 +61,12 @@ class TestJSyncGenerator extends AbstractJSyncTest
         System.out.printf("Ziel: %s%n", base);
 
         Generator generator = new DefaultGenerator();
-        List<SyncItem> syncItems = generator.generateItems(base.toString(), false, GENERATORLISTENER);
+        List<SyncItem> syncItems = generator.generateItems(base.toString(), false);
 
         assertNotNull(syncItems);
+
+        System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
+
         assertEquals(4, syncItems.size());
 
         syncItems.forEach(syncItem -> System.out.printf("%s%n", syncItem));
@@ -74,31 +80,34 @@ class TestJSyncGenerator extends AbstractJSyncTest
     {
         System.out.println();
 
-        Path base = Paths.get(System.getProperty("user.dir"));
+        Path path = Paths.get(System.getProperty("user.dir"), "pom.xml");
 
-        Generator generator = new DefaultGenerator();
-        SyncItemMeta meta = generator.generateMeta(base.toString(), base.resolve("pom.xml").toString(), false, false, GENERATORLISTENER);
+        DefaultGenerator generator = new DefaultGenerator();
+        SyncItem syncItem = generator.generateItem(path, "pom.xml", new LinkOption[]
+        {
+                LinkOption.NOFOLLOW_LINKS
+        });
 
-        assertTrue(meta.getLastModifiedTime() > 0);
-        assertTrue(meta.getSize() > 0);
+        assertTrue(syncItem.getLastModifiedTime() > 0);
+        assertTrue(syncItem.getSize() > 0);
 
         if (Options.IS_LINUX)
         {
-            assertNotNull(meta.getPermissions());
+            assertNotNull(syncItem.getPermissions());
 
-            assertNotNull(meta.getGroup());
-            assertNotNull(meta.getGroup().getName());
-            assertTrue(meta.getGroup().getGid() > (Group.ROOT.getGid() - 1));
-            assertTrue(meta.getGroup().getGid() < (Group.ID_MAX + 1));
-            assertEquals("tommy", meta.getGroup().getName());
-            assertEquals(1000, meta.getGroup().getGid()); // tommy
+            assertNotNull(syncItem.getGroup());
+            assertNotNull(syncItem.getGroup().getName());
+            assertTrue(syncItem.getGroup().getGid() > (Group.ROOT.getGid() - 1));
+            assertTrue(syncItem.getGroup().getGid() < (Group.ID_MAX + 1));
+            assertEquals("tommy", syncItem.getGroup().getName());
+            assertEquals(1000, syncItem.getGroup().getGid()); // tommy
 
-            assertNotNull(meta.getUser());
-            assertNotNull(meta.getUser().getName());
-            assertTrue(meta.getUser().getUid() > (User.ROOT.getUid() - 1));
-            assertTrue(meta.getUser().getUid() < (User.ID_MAX + 1));
-            assertEquals("tommy", meta.getUser().getName());
-            assertEquals(1000, meta.getUser().getUid()); // tommy
+            assertNotNull(syncItem.getUser());
+            assertNotNull(syncItem.getUser().getName());
+            assertTrue(syncItem.getUser().getUid() > (User.ROOT.getUid() - 1));
+            assertTrue(syncItem.getUser().getUid() < (User.ID_MAX + 1));
+            assertEquals("tommy", syncItem.getUser().getName());
+            assertEquals(1000, syncItem.getUser().getUid()); // tommy
         }
     }
 }

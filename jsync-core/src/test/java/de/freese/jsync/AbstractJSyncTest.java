@@ -7,12 +7,9 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import de.freese.jsync.generator.listener.GeneratorListener;
-import de.freese.jsync.generator.listener.GeneratorListenerAdapter;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
@@ -20,56 +17,6 @@ import de.freese.jsync.utils.JSyncUtils;
  */
 public abstract class AbstractJSyncTest
 {
-    /**
-     * @author Thomas Freese
-     */
-    private static class TestGeneratorListener extends GeneratorListenerAdapter
-    {
-        /**
-         *
-         */
-        private final String countLogFormat;
-
-        /**
-         *
-         */
-        private final String syncItemLogFormat;
-
-        /**
-         * Erstellt ein neues {@link TestGeneratorListener} Object.
-         *
-         * @param countLogFormat String; @see {@link String#format(String, Object...)}
-         * @param syncItemLogFormat String; @see {@link String#format(String, Object...)}
-         */
-        public TestGeneratorListener(final String countLogFormat, final String syncItemLogFormat)
-        {
-            super();
-
-            this.countLogFormat = Objects.requireNonNull(countLogFormat, "countLogFormat required");
-            this.syncItemLogFormat = Objects.requireNonNull(syncItemLogFormat, "syncItemLogFormat required");
-
-            doOnItemCount((path, pathCount) -> System.out.printf(this.countLogFormat, path, pathCount));
-            doOnCurrentMeta(relativePath -> System.out.printf(this.syncItemLogFormat, relativePath));
-        }
-    }
-
-    /**
-    *
-    */
-    protected static final GeneratorListener GENERATORLISTENER = new TestGeneratorListener("Size of SyncItems in %s: %d%n", "Current SyncItem: %s%n");
-
-    /**
-     *
-     */
-    protected static final GeneratorListener GENERATORLISTENER_SOURCE =
-            new TestGeneratorListener("Source size of SyncItems in %s: %d%n", "Source current SyncItem: %s%n");
-
-    /**
-     *
-     */
-    protected static final GeneratorListener GENERATORLISTENER_TARGET =
-            new TestGeneratorListener("Target size of SyncItems in %s: %d%n", "Target current SyncItem: %s%n");
-
     /**
      * Paths.get(System.getProperty("java.io.tmpdir"), "jsync")<br>
      * Paths.get(System.getProperty("user.dir"), "target")
@@ -147,7 +94,7 @@ public abstract class AbstractJSyncTest
             try (RandomAccessFile raf = new RandomAccessFile(pathFile.toFile(), "rw"))
             {
                 // 512 MB
-                raf.setLength(1024 * 1024 * 512);
+                raf.setLength(1024 * 1024 * 256);
             }
         }
 

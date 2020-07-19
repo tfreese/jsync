@@ -4,7 +4,9 @@
 
 package de.freese.jsync.model;
 
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Basis-Implementierung für ein Verzeichnis / Datei, welche es zu Synchronisieren gilt.<br>
@@ -15,14 +17,44 @@ import java.util.Objects;
 public class DefaultSyncItem implements SyncItem
 {
     /**
-     *
-     */
-    private SyncItemMeta meta = null;
+    *
+    */
+    private String checksum = null;
+
+    /**
+    *
+    */
+    private Group group = null;
+
+    /**
+    *
+    */
+    private boolean isFile = false;
+
+    /**
+    *
+    */
+    private long lastModifiedTime = 0;
+
+    /**
+    *
+    */
+    private Set<PosixFilePermission> permissions = null;
 
     /**
     *
     */
     private final String relativePath;
+
+    /**
+    *
+    */
+    private long size = 0;
+
+    /**
+    *
+    */
+    private User user = null;
 
     /**
      * Erstellt ein neues {@link DefaultSyncItem} Object.
@@ -37,12 +69,39 @@ public class DefaultSyncItem implements SyncItem
     }
 
     /**
-     * @see de.freese.jsync.model.SyncItem#getMeta()
+     * @see de.freese.jsync.model.SyncItem#getChecksum()
      */
     @Override
-    public SyncItemMeta getMeta()
+    public String getChecksum()
     {
-        return this.meta;
+        return this.checksum;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#getGroup()
+     */
+    @Override
+    public Group getGroup()
+    {
+        return this.group;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#getLastModifiedTime()
+     */
+    @Override
+    public long getLastModifiedTime()
+    {
+        return this.lastModifiedTime;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#getPermissions()
+     */
+    @Override
+    public Set<PosixFilePermission> getPermissions()
+    {
+        return this.permissions;
     }
 
     /**
@@ -55,12 +114,94 @@ public class DefaultSyncItem implements SyncItem
     }
 
     /**
-     * @see de.freese.jsync.model.SyncItem#setMeta(de.freese.jsync.model.SyncItemMeta)
+     * @see de.freese.jsync.model.SyncItem#getSize()
      */
     @Override
-    public void setMeta(final SyncItemMeta meta)
+    public long getSize()
     {
-        this.meta = meta;
+        return this.size;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#getUser()
+     */
+    @Override
+    public User getUser()
+    {
+        return this.user;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#isFile()
+     */
+    @Override
+    public boolean isFile()
+    {
+        return this.isFile;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#setChecksum(java.lang.String)
+     */
+    @Override
+    public void setChecksum(final String checksum)
+    {
+        this.checksum = checksum;
+
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#setFile(boolean)
+     */
+    @Override
+    public void setFile(final boolean isFile)
+    {
+        this.isFile = isFile;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#setGroup(de.freese.jsync.model.Group)
+     */
+    @Override
+    public void setGroup(final Group group)
+    {
+        this.group = group;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#setLastModifiedTime(long)
+     */
+    @Override
+    public void setLastModifiedTime(final long lastModifiedTime)
+    {
+        this.lastModifiedTime = lastModifiedTime;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#setPermissions(java.util.Set)
+     */
+    @Override
+    public void setPermissions(final Set<PosixFilePermission> permissions)
+    {
+        this.permissions = permissions;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#setSize(long)
+     */
+    @Override
+    public void setSize(final long size)
+    {
+        this.size = size;
+    }
+
+    /**
+     * @see de.freese.jsync.model.SyncItem#setUser(de.freese.jsync.model.User)
+     */
+    @Override
+    public void setUser(final User user)
+    {
+        this.user = user;
     }
 
     /**

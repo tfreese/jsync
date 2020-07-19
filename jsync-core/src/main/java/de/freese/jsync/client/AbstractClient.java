@@ -56,7 +56,7 @@ public abstract class AbstractClient implements Client
      */
     protected void copyFile(final Sender sender, final Receiver receiver, final SyncItem syncItem, final boolean withChecksum)
     {
-        long fileSize = syncItem.getMeta().getSize();
+        long fileSize = syncItem.getSize();
         getClientListener().copyFileProgress(syncItem, fileSize, 0);
 
         if (getOptions().isDryRun())

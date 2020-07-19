@@ -22,13 +22,12 @@ import de.freese.jsync.filesystem.receiver.RemoteReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.filesystem.sender.RemoteSender;
 import de.freese.jsync.filesystem.sender.Sender;
-import de.freese.jsync.generator.listener.ConsoleGeneratorListener;
-import de.freese.jsync.generator.listener.GeneratorListener;
+import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
- * Main-Class für jsync.<br>
+ * Consolen-Anwendung für jsync.<br>
  *
  * @author Thomas Freese
  */
@@ -107,11 +106,11 @@ public class JSyncConsole
         if (argumentParser.sender().startsWith("jsync"))
         {
             // Remote
-            sender = new RemoteSender(options, new URI(argumentParser.sender()));
+            sender = new RemoteSender(new URI(argumentParser.sender()));
         }
         else
         {
-            sender = new LocalhostSender(options, new File(argumentParser.sender()).toURI());
+            sender = new LocalhostSender(new File(argumentParser.sender()).toURI());
         }
 
         Receiver receiver = null;
@@ -119,17 +118,16 @@ public class JSyncConsole
         if (argumentParser.receiver().startsWith("jsync"))
         {
             // Remote
-            receiver = new RemoteReceiver(options, new URI(argumentParser.receiver()));
+            receiver = new RemoteReceiver(new URI(argumentParser.receiver()));
         }
         else
         {
-            receiver = new LocalhostReceiver(options, new File(argumentParser.receiver()).toURI());
+            receiver = new LocalhostReceiver(new File(argumentParser.receiver()).toURI());
         }
 
         try
         {
-            syncDirectories(options, sender, receiver, new ConsoleClientListener(), new ConsoleGeneratorListener("Sender"),
-                    new ConsoleGeneratorListener("Receiver"));
+            syncDirectories(options, sender, receiver, new ConsoleClientListener());
         }
         finally
         {
@@ -142,22 +140,26 @@ public class JSyncConsole
      * @param sender {@link Sender}
      * @param receiver {@link Receiver}
      * @param clientListener {@link ClientListener}
-     * @param senderListener {@link GeneratorListener}; optional.
-     * @param receiverListener {@link GeneratorListener}; optional.
      * @throws Exception Falls was schief geht.
      */
-    public void syncDirectories(final Options options, final Sender sender, final Receiver receiver, final ClientListener clientListener,
-                                final GeneratorListener senderListener, final GeneratorListener receiverListener)
-        throws Exception
+    public void syncDirectories(final Options options, final Sender sender, final Receiver receiver, final ClientListener clientListener) throws Exception
     {
         sender.connect();
         receiver.connect();
 
+        List<SyncItem> itemsSender = sender.getSyncItems(options.isFollowSymLinks());
+        List<SyncItem> itemsReceiver = receiver.getSyncItems(options.isFollowSymLinks());
+
+        if (options.isChecksum())
+        {
+            itemsSender.stream().filter(SyncItem::isFile).forEach(syncItem -> sender.getChecksum(syncItem, null));
+            itemsReceiver.stream().filter(SyncItem::isFile).forEach(syncItem -> receiver.getChecksum(syncItem, null));
+        }
+
         Client client = new DefaultClient(options, clientListener);
+        List<SyncPair> syncList = client.mergeSyncItems(itemsSender, itemsReceiver);
 
-        List<SyncPair> syncList = client.createSyncList(sender, senderListener, receiver, receiverListener);
-
-        client.syncReceiver(sender, receiver, syncList);
+        client.syncReceiver(sender, receiver, syncList, options.isChecksum());
 
         sender.disconnect();
         receiver.disconnect();

@@ -9,6 +9,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.client.listener.ClientListener;
+import de.freese.jsync.model.SyncItem;
 
 /**
  * {@link Logger}-Implementierung des {@link ClientListener}.
@@ -40,21 +41,21 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long, long)
+     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum( long)
      */
     @Override
-    public void checksum(final long size, final long bytesRead)
+    public void checksum(final long bytesRead)
     {
         // Empty
     }
 
     /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#currentMeta(java.lang.String)
+     * @see de.freese.jsync.generator.listener.GeneratorListener#currentItem(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void currentMeta(final String relativePath)
+    public void currentItem(final SyncItem syncItem)
     {
-        String message = currentMetaMessage(relativePath, this.prefix);
+        String message = currentItemMessage(syncItem, this.prefix);
 
         getLogger().debug(message);
     }

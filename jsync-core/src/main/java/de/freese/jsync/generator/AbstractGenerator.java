@@ -83,7 +83,12 @@ public abstract class AbstractGenerator implements Generator
 
         try (Stream<Path> stream = Files.walk(base, visitOptions))
         {
-            set = stream.collect(Collectors.toCollection(TreeSet::new));
+            // @formatter:off
+            set = stream
+                    //.filter(predicate) // TODO Excludes filtern
+                    .collect(Collectors.toCollection(TreeSet::new))
+                    ;
+            // @formatter:on
         }
         catch (IOException iex)
         {

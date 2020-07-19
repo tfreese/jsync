@@ -19,7 +19,12 @@ public abstract class AbstractFileSystem implements FileSystem
     /**
     *
     */
-    private final Path base;
+    private final Path basePath;
+
+    /**
+     *
+     */
+    private final URI baseUri;
 
     /**
     *
@@ -28,24 +33,31 @@ public abstract class AbstractFileSystem implements FileSystem
 
     /**
      * Erzeugt eine neue Instanz von {@link AbstractFileSystem}.
-     * 
+     *
      * @param baseUri {@link URI}
      */
     public AbstractFileSystem(final URI baseUri)
     {
         super();
 
-        Objects.requireNonNull(baseUri, "baseUri required");
-
-        this.base = Paths.get(JSyncUtils.normalizedPath(baseUri));
+        this.baseUri = Objects.requireNonNull(baseUri, "baseUri required");
+        this.basePath = Paths.get(JSyncUtils.normalizedPath(baseUri));
     }
 
     /**
      * @return {@link Path}
      */
-    protected Path getBase()
+    protected Path getBasePath()
     {
-        return this.base;
+        return this.basePath;
+    }
+
+    /**
+     * @return {@link URI}
+     */
+    protected URI getBaseUri()
+    {
+        return this.baseUri;
     }
 
     /**

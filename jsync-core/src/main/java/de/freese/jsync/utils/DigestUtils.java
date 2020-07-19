@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.function.Consumer;
+import java.util.function.LongConsumer;
 
 /**
  * @author Thomas Freese
@@ -124,16 +124,16 @@ public final class DigestUtils
     /**
      * @param path {@link Path}
      * @param bufferSize int
-     * @param consumerBytesRead {@link Consumer}
+     * @param consumerBytesRead {@link LongConsumer}; optional
      * @return byte[]
      * @throws IOException Falls was schief geht.
      */
-    public static byte[] sha256Digest(final Path path, final int bufferSize, final Consumer<Long> consumerBytesRead) throws IOException
+    public static byte[] sha256Digest(final Path path, final int bufferSize, final LongConsumer consumerBytesRead) throws IOException
     {
         final MessageDigest messageDigest = createSha256Digest();
         byte[] bytes = null;
 
-        Consumer<Long> consumer = consumerBytesRead != null ? consumerBytesRead : i -> {
+        LongConsumer consumer = consumerBytesRead != null ? consumerBytesRead : i -> {
         };
 
         try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
@@ -165,10 +165,10 @@ public final class DigestUtils
     /**
      * @param path {@link Path}
      * @param bufferSize int
-     * @param consumerBytesRead {@link Consumer}
+     * @param consumerBytesRead {@link LongConsumer}; optional
      * @return String
      */
-    public static String sha256DigestAsHex(final Path path, final int bufferSize, final Consumer<Long> consumerBytesRead)
+    public static String sha256DigestAsHex(final Path path, final int bufferSize, final LongConsumer consumerBytesRead)
     {
         try
         {

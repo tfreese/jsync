@@ -357,6 +357,22 @@ public final class JSyncUtils
     }
 
     /**
+     * @param timeUnit {@link TimeUnit}
+     * @param timeout long
+     */
+    public static void sleep(final TimeUnit timeUnit, final long timeout)
+    {
+        try
+        {
+            timeUnit.sleep(timeout);
+        }
+        catch (InterruptedException ex)
+        {
+            // Ignoren
+        }
+    }
+
+    /**
      * @param size long
      * @return String, z.B. '___,___ MB'
      */
