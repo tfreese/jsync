@@ -25,6 +25,7 @@ import de.freese.jsync.filesystem.sender.RemoteSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.generator.listener.ConsoleGeneratorListener;
 import de.freese.jsync.generator.listener.GeneratorListener;
+import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.server.JSyncServer;
 import de.freese.jsync.server.handler.IoHandler;
@@ -52,11 +53,39 @@ class TestJSyncRemote extends AbstractJSyncTest
         sender.connect();
         receiver.connect();
 
+        List<SyncItem> itemsSender = sender.getSyncItems(options.isFollowSymLinks());
+        List<SyncItem> itemsReceiver = receiver.getSyncItems(options.isFollowSymLinks());
+
+        if (options.isChecksum())
+        {
+            for (SyncItem syncItem : itemsSender)
+            {
+                if (syncItem.isDirectory())
+                {
+                    continue;
+                }
+
+                String checksum = sender.getChecksum(syncItem.getRelativePath(), null);
+                syncItem.setChecksum(checksum);
+            }
+
+            for (SyncItem syncItem : itemsReceiver)
+            {
+                if (syncItem.isDirectory())
+                {
+                    continue;
+                }
+
+                String checksum = receiver.getChecksum(syncItem.getRelativePath(), null);
+                syncItem.setChecksum(checksum);
+            }
+        }
+
         Client client = new DefaultClient(options, clientListener);
 
-        List<SyncPair> syncList = client.createSyncList(sender, senderListener, receiver, receiverListener);
+        List<SyncPair> syncList = client.mergeSyncItems(itemsSender, itemsReceiver);
 
-        client.syncReceiver(sender, receiver, syncList);
+        client.syncReceiver(sender, receiver, syncList, options.isChecksum());
 
         sender.disconnect();
         receiver.disconnect();
@@ -87,7 +116,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
-        syncDirectories(options, new RemoteSender(options, senderUri), new RemoteReceiver(options, receiverUri), new ConsoleClientListener(),
+        syncDirectories(options, new RemoteSender(senderUri), new RemoteReceiver(receiverUri), new ConsoleClientListener(),
                 new ConsoleGeneratorListener("Sender"), new ConsoleGeneratorListener("Receiver"));
 
         serverSender.stop();
@@ -109,7 +138,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = PATH_ZIEL.toUri();
 
-        syncDirectories(options, new LocalhostSender(options, senderUri), new LocalhostReceiver(options, receiverUri), new ConsoleClientListener(),
+        syncDirectories(options, new LocalhostSender(senderUri), new LocalhostReceiver(receiverUri), new ConsoleClientListener(),
                 new ConsoleGeneratorListener("Sender"), new ConsoleGeneratorListener("Receiver"));
 
         assertTrue(true);

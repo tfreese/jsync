@@ -76,12 +76,12 @@ public class LocalhostSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(de.freese.jsync.model.SyncItem, java.util.function.LongConsumer)
+     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String getChecksum(final SyncItem syncItem, final LongConsumer consumerBytesRead)
+    public String getChecksum(final String relativePath, final LongConsumer consumerBytesRead) throws Exception
     {
-        String checksum = this.generator.generateChecksum(getBasePath().toString(), syncItem.getRelativePath(), consumerBytesRead);
+        String checksum = this.generator.generateChecksum(getBasePath().toString(), relativePath, consumerBytesRead);
 
         return checksum;
     }

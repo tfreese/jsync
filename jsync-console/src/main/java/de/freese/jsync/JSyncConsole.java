@@ -152,8 +152,27 @@ public class JSyncConsole
 
         if (options.isChecksum())
         {
-            itemsSender.stream().filter(SyncItem::isFile).forEach(syncItem -> sender.getChecksum(syncItem, null));
-            itemsReceiver.stream().filter(SyncItem::isFile).forEach(syncItem -> receiver.getChecksum(syncItem, null));
+            for (SyncItem syncItem : itemsSender)
+            {
+                if (syncItem.isDirectory())
+                {
+                    continue;
+                }
+
+                String checksum = sender.getChecksum(syncItem.getRelativePath(), null);
+                syncItem.setChecksum(checksum);
+            }
+
+            for (SyncItem syncItem : itemsReceiver)
+            {
+                if (syncItem.isDirectory())
+                {
+                    continue;
+                }
+
+                String checksum = receiver.getChecksum(syncItem.getRelativePath(), null);
+                syncItem.setChecksum(checksum);
+            }
         }
 
         Client client = new DefaultClient(options, clientListener);

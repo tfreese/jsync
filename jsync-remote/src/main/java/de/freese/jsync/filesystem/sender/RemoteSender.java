@@ -16,7 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.LongConsumer;
 import de.freese.jsync.Options;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.JSyncCommandSerializer;
@@ -126,6 +129,11 @@ public class RemoteSender extends AbstractSender
     private AsynchronousSocketChannel client = null;
 
     /**
+     *
+     */
+    private final ExecutorService executorService;
+
+    /**
      * Erstellt ein neues {@link RemoteSender} Object.
      *
      * @param serverUri {@link URI}
@@ -134,6 +142,7 @@ public class RemoteSender extends AbstractSender
     {
         super(serverUri);
 
+        this.executorService = Executors.newCachedThreadPool();
         this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
     }
 
@@ -150,7 +159,7 @@ public class RemoteSender extends AbstractSender
 
         // int poolSize = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         // this.channelGroup = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(poolSize));
-        this.channelGroup = AsynchronousChannelGroup.withThreadPool(getOptions().getExecutorService());
+        this.channelGroup = AsynchronousChannelGroup.withThreadPool(this.executorService);
 
         this.client = AsynchronousSocketChannel.open(this.channelGroup);
         // this.client = AsynchronousSocketChannel.open();
@@ -162,9 +171,6 @@ public class RemoteSender extends AbstractSender
 
         // JSyncCommand senden.
         Serializers.writeTo(buf, JSyncCommand.CONNECT);
-
-        // Options senden.
-        Serializers.writeTo(buf, getOptions());
 
         buf.flip();
         write(buf);
@@ -242,6 +248,45 @@ public class RemoteSender extends AbstractSender
     }
 
     /**
+     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.util.function.LongConsumer)
+     */
+    @Override
+    public String getChecksum(final String relativePath, final LongConsumer consumerBytesRead) throws Exception
+    {
+        String checksum = null;
+
+        ByteBuffer buf = getBuffer();
+
+        // JSyncCommand senden.
+        Serializers.writeTo(buf, JSyncCommand.SOURCE_CHECKSUM);
+
+        byte[] bytes = relativePath.getBytes(getCharset());
+        buf.putInt(bytes.length);
+        buf.put(bytes);
+        buf.flip();
+        write(buf);
+
+        // Response lesen.
+        buf.clear();
+        Future<Integer> futureResponse = getClient().read(buf);
+        futureResponse.get();
+
+        // while (futureResponse.get() > 0)
+        // {
+        buf.flip();
+
+        bytes = new byte[buf.getInt()];
+        buf.get(bytes);
+        checksum = new String(bytes, getCharset());
+
+        // buf.clear();
+        // futureResponse = getClient().read(buf);
+        // }
+
+        return checksum;
+    }
+
+    /**
      * @return {@link AsynchronousSocketChannel}
      */
     protected AsynchronousSocketChannel getClient()
@@ -268,11 +313,8 @@ public class RemoteSender extends AbstractSender
             buf.putInt(bytes.length);
             buf.put(bytes);
 
-            buf.flip();
-            write(buf);
-
-            buf.clear();
             buf.put(followSymLinks ? (byte) 1 : (byte) 0);
+
             buf.flip();
             write(buf);
 
@@ -282,6 +324,8 @@ public class RemoteSender extends AbstractSender
 
             boolean sizeRead = false;
             boolean finished = false;
+            int countSyncItems = -1;
+            int counter = 0;
 
             // while (getClient().read(buffer) > 0)
             while (futureResponse.get() > 0)
@@ -290,24 +334,22 @@ public class RemoteSender extends AbstractSender
 
                 if (!sizeRead)
                 {
-                    int size = buf.getInt();
+                    countSyncItems = buf.getInt();
                     sizeRead = true;
                 }
 
                 while (buf.hasRemaining())
                 {
-                    byte b = buf.get();
-
                     SyncItem syncItem = Serializers.readFrom(buf, SyncItem.class);
+                    syncItems.add(syncItem);
+                    counter++;
 
-                    if (b == Byte.MIN_VALUE)
+                    if (counter == countSyncItems)
                     {
                         // Finish-Flag.
                         finished = true;
                         break;
                     }
-
-                    syncItems.add(syncItem);
                 }
 
                 if (finished)

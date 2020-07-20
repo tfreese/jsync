@@ -44,11 +44,12 @@ public interface FileSystem
     /**
      * Liefert die Prüfsumme einer Datei.<br>
      *
-     * @param syncItem {@link SyncItem}
+     * @param relativePath String
      * @param consumerBytesRead {@link LongConsumer}; optional
      * @return String
+     * @throws Exception Falls was schief geht.
      */
-    public String getChecksum(SyncItem syncItem, LongConsumer consumerBytesRead);
+    public String getChecksum(String relativePath, LongConsumer consumerBytesRead) throws Exception;
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses alphabetisch sortiert.<br>

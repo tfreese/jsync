@@ -53,6 +53,8 @@ class SyncItemSerializer implements Serializer<SyncItem>
         // is File / Directory
         syncItem.setFile(buffer.get() == 1);
 
+        syncItem.setSize(buffer.getLong());
+
         // lastModifiedTime
         long lastModifiedTime = buffer.getLong();
         syncItem.setLastModifiedTime(lastModifiedTime);
@@ -107,7 +109,10 @@ class SyncItemSerializer implements Serializer<SyncItem>
         buffer.put(bytes);
 
         // is File / Directory
-        buffer.put(obj.isDirectory() ? (byte) 0 : (byte) 1);
+        buffer.put(obj.isFile() ? (byte) 1 : (byte) 0);
+
+        // size
+        buffer.putLong(obj.getSize());
 
         // lastModifiedTime
         buffer.putLong(obj.getLastModifiedTime());

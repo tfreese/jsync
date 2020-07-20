@@ -111,8 +111,8 @@ public class Options
     public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
     /**
-    *
-    */
+     *
+     */
     private boolean checksum = false;
 
     /**
@@ -126,13 +126,13 @@ public class Options
     private boolean dryRun = true;
 
     /**
-    *
-    */
+     *
+     */
     private ExecutorService executorService = ForkJoinPool.commonPool();
 
     /**
-    *
-    */
+     *
+     */
     private boolean followSymLinks = true;
 
     /**

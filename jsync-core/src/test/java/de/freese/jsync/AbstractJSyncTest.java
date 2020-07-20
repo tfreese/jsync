@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
@@ -34,13 +34,22 @@ public abstract class AbstractJSyncTest
     protected static final Path PATH_ZIEL = PATH_BASE.resolve("ziel");
 
     /**
+     * Erzeugt eine neue Instanz von {@link AbstractJSyncTest}.
+     */
+    protected AbstractJSyncTest()
+    {
+        super();
+    }
+
+    /**
      * Verzeichnis-Struktur zum Testen löschen.
      *
      * @throws Exception Falls was schief geht.
      */
-    @AfterAll
-    public static void afterAll() throws Exception
+    @AfterEach
+    public void afterEach() throws Exception
     {
+        System.out.println("Delete Source and Target Paths...\n");
         JSyncUtils.deleteDirectoryRecursive(PATH_BASE);
     }
 
@@ -49,8 +58,8 @@ public abstract class AbstractJSyncTest
      *
      * @throws Exception Falls was schief geht.
      */
-    @BeforeAll
-    public static void beforeAll() throws Exception
+    @BeforeEach
+    public void beforeEach() throws Exception
     {
         System.out.println("Prepare Source and Target Paths...\n");
 
@@ -125,13 +134,5 @@ public abstract class AbstractJSyncTest
                 writer.print("file2.txt");
             }
         }
-    }
-
-    /**
-     * Erzeugt eine neue Instanz von {@link AbstractJSyncTest}.
-     */
-    protected AbstractJSyncTest()
-    {
-        super();
     }
 }

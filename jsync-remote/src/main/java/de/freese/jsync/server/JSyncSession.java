@@ -25,6 +25,16 @@ public class JSyncSession
     private final ByteBuffer buffer;
 
     /**
+    *
+    */
+    private String checksum = null;
+
+    /**
+    *
+    */
+    private boolean followSymLinks = true;
+
+    /**
      *
      */
     private JSyncCommand lastCommand = null;
@@ -33,11 +43,6 @@ public class JSyncSession
      *
      */
     private final Logger logger;
-
-    /**
-     *
-     */
-    private final Options options;
 
     /**
      *
@@ -57,14 +62,12 @@ public class JSyncSession
     /**
      * Erstellt ein neues {@link JSyncSession} Object.
      *
-     * @param options {@link Options}
      * @param logger {@link Logger}
      */
-    public JSyncSession(final Options options, final Logger logger)
+    public JSyncSession(final Logger logger)
     {
         super();
 
-        this.options = Objects.requireNonNull(options, "options required");
         this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
         this.logger = Objects.requireNonNull(logger, "logger required");
     }
@@ -75,6 +78,14 @@ public class JSyncSession
     public ByteBuffer getBuffer()
     {
         return this.buffer;
+    }
+
+    /**
+     * @return String
+     */
+    public String getChecksum()
+    {
+        return this.checksum;
     }
 
     /**
@@ -91,14 +102,6 @@ public class JSyncSession
     public Logger getLogger()
     {
         return this.logger;
-    }
-
-    /**
-     * @return {@link Options}
-     */
-    public Options getOptions()
-    {
-        return this.options;
     }
 
     /**
@@ -126,11 +129,27 @@ public class JSyncSession
     }
 
     /**
-     * @param syncItem {@link SyncItem}
+     * @return boolean
      */
-    public void setFileSyncItem(final SyncItem syncItem)
+    public boolean isFollowSymLinks()
     {
-        this.syncItem = syncItem;
+        return this.followSymLinks;
+    }
+
+    /**
+     * @param checksum String
+     */
+    public void setChecksum(final String checksum)
+    {
+        this.checksum = checksum;
+    }
+
+    /**
+     * @param followSymLinks boolean
+     */
+    public void setFollowSymLinks(final boolean followSymLinks)
+    {
+        this.followSymLinks = followSymLinks;
     }
 
     /**
@@ -155,5 +174,13 @@ public class JSyncSession
     public void setSender(final Sender sender)
     {
         this.sender = sender;
+    }
+
+    /**
+     * @param syncItem {@link SyncItem}
+     */
+    public void setSyncItem(final SyncItem syncItem)
+    {
+        this.syncItem = syncItem;
     }
 }

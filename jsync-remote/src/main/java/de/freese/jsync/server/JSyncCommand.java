@@ -19,12 +19,22 @@ public enum JSyncCommand
     /**
     *
     */
+    SOURCE_CHECKSUM((byte) 11),
+
+    /**
+    *
+    */
     SOURCE_CREATE_SYNC_ITEMS((byte) 1),
 
     /**
     *
     */
     SOURCE_READABLE_FILE_CHANNEL((byte) 2),
+
+    /**
+    *
+    */
+    TARGET_CHECKSUM((byte) 12),
 
     /**
     *
