@@ -31,9 +31,11 @@ import de.freese.jsync.utils.JSyncUtils;
  * {@link Sender} für Remote-Filesysteme.
  *
  * @author Thomas Freese
+ * @deprecated Entfällt
  */
+@Deprecated
 @SuppressWarnings("resource")
-public class RemoteSender extends AbstractSender
+class RemoteSenderAsync extends AbstractSender
 {
     /**
      * @author Thomas Freese
@@ -63,21 +65,7 @@ public class RemoteSender extends AbstractSender
         @Override
         public void close() throws IOException
         {
-            // Diese Methode wird unmittelbar nach dem Kopieren aufgerufen.
-            // Daher muss erst mal auf das Finish vom Server gewartet werden.
-            // try
-            // {
-            // handleResponse();
-            // }
-            // catch (Exception ex)
-            // {
-            // if (ex instanceof IOException)
-            // {
-            // throw (IOException) ex;
-            // }
-            //
-            // throw new IOException(ex);
-            // }
+            // Empty
         }
 
         /**
@@ -134,11 +122,11 @@ public class RemoteSender extends AbstractSender
     private final ExecutorService executorService;
 
     /**
-     * Erstellt ein neues {@link RemoteSender} Object.
+     * Erstellt ein neues {@link RemoteSenderAsync} Object.
      *
      * @param serverUri {@link URI}
      */
-    public RemoteSender(final URI serverUri)
+    RemoteSenderAsync(final URI serverUri)
     {
         super(serverUri);
 
@@ -152,9 +140,9 @@ public class RemoteSender extends AbstractSender
     @Override
     public void connect() throws Exception
     {
-        InetSocketAddress hostAddress = new InetSocketAddress(getBaseUri().getHost(), getBaseUri().getPort());
+        InetSocketAddress serverAddress = new InetSocketAddress(getBaseUri().getHost(), getBaseUri().getPort());
 
-        // this.client = SocketChannel.open(hostAddress);
+        // this.client = SocketChannel.open(serverAddress);
         // this.client.configureBlocking(true);
 
         // int poolSize = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
@@ -164,7 +152,7 @@ public class RemoteSender extends AbstractSender
         this.client = AsynchronousSocketChannel.open(this.channelGroup);
         // this.client = AsynchronousSocketChannel.open();
 
-        Future<Void> futureConnect = this.client.connect(hostAddress);
+        Future<Void> futureConnect = this.client.connect(serverAddress);
         futureConnect.get();
 
         ByteBuffer buf = getBuffer();
@@ -221,18 +209,6 @@ public class RemoteSender extends AbstractSender
         buf.putInt(bytes.length);
         buf.put(bytes);
 
-        // if (syncItem.getChecksum() == null)
-        // {
-        // buf.put((byte) 0);
-        // }
-        // else
-        // {
-        // buffer.put((byte) 1);
-        // bytes = syncItem.getChecksum().getBytes(getCharset());
-        // buf.putInt(bytes.length);
-        // buf.put(bytes);
-        // }
-
         buf.flip();
         write(buf);
 
@@ -271,17 +247,11 @@ public class RemoteSender extends AbstractSender
         Future<Integer> futureResponse = getClient().read(buf);
         futureResponse.get();
 
-        // while (futureResponse.get() > 0)
-        // {
         buf.flip();
 
         bytes = new byte[buf.getInt()];
         buf.get(bytes);
         checksum = new String(bytes, getCharset());
-
-        // buf.clear();
-        // futureResponse = getClient().read(buf);
-        // }
 
         return checksum;
     }

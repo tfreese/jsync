@@ -28,9 +28,11 @@ import de.freese.jsync.utils.JSyncUtils;
  * {@link Receiver} für Remote-Filesysteme.
  *
  * @author Thomas Freese
+ * @deprecated Entfällt
  */
+@Deprecated
 @SuppressWarnings("resource")
-public class RemoteReceiver extends AbstractReceiver
+class RemoteReceiverAsync extends AbstractReceiver
 {
     /**
      * @author Thomas Freese
@@ -130,11 +132,11 @@ public class RemoteReceiver extends AbstractReceiver
     private final ExecutorService executorService;
 
     /**
-     * Erzeugt eine neue Instanz von {@link RemoteReceiver}.
+     * Erzeugt eine neue Instanz von {@link RemoteReceiverAsync}.
      *
      * @param serverUri {@link URI}
      */
-    public RemoteReceiver(final URI serverUri)
+    RemoteReceiverAsync(final URI serverUri)
     {
         super(serverUri);
 
@@ -148,9 +150,9 @@ public class RemoteReceiver extends AbstractReceiver
     @Override
     public void connect() throws Exception
     {
-        InetSocketAddress hostAddress = new InetSocketAddress(getBaseUri().getHost(), getBaseUri().getPort());
+        InetSocketAddress serverAddress = new InetSocketAddress(getBaseUri().getHost(), getBaseUri().getPort());
 
-        // this.client = SocketChannel.open(hostAddress);
+        // this.client = SocketChannel.open(serverAddress);
         // this.client.configureBlocking(true);
 
         // int poolSize = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
@@ -160,7 +162,7 @@ public class RemoteReceiver extends AbstractReceiver
         this.client = AsynchronousSocketChannel.open(this.channelGroup);
         // this.client = AsynchronousSocketChannel.open();
 
-        Future<Void> futureConnect = this.client.connect(hostAddress);
+        Future<Void> futureConnect = this.client.connect(serverAddress);
         futureConnect.get();
 
         ByteBuffer buf = getBuffer();

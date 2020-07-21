@@ -18,9 +18,9 @@ import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.ConsoleClientListener;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
-import de.freese.jsync.filesystem.receiver.RemoteReceiver;
+import de.freese.jsync.filesystem.receiver.RemoteReceiverBlocking;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.filesystem.sender.RemoteSender;
+import de.freese.jsync.filesystem.sender.RemoteSenderBlocking;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
@@ -106,7 +106,7 @@ public class JSyncConsole
         if (argumentParser.sender().startsWith("jsync"))
         {
             // Remote
-            sender = new RemoteSender(new URI(argumentParser.sender()));
+            sender = new RemoteSenderBlocking(new URI(argumentParser.sender()));
         }
         else
         {
@@ -118,7 +118,7 @@ public class JSyncConsole
         if (argumentParser.receiver().startsWith("jsync"))
         {
             // Remote
-            receiver = new RemoteReceiver(new URI(argumentParser.receiver()));
+            receiver = new RemoteReceiverBlocking(new URI(argumentParser.receiver()));
         }
         else
         {

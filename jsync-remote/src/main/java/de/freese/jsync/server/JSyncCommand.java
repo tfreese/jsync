@@ -14,105 +14,70 @@ public enum JSyncCommand
     /**
     *
     */
-    CONNECT((byte) 0),
+    CONNECT,
 
     /**
     *
     */
-    SOURCE_CHECKSUM((byte) 11),
+    DISCONNECT,
 
     /**
     *
     */
-    SOURCE_CREATE_SYNC_ITEMS((byte) 1),
+    SOURCE_CHECKSUM,
 
     /**
     *
     */
-    SOURCE_READABLE_FILE_CHANNEL((byte) 2),
+    SOURCE_CREATE_SYNC_ITEMS,
 
     /**
     *
     */
-    TARGET_CHECKSUM((byte) 12),
+    SOURCE_READABLE_FILE_CHANNEL,
 
     /**
     *
     */
-    TARGET_CREATE_DIRECTORY((byte) 3),
+    TARGET_CHECKSUM,
 
     /**
     *
     */
-    TARGET_CREATE_SYNC_ITEMS((byte) 4),
+    TARGET_CREATE_DIRECTORY,
 
     /**
     *
     */
-    TARGET_DELETE_DIRECTORY((byte) 5),
+    TARGET_CREATE_SYNC_ITEMS,
 
     /**
     *
     */
-    TARGET_DELETE_FILE((byte) 6),
+    TARGET_DELETE_DIRECTORY,
 
     /**
     *
     */
-    TARGET_UPDATE_DIRECTORY((byte) 7),
+    TARGET_DELETE_FILE,
 
     /**
     *
     */
-    TARGET_UPDATE_FILE((byte) 8),
+    TARGET_UPDATE_DIRECTORY,
 
     /**
     *
     */
-    TARGET_VALIDATE_FILE((byte) 9),
+    TARGET_UPDATE_FILE,
 
     /**
     *
     */
-    TARGET_WRITEABLE_FILE_CHANNEL((byte) 10);
+    TARGET_VALIDATE_FILE,
 
     /**
-     * @param code int
-     * @return {@link JSyncCommand}
-     */
-    public static JSyncCommand getByCode(final int code)
-    {
-        for (JSyncCommand cmd : values())
-        {
-            if (cmd.getCode() == code)
-            {
-                return cmd;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     *
-     */
-    private final byte code;
-
-    /**
-     * Erstellt ein neues {@link JSyncCommand} Object.
-     *
-     * @param code byte
-     */
-    private JSyncCommand(final byte code)
-    {
-        this.code = code;
-    }
-
-    /**
-     * @return byte
-     */
-    public byte getCode()
-    {
-        return this.code;
-    }
+    *
+    */
+    TARGET_WRITEABLE_FILE_CHANNEL;
 }

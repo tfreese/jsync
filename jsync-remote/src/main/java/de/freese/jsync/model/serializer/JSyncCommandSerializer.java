@@ -39,11 +39,21 @@ public class JSyncCommandSerializer implements Serializer<JSyncCommand>
     @Override
     public JSyncCommand readFrom(final ByteBuffer buffer)
     {
-        byte code = buffer.get();
+        // byte code = buffer.get();
+        //
+        // JSyncCommand command = JSyncCommand.getByCode(code);
 
-        JSyncCommand command = JSyncCommand.getByCode(code);
+        byte[] bytes = new byte[buffer.getInt()];
+        buffer.get(bytes);
 
-        return command;
+        String name = new String(bytes, getCharset());
+
+        if (!name.isBlank())
+        {
+            return JSyncCommand.valueOf(name);
+        }
+
+        return null;
     }
 
     /**
@@ -52,6 +62,9 @@ public class JSyncCommandSerializer implements Serializer<JSyncCommand>
     @Override
     public void writeTo(final ByteBuffer buffer, final JSyncCommand obj)
     {
-        buffer.put(obj.getCode());
+        // buffer.put(obj.getCode());
+        byte[] bytes = obj.name().getBytes(getCharset());
+        buffer.putInt(bytes.length);
+        buffer.put(bytes);
     }
 }

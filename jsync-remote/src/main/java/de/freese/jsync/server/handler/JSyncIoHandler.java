@@ -54,36 +54,34 @@ public class JSyncIoHandler extends AbstractIoHandler
         JSyncSession session = (JSyncSession) selectionKey.attachment();
 
         // JSyncCommand lesen.
-        ByteBuffer buffer = session != null ? session.getBuffer() : ByteBuffer.allocateDirect(1);
+        ByteBuffer buffer = session != null ? session.getBuffer() : ByteBuffer.allocateDirect(256);
 
         buffer.clear();
         channel.read(buffer);
         buffer.flip();
-
-        if (!buffer.hasRemaining())
-        {
-            // Disconnect.
-            logger.debug("read disconnect");
-
-            if (session != null)
-            {
-                session.setLastCommand(null);
-            }
-
-            selectionKey.interestOps(SelectionKey.OP_CONNECT);
-            return;
-        }
 
         JSyncCommand command = JSyncCommandSerializer.getInstance().readFrom(buffer);
 
         if (command == null)
         {
             logger.error("unknown JSyncCommand");
+            selectionKey.interestOps(SelectionKey.OP_READ);
             return;
         }
 
         switch (command)
         {
+            case DISCONNECT:
+                logger.debug("read disconnect");
+
+                if (session != null)
+                {
+                    session.setLastCommand(null);
+                }
+
+                selectionKey.attach(null);
+                selectionKey.interestOps(SelectionKey.OP_CONNECT);
+                break;
             case CONNECT:
                 requestConnect(selectionKey, channel, logger);
                 break;
@@ -521,12 +519,11 @@ public class JSyncIoHandler extends AbstractIoHandler
         logger.debug("request: Connect");
 
         JSyncSession session = new JSyncSession(logger);
-        session.setLastCommand(JSyncCommand.CONNECT);
 
         selectionKey.attach(session);
 
         session.setLastCommand(JSyncCommand.CONNECT);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
+        selectionKey.interestOps(SelectionKey.OP_READ);
     }
 
     /**
@@ -761,13 +758,13 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         switch (session.getLastCommand())
         {
-            case CONNECT:
-                writeFinishFlag(channel, buffer);
-                break;
+            // case CONNECT:
+            // writeFinishFlag(channel, buffer);
+            // break;
 
             case TARGET_CREATE_SYNC_ITEMS:
                 receiverResponseCreateSyncItems(selectionKey, channel);
-                writeFinishFlag(channel, buffer);
+                // writeFinishFlag(channel, buffer);
                 break;
 
             case TARGET_DELETE_FILE:
@@ -800,7 +797,7 @@ public class JSyncIoHandler extends AbstractIoHandler
 
             case SOURCE_CREATE_SYNC_ITEMS:
                 senderResponseCreateSyncItems(selectionKey, channel);
-                writeFinishFlag(channel, buffer);
+                // writeFinishFlag(channel, buffer);
                 break;
 
             case SOURCE_READABLE_FILE_CHANNEL:
@@ -832,6 +829,6 @@ public class JSyncIoHandler extends AbstractIoHandler
         buffer.clear();
         buffer.put(Byte.MIN_VALUE);
         buffer.flip();
-        channel.write(buffer);
+        // channel.write(buffer);
     }
 }

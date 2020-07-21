@@ -19,9 +19,9 @@ import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.ConsoleClientListener;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
-import de.freese.jsync.filesystem.receiver.RemoteReceiver;
+import de.freese.jsync.filesystem.receiver.RemoteReceiverBlocking;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.filesystem.sender.RemoteSender;
+import de.freese.jsync.filesystem.sender.RemoteSenderBlocking;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.generator.listener.ConsoleGeneratorListener;
 import de.freese.jsync.generator.listener.GeneratorListener;
@@ -116,7 +116,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
-        syncDirectories(options, new RemoteSender(senderUri), new RemoteReceiver(receiverUri), new ConsoleClientListener(),
+        syncDirectories(options, new RemoteSenderBlocking(senderUri), new RemoteReceiverBlocking(receiverUri), new ConsoleClientListener(),
                 new ConsoleGeneratorListener("Sender"), new ConsoleGeneratorListener("Receiver"));
 
         serverSender.stop();

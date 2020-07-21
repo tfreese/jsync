@@ -64,6 +64,11 @@ public class ConsoleClientListener extends AbstractClientListener
         message = "\r\t" + message;
 
         getPrintStream().print(message);
+
+        if (size == bytesTransferred)
+        {
+            getPrintStream().println();
+        }
     }
 
     /**
