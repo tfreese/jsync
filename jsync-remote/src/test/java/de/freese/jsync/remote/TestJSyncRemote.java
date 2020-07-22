@@ -19,8 +19,10 @@ import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.ConsoleClientListener;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
+import de.freese.jsync.filesystem.receiver.RemoteReceiverAsync;
 import de.freese.jsync.filesystem.receiver.RemoteReceiverBlocking;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
+import de.freese.jsync.filesystem.sender.RemoteSenderAsync;
 import de.freese.jsync.filesystem.sender.RemoteSenderBlocking;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.generator.listener.ConsoleGeneratorListener;
@@ -95,7 +97,41 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test010RemoteSenderRemoteReceiver() throws Exception
+    void test010RemoteSenderAsyncRemoteReceiverAsync() throws Exception
+    {
+        System.out.println();
+
+        IoHandler jsyncIoHandler = new JSyncIoHandler();
+
+        JSyncServer serverSender = new JSyncServer(8001, 1);
+        serverSender.setIoHandler(jsyncIoHandler);
+        serverSender.start();
+
+        JSyncServer serverReceiver = new JSyncServer(8002, 1);
+        serverReceiver.setIoHandler(jsyncIoHandler);
+        serverReceiver.start();
+
+        Options options = new Builder().delete(true).dryRun(false).followSymLinks(false).checksum(true).build();
+
+        // URI sender = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
+        // URI receiver = new URI("jsync", null, "localhost", 8002, "/" + PATH_ZIEL.toString(), null, null);
+        URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
+        URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
+
+        syncDirectories(options, new RemoteSenderAsync(senderUri), new RemoteReceiverAsync(receiverUri), new ConsoleClientListener(),
+                new ConsoleGeneratorListener("Sender"), new ConsoleGeneratorListener("Receiver"));
+
+        serverSender.stop();
+        serverReceiver.stop();
+
+        assertTrue(true);
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    void test010RemoteSenderBlockingRemoteReceiverBlocking() throws Exception
     {
         System.out.println();
 

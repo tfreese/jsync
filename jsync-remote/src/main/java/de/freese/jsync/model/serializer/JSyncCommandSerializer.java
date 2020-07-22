@@ -20,7 +20,7 @@ public class JSyncCommandSerializer implements Serializer<JSyncCommand>
     /**
      * @return Serializer<JSyncCommand>
      */
-    public static Serializer<JSyncCommand> getInstance()
+    static Serializer<JSyncCommand> getInstance()
     {
         return INSTANCE;
     }

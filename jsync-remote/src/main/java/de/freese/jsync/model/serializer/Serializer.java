@@ -6,7 +6,7 @@ package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import de.freese.jsync.Options;
 
 /**
  * Interface zur Serialisierung.
@@ -21,7 +21,7 @@ public interface Serializer<T>
      */
     public default Charset getCharset()
     {
-        return StandardCharsets.UTF_8;
+        return Options.CHARSET;
     }
 
     /**

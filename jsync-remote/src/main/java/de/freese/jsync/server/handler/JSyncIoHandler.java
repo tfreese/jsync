@@ -20,7 +20,6 @@ import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.JSyncCommandSerializer;
 import de.freese.jsync.model.serializer.Serializers;
 import de.freese.jsync.server.JSyncCommand;
 import de.freese.jsync.server.JSyncSession;
@@ -60,7 +59,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         channel.read(buffer);
         buffer.flip();
 
-        JSyncCommand command = JSyncCommandSerializer.getInstance().readFrom(buffer);
+        JSyncCommand command = Serializers.readFrom(buffer, JSyncCommand.class);
 
         if (command == null)
         {

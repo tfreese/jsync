@@ -1,6 +1,8 @@
 // Created: 28.10.2016
 package de.freese.jsync;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 
@@ -94,6 +96,11 @@ public class Options
      * Default: 4 MB
      */
     public static final int BUFFER_SIZE = 4 * 1024 * 1024;
+
+    /**
+     * Default: UTF-8
+     */
+    public static final Charset CHARSET = StandardCharsets.UTF_8;
 
     /**
     *

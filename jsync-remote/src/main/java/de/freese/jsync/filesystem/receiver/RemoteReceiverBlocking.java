@@ -5,23 +5,17 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousChannelGroup;
-import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.LongConsumer;
 import de.freese.jsync.Options;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
 import de.freese.jsync.server.JSyncCommand;
-import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * {@link Receiver} für Remote-Filesysteme.
@@ -29,7 +23,7 @@ import de.freese.jsync.utils.JSyncUtils;
  * @author Thomas Freese
  */
 @SuppressWarnings("resource")
-public class RemoteReceiverAsync extends AbstractReceiver
+public class RemoteReceiverBlocking extends AbstractReceiver
 {
     /**
      * @author Thomas Freese
@@ -39,14 +33,14 @@ public class RemoteReceiverAsync extends AbstractReceiver
         /**
          *
          */
-        private final AsynchronousSocketChannel delegate;
+        private final WritableByteChannel delegate;
 
         /**
          * Erstellt ein neues {@link NoCloseWritableByteChannel} Object.
          *
-         * @param delegate {@link AsynchronousSocketChannel}
+         * @param delegate {@link WritableByteChannel}
          */
-        public NoCloseWritableByteChannel(final AsynchronousSocketChannel delegate)
+        public NoCloseWritableByteChannel(final WritableByteChannel delegate)
         {
             super();
 
@@ -59,20 +53,7 @@ public class RemoteReceiverAsync extends AbstractReceiver
         @Override
         public void close() throws IOException
         {
-            // Diese Methode wird unmittelbar nach dem Kopieren aufgerufen.
-            // Daher muss erst mal auf das Finish vom Server gewartet werden.
-            // try
-            // {
-            // handleResponse();
-            // }
-            // catch (IOException iex)
-            // {
-            // throw iex;
-            // }
-            // catch (Exception ex)
-            // {
-            // throw new IOException(ex);
-            // }
+            // Empty
         }
 
         /**
@@ -90,28 +71,9 @@ public class RemoteReceiverAsync extends AbstractReceiver
         @Override
         public int write(final ByteBuffer src) throws IOException
         {
-            Future<Integer> futureWrite = this.delegate.write(src);
-
-            try
-            {
-                return futureWrite.get();
-            }
-            catch (InterruptedException | ExecutionException ex)
-            {
-                if (ex.getCause() instanceof IOException)
-                {
-                    throw (IOException) ex.getCause();
-                }
-
-                throw new IOException(ex.getCause());
-            }
+            return this.delegate.write(src);
         }
     }
-
-    /**
-    *
-    */
-    private AsynchronousSocketChannel asyncSocketChannel = null;
 
     /**
      *
@@ -119,25 +81,19 @@ public class RemoteReceiverAsync extends AbstractReceiver
     private final ByteBuffer buffer;
 
     /**
-     *
-     */
-    private AsynchronousChannelGroup channelGroup = null;
-
-    /**
     *
     */
-    private final ExecutorService executorService;
+    private SocketChannel socketChannel = null;
 
     /**
-     * Erzeugt eine neue Instanz von {@link RemoteReceiverAsync}.
+     * Erzeugt eine neue Instanz von {@link RemoteReceiverBlocking}.
      *
      * @param serverUri {@link URI}
      */
-    public RemoteReceiverAsync(final URI serverUri)
+    public RemoteReceiverBlocking(final URI serverUri)
     {
         super(serverUri);
 
-        this.executorService = Executors.newCachedThreadPool();
         this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
     }
 
@@ -149,17 +105,12 @@ public class RemoteReceiverAsync extends AbstractReceiver
     {
         InetSocketAddress serverAddress = new InetSocketAddress(getBaseUri().getHost(), getBaseUri().getPort());
 
-        this.channelGroup = AsynchronousChannelGroup.withThreadPool(this.executorService);
-
-        this.asyncSocketChannel = AsynchronousSocketChannel.open(this.channelGroup);
-        // this.client = AsynchronousSocketChannel.open();
-
-        Future<Void> futureConnect = this.asyncSocketChannel.connect(serverAddress);
-        futureConnect.get();
-
-        this.buffer.clear();
+        this.socketChannel = SocketChannel.open();
+        this.socketChannel.connect(serverAddress);
+        this.socketChannel.configureBlocking(true);
 
         // JSyncCommand senden.
+        this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.CONNECT);
 
         this.buffer.flip();
@@ -174,9 +125,8 @@ public class RemoteReceiverAsync extends AbstractReceiver
     @Override
     public void createDirectory(final String dir) throws Exception
     {
-        this.buffer.clear();
-
         // JSyncCommand senden.
+        this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
 
         byte[] bytes = dir.getBytes(getCharset());
@@ -195,9 +145,8 @@ public class RemoteReceiverAsync extends AbstractReceiver
     @Override
     public void deleteDirectory(final String dir) throws Exception
     {
-        this.buffer.clear();
-
         // JSyncCommand senden.
+        this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_DELETE_DIRECTORY);
 
         byte[] bytes = dir.getBytes(getCharset());
@@ -216,9 +165,8 @@ public class RemoteReceiverAsync extends AbstractReceiver
     @Override
     public void deleteFile(final String file) throws Exception
     {
-        this.buffer.clear();
-
         // JSyncCommand senden.
+        this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_DELETE_FILE);
 
         byte[] bytes = file.getBytes(getCharset());
@@ -237,14 +185,16 @@ public class RemoteReceiverAsync extends AbstractReceiver
     @Override
     public void disconnect() throws Exception
     {
-        this.asyncSocketChannel.shutdownInput();
-        this.asyncSocketChannel.shutdownOutput();
-        this.asyncSocketChannel.close();
+        // JSyncCommand senden.
+        this.buffer.clear();
+        Serializers.writeTo(this.buffer, JSyncCommand.DISCONNECT);
 
-        if (this.channelGroup != null)
-        {
-            JSyncUtils.shutdown(this.channelGroup, getLogger());
-        }
+        this.buffer.flip();
+        write(this.buffer);
+
+        this.socketChannel.shutdownInput();
+        this.socketChannel.shutdownOutput();
+        this.socketChannel.close();
     }
 
     /**
@@ -253,9 +203,8 @@ public class RemoteReceiverAsync extends AbstractReceiver
     @Override
     public WritableByteChannel getChannel(final SyncItem syncItem) throws Exception
     {
-        this.buffer.clear();
-
         // JSyncCommand senden.
+        this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
 
         this.buffer.putLong(syncItem.getSize());
@@ -264,22 +213,10 @@ public class RemoteReceiverAsync extends AbstractReceiver
         this.buffer.putInt(bytes.length);
         this.buffer.put(bytes);
 
-        // if (syncItem.getChecksum() == null)
-        // {
-        // buf.put((byte) 0);
-        // }
-        // else
-        // {
-        // buf.put((byte) 1);
-        // bytes = syncItem.getChecksum().getBytes(getCharset());
-        // buf.putInt(bytes.length);
-        // buf.put(bytes);
-        // }
-
         this.buffer.flip();
         write(this.buffer);
 
-        return new NoCloseWritableByteChannel(this.asyncSocketChannel);
+        return new NoCloseWritableByteChannel(this.socketChannel);
     }
 
     /**
@@ -296,35 +233,25 @@ public class RemoteReceiverAsync extends AbstractReceiver
     @Override
     public String getChecksum(final String relativePath, final LongConsumer consumerBytesRead) throws Exception
     {
-        String checksum = null;
-
-        this.buffer.clear();
-
         // JSyncCommand senden.
+        this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CHECKSUM);
 
         byte[] bytes = relativePath.getBytes(getCharset());
         this.buffer.putInt(bytes.length);
         this.buffer.put(bytes);
+
         this.buffer.flip();
         write(this.buffer);
 
         // Response lesen.
         this.buffer.clear();
-        Future<Integer> futureResponse = this.asyncSocketChannel.read(this.buffer);
-        futureResponse.get();
-
-        // while (futureResponse.get() > 0)
-        // {
+        this.socketChannel.read(this.buffer);
         this.buffer.flip();
 
         bytes = new byte[this.buffer.getInt()];
         this.buffer.get(bytes);
-        checksum = new String(bytes, getCharset());
-
-        // buf.clear();
-        // futureResponse = asyncSocketChannel.read(buf);
-        // }
+        String checksum = new String(bytes, getCharset());
 
         return checksum;
     }
@@ -339,9 +266,8 @@ public class RemoteReceiverAsync extends AbstractReceiver
 
         try
         {
-            this.buffer.clear();
-
             // JSyncCommand senden.
+            this.buffer.clear();
             Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
 
             byte[] bytes = getBasePath().toString().getBytes(getCharset());
@@ -354,16 +280,14 @@ public class RemoteReceiverAsync extends AbstractReceiver
             write(this.buffer);
 
             // Response lesen.
-            this.buffer.clear();
-            Future<Integer> futureResponse = this.asyncSocketChannel.read(this.buffer);
-
             boolean sizeRead = false;
             boolean finished = false;
             int countSyncItems = -1;
             int counter = 0;
 
-            // while (asyncSocketChannel.read(buffer) > 0)
-            while (futureResponse.get() > 0)
+            this.buffer.clear();
+
+            while (this.socketChannel.read(this.buffer) > 0)
             {
                 this.buffer.flip();
 
@@ -393,7 +317,6 @@ public class RemoteReceiverAsync extends AbstractReceiver
                 }
 
                 this.buffer.clear();
-                futureResponse = this.asyncSocketChannel.read(this.buffer);
             }
         }
         catch (RuntimeException rex)
@@ -416,14 +339,10 @@ public class RemoteReceiverAsync extends AbstractReceiver
     protected void handleResponse() throws Exception
     {
         // this.buffer.clear();
+        // this.socketChannel.read(this.buffer);
+        // this.buffer.flip();
         //
-        // Future<Integer> futureResponse = asyncSocketChannel.read(buf);
-        //
-        // futureResponse.get();
-        //
-        // buf.flip();
-        //
-        // byte b = buf.get();
+        // byte b = this.buffer.get();
         //
         // if (b != Byte.MIN_VALUE)
         // {
@@ -437,9 +356,8 @@ public class RemoteReceiverAsync extends AbstractReceiver
     @Override
     public void updateDirectory(final SyncItem syncItem) throws Exception
     {
-        this.buffer.clear();
-
         // JSyncCommand senden.
+        this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_UPDATE_DIRECTORY);
 
         Serializers.writeTo(this.buffer, syncItem);
@@ -456,9 +374,8 @@ public class RemoteReceiverAsync extends AbstractReceiver
     @Override
     public void updateFile(final SyncItem syncItem) throws Exception
     {
-        this.buffer.clear();
-
         // JSyncCommand senden.
+        this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_UPDATE_FILE);
 
         Serializers.writeTo(this.buffer, syncItem);
@@ -475,9 +392,8 @@ public class RemoteReceiverAsync extends AbstractReceiver
     @Override
     public void validateFile(final SyncItem syncItem, final boolean withChecksum) throws Exception
     {
-        this.buffer.clear();
-
         // JSyncCommand senden.
+        this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_VALIDATE_FILE);
 
         this.buffer.putLong(syncItem.getSize());
@@ -511,11 +427,9 @@ public class RemoteReceiverAsync extends AbstractReceiver
      */
     protected void write(final ByteBuffer buf) throws Exception
     {
-        Future<Integer> futureRequest = this.asyncSocketChannel.write(buf);
-
-        while (futureRequest.get() > 0)
+        while (buf.hasRemaining())
         {
-            futureRequest = this.asyncSocketChannel.write(buf);
+            this.socketChannel.write(buf);
         }
     }
 }
