@@ -120,36 +120,16 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#createDirectory(java.lang.String)
-     */
-    @Override
-    public void createDirectory(final String dir) throws Exception
-    {
-        // JSyncCommand senden.
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
-
-        byte[] bytes = dir.getBytes(getCharset());
-        this.buffer.putInt(bytes.length);
-        this.buffer.put(bytes);
-
-        this.buffer.flip();
-        write(this.buffer);
-
-        handleResponse();
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.receiver.Receiver#deleteDirectory(java.lang.String)
      */
     @Override
-    public void deleteDirectory(final String dir) throws Exception
+    public void deleteDirectory(final String relativeDir) throws Exception
     {
         // JSyncCommand senden.
         this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_DELETE_DIRECTORY);
 
-        byte[] bytes = dir.getBytes(getCharset());
+        byte[] bytes = relativeDir.getBytes(getCharset());
         this.buffer.putInt(bytes.length);
         this.buffer.put(bytes);
 
@@ -163,13 +143,13 @@ public class RemoteReceiverBlocking extends AbstractReceiver
      * @see de.freese.jsync.filesystem.receiver.Receiver#deleteFile(java.lang.String)
      */
     @Override
-    public void deleteFile(final String file) throws Exception
+    public void deleteFile(final String relativeFile) throws Exception
     {
         // JSyncCommand senden.
         this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_DELETE_FILE);
 
-        byte[] bytes = file.getBytes(getCharset());
+        byte[] bytes = relativeFile.getBytes(getCharset());
         this.buffer.putInt(bytes.length);
         this.buffer.put(bytes);
 
@@ -231,13 +211,13 @@ public class RemoteReceiverBlocking extends AbstractReceiver
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String getChecksum(final String relativePath, final LongConsumer consumerBytesRead) throws Exception
+    public String getChecksum(final String relativeFile, final LongConsumer consumerBytesRead) throws Exception
     {
         // JSyncCommand senden.
         this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CHECKSUM);
 
-        byte[] bytes = relativePath.getBytes(getCharset());
+        byte[] bytes = relativeFile.getBytes(getCharset());
         this.buffer.putInt(bytes.length);
         this.buffer.put(bytes);
 

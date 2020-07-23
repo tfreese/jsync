@@ -43,9 +43,7 @@ class GroupSerializer implements Serializer<Group>
         int gid = buffer.getInt();
 
         // name
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-        String name = new String(bytes, getCharset());
+        String name = StringSerializer.getInstance().readFrom(buffer);
 
         return new Group(name, gid);
     }
@@ -60,8 +58,6 @@ class GroupSerializer implements Serializer<Group>
         buffer.putInt(obj.getGid());
 
         // name
-        byte[] bytes = obj.getName().getBytes(getCharset());
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
+        StringSerializer.getInstance().writeTo(buffer, obj.getName());
     }
 }

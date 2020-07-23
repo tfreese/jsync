@@ -58,28 +58,12 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#createDirectory(java.lang.String)
-     */
-    @Override
-    public void createDirectory(final String dir) throws Exception
-    {
-        Path path = getBasePath().resolve(dir);
-
-        getLogger().debug("create: {}", path);
-
-        if (!Files.exists(path))
-        {
-            Files.createDirectories(path);
-        }
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.receiver.Receiver#deleteDirectory(java.lang.String)
      */
     @Override
-    public void deleteDirectory(final String dir) throws Exception
+    public void deleteDirectory(final String relativeDir) throws Exception
     {
-        Path path = getBasePath().resolve(dir);
+        Path path = getBasePath().resolve(relativeDir);
 
         getLogger().debug("create: {}", path);
 
@@ -109,9 +93,9 @@ public class LocalhostReceiver extends AbstractReceiver
      * @see de.freese.jsync.filesystem.receiver.Receiver#deleteFile(java.lang.String)
      */
     @Override
-    public void deleteFile(final String file) throws Exception
+    public void deleteFile(final String relativeFile) throws Exception
     {
-        Path path = getBasePath().resolve(file);
+        Path path = getBasePath().resolve(relativeFile);
 
         getLogger().debug("delete: {}", path);
 
@@ -135,13 +119,12 @@ public class LocalhostReceiver extends AbstractReceiver
     {
         Path path = getBasePath().resolve(syncItem.getRelativePath());
 
-        getLogger().debug("get WritableByteChannel: {}", path);
+        if (Files.notExists(path))
+        {
+            Files.createDirectories(path);
+        }
 
-        // Ist bereits erfolgt.
-        // if (!Files.exists(path.getParent()))
-        // {
-        // Files.createDirectories(path.getParent());
-        // }
+        getLogger().debug("get WritableByteChannel: {}", path);
 
         // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
@@ -152,9 +135,9 @@ public class LocalhostReceiver extends AbstractReceiver
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String getChecksum(final String relativePath, final LongConsumer consumerBytesRead) throws Exception
+    public String getChecksum(final String relativeFile, final LongConsumer consumerBytesRead) throws Exception
     {
-        String checksum = this.generator.generateChecksum(getBasePath().toString(), relativePath, consumerBytesRead);
+        String checksum = this.generator.generateChecksum(getBasePath().toString(), relativeFile, consumerBytesRead);
 
         return checksum;
     }

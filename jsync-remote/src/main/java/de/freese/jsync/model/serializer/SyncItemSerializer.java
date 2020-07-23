@@ -22,7 +22,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
     private static final Serializer<SyncItem> INSTANCE = new SyncItemSerializer();
 
     /**
-     * @return Serializer<Options>
+     * @return Serializer<SyncItem>
      */
     static Serializer<SyncItem> getInstance()
     {
@@ -44,9 +44,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
     public SyncItem readFrom(final ByteBuffer buffer)
     {
         // relativePath
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-        String relativePath = new String(bytes, getCharset());
+        String relativePath = StringSerializer.getInstance().readFrom(buffer);
 
         SyncItem syncItem = new DefaultSyncItem(relativePath);
 
@@ -62,10 +60,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
         // permissions
         if (buffer.get() == 1)
         {
-            bytes = new byte[buffer.getInt()];
-            buffer.get(bytes);
-
-            String permissions = new String(bytes, getCharset());
+            String permissions = StringSerializer.getInstance().readFrom(buffer);
 
             syncItem.setPermissions(PosixFilePermissions.fromString(permissions));
         }
@@ -87,9 +82,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
         // checksum
         if (buffer.get() == 1)
         {
-            bytes = new byte[buffer.getInt()];
-            buffer.get(bytes);
-            String checksum = new String(bytes, getCharset());
+            String checksum = StringSerializer.getInstance().readFrom(buffer);
 
             syncItem.setChecksum(checksum);
         }

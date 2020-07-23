@@ -34,8 +34,7 @@ public interface Client
      * @param sender {@link Sender}
      * @param receiver {@link Receiver}
      * @param syncList {@link List}
-     * @param withChecksum boolean
      * @throws Exception Falls was schief geht.
      */
-    public void syncReceiver(Sender sender, Receiver receiver, List<SyncPair> syncList, final boolean withChecksum) throws Exception;
+    public void syncReceiver(Sender sender, Receiver receiver, List<SyncPair> syncList) throws Exception;
 }

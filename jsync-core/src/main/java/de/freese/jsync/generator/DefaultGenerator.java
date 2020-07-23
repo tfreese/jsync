@@ -46,9 +46,9 @@ public class DefaultGenerator extends AbstractGenerator
      * @see de.freese.jsync.generator.Generator#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String generateChecksum(final String basePath, final String relativePath, final LongConsumer consumerBytesRead)
+    public String generateChecksum(final String basePath, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        Path path = Paths.get(basePath, relativePath);
+        Path path = Paths.get(basePath, relativeFile);
 
         // String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, bytesRead -> listener.checksum(syncItem.getSize(), bytesRead));
         String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, consumerBytesRead);
@@ -95,7 +95,6 @@ public class DefaultGenerator extends AbstractGenerator
         List<SyncItem> syncItems = paths.stream()
                 .map(path -> {
                     String relativePath = base.relativize(path).toString();
-
 
                     SyncItem syncItem = generateItem(path, relativePath, linkOptions);
 
@@ -160,13 +159,13 @@ public class DefaultGenerator extends AbstractGenerator
 
     /**
      * @param file {@link Path}
-     * @param relativePath String
+     * @param relativeFile String
      * @param linkOptions {@link LinkOption}; wenn {@value LinkOption#NOFOLLOW_LINKS} null dann Follow
      * @return {@link SyncItem}
      */
-    protected SyncItem toFileItem(final Path file, final String relativePath, final LinkOption[] linkOptions)
+    protected SyncItem toFileItem(final Path file, final String relativeFile, final LinkOption[] linkOptions)
     {
-        SyncItem syncItem = new DefaultSyncItem(relativePath);
+        SyncItem syncItem = new DefaultSyncItem(relativeFile);
         syncItem.setFile(true);
 
         try

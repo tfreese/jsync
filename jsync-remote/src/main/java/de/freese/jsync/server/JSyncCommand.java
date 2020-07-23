@@ -44,11 +44,6 @@ public enum JSyncCommand
     /**
     *
     */
-    TARGET_CREATE_DIRECTORY,
-
-    /**
-    *
-    */
     TARGET_CREATE_SYNC_ITEMS,
 
     /**

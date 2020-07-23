@@ -52,9 +52,8 @@ public abstract class AbstractClient implements Client
      * @param sender {@link Sender}
      * @param receiver {@link Receiver}
      * @param syncItem {@link SyncItem}
-     * @param withChecksum boolean
      */
-    protected void copyFile(final Sender sender, final Receiver receiver, final SyncItem syncItem, final boolean withChecksum)
+    protected void copyFile(final Sender sender, final Receiver receiver, final SyncItem syncItem)
     {
         long fileSize = syncItem.getSize();
         getClientListener().copyFileProgress(syncItem, fileSize, 0);
@@ -70,6 +69,8 @@ public abstract class AbstractClient implements Client
         {
             // readableByteChannel = new MonitoringReadableByteChannel(readableByteChannel, monitorRead, fileSize);
             // writableByteChannel = new MonitoringWritableByteChannel(writableByteChannel, monitorWrite, fileSize);
+            // FileChannel.transferFrom(ReadableByteChannel, position, count);
+            // FileChannel.transferTo(position, count, WritableByteChannel);
 
             ByteBuffer buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
 
@@ -77,7 +78,6 @@ public abstract class AbstractClient implements Client
             long bytesRead = 0;
             long bytesWrote = 0;
 
-            // while ((readableByteChannel.read(buffer) != -1) || (bytesWrote < fileSize))
             while (bytesWrote < fileSize)
             {
                 bytesRead += readableByteChannel.read(buffer);
@@ -101,11 +101,7 @@ public abstract class AbstractClient implements Client
         {
             // Datei überprüfen.
             getClientListener().validateFile(getOptions(), syncItem);
-            receiver.validateFile(syncItem, withChecksum);
-
-            // Attribute aktualisieren.
-            getClientListener().updateFile(getOptions(), syncItem);
-            receiver.updateFile(syncItem);
+            receiver.validateFile(syncItem, getOptions().isChecksum());
         }
         catch (Exception ex)
         {
@@ -123,9 +119,8 @@ public abstract class AbstractClient implements Client
      * @param sender Sender
      * @param receiver {@link Receiver}
      * @param syncList {@link List}
-     * @param withChecksum boolean
      */
-    protected void copyFiles(final Sender sender, final Receiver receiver, final List<SyncPair> syncList, final boolean withChecksum)
+    protected void copyFiles(final Sender sender, final Receiver receiver, final List<SyncPair> syncList)
     {
         Predicate<SyncPair> isExisting = p -> p.getSource() != null;
         Predicate<SyncPair> isFile = p -> p.getSource().isFile();
@@ -137,53 +132,8 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFile(sender, receiver,  pair.getSource(),withChecksum));
+                .forEach(pair -> copyFile(sender, receiver,  pair.getSource()));
         //@formatter:on
-    }
-
-    /**
-     * Erstellen von Verzeichnissen auf dem {@link Receiver}.<br>
-     * {@link SyncStatus#ONLY_IN_SOURCE}<br>
-     *
-     * @param receiver {@link Receiver}
-     * @param syncList {@link List}
-     */
-    protected void createDirectories(final Receiver receiver, final List<SyncPair> syncList)
-    {
-        Predicate<SyncPair> isExisting = p -> p.getSource() != null;
-        Predicate<SyncPair> isDirectory = p -> p.getSource().isDirectory();
-        Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
-
-        // @formatter:off
-        syncList.stream()
-                .filter(isExisting.and(isExisting).and(isDirectory).and(isOnlyInSource))
-                .forEach(pair -> createDirectory(receiver, pair.getSource().getRelativePath()));
-        //@formatter:on
-    }
-
-    /**
-     * Erstellen von Verzeichnissen auf dem {@link Receiver}.<br>
-     *
-     * @param receiver {@link Receiver}
-     * @param directory String
-     */
-    protected void createDirectory(final Receiver receiver, final String directory)
-    {
-        getClientListener().createDirectory(getOptions(), directory);
-
-        if (getOptions().isDryRun())
-        {
-            return;
-        }
-
-        try
-        {
-            receiver.createDirectory(directory);
-        }
-        catch (Exception ex)
-        {
-            getClientListener().error(null, ex);
-        }
     }
 
     /**

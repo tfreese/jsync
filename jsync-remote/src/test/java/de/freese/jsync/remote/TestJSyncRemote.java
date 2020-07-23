@@ -87,7 +87,7 @@ class TestJSyncRemote extends AbstractJSyncTest
 
         List<SyncPair> syncList = client.mergeSyncItems(itemsSender, itemsReceiver);
 
-        client.syncReceiver(sender, receiver, syncList, options.isChecksum());
+        client.syncReceiver(sender, receiver, syncList);
 
         sender.disconnect();
         receiver.disconnect();

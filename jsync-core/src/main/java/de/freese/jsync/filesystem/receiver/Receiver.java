@@ -15,28 +15,20 @@ import de.freese.jsync.model.SyncItem;
 public interface Receiver extends FileSystem
 {
     /**
-     * Erstellt ein Verzeichnis.
-     *
-     * @param dir String
-     * @throws Exception Falls was schief geht.
-     */
-    public void createDirectory(String dir) throws Exception;
-
-    /**
      * Löscht ein Verzeichnis.
      *
-     * @param dir String
+     * @param relativeDir String
      * @throws Exception Falls was schief geht.
      */
-    public void deleteDirectory(String dir) throws Exception;
+    public void deleteDirectory(String relativeDir) throws Exception;
 
     /**
      * Löscht eine Datei.
      *
-     * @param file String
+     * @param relativeFile String
      * @throws Exception Falls was schief geht.
      */
-    public void deleteFile(String file) throws Exception;
+    public void deleteFile(String relativeFile) throws Exception;
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#getChannel(de.freese.jsync.model.SyncItem)

@@ -97,10 +97,6 @@ public class JSyncIoHandler extends AbstractIoHandler
                 receiverRequestDeleteDirectory(selectionKey, channel);
                 break;
 
-            case TARGET_CREATE_DIRECTORY:
-                receiverRequestCreateDirectory(selectionKey, channel);
-                break;
-
             case TARGET_WRITEABLE_FILE_CHANNEL:
                 receiverRequestFileChannel(selectionKey, channel);
                 break;
@@ -154,38 +150,16 @@ public class JSyncIoHandler extends AbstractIoHandler
         byte[] bytes = new byte[buffer.getInt()];
         buffer.get(bytes);
 
-        String relativePath = new String(bytes, getCharset());
+        String relativeFile = new String(bytes, getCharset());
 
         Receiver receiver = session.getReceiver();
-        String checksum = receiver.getChecksum(relativePath, i -> {
+        String checksum = receiver.getChecksum(relativeFile, i -> {
         });
 
         session.setChecksum(checksum);
 
         buffer.clear();
         session.setLastCommand(JSyncCommand.TARGET_CHECKSUM);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void receiverRequestCreateDirectory(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("receiver request: Create Directory");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-        String directory = new String(bytes, getCharset());
-
-        session.getReceiver().createDirectory(directory);
-        session.setLastCommand(JSyncCommand.TARGET_CREATE_DIRECTORY);
         selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
 
@@ -286,15 +260,6 @@ public class JSyncIoHandler extends AbstractIoHandler
         syncItem.setFile(true);
         syncItem.setSize(fileSize);
 
-        // if (buffer.get() == 1)
-        // {
-        // bytes = new byte[buffer.getInt()];
-        // buffer.get(bytes);
-        //
-        // String checksum = new String(bytes, getCharset());
-        // syncItem.setChecksum(checksum);
-        // }
-
         Receiver receiver = session.getReceiver();
 
         long fileBytesTransferred = 0;
@@ -315,7 +280,6 @@ public class JSyncIoHandler extends AbstractIoHandler
             fileBytesTransferred += outChannel.write(buffer);
             buffer.clear();
 
-            // while ((channel.read(buffer) > 0) || (fileBytesTransferred < fileSize))
             while (fileBytesTransferred < fileSize)
             {
                 channel.read(buffer);
@@ -607,15 +571,6 @@ public class JSyncIoHandler extends AbstractIoHandler
         syncItem.setFile(true);
         syncItem.setSize(fileSize);
 
-        // if (buffer.get() == 1)
-        // {
-        // bytes = new byte[buffer.getInt()];
-        // buffer.get(bytes);
-        //
-        // String checksum = new String(bytes, getCharset());
-        // syncItem.setChecksum(checksum);
-        // }
-
         session.setSyncItem(syncItem);
 
         session.setLastCommand(JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
@@ -724,7 +679,6 @@ public class JSyncIoHandler extends AbstractIoHandler
         try (ReadableByteChannel inChannel = sender.getChannel(syncItem))
         // try (ReadableByteChannel inChannel = new MonitoringReadableByteChannel(sender.getChannel(syncItem), monitor, fileSize))
         {
-            // while ((inChannel.read(buffer) > 0) || (fileBytesTransferred < fileSize))
             while (fileBytesTransferred < fileSize)
             {
                 inChannel.read(buffer);
@@ -771,10 +725,6 @@ public class JSyncIoHandler extends AbstractIoHandler
                 break;
 
             case TARGET_DELETE_DIRECTORY:
-                writeFinishFlag(channel, buffer);
-                break;
-
-            case TARGET_CREATE_DIRECTORY:
                 writeFinishFlag(channel, buffer);
                 break;
 

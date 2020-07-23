@@ -45,7 +45,7 @@ class UserSerializer implements Serializer<User>
         // name
         byte[] bytes = new byte[buffer.getInt()];
         buffer.get(bytes);
-        String name = new String(bytes, getCharset());
+        String name = StringSerializer.getInstance().readFrom(buffer);
 
         return new User(name, uid);
     }
@@ -60,8 +60,6 @@ class UserSerializer implements Serializer<User>
         buffer.putInt(obj.getUid());
 
         // name
-        byte[] bytes = obj.getName().getBytes(getCharset());
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
+        StringSerializer.getInstance().writeTo(buffer, obj.getName());
     }
 }

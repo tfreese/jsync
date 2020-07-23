@@ -72,6 +72,8 @@ public class LocalhostSender extends AbstractSender
             return null;
         }
 
+        // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+
         return Files.newByteChannel(path, StandardOpenOption.READ);
     }
 
@@ -79,9 +81,9 @@ public class LocalhostSender extends AbstractSender
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String getChecksum(final String relativePath, final LongConsumer consumerBytesRead) throws Exception
+    public String getChecksum(final String relativeFile, final LongConsumer consumerBytesRead) throws Exception
     {
-        String checksum = this.generator.generateChecksum(getBasePath().toString(), relativePath, consumerBytesRead);
+        String checksum = this.generator.generateChecksum(getBasePath().toString(), relativeFile, consumerBytesRead);
 
         return checksum;
     }

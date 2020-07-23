@@ -61,11 +61,10 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.sender.Sender, de.freese.jsync.filesystem.receiver.Receiver, java.util.List,
-     *      boolean)
+     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.sender.Sender, de.freese.jsync.filesystem.receiver.Receiver, java.util.List)
      */
     @Override
-    public void syncReceiver(final Sender sender, final Receiver receiver, final List<SyncPair> syncList, final boolean withChecksum) throws Exception
+    public void syncReceiver(final Sender sender, final Receiver receiver, final List<SyncPair> syncList) throws Exception
     {
         getClientListener().syncStartInfo();
 
@@ -80,11 +79,8 @@ public class DefaultClient extends AbstractClient
             deleteDirectories(receiver, list);
         }
 
-        // Neue Verzeichnisse erstellen.
-        createDirectories(receiver, list);
-
         // Neue oder geänderte Dateien kopieren.
-        copyFiles(sender, receiver, list, withChecksum);
+        copyFiles(sender, receiver, list);
 
         // Aktualisieren von Datei-Attributen.
         updateFiles(receiver, list);

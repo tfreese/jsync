@@ -20,11 +20,11 @@ public interface Generator
      * Erzeugt die Prüfsumme einer Datei.<br>
      *
      * @param basePath String
-     * @param relativePath String
+     * @param relativeFile String
      * @param consumerBytesRead {@link LongConsumer}; optional
      * @return String
      */
-    public String generateChecksum(final String basePath, String relativePath, final LongConsumer consumerBytesRead);
+    public String generateChecksum(final String basePath, String relativeFile, final LongConsumer consumerBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses alphabetisch sortiert.<br>
