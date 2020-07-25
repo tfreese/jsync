@@ -4,10 +4,11 @@
 
 package de.freese.jsync.filesystem;
 
+import java.net.URI;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import de.freese.jsync.model.SyncItem;
 
@@ -19,43 +20,42 @@ public interface FileSystem
     /**
      * Stellt die Verbindung zum Dateisystem her.
      *
-     * @throws Exception Falls was schief geht.
+     * @param uri {@link URI}
      */
-    public void connect() throws Exception;
+    public void connect(final URI uri);
 
     /**
-     * Trennt die Verbindung zum Dateisystem .
-     *
-     * @throws Exception Falls was schief geht.
+     * Trennt die Verbindung zum Dateisystem.
      */
-    public void disconnect() throws Exception;
+    public void disconnect();
+
+    /**
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses<br>
+     *
+     * @param baseDir String
+     * @param followSymLinks boolean
+     * @param consumerSyncItem {@link Consumer}
+     */
+    public void generateSyncItems(String baseDir, boolean followSymLinks, Consumer<SyncItem> consumerSyncItem);
 
     /**
      * Liefert den Channel zur Datei.
      *
-     * @param syncItem {@link SyncItem}
+     * @param baseDir String
+     * @param relativeFile String
      * @return {@link Channel}
-     * @throws Exception Falls was schief geht.
      * @see ReadableByteChannel
      * @see WritableByteChannel
      */
-    public Channel getChannel(final SyncItem syncItem) throws Exception;
+    public Channel getChannel(String baseDir, final String relativeFile);
 
     /**
      * Liefert die Prüfsumme einer Datei.<br>
      *
+     * @param baseDir String
      * @param relativeFile String
      * @param consumerBytesRead {@link LongConsumer}; optional
      * @return String
-     * @throws Exception Falls was schief geht.
      */
-    public String getChecksum(String relativeFile, LongConsumer consumerBytesRead) throws Exception;
-
-    /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses alphabetisch sortiert.<br>
-     *
-     * @param followSymLinks boolean
-     * @return {@link List}
-     */
-    public List<SyncItem> getSyncItems(boolean followSymLinks);
+    public String getChecksum(String baseDir, String relativeFile, LongConsumer consumerBytesRead);
 }

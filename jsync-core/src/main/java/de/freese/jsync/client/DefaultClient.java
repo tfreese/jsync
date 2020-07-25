@@ -1,6 +1,7 @@
 // Created: 05.04.2018
 package de.freese.jsync.client;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -8,8 +9,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
-import de.freese.jsync.filesystem.receiver.Receiver;
-import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
@@ -25,11 +24,13 @@ public class DefaultClient extends AbstractClient
      * Erzeugt eine neue Instanz von {@link DefaultClient}.
      *
      * @param options {@link Options}
+     * @param senderUri {@link URI}
+     * @param receiverUri {@link URI}
      * @param clientListener {@link ClientListener}
      */
-    public DefaultClient(final Options options, final ClientListener clientListener)
+    public DefaultClient(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener)
     {
-        super(options, clientListener);
+        super(options, senderUri, receiverUri, clientListener);
     }
 
     /**
@@ -61,10 +62,10 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @see de.freese.jsync.client.Client#syncReceiver(de.freese.jsync.filesystem.sender.Sender, de.freese.jsync.filesystem.receiver.Receiver, java.util.List)
+     * @see de.freese.jsync.client.Client#syncReceiver(java.util.List)
      */
     @Override
-    public void syncReceiver(final Sender sender, final Receiver receiver, final List<SyncPair> syncList) throws Exception
+    public void syncReceiver(final List<SyncPair> syncList) throws Exception
     {
         getClientListener().syncStartInfo();
 
@@ -75,18 +76,18 @@ public class DefaultClient extends AbstractClient
         // Löschen
         if (getOptions().isDelete())
         {
-            deleteFiles(receiver, list);
-            deleteDirectories(receiver, list);
+            deleteFiles(list);
+            deleteDirectories(list);
         }
 
         // Neue oder geänderte Dateien kopieren.
-        copyFiles(sender, receiver, list);
+        copyFiles(list);
 
         // Aktualisieren von Datei-Attributen.
-        updateFiles(receiver, list);
+        updateFiles(list);
 
         // Aktualisieren von Verzeichniss-Attributen.
-        updateDirectories(receiver, list);
+        updateDirectories(list);
 
         getClientListener().syncFinishedInfo();
     }

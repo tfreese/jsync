@@ -1,7 +1,6 @@
 // Created: 05.04.2018
 package de.freese.jsync.filesystem.sender;
 
-import java.net.URI;
 import de.freese.jsync.filesystem.AbstractFileSystem;
 
 /**
@@ -13,11 +12,9 @@ public abstract class AbstractSender extends AbstractFileSystem implements Sende
 {
     /**
      * Erzeugt eine neue Instanz von {@link AbstractSender}.
-     * 
-     * @param baseUri {@link URI}
      */
-    public AbstractSender(final URI baseUri)
+    public AbstractSender()
     {
-        super(baseUri);
+        super();
     }
 }

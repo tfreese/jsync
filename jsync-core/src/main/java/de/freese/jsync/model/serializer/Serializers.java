@@ -10,9 +10,9 @@ import java.util.Map;
 import de.freese.jsync.Options;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
+import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
-import de.freese.jsync.server.JSyncCommand;
 
 /**
  * @author Thomas Freese

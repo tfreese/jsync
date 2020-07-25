@@ -13,13 +13,11 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
@@ -46,9 +44,9 @@ public class DefaultGenerator extends AbstractGenerator
      * @see de.freese.jsync.generator.Generator#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String generateChecksum(final String basePath, final String relativeFile, final LongConsumer consumerBytesRead)
+    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        Path path = Paths.get(basePath, relativeFile);
+        Path path = Paths.get(baseDir, relativeFile);
 
         // String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, bytesRead -> listener.checksum(syncItem.getSize(), bytesRead));
         String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, consumerBytesRead);
@@ -73,16 +71,16 @@ public class DefaultGenerator extends AbstractGenerator
     }
 
     /**
-     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean)
+     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean, java.util.function.Consumer)
      */
     @Override
-    public List<SyncItem> generateItems(final String basePath, final boolean followSymLinks)
+    public void generateItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
-        Path base = Paths.get(basePath);
+        Path base = Paths.get(baseDir);
 
         if (Files.notExists(base))
         {
-            return Collections.emptyList();
+            return;
         }
 
         FileVisitOption[] visitOptions = followSymLinks ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
@@ -92,30 +90,28 @@ public class DefaultGenerator extends AbstractGenerator
         LinkOption[] linkOptions = followSymLinks ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
 
         // @formatter:off
-        List<SyncItem> syncItems = paths.stream()
-                .map(path -> {
-                    String relativePath = base.relativize(path).toString();
+        paths.stream()
+            .map(path -> {
+                String relativePath = base.relativize(path).toString();
 
-                    SyncItem syncItem = generateItem(path, relativePath, linkOptions);
+                SyncItem syncItem = generateItem(path, relativePath, linkOptions);
 
-                    return syncItem;
-                })
-                .collect(Collectors.toList())
-                ;
+                return syncItem;
+            })
+            .forEach(consumerSyncItem)
+            ;
         // @formatter:on
-
-        return syncItems;
     }
 
     /**
      * @param directory {@link Path}
-     * @param relativePath String
+     * @param relativeDir String
      * @param linkOptions {@link LinkOption}; wenn {@value LinkOption#NOFOLLOW_LINKS} null dann Follow
      * @return {@link SyncItem}
      */
-    protected SyncItem toDirectoryItem(final Path directory, final String relativePath, final LinkOption[] linkOptions)
+    protected SyncItem toDirectoryItem(final Path directory, final String relativeDir, final LinkOption[] linkOptions)
     {
-        SyncItem syncItem = new DefaultSyncItem(relativePath);
+        SyncItem syncItem = new DefaultSyncItem(relativeDir);
 
         try
         {

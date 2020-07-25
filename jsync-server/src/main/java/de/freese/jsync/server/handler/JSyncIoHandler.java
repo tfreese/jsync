@@ -19,9 +19,9 @@ import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.DefaultSyncItem;
+import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
-import de.freese.jsync.server.JSyncCommand;
 import de.freese.jsync.server.JSyncSession;
 
 /**

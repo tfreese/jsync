@@ -5,20 +5,20 @@
 package de.freese.jsync.filesystem.sender;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import de.freese.jsync.Options;
+import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
-import de.freese.jsync.server.JSyncCommand;
 
 /**
  * {@link Sender} für Remote-Filesysteme.
@@ -90,132 +90,75 @@ public class RemoteSenderBlocking extends AbstractSender
 
     /**
      * Erstellt ein neues {@link RemoteSenderBlocking} Object.
-     *
-     * @param serverUri {@link URI}
      */
-    public RemoteSenderBlocking(final URI serverUri)
+    public RemoteSenderBlocking()
     {
-        super(serverUri);
+        super();
 
         this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#connect()
+     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
      */
     @Override
-    public void connect() throws Exception
+    public void connect(final URI uri)
     {
-        InetSocketAddress serverAddress = new InetSocketAddress(getBaseUri().getHost(), getBaseUri().getPort());
+        InetSocketAddress serverAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
 
-        this.socketChannel = SocketChannel.open();
-        this.socketChannel.connect(serverAddress);
-        this.socketChannel.configureBlocking(true);
+        try
+        {
+            this.socketChannel = SocketChannel.open();
+            this.socketChannel.connect(serverAddress);
+            this.socketChannel.configureBlocking(true);
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
 
-        // JSyncCommand senden.
         this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.CONNECT);
 
         this.buffer.flip();
         write(this.buffer);
-
-        handleResponse();
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#disconnect()
+     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
      */
     @Override
-    public void disconnect() throws Exception
+    public void disconnect()
     {
-        // JSyncCommand senden.
         this.buffer.clear();
         Serializers.writeTo(this.buffer, JSyncCommand.DISCONNECT);
 
         this.buffer.flip();
         write(this.buffer);
 
-        this.socketChannel.shutdownInput();
-        this.socketChannel.shutdownOutput();
-        this.socketChannel.close();
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public ReadableByteChannel getChannel(final SyncItem syncItem) throws Exception
-    {
-        // JSyncCommand senden.
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
-
-        this.buffer.putLong(syncItem.getSize());
-
-        byte[] bytes = syncItem.getRelativePath().getBytes(getCharset());
-        this.buffer.putInt(bytes.length);
-        this.buffer.put(bytes);
-
-        this.buffer.flip();
-        write(this.buffer);
-
-        return new NoCloseReadableByteChannel(this.socketChannel);
-    }
-
-    /**
-     * @return {@link Charset}
-     */
-    protected Charset getCharset()
-    {
-        return Options.CHARSET;
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.util.function.LongConsumer)
-     */
-    @Override
-    public String getChecksum(final String relativePath, final LongConsumer consumerBytesRead) throws Exception
-    {
-        // JSyncCommand senden.
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_CHECKSUM);
-
-        byte[] bytes = relativePath.getBytes(getCharset());
-        this.buffer.putInt(bytes.length);
-        this.buffer.put(bytes);
-
-        this.buffer.flip();
-        write(this.buffer);
-
-        // Response lesen.
-        this.buffer.clear();
-        this.socketChannel.read(this.buffer);
-        this.buffer.flip();
-
-        bytes = new byte[this.buffer.getInt()];
-        this.buffer.get(bytes);
-        String checksum = new String(bytes, getCharset());
-
-        return checksum;
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#getSyncItems(boolean)
-     */
-    @Override
-    public List<SyncItem> getSyncItems(final boolean followSymLinks)
-    {
-        List<SyncItem> syncItems = new ArrayList<>();
-
         try
         {
-            // JSyncCommand senden.
+            this.socketChannel.shutdownInput();
+            this.socketChannel.shutdownOutput();
+            this.socketChannel.close();
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, java.util.function.Consumer)
+     */
+    @Override
+    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
+    {
+        try
+        {
             this.buffer.clear();
             Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
-
-            byte[] bytes = getBasePath().toString().getBytes(getCharset());
-            this.buffer.putInt(bytes.length);
-            this.buffer.put(bytes);
+            Serializers.writeTo(this.buffer, baseDir);
             this.buffer.put(followSymLinks ? (byte) 1 : (byte) 0);
 
             this.buffer.flip();
@@ -242,7 +185,7 @@ public class RemoteSenderBlocking extends AbstractSender
                 while (this.buffer.hasRemaining())
                 {
                     SyncItem syncItem = Serializers.readFrom(this.buffer, SyncItem.class);
-                    syncItems.add(syncItem);
+                    consumerSyncItem.accept(syncItem);
                     counter++;
 
                     if (counter == countSyncItems)
@@ -265,42 +208,94 @@ public class RemoteSenderBlocking extends AbstractSender
         {
             throw rex;
         }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
         catch (Exception ex)
         {
             throw new RuntimeException(ex);
         }
-
-        return syncItems;
     }
 
     /**
-     * Finish-Flag (Byte.MIN_VALUE) abwarten oder Fehlerhandling.
-     *
-     * @throws Exception Falls was schief geht.
+     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String)
      */
-    protected void handleResponse() throws Exception
+    @Override
+    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
-        // this.buffer.clear();
-        // this.socketChannel.read(this.buffer);
-        // this.buffer.flip();
-        //
-        // byte b = this.buffer.get();
-        //
-        // if (b != Byte.MIN_VALUE)
-        // {
-        // // TODO Fehlerhandling
-        // }
+        this.buffer.clear();
+        Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
+        Serializers.writeTo(this.buffer, baseDir);
+        Serializers.writeTo(this.buffer, relativeFile);
+
+        this.buffer.flip();
+        write(this.buffer);
+
+        return new NoCloseReadableByteChannel(this.socketChannel);
+    }
+
+    /**
+     * @return {@link Charset}
+     */
+    protected Charset getCharset()
+    {
+        return Options.CHARSET;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
+     */
+    @Override
+    public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
+    {
+        this.buffer.clear();
+        Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_CHECKSUM);
+        Serializers.writeTo(this.buffer, baseDir);
+        Serializers.writeTo(this.buffer, relativeFile);
+
+        this.buffer.flip();
+        write(this.buffer);
+
+        this.buffer.clear();
+        read(this.buffer);
+        this.buffer.flip();
+
+        String checksum = Serializers.readFrom(this.buffer, String.class);
+
+        return checksum;
     }
 
     /**
      * @param buf {@link ByteBuffer}
-     * @throws Exception Falls was schief geht.
      */
-    protected void write(final ByteBuffer buf) throws Exception
+    protected void read(final ByteBuffer buf)
     {
-        while (buf.hasRemaining())
+        try
         {
-            this.socketChannel.write(buf);
+            this.socketChannel.read(this.buffer);
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    /**
+     * @param buf {@link ByteBuffer}
+     */
+    protected void write(final ByteBuffer buf)
+    {
+        try
+        {
+            while (buf.hasRemaining())
+            {
+                this.socketChannel.write(buf);
+            }
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
         }
     }
 }

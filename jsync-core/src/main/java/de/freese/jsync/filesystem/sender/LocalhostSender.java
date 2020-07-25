@@ -1,12 +1,15 @@
 // Created: 05.04.2018
 package de.freese.jsync.filesystem.sender;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
@@ -26,21 +29,19 @@ public class LocalhostSender extends AbstractSender
 
     /**
      * Erzeugt eine neue Instanz von {@link LocalhostSender}.
-     *
-     * @param baseUri {@link URI}
      */
-    public LocalhostSender(final URI baseUri)
+    public LocalhostSender()
     {
-        super(baseUri);
+        super();
 
         this.generator = new DefaultGenerator();
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#connect()
+     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
      */
     @Override
-    public void connect() throws Exception
+    public void connect(final URI uri)
     {
         // Empty
     }
@@ -49,18 +50,28 @@ public class LocalhostSender extends AbstractSender
      * @see de.freese.jsync.filesystem.FileSystem#disconnect()
      */
     @Override
-    public void disconnect() throws Exception
+    public void disconnect()
     {
         // Empty
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(de.freese.jsync.model.SyncItem)
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, java.util.function.Consumer)
      */
     @Override
-    public ReadableByteChannel getChannel(final SyncItem syncItem) throws Exception
+    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
-        Path path = getBasePath().resolve(syncItem.getRelativePath());
+        this.generator.generateItems(baseDir, followSymLinks, consumerSyncItem);
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String)
+     */
+    @Override
+    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
+    {
+        // Path path = getBasePath().resolve(syncItem.getRelativePath());
+        Path path = Paths.get(baseDir, relativeFile);
 
         getLogger().debug("get ReadableByteChannel: {}", path);
 
@@ -74,28 +85,24 @@ public class LocalhostSender extends AbstractSender
 
         // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
-        return Files.newByteChannel(path, StandardOpenOption.READ);
+        try
+        {
+            return Files.newByteChannel(path, StandardOpenOption.READ);
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.util.function.LongConsumer)
+     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String getChecksum(final String relativeFile, final LongConsumer consumerBytesRead) throws Exception
+    public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        String checksum = this.generator.generateChecksum(getBasePath().toString(), relativeFile, consumerBytesRead);
+        String checksum = this.generator.generateChecksum(baseDir, relativeFile, consumerBytesRead);
 
         return checksum;
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#getSyncItems(boolean)
-     */
-    @Override
-    public List<SyncItem> getSyncItems(final boolean followSymLinks)
-    {
-        List<SyncItem> items = this.generator.generateItems(getBasePath().toString(), followSymLinks);
-
-        return items;
     }
 }

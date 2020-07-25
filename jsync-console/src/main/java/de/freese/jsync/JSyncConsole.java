@@ -3,8 +3,8 @@
  */
 package de.freese.jsync;
 
-import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
@@ -16,12 +16,6 @@ import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.ConsoleClientListener;
-import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
-import de.freese.jsync.filesystem.receiver.Receiver;
-import de.freese.jsync.filesystem.receiver.RemoteReceiverBlocking;
-import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.filesystem.sender.RemoteSenderBlocking;
-import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.utils.JSyncUtils;
@@ -46,10 +40,23 @@ public class JSyncConsole
     {
         String[] args2 = args;
 
-        // args2 = new String[]
-        // {
-        // "--delete", "--follow-symlinks", "--checksum", "-s", "jsync://localhost:8001/PATH/DIR", "-d", "jsync://localhost:8002/PATH/DIR"
-        // };
+        if (args2.length == 0)
+        {
+            // args2 = new String[]
+            // {
+            // "--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync/target"
+            // };
+            args2 = new String[]
+            {
+                    "--delete",
+                    "--follow-symlinks",
+                    "--checksum",
+                    "-s",
+                    "jsync://localhost:8001/home/tommy/git/jsync/jsync-console",
+                    "-r",
+                    "jsync://localhost:8002/tmp/jsync/target"
+            };
+        }
 
         ArgumentParser argumentParser = null;
 
@@ -101,33 +108,12 @@ public class JSyncConsole
                 ;
         // @formatter:on
 
-        Sender sender = null;
-
-        if (argumentParser.sender().startsWith("jsync"))
-        {
-            // Remote
-            sender = new RemoteSenderBlocking(new URI(argumentParser.sender()));
-        }
-        else
-        {
-            sender = new LocalhostSender(new File(argumentParser.sender()).toURI());
-        }
-
-        Receiver receiver = null;
-
-        if (argumentParser.receiver().startsWith("jsync"))
-        {
-            // Remote
-            receiver = new RemoteReceiverBlocking(new URI(argumentParser.receiver()));
-        }
-        else
-        {
-            receiver = new LocalhostReceiver(new File(argumentParser.receiver()).toURI());
-        }
+        URI senderUri = new URI(argumentParser.sender());
+        URI receiverUri = new URI(argumentParser.receiver());
 
         try
         {
-            syncDirectories(options, sender, receiver, new ConsoleClientListener());
+            syncDirectories(options, senderUri, receiverUri, new ConsoleClientListener());
         }
         finally
         {
@@ -137,50 +123,31 @@ public class JSyncConsole
 
     /**
      * @param options {@link Options} options
-     * @param sender {@link Sender}
-     * @param receiver {@link Receiver}
+     * @param senderUri {@link URI}
+     * @param receiverUri {@link URI}
      * @param clientListener {@link ClientListener}
      * @throws Exception Falls was schief geht.
      */
-    public void syncDirectories(final Options options, final Sender sender, final Receiver receiver, final ClientListener clientListener) throws Exception
+    public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener) throws Exception
     {
-        sender.connect();
-        receiver.connect();
+        Client client = new DefaultClient(options, senderUri, receiverUri, clientListener);
+        client.connectFileSystems();
 
-        List<SyncItem> itemsSender = sender.getSyncItems(options.isFollowSymLinks());
-        List<SyncItem> itemsReceiver = receiver.getSyncItems(options.isFollowSymLinks());
+        List<SyncItem> syncItemsSender = new ArrayList<>();
+        client.generateSyncItemsSender(syncItem -> {
+            syncItemsSender.add(syncItem);
+            client.generateChecksumSender(syncItem, null);
+        });
 
-        if (options.isChecksum())
-        {
-            for (SyncItem syncItem : itemsSender)
-            {
-                if (syncItem.isDirectory())
-                {
-                    continue;
-                }
+        List<SyncItem> syncItemsReceiver = new ArrayList<>();
+        client.generateSyncItemsReceiver(syncItem -> {
+            syncItemsReceiver.add(syncItem);
+            client.generateChecksumReceiver(syncItem, null);
+        });
 
-                String checksum = sender.getChecksum(syncItem.getRelativePath(), null);
-                syncItem.setChecksum(checksum);
-            }
+        List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
+        client.syncReceiver(syncList);
 
-            for (SyncItem syncItem : itemsReceiver)
-            {
-                if (syncItem.isDirectory())
-                {
-                    continue;
-                }
-
-                String checksum = receiver.getChecksum(syncItem.getRelativePath(), null);
-                syncItem.setChecksum(checksum);
-            }
-        }
-
-        Client client = new DefaultClient(options, clientListener);
-        List<SyncPair> syncList = client.mergeSyncItems(itemsSender, itemsReceiver);
-
-        client.syncReceiver(sender, receiver, syncList, options.isChecksum());
-
-        sender.disconnect();
-        receiver.disconnect();
+        client.disconnectFileSystems();
     }
 }

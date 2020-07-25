@@ -4,6 +4,8 @@
 package de.freese.jsync.client;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.LongConsumer;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
@@ -16,6 +18,46 @@ import de.freese.jsync.model.SyncPair;
  */
 public interface Client
 {
+    /**
+     * Stellt die Verbindung zu den Dateisystemen her.
+     */
+    public void connectFileSystems();
+
+    /**
+     * Trennt die Verbindung zu den Dateisystemen.
+     */
+    public void disconnectFileSystems();
+
+    /**
+     * Erzeugt die Prüfsumme einer Datei.<br>
+     *
+     * @param syncItem SyncItem
+     * @param consumerBytesRead {@link LongConsumer}; optional
+     */
+    public void generateChecksumReceiver(SyncItem syncItem, final LongConsumer consumerBytesRead);
+
+    /**
+     * Erzeugt die Prüfsumme einer Datei.<br>
+     *
+     * @param syncItem SyncItem
+     * @param consumerBytesRead {@link LongConsumer}; optional
+     */
+    public void generateChecksumSender(SyncItem syncItem, final LongConsumer consumerBytesRead);
+
+    /**
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des {@link Sender}<br>
+     *
+     * @param consumerSyncItem {@link Consumer}
+     */
+    public void generateSyncItemsReceiver(Consumer<SyncItem> consumerSyncItem);
+
+    /**
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des {@link Sender}<br>
+     *
+     * @param consumerSyncItem {@link Consumer}
+     */
+    public void generateSyncItemsSender(Consumer<SyncItem> consumerSyncItem);
+
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
      * Die Einträge des Senders sind die Referenz.<br>
@@ -31,10 +73,8 @@ public interface Client
     /**
      * Synchronisiert das Ziel-Verzeichnis mit der Quelle.
      *
-     * @param sender {@link Sender}
-     * @param receiver {@link Receiver}
      * @param syncList {@link List}
      * @throws Exception Falls was schief geht.
      */
-    public void syncReceiver(Sender sender, Receiver receiver, List<SyncPair> syncList) throws Exception;
+    public void syncReceiver(List<SyncPair> syncList) throws Exception;
 }

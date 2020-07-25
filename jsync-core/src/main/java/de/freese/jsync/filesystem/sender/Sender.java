@@ -5,7 +5,6 @@ package de.freese.jsync.filesystem.sender;
 
 import java.nio.channels.ReadableByteChannel;
 import de.freese.jsync.filesystem.FileSystem;
-import de.freese.jsync.model.SyncItem;
 
 /**
  * Datenquelle.
@@ -15,8 +14,8 @@ import de.freese.jsync.model.SyncItem;
 public interface Sender extends FileSystem
 {
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChannel(de.freese.jsync.model.SyncItem)
+     * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String)
      */
     @Override
-    public ReadableByteChannel getChannel(final SyncItem syncItem) throws Exception;
+    public ReadableByteChannel getChannel(String baseDir, String relativeFile);
 }

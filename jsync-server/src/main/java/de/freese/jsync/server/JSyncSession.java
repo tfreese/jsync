@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.Sender;
+import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 
 /**

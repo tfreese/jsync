@@ -2,7 +2,7 @@
  * Created: 14.11.2018
  */
 
-package de.freese.jsync.server;
+package de.freese.jsync.model;
 
 /**
  * Remote-Commands für den Server.

@@ -5,7 +5,6 @@
 package de.freese.jsync.swing.controller;
 
 import java.awt.Rectangle;
-import java.util.List;
 import java.util.function.LongConsumer;
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
@@ -17,7 +16,6 @@ import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
-import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.swing.components.SyncItemTableModel;
 import de.freese.jsync.swing.view.SyncView;
 
@@ -123,48 +121,28 @@ public class JsyncController
                 // generator.generateItems(path, options.isFollowSymLinks(), listener);
 
                 Generator generator = new DefaultGenerator();
-                List<SyncItem> syncItems = generator.generateItems(basePath, options.isFollowSymLinks());
+                generator.generateItems(basePath, options.isFollowSymLinks(), syncItem -> {
+                    SwingUtilities.invokeLater(() -> {
+                        tableModel.add(syncItem);
+                        Rectangle rectangle = table.getCellRect(tableModel.getRowCount(), 0, false);
+                        table.scrollRectToVisible(rectangle);
 
-                // @formatter:off
-                syncItems.stream()
-                    .peek(syncItem -> {
-                        SwingUtilities.invokeLater(() -> {
-                            tableModel.add(syncItem);
-                            Rectangle rectangle = table.getCellRect(tableModel.getRowCount(), 0, false);
-                            table.scrollRectToVisible(rectangle);
+                        progressBarFiles.setValue(progressBarFiles.getValue() + 1);
+                        progressBarFiles.setString("Processing " + syncItem.getRelativePath());
 
-                            progressBarFiles.setValue(progressBarFiles.getValue() + 1);
-                            progressBarFiles.setString("Processing " + syncItem.getRelativePath());
-
-                            if (syncItem.isFile() && options.isChecksum())
-                            {
-                                progressBarChecksum.setMinimum(0);
-                                progressBarChecksum.setMaximum((int) syncItem.getSize());
-                                progressBarChecksum.setString("Building Checksum...");
-                            }
-                        });
-                    })
-                    .peek(syncItem -> {
                         if (syncItem.isFile() && options.isChecksum())
                         {
-                            generator.generateChecksum(basePath, syncItem.getRelativePath(), consumerCheckSum);
+                            progressBarChecksum.setMinimum(0);
+                            progressBarChecksum.setMaximum((int) syncItem.getSize());
+                            progressBarChecksum.setString("Building Checksum...");
                         }
-                        else
-                        {
-                            // Damit es in der GUI schöner aussieht.
-                            //JSyncUtils.sleep(TimeUnit.MILLISECONDS, 1);
-                        }
-                    })
-                    .forEach(syncItem -> {
-//                        SwingUtilities.invokeLater(() -> {
-//                            if(progressBarFiles.getValue() == progressBarFiles.getMaximum())
-//                            {
-//                                progressBarFiles.setString("Processing Files...finished");
-//                            }
-//                        });
-                    })
-                    ;
-                // @formatter:on
+                    });
+
+                    if (options.isChecksum() && syncItem.isFile())
+                    {
+                        generator.generateChecksum(basePath, syncItem.getRelativePath(), consumerCheckSum);
+                    }
+                });
 
                 return null;
             }

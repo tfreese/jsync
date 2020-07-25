@@ -17,47 +17,47 @@ public interface Receiver extends FileSystem
     /**
      * Löscht ein Verzeichnis.
      *
+     * @param baseDir String
      * @param relativeDir String
-     * @throws Exception Falls was schief geht.
      */
-    public void deleteDirectory(String relativeDir) throws Exception;
+    public void deleteDirectory(String baseDir, String relativeDir);
 
     /**
      * Löscht eine Datei.
      *
+     * @param baseDir String
      * @param relativeFile String
-     * @throws Exception Falls was schief geht.
      */
-    public void deleteFile(String relativeFile) throws Exception;
+    public void deleteFile(String baseDir, String relativeFile);
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChannel(de.freese.jsync.model.SyncItem)
+     * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String)
      */
     @Override
-    public WritableByteChannel getChannel(final SyncItem syncItem) throws Exception;
+    public WritableByteChannel getChannel(String baseDir, String relativeFile);
 
     /**
      * Aktualisiert ein Verzeichnis.
      *
+     * @param baseDir String
      * @param syncItem {@link SyncItem}
-     * @throws Exception Falls was schief geht.
      */
-    public void updateDirectory(SyncItem syncItem) throws Exception;
+    public void updateDirectory(String baseDir, SyncItem syncItem);
 
     /**
      * Aktualisiert eine Datei.
      *
+     * @param baseDir String
      * @param syncItem {@link SyncItem}
-     * @throws Exception Falls was schief geht.
      */
-    public void updateFile(SyncItem syncItem) throws Exception;
+    public void updateFile(String baseDir, SyncItem syncItem);
 
     /**
      * Überprüfung der Datei auf Größe und Prüfsumme.
      *
+     * @param baseDir String
      * @param syncItem {@link SyncItem}
      * @param withChecksum boolean
-     * @throws Exception Falls was schief geht.
      */
-    public void validateFile(final SyncItem syncItem, boolean withChecksum) throws Exception;
+    public void validateFile(String baseDir, final SyncItem syncItem, boolean withChecksum);
 }

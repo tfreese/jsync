@@ -61,7 +61,6 @@ class SyncItemSerializer implements Serializer<SyncItem>
         if (buffer.get() == 1)
         {
             String permissions = StringSerializer.getInstance().readFrom(buffer);
-
             syncItem.setPermissions(PosixFilePermissions.fromString(permissions));
         }
 
@@ -83,7 +82,6 @@ class SyncItemSerializer implements Serializer<SyncItem>
         if (buffer.get() == 1)
         {
             String checksum = StringSerializer.getInstance().readFrom(buffer);
-
             syncItem.setChecksum(checksum);
         }
 
@@ -120,10 +118,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
         else
         {
             buffer.put((byte) 1);
-
-            bytes = permissions.getBytes(getCharset());
-            buffer.putInt(bytes.length);
-            buffer.put(bytes);
+            StringSerializer.getInstance().writeTo(buffer, permissions);
         }
 
         // group
@@ -156,10 +151,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
         else
         {
             buffer.put((byte) 1);
-
-            bytes = obj.getChecksum().getBytes(getCharset());
-            buffer.putInt(bytes.length);
-            buffer.put(bytes);
+            StringSerializer.getInstance().writeTo(buffer, obj.getChecksum());
         }
     }
 }

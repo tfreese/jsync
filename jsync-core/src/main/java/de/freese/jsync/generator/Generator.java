@@ -4,7 +4,7 @@
 package de.freese.jsync.generator;
 
 import java.nio.file.Path;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import de.freese.jsync.model.SyncItem;
 
@@ -12,26 +12,25 @@ import de.freese.jsync.model.SyncItem;
  * Der Generator sammelt alle relevanten Informationens des Dateisystems für den gewählten {@link Path}.
  *
  * @author Thomas Freese
- * @see SyncItem
  */
 public interface Generator
 {
     /**
      * Erzeugt die Prüfsumme einer Datei.<br>
      *
-     * @param basePath String
+     * @param baseDir String
      * @param relativeFile String
      * @param consumerBytesRead {@link LongConsumer}; optional
      * @return String
      */
-    public String generateChecksum(final String basePath, String relativeFile, final LongConsumer consumerBytesRead);
+    public String generateChecksum(final String baseDir, String relativeFile, final LongConsumer consumerBytesRead);
 
     /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses alphabetisch sortiert.<br>
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      *
-     * @param basePath String
+     * @param baseDir String
      * @param followSymLinks boolean
-     * @return {@link List}
+     * @param consumerSyncItem {@link Consumer}
      */
-    public List<SyncItem> generateItems(final String basePath, boolean followSymLinks);
+    public void generateItems(final String baseDir, boolean followSymLinks, Consumer<SyncItem> consumerSyncItem);
 }

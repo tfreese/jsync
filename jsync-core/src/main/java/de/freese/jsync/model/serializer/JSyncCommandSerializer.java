@@ -5,7 +5,7 @@
 package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
-import de.freese.jsync.server.JSyncCommand;
+import de.freese.jsync.model.JSyncCommand;
 
 /**
  * @author Thomas Freese

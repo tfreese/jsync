@@ -103,7 +103,7 @@ public abstract class AbstractJSyncTest
             try (RandomAccessFile raf = new RandomAccessFile(pathFile.toFile(), "rw"))
             {
                 // 512 MB
-                raf.setLength(1024 * 1024 * 256);
+                raf.setLength(1024 * 1024 * 128);
             }
         }
 
