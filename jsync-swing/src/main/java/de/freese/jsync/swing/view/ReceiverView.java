@@ -4,6 +4,8 @@
 
 package de.freese.jsync.swing.view;
 
+import de.freese.jsync.swing.components.ReceiverTableModel;
+
 /**
  * @author Thomas Freese
  */
@@ -25,6 +27,8 @@ public class ReceiverView extends AbstractFileSystemView
     {
         super.initGUI();
 
-        getLabelDirChooser().setText(getMessages().getString("jsync.ziel"));
+        getLabelDirChooser().setText(getMessage("jsync.ziel"));
+
+        getTable().setModel(new ReceiverTableModel());
     }
 }

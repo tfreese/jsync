@@ -1,6 +1,7 @@
 package de.freese.jsync.swing.components;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.table.AbstractTableModel;
@@ -87,6 +88,38 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
         this.columnCount = this.columnNames.size();
 
         this.list = Objects.requireNonNull(list, "list required");
+    }
+
+    /**
+     * @param object Object
+     */
+    public void add(final T object)
+    {
+        getList().add(object);
+
+        fireTableRowsInserted(getList().size(), getList().size());
+    }
+
+    /**
+     * @param objects {@link Collection}
+     */
+    public void addAll(final Collection<T> objects)
+    {
+        int sizeOld = getList().size();
+
+        getList().addAll(objects);
+
+        fireTableRowsInserted(sizeOld, getList().size());
+    }
+
+    /**
+    *
+    */
+    public void clear()
+    {
+        getList().clear();
+
+        refresh();
     }
 
     /**

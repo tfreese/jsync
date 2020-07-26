@@ -15,6 +15,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -41,14 +42,14 @@ public abstract class AbstractFileSystemView extends AbstractView
     private final JPanel panel;
 
     /**
-    *
-    */
-    private JProgressBar progressBarChecksum = null;
-
-    /**
         *
         */
-    private JProgressBar progressBarFiles = null;
+    private JProgressBar progressBar = null;
+
+    /**
+     *
+     */
+    private JScrollPane scrollPane = null;
 
     /**
      *
@@ -97,23 +98,23 @@ public abstract class AbstractFileSystemView extends AbstractView
     /**
      * @return {@link JProgressBar}
      */
-    public JProgressBar getProgressBarChecksum()
+    JProgressBar getProgressBar()
     {
-        return this.progressBarChecksum;
+        return this.progressBar;
     }
 
     /**
-     * @return {@link JProgressBar}
+     * @return {@link JTextField}
      */
-    public JProgressBar getProgressBarFiles()
+    JScrollBar getScrollBarVertical()
     {
-        return this.progressBarFiles;
+        return this.scrollPane.getVerticalScrollBar();
     }
 
     /**
      * @return {@link JTable}
      */
-    public JTable getTable()
+    JTable getTable()
     {
         return this.table;
     }
@@ -121,7 +122,7 @@ public abstract class AbstractFileSystemView extends AbstractView
     /**
      * @return {@link JTextField}
      */
-    public JTextField getTextFieldPathPath()
+    JTextField getTextFieldPath()
     {
         return this.textFieldPath;
     }
@@ -159,17 +160,12 @@ public abstract class AbstractFileSystemView extends AbstractView
         });
 
         this.table = new JTable();
-        JScrollPane scrollPane = new JScrollPane(this.table);
-        this.panel.add(scrollPane, new GbcBuilder(0, 1).gridwidth(3).fillBoth());
+        this.scrollPane = new JScrollPane(this.table);
+        this.panel.add(this.scrollPane, new GbcBuilder(0, 1).gridwidth(3).fillBoth());
 
-        this.progressBarFiles = new JProgressBar();
-        this.progressBarFiles.setStringPainted(true);
-        getPanel().add(this.progressBarFiles, new GbcBuilder(0, 2).gridwidth(3).fillHorizontal());
-
-        this.progressBarChecksum = new JProgressBar();
-        this.progressBarChecksum.setStringPainted(true);
-        this.progressBarChecksum.setVisible(false);
-        getPanel().add(this.progressBarChecksum, new GbcBuilder(0, 3).gridwidth(3).fillHorizontal());
+        this.progressBar = new JProgressBar();
+        this.progressBar.setStringPainted(true);
+        getPanel().add(this.progressBar, new GbcBuilder(0, 2).gridwidth(3).fillHorizontal());
     }
 
     /**

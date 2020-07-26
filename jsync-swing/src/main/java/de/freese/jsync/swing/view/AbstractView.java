@@ -8,7 +8,6 @@ import javax.swing.JFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.swing.JSyncSwingApplication;
-import de.freese.jsync.swing.messages.Messages;
 
 /**
  * @author Thomas Freese
@@ -50,14 +49,6 @@ public abstract class AbstractView
      */
     protected String getMessage(final String key)
     {
-        return getMessages().getString(key);
-    }
-
-    /**
-     * @return {@link Messages}
-     */
-    protected Messages getMessages()
-    {
-        return JSyncSwingApplication.getInstance().getMessages();
+        return JSyncSwingApplication.getInstance().getMessages().getString(key);
     }
 }

@@ -10,8 +10,14 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollBar;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 import de.freese.jsync.swing.GbcBuilder;
+import de.freese.jsync.swing.components.ReceiverTableModel;
+import de.freese.jsync.swing.components.SenderTableModel;
 
 /**
  * @author Thomas Freese
@@ -127,17 +133,65 @@ public class SyncView extends AbstractView
     /**
      * @return {@link ReceiverView}
      */
-    public ReceiverView getReceiverView()
+    public JProgressBar getReceiverProgressBar()
     {
-        return this.receiverView;
+        return this.receiverView.getProgressBar();
     }
 
     /**
-     * @return {@link SenderView}
+     * @return {@link JTable}
      */
-    public SenderView getSenderView()
+    public JTable getReceiverTable()
     {
-        return this.senderView;
+        return this.receiverView.getTable();
+    }
+
+    /**
+     * @return {@link ReceiverTableModel}
+     */
+    public ReceiverTableModel getReceiverTableModel()
+    {
+        return (ReceiverTableModel) getReceiverTable().getModel();
+    }
+
+    /**
+     * @return {@link JTextField}
+     */
+    public JTextField getReceiverTextFieldPath()
+    {
+        return this.receiverView.getTextFieldPath();
+    }
+
+    /**
+     * @return {@link ReceiverView}
+     */
+    public JProgressBar getSenderProgressBar()
+    {
+        return this.senderView.getProgressBar();
+    }
+
+    /**
+     * @return {@link JTable}
+     */
+    public JTable getSenderTable()
+    {
+        return this.senderView.getTable();
+    }
+
+    /**
+     * @return {@link SenderTableModel}
+     */
+    public SenderTableModel getSenderTableModel()
+    {
+        return (SenderTableModel) getSenderTable().getModel();
+    }
+
+    /**
+     * @return {@link JTextField}
+     */
+    public JTextField getSenderTextFieldPath()
+    {
+        return this.senderView.getTextFieldPath();
     }
 
     /**
@@ -156,5 +210,11 @@ public class SyncView extends AbstractView
         this.panel.add(this.senderView.getPanel(), new GbcBuilder(0, 1).fillBoth());
         this.panel.add(new JPanel(), new GbcBuilder(1, 1).fillVertical());
         this.panel.add(this.receiverView.getPanel(), new GbcBuilder(2, 1).fillBoth());
+
+        // ScrollBars synchronisieren.
+        JScrollBar vScrollbarSender = this.senderView.getScrollBarVertical();
+        JScrollBar vScrollbarReceiver = this.receiverView.getScrollBarVertical();
+
+        vScrollbarReceiver.setModel(vScrollbarSender.getModel());
     }
 }

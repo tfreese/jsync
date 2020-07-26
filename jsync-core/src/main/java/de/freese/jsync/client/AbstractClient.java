@@ -12,6 +12,7 @@ import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
+import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.receiver.RemoteReceiverBlocking;
@@ -65,7 +66,7 @@ public abstract class AbstractClient implements Client
      * @param options {@link Options}
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
-     * @param clientListener {@link ClientListener}
+     * @param clientListener {@link ClientListener}; optional
      */
     public AbstractClient(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener)
     {
@@ -74,9 +75,9 @@ public abstract class AbstractClient implements Client
         this.options = Objects.requireNonNull(options, "options required");
         this.senderUri = Objects.requireNonNull(senderUri, "senderUri required");
         this.receiverUri = Objects.requireNonNull(receiverUri, "receiverUri required");
-        this.clientListener = Objects.requireNonNull(clientListener, "clientListener required");
+        this.clientListener = clientListener != null ? clientListener : new EmptyClientListener();
 
-        if (senderUri.getScheme().startsWith("jsync"))
+        if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
             this.sender = new RemoteSenderBlocking();
         }
@@ -85,7 +86,7 @@ public abstract class AbstractClient implements Client
             this.sender = new LocalhostSender();
         }
 
-        if (receiverUri.getScheme().startsWith("jsync"))
+        if ((receiverUri.getScheme() != null) && receiverUri.getScheme().startsWith("jsync"))
         {
             this.receiver = new RemoteReceiverBlocking();
         }
@@ -177,8 +178,8 @@ public abstract class AbstractClient implements Client
      */
     protected void copyFiles(final List<SyncPair> syncList)
     {
-        Predicate<SyncPair> isExisting = p -> p.getSource() != null;
-        Predicate<SyncPair> isFile = p -> p.getSource().isFile();
+        Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
+        Predicate<SyncPair> isFile = p -> p.getSenderItem().isFile();
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
         Predicate<SyncPair> isDifferentTimestamp = p -> SyncStatus.DIFFERENT_LAST_MODIFIEDTIME.equals(p.getStatus());
         Predicate<SyncPair> isDifferentSize = p -> SyncStatus.DIFFERENT_SIZE.equals(p.getStatus());
@@ -187,7 +188,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFile(pair.getSource()));
+                .forEach(pair -> copyFile(pair.getSenderItem()));
         //@formatter:on
     }
 
@@ -199,15 +200,15 @@ public abstract class AbstractClient implements Client
      */
     protected void deleteDirectories(final List<SyncPair> syncList)
     {
-        Predicate<SyncPair> isExisting = p -> p.getReceiver() != null;
-        Predicate<SyncPair> isDirectory = p -> p.getReceiver().isDirectory();
+        Predicate<SyncPair> isExisting = p -> p.getReceiverItem() != null;
+        Predicate<SyncPair> isDirectory = p -> p.getReceiverItem().isDirectory();
         Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_TARGET.equals(p.getStatus());
 
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isDirectory).and(isOnlyInTarget))
                 //.sorted(Comparator.comparing(SyncPair::getRelativePath).reversed())
-                .forEach(pair -> deleteDirectory(pair.getReceiver().getRelativePath()));
+                .forEach(pair -> deleteDirectory(pair.getReceiverItem().getRelativePath()));
         // @formatter:on
     }
 
@@ -267,15 +268,15 @@ public abstract class AbstractClient implements Client
      */
     protected void deleteFiles(final List<SyncPair> syncList)
     {
-        Predicate<SyncPair> isExisting = p -> p.getReceiver() != null;
-        Predicate<SyncPair> isFile = p -> p.getReceiver().isFile();
+        Predicate<SyncPair> isExisting = p -> p.getReceiverItem() != null;
+        Predicate<SyncPair> isFile = p -> p.getReceiverItem().isFile();
         Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_TARGET.equals(p.getStatus());
 
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInTarget))
                 //.sorted(Comparator.comparing(SyncPair::getRelativePath).reversed())
-                .forEach(pair -> deleteFile(pair.getReceiver().getRelativePath()));
+                .forEach(pair -> deleteFile(pair.getReceiverItem().getRelativePath()));
         // @formatter:on
     }
 
@@ -297,7 +298,7 @@ public abstract class AbstractClient implements Client
     {
         if (getOptions().isChecksum() && syncItem.isFile())
         {
-            String checksum = getReceiver().getChecksum(getReceiverUri().getPath(), syncItem.getRelativePath(), null);
+            String checksum = getReceiver().getChecksum(getReceiverUri().getPath(), syncItem.getRelativePath(), consumerBytesRead);
             syncItem.setChecksum(checksum);
         }
     }
@@ -310,7 +311,7 @@ public abstract class AbstractClient implements Client
     {
         if (getOptions().isChecksum() && syncItem.isFile())
         {
-            String checksum = getSender().getChecksum(getSenderUri().getPath(), syncItem.getRelativePath(), null);
+            String checksum = getSender().getChecksum(getSenderUri().getPath(), syncItem.getRelativePath(), consumerBytesRead);
             syncItem.setChecksum(checksum);
         }
     }
@@ -393,8 +394,8 @@ public abstract class AbstractClient implements Client
      */
     protected void updateDirectories(final List<SyncPair> syncList)
     {
-        Predicate<SyncPair> isExisting = p -> p.getSource() != null;
-        Predicate<SyncPair> isDirectory = p -> p.getSource().isDirectory();
+        Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
+        Predicate<SyncPair> isDirectory = p -> p.getSenderItem().isDirectory();
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
         Predicate<SyncPair> isDifferentPermission = p -> SyncStatus.DIFFERENT_PERMISSIONS.equals(p.getStatus());
         Predicate<SyncPair> isDifferentTimestamp = p -> SyncStatus.DIFFERENT_LAST_MODIFIEDTIME.equals(p.getStatus());
@@ -404,7 +405,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isDirectory).and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> updateDirectory(pair.getSource()));
+                .forEach(pair -> updateDirectory(pair.getSenderItem()));
         // @formatter:on
     }
 
@@ -466,8 +467,8 @@ public abstract class AbstractClient implements Client
      */
     protected void updateFiles(final List<SyncPair> syncList)
     {
-        Predicate<SyncPair> isExisting = p -> p.getSource() != null;
-        Predicate<SyncPair> isFile = p -> p.getSource().isFile();
+        Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
+        Predicate<SyncPair> isFile = p -> p.getSenderItem().isFile();
         Predicate<SyncPair> isDifferentPermission = p -> SyncStatus.DIFFERENT_PERMISSIONS.equals(p.getStatus());
         Predicate<SyncPair> isDifferentUser = p -> SyncStatus.DIFFERENT_USER.equals(p.getStatus());
         Predicate<SyncPair> isDifferentGroup = p -> SyncStatus.DIFFERENT_GROUP.equals(p.getStatus());
@@ -475,7 +476,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isDifferentPermission.or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> updateFile(pair.getSource()));
+                .forEach(pair -> updateFile(pair.getSenderItem()));
         // @formatter:on
     }
 }

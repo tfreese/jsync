@@ -4,6 +4,8 @@
 
 package de.freese.jsync.swing.view;
 
+import de.freese.jsync.swing.components.SenderTableModel;
+
 /**
  * @author Thomas Freese
  */
@@ -25,6 +27,8 @@ public class SenderView extends AbstractFileSystemView
     {
         super.initGUI();
 
-        getLabelDirChooser().setText(getMessages().getString("jsync.quelle"));
+        getLabelDirChooser().setText(getMessage("jsync.quelle"));
+
+        getTable().setModel(new SenderTableModel());
     }
 }

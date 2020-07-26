@@ -63,6 +63,8 @@ public class JSyncSwingApplication
         public void windowClosing(final WindowEvent e)
         {
             getLogger().info("stop");
+            JSyncSwingApplication.this.controller.shutdown();
+
             System.exit(0);
         }
     }

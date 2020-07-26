@@ -4,13 +4,16 @@
 
 package de.freese.jsync.swing.components;
 
+import java.util.List;
 import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.model.SyncPair;
+import de.freese.jsync.swing.JSyncSwingApplication;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
  */
-public class SyncItemTableModel extends AbstractListTableModel<SyncItem>
+public class SenderTableModel extends AbstractListTableModel<SyncPair>
 {
     /**
      *
@@ -18,31 +21,12 @@ public class SyncItemTableModel extends AbstractListTableModel<SyncItem>
     private static final long serialVersionUID = -2044934758499148574L;
 
     /**
-     * Erstellt ein neues {@link SyncItemTableModel} Object.
+     * Erstellt ein neues {@link SenderTableModel} Object.
      */
-    public SyncItemTableModel()
+    public SenderTableModel()
     {
-        super(2);
-    }
-
-    /**
-     * @param syncItem {@link SyncItem}
-     */
-    public void add(final SyncItem syncItem)
-    {
-        getList().add(syncItem);
-
-        fireTableRowsInserted(getList().size(), getList().size());
-    }
-
-    /**
-     *
-     */
-    public void clear()
-    {
-        getList().clear();
-
-        refresh();
+        super(List.of(JSyncSwingApplication.getInstance().getMessages().getString("jsync.name"),
+                JSyncSwingApplication.getInstance().getMessages().getString("jsync.grösse")));
     }
 
     /**
@@ -63,27 +47,19 @@ public class SyncItemTableModel extends AbstractListTableModel<SyncItem>
     }
 
     /**
-     * @see de.freese.jsync.swing.components.AbstractListTableModel#getColumnName(int)
-     */
-    @Override
-    public String getColumnName(final int column)
-    {
-        switch (column)
-        {
-            case 0:
-            case 1:
-            default:
-                return super.getColumnName(column);
-        }
-    }
-
-    /**
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     @Override
     public Object getValueAt(final int rowIndex, final int columnIndex)
     {
-        SyncItem syncItem = getObjectAt(rowIndex);
+        SyncPair syncPair = getObjectAt(rowIndex);
+        SyncItem syncItem = syncPair.getSenderItem();
+
+        if (syncItem == null)
+        {
+            return null;
+        }
+
         Object value = null;
 
         switch (columnIndex)

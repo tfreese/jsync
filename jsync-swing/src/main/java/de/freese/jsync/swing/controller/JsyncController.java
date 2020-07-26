@@ -5,6 +5,11 @@
 package de.freese.jsync.swing.controller;
 
 import java.awt.Rectangle;
+import java.net.URI;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.LongConsumer;
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
@@ -14,9 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
-import de.freese.jsync.generator.DefaultGenerator;
-import de.freese.jsync.generator.Generator;
-import de.freese.jsync.swing.components.SyncItemTableModel;
+import de.freese.jsync.client.Client;
+import de.freese.jsync.client.DefaultClient;
+import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.model.SyncPair;
+import de.freese.jsync.swing.JSyncSwingApplication;
 import de.freese.jsync.swing.view.SyncView;
 
 /**
@@ -24,6 +31,11 @@ import de.freese.jsync.swing.view.SyncView;
  */
 public class JsyncController
 {
+    /**
+     *
+     */
+    private Client client = null;
+
     /**
      *
      */
@@ -59,55 +71,24 @@ public class JsyncController
     {
         // @formatter:off
         Options options = new Builder()
-                .checksum(this.syncView.getCheckBoxChecksum().isSelected())
+                .checksum(getSyncView().getCheckBoxChecksum().isSelected())
                 .build()
                 ;
         // @formatter:on
 
-        String pathSender = this.syncView.getSenderView().getTextFieldPathPath().getText();
-        String pathReceiver = this.syncView.getReceiverView().getTextFieldPathPath().getText();
+        String pathSender = getSyncView().getSenderTextFieldPath().getText();
+        String pathReceiver = getSyncView().getReceiverTextFieldPath().getText();
 
-        createSyncItems(pathSender, options, this.tableSender, this.syncView.getSenderView().getProgressBarFiles(),
-                this.syncView.getSenderView().getProgressBarChecksum());
-        createSyncItems(pathReceiver, options, this.tableReceiver, this.syncView.getReceiverView().getProgressBarFiles(),
-                this.syncView.getReceiverView().getProgressBarChecksum());
-    }
+        // URI senderUri = URI.create(pathSender); // Erzeugt Fehler bei Leerzeichen
+        // URI receiverUri = URI.create(pathReceiver);
+        URI senderUri = Paths.get(pathSender).toUri();
+        URI receiverUri = Paths.get(pathReceiver).toUri();
 
-    /**
-     * @param basePath String
-     * @param options {@link Options}
-     * @param table {@link JTable}
-     * @param progressBarFiles {@link JProgressBar}
-     * @param progressBarChecksum {@link JProgressBar}
-     */
-    private void createSyncItems(final String basePath, final Options options, final JTable table, final JProgressBar progressBarFiles,
-                                 final JProgressBar progressBarChecksum)
-    {
-        getLogger().info(basePath);
+        createNewClient(options, senderUri, receiverUri);
+        getClient().connectFileSystems();
 
-        SyncItemTableModel tableModel = (SyncItemTableModel) table.getModel();
-        tableModel.clear();
-
-        progressBarChecksum.setVisible(options.isChecksum());
-
-        if ((basePath == null) || basePath.isBlank())
-        {
-            return;
-        }
-
-        LongConsumer consumerCheckSum = bytesRead -> {
-            SwingUtilities.invokeLater(() -> {
-                // this.progressBarChecksum.setValue((int) JSyncUtils.getPercent(bytesRead, size));
-                progressBarChecksum.setValue((int) bytesRead);
-
-                if (bytesRead == progressBarChecksum.getMaximum())
-                {
-                    progressBarChecksum.setString("Building Checksum...finished");
-                }
-            });
-        };
-
-        progressBarFiles.setString("Loading Files...");
+        JProgressBar progressBarSender = getSyncView().getSenderProgressBar();
+        JProgressBar progressBarReceiver = getSyncView().getReceiverProgressBar();
 
         SwingWorker<Void, Void> swingWorker = new SwingWorker<>()
         {
@@ -117,34 +98,113 @@ public class JsyncController
             @Override
             protected Void doInBackground() throws Exception
             {
-                // GeneratorListener listener = new SwingGeneratorListener(progressBarFiles, progressBarChecksum, table);
-                // generator.generateItems(path, options.isFollowSymLinks(), listener);
+                runInEdt(() -> {
+                    getSyncView().getSenderTableModel().clear();
+                    getSyncView().getReceiverTableModel().clear();
+                });
 
-                Generator generator = new DefaultGenerator();
-                generator.generateItems(basePath, options.isFollowSymLinks(), syncItem -> {
-                    SwingUtilities.invokeLater(() -> {
-                        tableModel.add(syncItem);
-                        Rectangle rectangle = table.getCellRect(tableModel.getRowCount(), 0, false);
-                        table.scrollRectToVisible(rectangle);
+                // Sender
+                runInEdt(() -> {
+                    progressBarSender.setString(null);
+                    progressBarSender.setIndeterminate(true);
+                });
 
-                        progressBarFiles.setValue(progressBarFiles.getValue() + 1);
-                        progressBarFiles.setString("Processing " + syncItem.getRelativePath());
+                List<SyncItem> syncItemsSender = new ArrayList<>();
+                getClient().generateSyncItemsSender(syncItem -> {
+                    syncItemsSender.add(syncItem);
 
-                        if (syncItem.isFile() && options.isChecksum())
-                        {
-                            progressBarChecksum.setMinimum(0);
-                            progressBarChecksum.setMaximum((int) syncItem.getSize());
-                            progressBarChecksum.setString("Building Checksum...");
-                        }
-                    });
-
-                    if (options.isChecksum() && syncItem.isFile())
+                    if ((syncItemsSender.size() % 10) == 0)
                     {
-                        generator.generateChecksum(basePath, syncItem.getRelativePath(), consumerCheckSum);
+                        runInEdt(() -> progressBarSender.setString(getMessage("jsync.verarbeite.dateien") + ": " + syncItemsSender.size()));
                     }
                 });
 
+                // Receiver
+                runInEdt(() -> {
+                    progressBarSender.setIndeterminate(false);
+                    progressBarReceiver.setString(null);
+                    progressBarReceiver.setIndeterminate(true);
+                });
+
+                List<SyncItem> syncItemsReceiver = new ArrayList<>();
+                getClient().generateSyncItemsReceiver(syncItem -> {
+                    syncItemsReceiver.add(syncItem);
+
+                    if ((syncItemsReceiver.size() % 10) == 0)
+                    {
+                        runInEdt(() -> progressBarReceiver.setString(getMessage("jsync.verarbeite.dateien") + ": " + syncItemsReceiver.size()));
+                    }
+                });
+
+                // Merge
+                List<SyncPair> syncList = getClient().mergeSyncItems(syncItemsSender, syncItemsReceiver);
+
+                runInEdt(() -> {
+                    progressBarReceiver.setIndeterminate(false);
+                    getSyncView().getSenderTableModel().addAll(syncList);
+                    getSyncView().getReceiverTableModel().addAll(syncList);
+                });
+
+                if (!options.isChecksum())
+                {
+                    return null;
+                }
+
+                LongConsumer consumerChecksumSender = bytesRead -> {
+                    SwingUtilities.invokeLater(() -> progressBarSender.setValue((int) bytesRead));
+                };
+
+                LongConsumer consumerChecksumReceiver = bytesRead -> {
+                    SwingUtilities.invokeLater(() -> progressBarReceiver.setValue((int) bytesRead));
+                };
+
+                AtomicInteger atomicInteger = new AtomicInteger(0);
+
+                for (SyncPair syncPair : syncList)
+                {
+                    runInEdt(() -> {
+                        Rectangle rectangle = getSyncView().getSenderTable().getCellRect(atomicInteger.get(), 0, false);
+                        getSyncView().getSenderTable().scrollRectToVisible(rectangle);
+                    });
+
+                    atomicInteger.incrementAndGet();
+                    SyncItem syncItemSender = syncPair.getSenderItem();
+                    SyncItem syncItemReceiver = syncPair.getReceiverItem();
+
+                    if ((syncItemSender != null) && syncItemSender.isFile())
+                    {
+                        runInEdt(() -> {
+                            progressBarSender.setMinimum(0);
+                            progressBarSender.setMaximum((int) syncItemSender.getSize());
+                            progressBarSender.setString(getMessage("jsync.pruefsumme.erstelle") + ": " + syncItemSender.getRelativePath());
+                        });
+
+                        getClient().generateChecksumSender(syncItemSender, consumerChecksumSender);
+                    }
+
+                    if ((syncItemReceiver != null) && syncItemReceiver.isFile())
+                    {
+                        runInEdt(() -> {
+                            progressBarReceiver.setMinimum(0);
+                            progressBarReceiver.setMaximum((int) syncItemReceiver.getSize());
+                            progressBarReceiver.setString(getMessage("jsync.pruefsumme.erstelle") + ": " + syncItemReceiver.getRelativePath());
+                        });
+
+                        getClient().generateChecksumReceiver(syncItemReceiver, consumerChecksumReceiver);
+                    }
+                }
+
                 return null;
+            }
+
+            /**
+             * @see javax.swing.SwingWorker#done()
+             */
+            @Override
+            protected void done()
+            {
+                progressBarSender.setString(getMessage("jsync.vergleichen.beendet"));
+                progressBarReceiver.setString(getMessage("jsync.vergleichen.beendet"));
             }
         };
 
@@ -152,11 +212,52 @@ public class JsyncController
     }
 
     /**
+     * @param options {@link Options}
+     * @param senderUri {@link URI}
+     * @param receiverUri {@link URI}
+     */
+    private void createNewClient(final Options options, final URI senderUri, final URI receiverUri)
+    {
+        if (this.client != null)
+        {
+            this.client.disconnectFileSystems();
+            this.client = null;
+        }
+
+        this.client = new DefaultClient(options, senderUri, receiverUri, null);
+    }
+
+    /**
+     * @return {@link Client}
+     */
+    private Client getClient()
+    {
+        return this.client;
+    }
+
+    /**
      * @return {@link Logger}
      */
-    private Logger getLogger()
+    protected Logger getLogger()
     {
         return this.logger;
+    }
+
+    /**
+     * @param key String
+     * @return String
+     */
+    private String getMessage(final String key)
+    {
+        return JSyncSwingApplication.getInstance().getMessages().getString(key);
+    }
+
+    /**
+     * @return {@link SyncView}
+     */
+    private SyncView getSyncView()
+    {
+        return this.syncView;
     }
 
     /**
@@ -169,15 +270,13 @@ public class JsyncController
         syncView.getButtonCompare().addActionListener(event -> compare());
         syncView.getButtonSyncronize().addActionListener(event -> synchronize());
 
-        this.tableSender = syncView.getSenderView().getTable();
-        this.tableSender.setModel(new SyncItemTableModel());
+        this.tableSender = syncView.getSenderTable();
         // this.tableSender.setAutoscrolls(true);
         // this.tableSender.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         this.tableSender.getColumnModel().getColumn(0).setPreferredWidth(1000);
         this.tableSender.getColumnModel().getColumn(1).setMinWidth(100);
 
-        this.tableReceiver = syncView.getReceiverView().getTable();
-        this.tableReceiver.setModel(new SyncItemTableModel());
+        this.tableReceiver = syncView.getReceiverTable();
         this.tableReceiver.getColumnModel().getColumn(0).setPreferredWidth(1000);
         this.tableReceiver.getColumnModel().getColumn(1).setMinWidth(100);
 
@@ -201,11 +300,25 @@ public class JsyncController
     }
 
     /**
+     * @param runnable {@link Runnable}
+     */
+    private void runInEdt(final Runnable runnable)
+    {
+        SwingUtilities.invokeLater(runnable);
+    }
+
+    /**
      *
      */
     public void shutdown()
     {
-        // Empty
+        getLogger().info("shutdown");
+
+        if (this.client != null)
+        {
+            this.client.disconnectFileSystems();
+            this.client = null;
+        }
     }
 
     /**

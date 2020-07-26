@@ -136,24 +136,24 @@ public final class DigestUtils
         LongConsumer consumer = consumerBytesRead != null ? consumerBytesRead : i -> {
         };
 
+        consumer.accept(0);
+
         try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
         {
             final ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
 
             long bytesReadSum = 0;
-            consumer.accept(bytesReadSum);
-
             // long bytesRead = 0;
 
             while (channel.read(buffer) != -1)
             {
                 bytesReadSum += buffer.position();
+                // bytesRead = buffer.position();
+
                 consumer.accept(bytesReadSum);
 
                 messageDigest.update(buffer);
                 buffer.clear();
-
-                // bytesRead = channel.read(buffer);
             }
 
             bytes = messageDigest.digest();
