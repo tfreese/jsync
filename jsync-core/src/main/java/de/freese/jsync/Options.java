@@ -3,8 +3,6 @@ package de.freese.jsync;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * Enthält die Optionen für die Synchronisierung.
@@ -72,16 +70,6 @@ public class Options
         }
 
         /**
-         * @param executorService {@link ExecutorService}
-         * @return {@link Builder}
-         */
-        public Builder executorService(final ExecutorService executorService)
-        {
-            this.options.executorService = executorService;
-            return this;
-        }
-
-        /**
          * @param followSymLinks boolean
          * @return {@link Builder}
          */
@@ -135,11 +123,6 @@ public class Options
     /**
      *
      */
-    private ExecutorService executorService = ForkJoinPool.commonPool();
-
-    /**
-     *
-     */
     private boolean followSymLinks = true;
 
     /**
@@ -148,14 +131,6 @@ public class Options
     private Options()
     {
         super();
-    }
-
-    /**
-     * @return {@link ExecutorService}
-     */
-    public ExecutorService getExecutorService()
-    {
-        return this.executorService;
     }
 
     /**

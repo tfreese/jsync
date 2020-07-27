@@ -13,6 +13,8 @@ import java.util.function.Predicate;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.EmptyClientListener;
+import de.freese.jsync.filesystem.EFileSystem;
+import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.receiver.RemoteReceiverBlocking;
@@ -291,47 +293,56 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * @see de.freese.jsync.client.Client#generateChecksumReceiver(de.freese.jsync.model.SyncItem, java.util.function.LongConsumer)
+     * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
+     *      java.util.function.LongConsumer)
      */
     @Override
-    public void generateChecksumReceiver(final SyncItem syncItem, final LongConsumer consumerBytesRead)
+    public void generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer consumerBytesRead)
     {
-        if (getOptions().isChecksum() && syncItem.isFile())
+        if (!getOptions().isChecksum() || !syncItem.isFile())
         {
-            String checksum = getReceiver().getChecksum(getReceiverUri().getPath(), syncItem.getRelativePath(), consumerBytesRead);
-            syncItem.setChecksum(checksum);
+            return;
         }
-    }
 
-    /**
-     * @see de.freese.jsync.client.Client#generateChecksumSender(de.freese.jsync.model.SyncItem, java.util.function.LongConsumer)
-     */
-    @Override
-    public void generateChecksumSender(final SyncItem syncItem, final LongConsumer consumerBytesRead)
-    {
-        if (getOptions().isChecksum() && syncItem.isFile())
+        FileSystem fs = null;
+        URI uri = null;
+
+        if (EFileSystem.SENDER.equals(fileSystem))
         {
-            String checksum = getSender().getChecksum(getSenderUri().getPath(), syncItem.getRelativePath(), consumerBytesRead);
-            syncItem.setChecksum(checksum);
+            fs = getSender();
+            uri = getSenderUri();
         }
+        else
+        {
+            fs = getReceiver();
+            uri = getReceiverUri();
+        }
+
+        String checksum = fs.getChecksum(uri.getPath(), syncItem.getRelativePath(), consumerBytesRead);
+        syncItem.setChecksum(checksum);
     }
 
     /**
-     * @see de.freese.jsync.client.Client#generateSyncItemsReceiver(java.util.function.Consumer)
+     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.Consumer)
      */
     @Override
-    public void generateSyncItemsReceiver(final Consumer<SyncItem> consumerSyncItem)
+    public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem)
     {
-        getReceiver().generateSyncItems(getReceiverUri().getPath(), getOptions().isFollowSymLinks(), consumerSyncItem);
-    }
+        FileSystem fs = null;
+        URI uri = null;
 
-    /**
-     * @see de.freese.jsync.client.Client#generateSyncItemsSender(java.util.function.Consumer)
-     */
-    @Override
-    public void generateSyncItemsSender(final Consumer<SyncItem> consumerSyncItem)
-    {
-        getSender().generateSyncItems(getSenderUri().getPath(), getOptions().isFollowSymLinks(), consumerSyncItem);
+        if (EFileSystem.SENDER.equals(fileSystem))
+        {
+            fs = getSender();
+            uri = getSenderUri();
+        }
+        else
+        {
+            fs = getReceiver();
+            uri = getReceiverUri();
+        }
+
+        fs.generateSyncItems(uri.getPath(), getOptions().isFollowSymLinks(), consumerSyncItem);
     }
 
     /**

@@ -34,6 +34,19 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
+     * @see de.freese.jsync.client.Client#checkSyncStatus(java.util.List)
+     */
+    @Override
+    public void checkSyncStatus(final List<SyncPair> syncList)
+    {
+        // @formatter:off
+        syncList.stream()
+                .peek(SyncPair::validateStatus)
+                .forEach(getClientListener()::debugSyncPair);
+        // @formatter:on
+    }
+
+    /**
      * @see de.freese.jsync.client.Client#mergeSyncItems(java.util.List, java.util.List)
      */
     @Override
@@ -51,13 +64,6 @@ public class DefaultClient extends AbstractClient
         // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
         mapReceiver.forEach((key, value) -> fileList.add(new SyncPair(null, value)));
 
-        // SyncStatus ermitteln.
-        // @formatter:off
-        fileList.stream()
-                .peek(SyncPair::validateStatus)
-                .forEach(getClientListener()::debugSyncPair);
-        // @formatter:on
-
         return fileList;
     }
 
@@ -65,7 +71,7 @@ public class DefaultClient extends AbstractClient
      * @see de.freese.jsync.client.Client#syncReceiver(java.util.List)
      */
     @Override
-    public void syncReceiver(final List<SyncPair> syncList) throws Exception
+    public void syncReceiver(final List<SyncPair> syncList)
     {
         getClientListener().syncStartInfo();
 

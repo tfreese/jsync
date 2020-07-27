@@ -15,7 +15,9 @@ import javax.swing.JScrollBar;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
+import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.swing.GbcBuilder;
+import de.freese.jsync.swing.components.AbstractListTableModel;
 import de.freese.jsync.swing.components.ReceiverTableModel;
 import de.freese.jsync.swing.components.SenderTableModel;
 
@@ -149,7 +151,7 @@ public class SyncView extends AbstractView
     /**
      * @return {@link ReceiverTableModel}
      */
-    public ReceiverTableModel getReceiverTableModel()
+    public AbstractListTableModel<SyncPair> getReceiverTableModel()
     {
         return (ReceiverTableModel) getReceiverTable().getModel();
     }
@@ -181,7 +183,7 @@ public class SyncView extends AbstractView
     /**
      * @return {@link SenderTableModel}
      */
-    public SenderTableModel getSenderTableModel()
+    public AbstractListTableModel<SyncPair> getSenderTableModel()
     {
         return (SenderTableModel) getSenderTable().getModel();
     }

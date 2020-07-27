@@ -6,6 +6,7 @@ package de.freese.jsync.client;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
@@ -19,6 +20,13 @@ import de.freese.jsync.model.SyncPair;
 public interface Client
 {
     /**
+     * Prüfung, bo Sender und Receiver synchron sind.
+     *
+     * @param syncList {@link List}
+     */
+    public void checkSyncStatus(List<SyncPair> syncList);
+
+    /**
      * Stellt die Verbindung zu den Dateisystemen her.
      */
     public void connectFileSystems();
@@ -31,32 +39,19 @@ public interface Client
     /**
      * Erzeugt die Prüfsumme einer Datei.<br>
      *
+     * @param fileSystem {@link EFileSystem}
      * @param syncItem SyncItem
      * @param consumerBytesRead {@link LongConsumer}; optional
      */
-    public void generateChecksumReceiver(SyncItem syncItem, final LongConsumer consumerBytesRead);
+    public void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerBytesRead);
 
     /**
-     * Erzeugt die Prüfsumme einer Datei.<br>
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
      *
-     * @param syncItem SyncItem
-     * @param consumerBytesRead {@link LongConsumer}; optional
-     */
-    public void generateChecksumSender(SyncItem syncItem, final LongConsumer consumerBytesRead);
-
-    /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des {@link Sender}<br>
-     *
+     * @param fileSystem {@link EFileSystem}
      * @param consumerSyncItem {@link Consumer}
      */
-    public void generateSyncItemsReceiver(Consumer<SyncItem> consumerSyncItem);
-
-    /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des {@link Sender}<br>
-     *
-     * @param consumerSyncItem {@link Consumer}
-     */
-    public void generateSyncItemsSender(Consumer<SyncItem> consumerSyncItem);
+    public void generateSyncItems(EFileSystem fileSystem, Consumer<SyncItem> consumerSyncItem);
 
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
@@ -74,7 +69,6 @@ public interface Client
      * Synchronisiert das Ziel-Verzeichnis mit der Quelle.
      *
      * @param syncList {@link List}
-     * @throws Exception Falls was schief geht.
      */
-    public void syncReceiver(List<SyncPair> syncList) throws Exception;
+    public void syncReceiver(List<SyncPair> syncList);
 }

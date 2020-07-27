@@ -6,7 +6,6 @@ package de.freese.jsync;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options.Builder;
@@ -16,9 +15,9 @@ import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.ConsoleClientListener;
+import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * Consolen-Anwendung für jsync.<br>
@@ -95,15 +94,12 @@ public class JSyncConsole
      */
     public void run(final ArgumentParser argumentParser) throws Exception
     {
-        int poolSize = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
-
         // @formatter:off
         Options options = new Builder()
                 .delete(argumentParser.delete())
                 .followSymLinks(argumentParser.followSymlinks())
                 .dryRun(argumentParser.dryRun())
                 .checksum(argumentParser.checksum())
-                .executorService(Executors.newFixedThreadPool(poolSize))
                 .build()
                 ;
         // @formatter:on
@@ -111,14 +107,7 @@ public class JSyncConsole
         URI senderUri = new URI(argumentParser.sender());
         URI receiverUri = new URI(argumentParser.receiver());
 
-        try
-        {
-            syncDirectories(options, senderUri, receiverUri, new ConsoleClientListener());
-        }
-        finally
-        {
-            JSyncUtils.shutdown(options.getExecutorService(), LoggerFactory.getLogger(JSyncConsole.class));
-        }
+        syncDirectories(options, senderUri, receiverUri, new ConsoleClientListener());
     }
 
     /**
@@ -134,18 +123,20 @@ public class JSyncConsole
         client.connectFileSystems();
 
         List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItemsSender(syncItem -> {
+        client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
             syncItemsSender.add(syncItem);
-            client.generateChecksumSender(syncItem, null);
+            client.generateChecksum(EFileSystem.SENDER, syncItem, null);
         });
 
         List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItemsReceiver(syncItem -> {
+        client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
             syncItemsReceiver.add(syncItem);
-            client.generateChecksumReceiver(syncItem, null);
+            client.generateChecksum(EFileSystem.RECEIVER, syncItem, null);
         });
 
         List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
+        client.checkSyncStatus(syncList);
+
         client.syncReceiver(syncList);
 
         client.disconnectFileSystems();
