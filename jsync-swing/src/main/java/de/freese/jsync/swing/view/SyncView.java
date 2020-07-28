@@ -95,7 +95,6 @@ public class SyncView extends AbstractView
         // Button Synchronize
         this.buttonSyncronize = new JButton(getMessage("jsync.synchronisieren"));
         confiPanel.add(this.buttonSyncronize, new GbcBuilder(2, 0).insets(5, 20, 5, 5));
-        this.buttonSyncronize.setEnabled(false);
 
         return confiPanel;
     }

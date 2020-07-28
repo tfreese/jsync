@@ -72,6 +72,9 @@ public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>
     {
         this.scheduledExecutor.schedule(this, this.delay, TimeUnit.MILLISECONDS);
 
+        // LoggerFactory.getLogger(getClass()).info("ActiveCount: {}", ((ScheduledThreadPoolExecutor) this.scheduledExecutor).getActiveCount());
+        // LoggerFactory.getLogger(getClass()).info("PoolSize: {}", ((ScheduledThreadPoolExecutor) this.scheduledExecutor).getPoolSize());
+
         // Timer timer = new Timer(this.delay, event -> run());
         // timer.setRepeats(false);
         // timer.start();

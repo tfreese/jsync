@@ -9,10 +9,12 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.LongConsumer;
+import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
@@ -26,6 +28,7 @@ import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.swing.JSyncSwingApplication;
+import de.freese.jsync.swing.components.AccumulativeRunnable;
 import de.freese.jsync.swing.components.ScheduledAccumulativeRunnable;
 import de.freese.jsync.swing.view.SyncView;
 
@@ -34,70 +37,6 @@ import de.freese.jsync.swing.view.SyncView;
  */
 public class JsyncController
 {
-    /**
-     * @author Thomas Freese
-     */
-    private class SwingWorkerLoadSyncItems extends SwingWorker<List<SyncItem>, Integer>
-    {
-        /**
-         *
-         */
-        private final EFileSystem fileSystem;
-
-        /**
-         *
-         */
-        private final JProgressBar progressBar;
-
-        /**
-         * Erstellt ein neues {@link SwingWorkerLoadSyncItems} Object.
-         *
-         * @param fileSystem {@link EFileSystem}
-         */
-        public SwingWorkerLoadSyncItems(final EFileSystem fileSystem)
-        {
-            super();
-
-            this.fileSystem = Objects.requireNonNull(fileSystem, "fileSystem required");
-            this.progressBar = EFileSystem.SENDER.equals(fileSystem) ? getSyncView().getSenderProgressBar() : getSyncView().getReceiverProgressBar();
-        }
-
-        /**
-         * @see javax.swing.SwingWorker#doInBackground()
-         */
-        @Override
-        protected List<SyncItem> doInBackground() throws Exception
-        {
-            List<SyncItem> syncItems = new ArrayList<>();
-
-            getClient().generateSyncItems(this.fileSystem, syncItem -> {
-                syncItems.add(syncItem);
-
-                publish(syncItems.size());
-            });
-
-            return syncItems;
-        }
-
-        /**
-         * @see javax.swing.SwingWorker#done()
-         */
-        @Override
-        protected void done()
-        {
-            this.progressBar.setIndeterminate(false);
-        }
-
-        /**
-         * @see javax.swing.SwingWorker#process(java.util.List)
-         */
-        @Override
-        protected void process(final List<Integer> chunks)
-        {
-            this.progressBar.setString(getMessage("jsync.verarbeite.dateien") + ": " + chunks.get(chunks.size() - 1));
-        }
-    }
-
     /**
      *
      */
@@ -146,6 +85,18 @@ public class JsyncController
         getSyncView().getSenderTableModel().clear();
         getSyncView().getReceiverTableModel().clear();
 
+        boolean parallelism = !(senderUri.getScheme().equals("file") && receiverUri.getScheme().equals("file"));
+
+        ExecutorService executorService = JSyncSwingApplication.getInstance().getExecutorService();
+        ScheduledExecutorService scheduledExecutorService = JSyncSwingApplication.getInstance().getScheduledExecutorService();
+        JProgressBar progressBarSender = getSyncView().getSenderProgressBar();
+        JProgressBar progressBarReceiver = getSyncView().getReceiverProgressBar();
+
+        progressBarSender.setString(null);
+        progressBarSender.setIndeterminate(true);
+        progressBarReceiver.setString(null);
+        progressBarReceiver.setIndeterminate(true);
+
         SwingWorker<Void, Void> swingWorker = new SwingWorker<>()
         {
             /**
@@ -154,32 +105,23 @@ public class JsyncController
             @Override
             protected Void doInBackground() throws Exception
             {
-                CountDownLatch latch = new CountDownLatch(2);
+                // Dateien laden
+                RunnableFuture<List<SyncItem>> futureSenderItem = createLoadSyncItemsFuture(EFileSystem.SENDER, progressBarSender);
+                RunnableFuture<List<SyncItem>> futureReceiverItem = createLoadSyncItemsFuture(EFileSystem.RECEIVER, progressBarReceiver);
 
-                SwingWorkerLoadSyncItems loadSyncItemsSender = new SwingWorkerLoadSyncItems(EFileSystem.SENDER);
-                SwingWorkerLoadSyncItems loadSyncItemsReceiver = new SwingWorkerLoadSyncItems(EFileSystem.RECEIVER);
+                if (parallelism)
+                {
+                    executorService.execute(futureSenderItem);
+                }
+                else
+                {
+                    futureSenderItem.run();
+                }
 
-                // Nacheinander starten.
-                loadSyncItemsSender.addPropertyChangeListener(event -> {
-                    if (event.getPropertyName().equals("state") && StateValue.DONE.equals(event.getNewValue()))
-                    {
-                        latch.countDown();
-                        loadSyncItemsReceiver.execute();
-                    }
-                });
-                loadSyncItemsReceiver.addPropertyChangeListener(event -> {
-                    if (event.getPropertyName().equals("state") && StateValue.DONE.equals(event.getNewValue()))
-                    {
-                        latch.countDown();
-                    }
-                });
+                futureReceiverItem.run();
 
-                loadSyncItemsSender.execute();
-
-                latch.await();
-
-                List<SyncItem> syncItemsSender = loadSyncItemsSender.get();
-                List<SyncItem> syncItemsReceiver = loadSyncItemsReceiver.get();
+                List<SyncItem> syncItemsSender = futureSenderItem.get();
+                List<SyncItem> syncItemsReceiver = futureReceiverItem.get();
 
                 // Merge
                 List<SyncPair> syncList = getClient().mergeSyncItems(syncItemsSender, syncItemsReceiver);
@@ -197,10 +139,6 @@ public class JsyncController
                 }
 
                 // Checksum
-                ScheduledExecutorService scheduledExecutorService = JSyncSwingApplication.getInstance().getScheduledExecutorService();
-                JProgressBar progressBarSender = getSyncView().getSenderProgressBar();
-                JProgressBar progressBarReceiver = getSyncView().getReceiverProgressBar();
-
                 ScheduledAccumulativeRunnable<Integer> sarTableScroll = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
                 sarTableScroll.doOnSubmit(chunks -> {
                     int row = chunks.get(chunks.size() - 1);
@@ -208,47 +146,57 @@ public class JsyncController
                     getSyncView().getSenderTable().scrollRectToVisible(rectangle);
                 });
 
-                ScheduledAccumulativeRunnable<SyncItem> sarSenderMessage = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
-                sarSenderMessage.doOnSubmit(chunks -> {
+                ScheduledAccumulativeRunnable<SyncItem> sarSenderItem = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
+                sarSenderItem.doOnSubmit(chunks -> {
                     SyncItem syncItem = chunks.get(chunks.size() - 1);
                     progressBarSender.setMinimum(0);
                     progressBarSender.setMaximum((int) syncItem.getSize());
                     progressBarSender.setString(getMessage("jsync.pruefsumme.erstelle") + ": " + syncItem.getRelativePath());
                 });
-                ScheduledAccumulativeRunnable<SyncItem> sarReceiverMessage = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
-                sarReceiverMessage.doOnSubmit(chunks -> {
+                ScheduledAccumulativeRunnable<SyncItem> sarReceiverItem = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
+                sarReceiverItem.doOnSubmit(chunks -> {
                     SyncItem syncItem = chunks.get(chunks.size() - 1);
                     progressBarReceiver.setMinimum(0);
                     progressBarReceiver.setMaximum((int) syncItem.getSize());
                     progressBarReceiver.setString(getMessage("jsync.pruefsumme.erstelle") + ": " + syncItem.getRelativePath());
                 });
 
-                ScheduledAccumulativeRunnable<Long> sarSenderProgress = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
-                sarSenderProgress.doOnSubmit(chunks -> progressBarSender.setValue(chunks.get(chunks.size() - 1).intValue()));
-                ScheduledAccumulativeRunnable<Long> sarReceiverProgress = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
-                sarReceiverProgress.doOnSubmit(chunks -> progressBarReceiver.setValue(chunks.get(chunks.size() - 1).intValue()));
-
-                LongConsumer consumerChecksumSender = sarSenderProgress::add;
-                LongConsumer consumerChecksumReceiver = sarReceiverProgress::add;
+                ScheduledAccumulativeRunnable<Long> sarSenderChecksum = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
+                sarSenderChecksum.doOnSubmit(chunks -> progressBarSender.setValue(chunks.get(chunks.size() - 1).intValue()));
+                ScheduledAccumulativeRunnable<Long> sarReceiverChecksum = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
+                sarReceiverChecksum.doOnSubmit(chunks -> progressBarReceiver.setValue(chunks.get(chunks.size() - 1).intValue()));
 
                 for (int i = 0; i < syncList.size(); i++)
                 {
                     sarTableScroll.add(i);
 
                     SyncPair syncPair = syncList.get(i);
-                    SyncItem syncItemSender = syncPair.getSenderItem();
-                    SyncItem syncItemReceiver = syncPair.getReceiverItem();
 
-                    if ((syncItemSender != null) && syncItemSender.isFile())
+                    RunnableFuture<?> futureSenderChecksum =
+                            createChecksumFuture(EFileSystem.SENDER, syncPair.getSenderItem(), sarSenderItem, sarSenderChecksum);
+                    RunnableFuture<?> futureReceiverChecksum =
+                            createChecksumFuture(EFileSystem.RECEIVER, syncPair.getReceiverItem(), sarReceiverItem, sarReceiverChecksum);
+
+                    if (futureSenderChecksum != null)
                     {
-                        sarSenderMessage.add(syncItemSender);
-                        getClient().generateChecksum(EFileSystem.SENDER, syncItemSender, consumerChecksumSender);
+                        if (parallelism)
+                        {
+                            executorService.execute(futureSenderChecksum);
+                        }
+                        else
+                        {
+                            futureSenderChecksum.run();
+                        }
                     }
 
-                    if ((syncItemReceiver != null) && syncItemReceiver.isFile())
+                    if (futureReceiverChecksum != null)
                     {
-                        sarReceiverMessage.add(syncItemReceiver);
-                        getClient().generateChecksum(EFileSystem.RECEIVER, syncItemReceiver, consumerChecksumReceiver);
+                        futureReceiverChecksum.run();
+                    }
+
+                    if (futureSenderChecksum != null)
+                    {
+                        futureSenderChecksum.get();
                     }
 
                     // System.out.println("JsyncController.compare().new SwingWorker() {...}.doInBackground(): " + i);
@@ -271,6 +219,63 @@ public class JsyncController
         };
 
         swingWorker.execute();
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     * @param syncItem {@link SyncItem}
+     * @param itemRunnable {@link AccumulativeRunnable}
+     * @param checksumRunnable {@link AccumulativeRunnable}
+     * @return {@link RunnableFuture}
+     */
+    private RunnableFuture<?> createChecksumFuture(final EFileSystem fileSystem, final SyncItem syncItem, final AccumulativeRunnable<SyncItem> itemRunnable,
+                                                   final AccumulativeRunnable<Long> checksumRunnable)
+    {
+        if ((syncItem == null) || !syncItem.isFile())
+        {
+            return null;
+        }
+
+        Runnable runnable = () -> {
+            itemRunnable.add(syncItem);
+            getClient().generateChecksum(fileSystem, syncItem, checksumRunnable::add);
+        };
+
+        RunnableFuture<?> future = new FutureTask<>(runnable, null);
+
+        return future;
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     * @param progressBar {@link JProgressBar}
+     * @return {@link RunnableFuture}
+     */
+    private RunnableFuture<List<SyncItem>> createLoadSyncItemsFuture(final EFileSystem fileSystem, final JProgressBar progressBar)
+    {
+        ScheduledExecutorService scheduledExecutorService = JSyncSwingApplication.getInstance().getScheduledExecutorService();
+
+        ScheduledAccumulativeRunnable<Integer> sarLoadItems = new ScheduledAccumulativeRunnable<>(scheduledExecutorService);
+        sarLoadItems.doOnSubmit(chunks -> {
+            progressBar.setString(getMessage("jsync.verarbeite.dateien") + ": " + chunks.get(chunks.size() - 1));
+        });
+
+        Callable<List<SyncItem>> callable = () -> {
+            List<SyncItem> syncItems = new ArrayList<>();
+
+            getClient().generateSyncItems(fileSystem, syncItem -> {
+                syncItems.add(syncItem);
+                sarLoadItems.add((syncItems.size()));
+            });
+
+            runInEdt(() -> progressBar.setIndeterminate(false));
+
+            return syncItems;
+        };
+
+        RunnableFuture<List<SyncItem>> future = new FutureTask<>(callable);
+
+        return future;
     }
 
     /**
@@ -340,24 +345,6 @@ public class JsyncController
 
         syncView.getReceiverTable().getColumnModel().getColumn(0).setPreferredWidth(1000);
         syncView.getReceiverTable().getColumnModel().getColumn(1).setMinWidth(100);
-
-        // ActionListener actionListenerEnableCompareButton = event -> {
-        // getLogger().info("actionListenerEnableCompareButton");
-        // String pathSender = this.syncView.getSenderView().getTextFieldPathPath().getText();
-        // String pathReceiver = this.syncView.getReceiverView().getTextFieldPathPath().getText();
-        //
-        // if ((pathSender != null) && !pathSender.isBlank() && (pathReceiver != null) && !pathReceiver.isBlank())
-        // {
-        // this.syncView.getButtonCompare().setEnabled(true);
-        // }
-        // else
-        // {
-        // this.syncView.getButtonCompare().setEnabled(false);
-        // }
-        // };
-        //
-        // this.syncView.getSenderView().getButtonPath().addActionListener(actionListenerEnableCompareButton);
-        // this.syncView.getReceiverView().getButtonPath().addActionListener(actionListenerEnableCompareButton);
     }
 
     /**
@@ -387,6 +374,6 @@ public class JsyncController
     */
     private void synchronize()
     {
-        // TODO
+        JOptionPane.showMessageDialog(JSyncSwingApplication.getInstance().getMainFrame(), "Not implemented !", "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
