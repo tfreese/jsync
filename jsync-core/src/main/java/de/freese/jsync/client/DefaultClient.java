@@ -11,6 +11,7 @@ import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import de.freese.jsync.model.SyncPairComparator;
 import de.freese.jsync.model.SyncStatus;
 
 /**
@@ -63,6 +64,8 @@ public class DefaultClient extends AbstractClient
 
         // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
         mapReceiver.forEach((key, value) -> fileList.add(new SyncPair(null, value)));
+
+        fileList.sort(new SyncPairComparator());
 
         return fileList;
     }

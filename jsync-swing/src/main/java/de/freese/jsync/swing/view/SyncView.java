@@ -15,9 +15,11 @@ import javax.swing.JScrollBar;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.swing.GbcBuilder;
 import de.freese.jsync.swing.components.AbstractListTableModel;
+import de.freese.jsync.swing.components.DocumentListenerAdapter;
 import de.freese.jsync.swing.components.ReceiverTableModel;
 import de.freese.jsync.swing.components.SenderTableModel;
 
@@ -215,7 +217,34 @@ public class SyncView extends AbstractView
         // ScrollBars synchronisieren.
         JScrollBar vScrollbarSender = this.senderView.getScrollBarVertical();
         JScrollBar vScrollbarReceiver = this.receiverView.getScrollBarVertical();
-
         vScrollbarReceiver.setModel(vScrollbarSender.getModel());
+
+        // Buttons
+        getButtonSyncronize().setEnabled(false);
+        getButtonCompare().setEnabled(false);
+
+        getSenderTextFieldPath().getDocument().addDocumentListener(new DocumentListenerAdapter()
+        {
+            /**
+             * @see de.freese.jsync.swing.components.DocumentListenerAdapter#insertUpdate(javax.swing.event.DocumentEvent)
+             */
+            @Override
+            public void insertUpdate(final DocumentEvent event)
+            {
+                getButtonCompare().setEnabled(!getSenderTextFieldPath().getText().isBlank() && !getReceiverTextFieldPath().getText().isBlank());
+            }
+        });
+
+        getReceiverTextFieldPath().getDocument().addDocumentListener(new DocumentListenerAdapter()
+        {
+            /**
+             * @see de.freese.jsync.swing.components.DocumentListenerAdapter#insertUpdate(javax.swing.event.DocumentEvent)
+             */
+            @Override
+            public void insertUpdate(final DocumentEvent event)
+            {
+                getButtonCompare().setEnabled(!getSenderTextFieldPath().getText().isBlank() && !getReceiverTextFieldPath().getText().isBlank());
+            }
+        });
     }
 }

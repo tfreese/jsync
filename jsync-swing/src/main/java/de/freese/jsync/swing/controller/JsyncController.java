@@ -65,6 +65,9 @@ public class JsyncController
      */
     private void compare()
     {
+        getSyncView().getButtonCompare().setEnabled(false);
+        getSyncView().getButtonSyncronize().setEnabled(false);
+
         // @formatter:off
         Options options = new Builder()
                 .checksum(getSyncView().getCheckBoxChecksum().isSelected())
@@ -213,8 +216,19 @@ public class JsyncController
             @Override
             protected void done()
             {
+                try
+                {
+                    get();
+                }
+                catch (Exception ex)
+                {
+                    getLogger().error(null, ex);
+                }
+
                 // getSyncView().getSenderProgressBar().setString(getMessage("jsync.vergleichen.beendet"));
                 // getSyncView().getReceiverProgressBar().setString(getMessage("jsync.vergleichen.beendet"));
+                getSyncView().getButtonCompare().setEnabled(true);
+                getSyncView().getButtonSyncronize().setEnabled(true);
             }
         };
 

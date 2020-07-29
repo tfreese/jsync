@@ -262,7 +262,8 @@ public class JSyncSwingApplication
 
         try
         {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); // com.sun.java.swing.plaf.gtk.GTKLookAndFeel
+            UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
             // UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
         }
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex)
@@ -274,8 +275,8 @@ public class JSyncSwingApplication
 
         // Farben
         Color color = new Color(215, 215, 215);
-        UIManager.put("Table.alternatingBackground", color);
-        // UIManager.put("Table.alternateRowColor", color);
+        // UIManager.put("Table.alternatingBackground", color);
+        UIManager.put("Table.alternateRowColor", color);
         // UIManager.put("List.alternatingBackground", color);
         // defaults.put("Tree.alternatingBackground", color);
 
