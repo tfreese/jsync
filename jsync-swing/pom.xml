@@ -1,31 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>14</source>
+                    <target>14</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-	<parent>
-		<groupId>de.freese.jsync</groupId>
-		<artifactId>jsync</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>de.freese.jsync</groupId>
+        <artifactId>jsync</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>jsync-swing</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>jsync-swing</artifactId>
+    <packaging>jar</packaging>
 
-	<name>${project.groupId} - ${project.artifactId}</name>
-	<description>A Java rsync clone: Swing-GUI</description>
+    <name>${project.groupId} - ${project.artifactId}</name>
+    <description>A Java rsync clone: Swing-GUI</description>
 
-	<dependencies>
-		<!-- compile scope -->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>jsync-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+    <dependencies>
+        <!-- compile scope -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jsync-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<!-- runtime scope -->
-		<!-- provided scope -->
-		<!-- test scope -->
-	</dependencies>
+        <!-- runtime scope -->
+        <!-- provided scope -->
+        <!-- test scope -->
+    </dependencies>
 
 </project>

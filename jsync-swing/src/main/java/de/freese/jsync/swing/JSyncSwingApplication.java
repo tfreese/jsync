@@ -4,6 +4,12 @@
 
 package de.freese.jsync.swing;
 
+import de.freese.jsync.swing.controller.JsyncController;
+import de.freese.jsync.swing.messages.Messages;
+import de.freese.jsync.swing.view.SyncView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -14,29 +20,25 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.FontUIResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import de.freese.jsync.swing.controller.JsyncController;
-import de.freese.jsync.swing.messages.Messages;
-import de.freese.jsync.swing.view.SyncView;
 
 /**
  * @author Thomas Freese
  */
-public class JSyncSwingApplication
+public final class JSyncSwingApplication
 {
     /**
      * ThreadSafe Singleton-Pattern.
      *
      * @author Thomas Freese
      */
-    private static class InstanceHolder
+    private static final class InstanceHolder
     {
         /**
          *
@@ -98,7 +100,8 @@ public class JSyncSwingApplication
      */
     public static void main(final String[] args)
     {
-        Thread.setDefaultUncaughtExceptionHandler((t, ex) -> {
+        Thread.setDefaultUncaughtExceptionHandler((t, ex) ->
+        {
             getLogger().error("***Default exception handler***");
             getLogger().error(null, ex);
 
@@ -108,7 +111,8 @@ public class JSyncSwingApplication
         // Um Comparator Fehler zu vermeiden.
         // System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(() ->
+        {
             try
             {
                 getInstance().init(args);
@@ -139,7 +143,7 @@ public class JSyncSwingApplication
     /**
      *
      */
-    private JsyncController controller = null;
+    private JsyncController controller;
 
     /**
      *
@@ -167,6 +171,7 @@ public class JSyncSwingApplication
     private JSyncSwingApplication()
     {
         super();
+        this.controller = null;
     }
 
     /**
@@ -205,6 +210,7 @@ public class JSyncSwingApplication
      * Initialisierung der GUI.
      *
      * @param args String[]
+     *
      * @throws Exception Falls was schief geht.
      */
     private void init(final String[] args) throws Exception
@@ -254,8 +260,8 @@ public class JSyncSwingApplication
     }
 
     /**
-    *
-    */
+     *
+     */
     private void initUIDefaults()
     {
         getLogger().info("initUIDefaults");
@@ -283,7 +289,8 @@ public class JSyncSwingApplication
         // Fonts: Dialog, Monospaced, Arial, DejaVu Sans
         Font font = new Font("DejaVu Sans", Font.PLAIN, 16);
 
-        UIManager.getLookAndFeelDefaults().entrySet().stream().forEach(entry -> {
+        UIManager.getLookAndFeelDefaults().entrySet().forEach(entry ->
+        {
             Object key = entry.getKey();
             Object value = entry.getValue();
 

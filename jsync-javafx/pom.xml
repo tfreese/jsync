@@ -1,61 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>de.freese.jsync</groupId>
-		<artifactId>jsync</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>de.freese.jsync</groupId>
+        <artifactId>jsync</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>jsync-javafx</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>jsync-javafx</artifactId>
+    <packaging>jar</packaging>
 
-	<name>${project.groupId} - ${project.artifactId}</name>
-	<description>A Java rsync clone: JavaFX-GUI</description>
+    <name>${project.groupId} - ${project.artifactId}</name>
+    <description>A Java rsync clone: JavaFX-GUI</description>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
 
-				<!-- mvn exec:java; Ausführung in der gleichen Runtime-Instanz wie Maven. -->
-				<configuration>
-					<mainClass>de.freese.jsync.javafx.JSyncJavaFxApplication</mainClass>
-				</configuration>
+                <!-- mvn exec:java; Ausführung in der gleichen Runtime-Instanz wie Maven. -->
+                <configuration>
+                    <mainClass>de.freese.jsync.javafx.JSyncJavaFxApplication</mainClass>
+                </configuration>
 
-				<!-- mvn exec:exec; Ausführung in einer separaten Runtime-Instanz. -->
-				<!--configuration>
-					<toolchain>jdk</toolchain>
-					<executable>java</executable>
-					<arguments>
-					<argument>-classpath</argument>
-					<classpath />
-					<argument>de.freese.jsync.javafx.JSyncJavaFxApplication</argument>
-					</arguments>
-					</configuration -->
-			</plugin>
-		</plugins>
-	</build>
+                <!-- mvn exec:exec; Ausführung in einer separaten Runtime-Instanz. -->
+                <!--configuration>
+                    <toolchain>jdk</toolchain>
+                    <executable>java</executable>
+                    <arguments>
+                    <argument>-classpath</argument>
+                    <classpath />
+                    <argument>de.freese.jsync.javafx.JSyncJavaFxApplication</argument>
+                    </arguments>
+                    </configuration -->
+            </plugin>
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>14</source>
+                    <target>14</target>
+                </configuration>
+            </plugin-->
+            <!--plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.4</version>
+                <configuration>
+                    <mainClass>de.freese.jsync.javafx.JSyncJavaFxApplication</mainClass>
+                </configuration>
+            </plugin-->
+        </plugins>
+    </build>
 
 
-	<dependencies>
-		<!-- compile scope -->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>jsync-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-controls</artifactId>
-		</dependency>
+    <dependencies>
+        <!-- compile scope -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jsync-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+        </dependency>
 
-		<!-- runtime scope -->
-		<!-- provided scope -->
-		<!-- test scope -->
-	</dependencies>
+        <!-- runtime scope -->
+        <!-- provided scope -->
+        <!-- test scope -->
+    </dependencies>
 
 </project>

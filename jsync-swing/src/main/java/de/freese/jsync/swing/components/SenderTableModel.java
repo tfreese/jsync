@@ -4,11 +4,12 @@
 
 package de.freese.jsync.swing.components;
 
-import java.util.List;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.swing.JSyncSwingApplication;
 import de.freese.jsync.utils.JSyncUtils;
+
+import java.util.List;
 
 /**
  * @author Thomas Freese
@@ -26,7 +27,7 @@ public class SenderTableModel extends AbstractListTableModel<SyncPair>
     public SenderTableModel()
     {
         super(List.of(JSyncSwingApplication.getInstance().getMessages().getString("jsync.name"),
-                JSyncSwingApplication.getInstance().getMessages().getString("jsync.grösse")));
+                JSyncSwingApplication.getInstance().getMessages().getString("jsync.groesse")));
     }
 
     /**

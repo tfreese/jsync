@@ -1,11 +1,5 @@
-/**
- * Created: 25.11.2018
- */
-
 package de.freese.jsync.javafx;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
@@ -14,6 +8,8 @@ import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Geht momentan nicht aus der IDE, sondern nur per Console: mvn compile exec:java<br>
@@ -29,8 +25,8 @@ import javafx.stage.Stage;
 public class JSyncJavaFxApplication extends Application
 {
     /**
-    *
-    */
+     *
+     */
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncJavaFxApplication.class);
 
     /**
@@ -65,7 +61,7 @@ public class JSyncJavaFxApplication extends Application
             }
             catch (Exception ex)
             {
-                System.err.println(ex.getMessage());
+                LOGGER.error(null, ex);
             }
         }
 
@@ -89,14 +85,16 @@ public class JSyncJavaFxApplication extends Application
      */
     public static void main(final String[] args)
     {
-        Thread.setDefaultUncaughtExceptionHandler((t, ex) -> {
+        Thread.setDefaultUncaughtExceptionHandler((t, ex) ->
+        {
             getLogger().error("***Default exception handler***");
             getLogger().error(null, ex);
 
             // new ErrorDialog().forThrowable(ex).showAndWait();
         });
 
-        Runnable task = () -> {
+        Runnable task = () ->
+        {
             launch(args);
             // LauncherImpl.launchApplication(JSyncJavaFxApplication.class, JSyncJavaFxApplicationPreloader.class, args);
         };
@@ -147,7 +145,7 @@ public class JSyncJavaFxApplication extends Application
         // Momentan kein Antialising wegen JavaFX-Bug.
         int javaVersion = getJavaVersion();
 
-        if (Platform.isSupported(ConditionalFeature.SCENE3D) && (javaVersion >= 1800072))
+        if (Platform.isSupported(ConditionalFeature.SCENE3D) && (javaVersion >= 1_800_072))
         {
 
             scene = new Scene(pane, 1280, 768, true, SceneAntialiasing.BALANCED);
