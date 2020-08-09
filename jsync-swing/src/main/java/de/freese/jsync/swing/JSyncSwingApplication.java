@@ -34,6 +34,11 @@ import javax.swing.plaf.FontUIResource;
 public final class JSyncSwingApplication
 {
     /**
+     *
+     */
+    public static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwingApplication.class);
+
+    /**
      * ThreadSafe Singleton-Pattern.
      *
      * @author Thomas Freese
@@ -73,11 +78,6 @@ public final class JSyncSwingApplication
             System.exit(0);
         }
     }
-
-    /**
-     *
-     */
-    public static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwingApplication.class);
 
     /**
      * @return {@link JSyncSwingApplication}
