@@ -1,7 +1,4 @@
-/**
- * Created: 11.07.2020
- */
-
+// Created: 11.07.2020
 package de.freese.jsync.swing.view;
 
 import de.freese.jsync.swing.components.ReceiverTableModel;

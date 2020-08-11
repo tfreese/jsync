@@ -1,13 +1,11 @@
-/**
- * Created: 12.07.2020
- */
-
+// Created: 12.07.2020
 package de.freese.jsync.swing.view;
 
-import javax.swing.JFrame;
+import de.freese.jsync.swing.JSyncSwingApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import de.freese.jsync.swing.JSyncSwingApplication;
+
+import javax.swing.JFrame;
 
 /**
  * @author Thomas Freese
@@ -15,8 +13,8 @@ import de.freese.jsync.swing.JSyncSwingApplication;
 public abstract class AbstractView
 {
     /**
-    *
-    */
+     *
+     */
     public final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
@@ -45,6 +43,7 @@ public abstract class AbstractView
 
     /**
      * @param key String
+     *
      * @return String
      */
     protected String getMessage(final String key)

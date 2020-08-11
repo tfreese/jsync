@@ -1,7 +1,4 @@
-/**
- * Created: 11.07.2020
- */
-
+// Created: 11.07.2020
 package de.freese.jsync.swing.view;
 
 import java.awt.Color;
@@ -9,16 +6,17 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.nio.file.Paths;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+
 import de.freese.jsync.swing.GbcBuilder;
 
 /**
@@ -26,6 +24,11 @@ import de.freese.jsync.swing.GbcBuilder;
  */
 public abstract class AbstractFileSystemView extends AbstractView
 {
+    /**
+     *
+     */
+    private final JPanel panel;
+
     /**
      *
      */
@@ -39,11 +42,6 @@ public abstract class AbstractFileSystemView extends AbstractView
     /**
      *
      */
-    private final JPanel panel;
-
-    /**
-        *
-        */
     private JProgressBar progressBar = null;
 
     /**
@@ -57,8 +55,8 @@ public abstract class AbstractFileSystemView extends AbstractView
     private JTable table = null;
 
     /**
-    *
-    */
+     *
+     */
     private JTextField textFieldPath = null;
 
     /**
@@ -80,51 +78,11 @@ public abstract class AbstractFileSystemView extends AbstractView
     }
 
     /**
-     * @return {@link JLabel}
-     */
-    protected JLabel getLabelDirChooser()
-    {
-        return this.labelDirChooser;
-    }
-
-    /**
      * @return {@link JPanel}
      */
     public JPanel getPanel()
     {
         return this.panel;
-    }
-
-    /**
-     * @return {@link JProgressBar}
-     */
-    JProgressBar getProgressBar()
-    {
-        return this.progressBar;
-    }
-
-    /**
-     * @return {@link JTextField}
-     */
-    JScrollBar getScrollBarVertical()
-    {
-        return this.scrollPane.getVerticalScrollBar();
-    }
-
-    /**
-     * @return {@link JTable}
-     */
-    JTable getTable()
-    {
-        return this.table;
-    }
-
-    /**
-     * @return {@link JTextField}
-     */
-    JTextField getTextFieldPath()
-    {
-        return this.textFieldPath;
     }
 
     /**
@@ -145,8 +103,8 @@ public abstract class AbstractFileSystemView extends AbstractView
         this.buttonPath = new JButton(getMessage("jsync.oeffnen"));
         this.panel.add(this.buttonPath, new GbcBuilder(2, 0));
 
-        this.buttonPath.addActionListener(event -> {
-
+        this.buttonPath.addActionListener(event ->
+        {
             File folder = selectFolder(this.textFieldPath.getText());
 
             if (folder != null)
@@ -169,7 +127,48 @@ public abstract class AbstractFileSystemView extends AbstractView
     }
 
     /**
+     * @return {@link JProgressBar}
+     */
+    JProgressBar getProgressBar()
+    {
+        return this.progressBar;
+    }
+
+    /**
+     * @return {@link JScrollPane}
+     */
+    JScrollPane getScrollPane()
+    {
+        return this.scrollPane;
+    }
+
+    /**
+     * @return {@link JTable}
+     */
+    JTable getTable()
+    {
+        return this.table;
+    }
+
+    /**
+     * @return {@link JTextField}
+     */
+    JTextField getTextFieldPath()
+    {
+        return this.textFieldPath;
+    }
+
+    /**
+     * @return {@link JLabel}
+     */
+    protected JLabel getLabelDirChooser()
+    {
+        return this.labelDirChooser;
+    }
+
+    /**
      * @param selectedFolder String
+     *
      * @return {@link File}
      */
     protected File selectFolder(final String selectedFolder)
