@@ -20,13 +20,6 @@ import de.freese.jsync.model.SyncPair;
 public interface Client
 {
     /**
-     * Prüfung, bo Sender und Receiver synchron sind.
-     *
-     * @param syncList {@link List}
-     */
-    public void checkSyncStatus(List<SyncPair> syncList);
-
-    /**
      * Stellt die Verbindung zu den Dateisystemen her.
      */
     public void connectFileSystems();

@@ -35,19 +35,6 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @see de.freese.jsync.client.Client#checkSyncStatus(java.util.List)
-     */
-    @Override
-    public void checkSyncStatus(final List<SyncPair> syncList)
-    {
-        // @formatter:off
-        syncList.stream()
-                .peek(SyncPair::validateStatus)
-                .forEach(getClientListener()::debugSyncPair);
-        // @formatter:on
-    }
-
-    /**
      * @see de.freese.jsync.client.Client#mergeSyncItems(java.util.List, java.util.List)
      */
     @Override

@@ -135,7 +135,12 @@ public class JSyncConsole
         });
 
         List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
-        client.checkSyncStatus(syncList);
+
+        // @formatter:off
+        syncList.stream()
+                .peek(SyncPair::validateStatus)
+                .forEach(clientListener::debugSyncPair);
+        // @formatter:on
 
         client.syncReceiver(syncList);
 
