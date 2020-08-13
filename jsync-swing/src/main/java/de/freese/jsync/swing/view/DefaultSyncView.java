@@ -1,13 +1,13 @@
 // Created: 12.08.2020
 package de.freese.jsync.swing.view;
 
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.swing.Box;
@@ -56,7 +56,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
     *
     */
-    private AccumulativeRunnable<Integer> accumulatorTableScroll = null;
+    private AccumulativeRunnable<SyncPair> accumulatorTableAdd = null;
 
     /**
     *
@@ -76,11 +76,21 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
     *
     */
+    private JCheckBox checkBoxParallelism = null;
+
+    /**
+    *
+    */
     private final JPanel panel;
 
     /**
-       *
-       */
+    *
+    */
+    private JProgressBar progressBarFiles = null;
+
+    /**
+    *
+    */
     private JProgressBar progressBarReceiver = null;
 
     /**
@@ -94,8 +104,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
     private JTable table = null;
 
     /**
-       *
-       */
+    *
+    */
     private JTextField textFieldReceiverPath = null;
 
     /**
@@ -149,14 +159,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addSyncPair(final SyncPair syncPair)
     {
-        if (SwingUtilities.isEventDispatchThread())
-        {
-            getTableModel().add(syncPair);
-        }
-        else
-        {
-            SwingUtilities.invokeLater(() -> getTableModel().add(syncPair));
-        }
+        getAccumulatorTableAdd().add(syncPair);
     }
 
     /**
@@ -255,7 +258,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         });
         this.panel.add(buttonPath, new GbcBuilder(2, row));
 
-        this.panel.add(Box.createGlue(), new GbcBuilder(3, row).weightx(0.25D));
+        this.panel.add(Box.createGlue(), new GbcBuilder(3, row).weightx(0.1D));
 
         // Path-Selection Receiver
         labelPath = new JLabel(getMessage("jsync.ziel"));
@@ -283,8 +286,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         // ProgressBars
         row++;
-        this.panel.add(getProgressBarSender(), new GbcBuilder(0, row).gridwidth(3).fillHorizontal());
-        this.panel.add(getProgressBarReceiver(), new GbcBuilder(4, row).gridwidth(3).fillHorizontal());
+        this.panel.add(getProgressBarSender(), new GbcBuilder(0, row).gridwidth(3).fillHorizontal().insets(5, 5, 5, 0));
+        this.panel.add(getProgressBarFiles(), new GbcBuilder(3, row).insets(5, 0, 5, 0));
+        this.panel.add(getProgressBarReceiver(), new GbcBuilder(4, row).gridwidth(3).fillHorizontal().insets(5, 0, 5, 5));
 
         // Compare-Button steuern
         getTextFieldSenderPath().getDocument().addDocumentListener(new DocumentListenerAdapter()
@@ -322,12 +326,36 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#scrollToRow(int)
+     * @see de.freese.jsync.swing.view.SyncView#isOptionParallelism()
      */
     @Override
-    public void scrollToRow(final int row)
+    public boolean isOptionParallelism()
     {
-        getAccumulatorTableScroll().add(row);
+        return this.checkBoxParallelism.isSelected();
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFiles(int)
+     */
+    @Override
+    public void setProgressBarFiles(final int max)
+    {
+        if (SwingUtilities.isEventDispatchThread())
+        {
+            getProgressBarFiles().setMinimum(0);
+            getProgressBarFiles().setMaximum(max);
+            getProgressBarFiles().setValue(0);
+            getProgressBarFiles().setString("");
+        }
+        else
+        {
+            SwingUtilities.invokeLater(() -> {
+                getProgressBarFiles().setMinimum(0);
+                getProgressBarFiles().setMaximum(max);
+                getProgressBarFiles().setValue(0);
+                getProgressBarFiles().setString("");
+            });
+        }
     }
 
     /**
@@ -345,22 +373,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
         else
         {
             SwingUtilities.invokeLater(() -> progressBar.setIndeterminate(indeterminate));
-        }
-    }
-
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#setSyncList(java.util.List)
-     */
-    @Override
-    public void setSyncList(final List<SyncPair> syncList)
-    {
-        if (SwingUtilities.isEventDispatchThread())
-        {
-            getTableModel().addAll(syncList);
-        }
-        else
-        {
-            SwingUtilities.invokeLater(() -> getTableModel().addAll(syncList));
         }
     }
 
@@ -400,6 +412,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         this.checkBoxChecksum = new JCheckBox(getMessage("jsync.pruefsumme"), false);
         panelOptions.add(this.checkBoxChecksum, new GbcBuilder(0, 0));
+        this.checkBoxParallelism = new JCheckBox(getMessage("jsync.parallelitaet"), false);
+        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 1));
         confiPanel.add(panelOptions, new GbcBuilder(1, 0));
 
         // Button Synchronize
@@ -480,23 +494,29 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
-     * @return AccumulativeRunnable<Integer>
+     * @return AccumulativeRunnable<SyncPair>
      */
-    private AccumulativeRunnable<Integer> getAccumulatorTableScroll()
+    private AccumulativeRunnable<SyncPair> getAccumulatorTableAdd()
     {
-        if (this.accumulatorTableScroll == null)
+        if (this.accumulatorTableAdd == null)
         {
-            ScheduledAccumulativeRunnable<Integer> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
+            ScheduledAccumulativeRunnable<SyncPair> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
             sar.doOnSubmit(chunks -> {
-                int row = chunks.get(chunks.size() - 1);
+                getTableModel().addAll(chunks);
+
+                int row = getTableModel().getRowCount() - 1;
                 Rectangle rectangle = getTable().getCellRect(row, 0, false);
                 getTable().scrollRectToVisible(rectangle);
+
+                int value = getTableModel().getRowCount();
+                getProgressBarFiles().setValue(value);
+                getProgressBarFiles().setString(getMessage("jsync.dateien") + ": " + value + "/" + getProgressBarFiles().getMaximum());
             });
 
-            this.accumulatorTableScroll = sar;
+            this.accumulatorTableAdd = sar;
         }
 
-        return this.accumulatorTableScroll;
+        return this.accumulatorTableAdd;
     }
 
     /**
@@ -525,6 +545,21 @@ public class DefaultSyncView extends AbstractView implements SyncView
         }
 
         return this.buttonSyncronize;
+    }
+
+    /**
+     * @return {@link JProgressBar}
+     */
+    private JProgressBar getProgressBarFiles()
+    {
+        if (this.progressBarFiles == null)
+        {
+            this.progressBarFiles = new JProgressBar();
+            this.progressBarFiles.setStringPainted(true);
+            this.progressBarFiles.setPreferredSize(new Dimension(210, 20));
+        }
+
+        return this.progressBarFiles;
     }
 
     /**
@@ -606,7 +641,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         if (this.textFieldReceiverPath == null)
         {
             this.textFieldReceiverPath = new JTextField();
-            this.textFieldReceiverPath.setEditable(false);
+            this.textFieldReceiverPath.setEditable(true);
         }
 
         return this.textFieldReceiverPath;

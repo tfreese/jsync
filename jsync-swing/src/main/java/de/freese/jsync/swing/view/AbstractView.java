@@ -18,6 +18,15 @@ import de.freese.jsync.swing.JSyncSwingApplication;
 public abstract class AbstractView
 {
     /**
+     * @param key String
+     * @return String
+     */
+    protected static String getMessage(final String key)
+    {
+        return JSyncSwingApplication.getInstance().getMessages().getString(key);
+    }
+
+    /**
      *
      */
     public final Logger logger = LoggerFactory.getLogger(getClass());
@@ -44,15 +53,6 @@ public abstract class AbstractView
     protected JFrame getMainFrame()
     {
         return JSyncSwingApplication.getInstance().getMainFrame();
-    }
-
-    /**
-     * @param key String
-     * @return String
-     */
-    protected String getMessage(final String key)
-    {
-        return JSyncSwingApplication.getInstance().getMessages().getString(key);
     }
 
     /**

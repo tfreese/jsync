@@ -26,7 +26,7 @@ public class Messages
     /**
      *
      */
-    private Map<String, String> messages = null;
+    private Map<String, String> messageMap;
 
     /**
      * Erstellt ein neues {@link Messages} Object.
@@ -46,7 +46,7 @@ public class Messages
      */
     public String getString(final String key)
     {
-        String value = this.messages.get(key);
+        String value = this.messageMap.get(key);
 
         if (value == null)
         {
@@ -79,6 +79,6 @@ public class Messages
             map.put(key, value);
         }
 
-        this.messages = map;
+        this.messageMap = map;
     }
 }

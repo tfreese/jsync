@@ -57,7 +57,7 @@ public class SyncListTableModel extends AbstractListTableModel<SyncPair>
     {
         SyncPair syncPair = getObjectAt(rowIndex);
 
-        Object value = switch (columnIndex)
+        return switch (columnIndex)
         {
             case 0 -> syncPair.getSenderItem() != null ? syncPair.getSenderItem().getRelativePath() : null;
             case 1 -> (syncPair.getSenderItem() != null) && syncPair.getSenderItem().isFile()
@@ -72,7 +72,5 @@ public class SyncListTableModel extends AbstractListTableModel<SyncPair>
             // yield "..."; // return Value
             // }
         };
-
-        return value;
     }
 }

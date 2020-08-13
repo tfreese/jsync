@@ -24,8 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.swing.controller.JsyncController;
 import de.freese.jsync.swing.messages.Messages;
-import de.freese.jsync.swing.view.SyncView;
 import de.freese.jsync.swing.view.DefaultSyncView;
+import de.freese.jsync.swing.view.SyncView;
 
 /**
  * @author Thomas Freese
@@ -145,22 +145,22 @@ public final class JSyncSwingApplication
     /**
      *
      */
-    private ExecutorService executorService = null;
+    private ExecutorService executorService;
 
     /**
      *
      */
-    private JFrame mainFrame = null;
+    private JFrame mainFrame;
 
     /**
      *
      */
-    private Messages messages = null;
+    private Messages messages;
 
     /**
      *
      */
-    private ScheduledExecutorService scheduledExecutorService = null;
+    private ScheduledExecutorService scheduledExecutorService;
 
     /**
      * Erstellt ein neues {@link JSyncSwingApplication} Object.

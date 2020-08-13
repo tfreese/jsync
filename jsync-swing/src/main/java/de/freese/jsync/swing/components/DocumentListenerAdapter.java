@@ -12,7 +12,6 @@ import javax.swing.event.DocumentListener;
  */
 public class DocumentListenerAdapter implements DocumentListener
 {
-
     /**
      * Erstellt ein neues {@link DocumentListenerAdapter} Object.
      */

@@ -29,6 +29,15 @@ import de.freese.jsync.swing.view.SyncView;
 public class JsyncController
 {
     /**
+     * @param key String
+     * @return String
+     */
+    private static String getMessage(final String key)
+    {
+        return JSyncSwingApplication.getInstance().getMessages().getString(key);
+    }
+
+    /**
      *
      */
     public final Logger logger = LoggerFactory.getLogger(getClass());
@@ -36,12 +45,12 @@ public class JsyncController
     /**
      *
      */
-    private Client client = null;
+    private Client client;
 
     /**
      *
      */
-    private SyncView syncView = null;
+    private SyncView syncView;
 
     /**
      * Erstellt ein neues {@link JsyncController} Object.
@@ -98,7 +107,8 @@ public class JsyncController
 
         getSyncView().clearTable();
 
-        final boolean parallelism = !(senderUri.getScheme().equals("file") && receiverUri.getScheme().equals("file"));
+        // final boolean parallelism = !(senderUri.getScheme().equals("file") && receiverUri.getScheme().equals("file"));
+        final boolean parallelism = getSyncView().isOptionParallelism();
 
         ExecutorService executorService = JSyncSwingApplication.getInstance().getExecutorService();
 
@@ -106,6 +116,7 @@ public class JsyncController
         getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, true);
         getSyncView().addProgressBarText(EFileSystem.RECEIVER, null);
         getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, true);
+        getSyncView().setProgressBarFiles(0);
 
         SwingWorker<Void, Void> swingWorker = new SwingWorker<>()
         {
@@ -135,21 +146,21 @@ public class JsyncController
 
                 // Merge
                 List<SyncPair> syncList = getClient().mergeSyncItems(syncItemsSender, syncItemsReceiver);
+                getSyncView().setProgressBarFiles(syncList.size());
 
                 if (!options.isChecksum())
                 {
-                    syncList.forEach(SyncPair::validateStatus);
-                    getSyncView().setSyncList(syncList);
+                    syncList.forEach(syncPair -> {
+                        syncPair.validateStatus();
+                        getSyncView().addSyncPair(syncPair);
+                    });
 
                     return null;
                 }
 
                 // Checksum
-                for (int i = 0; i < syncList.size(); i++)
+                for (SyncPair syncPair : syncList)
                 {
-                    getSyncView().scrollToRow(i);
-
-                    SyncPair syncPair = syncList.get(i);
                     getSyncView().addSyncPair(syncPair);
 
                     RunnableFuture<?> futureSenderChecksum = createChecksumFuture(EFileSystem.SENDER, syncPair.getSenderItem());
@@ -221,15 +232,12 @@ public class JsyncController
         }
 
         Runnable runnable = () -> {
-            getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
-                    getMessage("jsync.pruefsumme.erstelle") + ": " + syncItem.getRelativePath());
+            getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(), getMessage("jsync.pruefsumme") + ": " + syncItem.getRelativePath());
 
             getClient().generateChecksum(fileSystem, syncItem, bytesRead -> getSyncView().addProgressBarValue(fileSystem, (int) bytesRead));
         };
 
-        RunnableFuture<?> future = new FutureTask<>(runnable, null);
-
-        return future;
+        return new FutureTask<>(runnable, null);
     }
 
     /**
@@ -243,7 +251,7 @@ public class JsyncController
 
             getClient().generateSyncItems(fileSystem, syncItem -> {
                 syncItems.add(syncItem);
-                getSyncView().addProgressBarText(fileSystem, getMessage("jsync.verarbeite.dateien") + ": " + syncItems.size());
+                getSyncView().addProgressBarText(fileSystem, getMessage("jsync.dateien.lade") + ": " + syncItems.size());
             });
 
             getSyncView().setProgressBarIndeterminate(fileSystem, false);
@@ -251,9 +259,7 @@ public class JsyncController
             return syncItems;
         };
 
-        RunnableFuture<List<SyncItem>> future = new FutureTask<>(callable);
-
-        return future;
+        return new FutureTask<>(callable);
     }
 
     /**
@@ -279,15 +285,6 @@ public class JsyncController
     private Client getClient()
     {
         return this.client;
-    }
-
-    /**
-     * @param key String
-     * @return String
-     */
-    private String getMessage(final String key)
-    {
-        return JSyncSwingApplication.getInstance().getMessages().getString(key);
     }
 
     /**

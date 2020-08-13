@@ -5,14 +5,12 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
 import javax.swing.SwingUtilities;
 
 /**
  * Zeitgesteuerter {@link AccumulativeRunnable}, der nach einer Zeitspanne die gesammelten Daten ausführt.
  *
  * @param <T> Type
- *
  * @author Thomas Freese
  */
 public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>
@@ -30,7 +28,8 @@ public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>
     /**
      *
      */
-    private Consumer<List<T>> submitConsumer = null;
+    private Consumer<List<T>> submitConsumer = chunks -> {
+    };
 
     /**
      * Erstellt ein neues {@link ScheduledAccumulativeRunnable} Object.
@@ -39,10 +38,21 @@ public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>
      */
     public ScheduledAccumulativeRunnable(final ScheduledExecutorService scheduledExecutor)
     {
+        this(scheduledExecutor, 100);
+    }
+
+    /**
+     * Erstellt ein neues {@link ScheduledAccumulativeRunnable} Object.
+     *
+     * @param scheduledExecutor {@link ScheduledExecutorService}; optional
+     * @param delay int; MilliSeconds
+     */
+    public ScheduledAccumulativeRunnable(final ScheduledExecutorService scheduledExecutor, final int delay)
+    {
         super();
 
         this.scheduledExecutor = Objects.requireNonNull(scheduledExecutor, "scheduledExecutor required");
-        this.delay = 100;
+        this.delay = delay;
     }
 
     /**
@@ -59,11 +69,6 @@ public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>
     @Override
     protected void run(final List<T> args)
     {
-        if (this.submitConsumer == null)
-        {
-            return;
-        }
-
         this.submitConsumer.accept(args);
     }
 

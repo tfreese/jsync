@@ -2,7 +2,6 @@
 package de.freese.jsync.swing.view;
 
 import java.net.URI;
-import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -76,20 +75,20 @@ public interface SyncView
     public boolean isOptionChecksum();
 
     /**
-     * @param row int
+     * @return boolean
      */
-    public void scrollToRow(int row);
+    public boolean isOptionParallelism();
+
+    /**
+     * @param max int
+     */
+    public void setProgressBarFiles(int max);
 
     /**
      * @param fileSystem {@link EFileSystem}
      * @param indeterminate boolean
      */
     public void setProgressBarIndeterminate(EFileSystem fileSystem, boolean indeterminate);
-
-    /**
-     * @param syncList {@link List}
-     */
-    public void setSyncList(List<SyncPair> syncList);
 
     /**
      *
