@@ -25,10 +25,10 @@ public class SyncListTableModel extends AbstractListTableModel<SyncPair>
     public SyncListTableModel()
     {
         super(List.of(JSyncSwingApplication.getInstance().getMessages().getString("jsync.name"),
-                JSyncSwingApplication.getInstance().getMessages().getString("jsync.groesse"),
+                JSyncSwingApplication.getInstance().getMessages().getString("jsync.size"),
                 JSyncSwingApplication.getInstance().getMessages().getString("jsync.status"),
                 JSyncSwingApplication.getInstance().getMessages().getString("jsync.name"),
-                JSyncSwingApplication.getInstance().getMessages().getString("jsync.groesse")));
+                JSyncSwingApplication.getInstance().getMessages().getString("jsync.size")));
     }
 
     /**

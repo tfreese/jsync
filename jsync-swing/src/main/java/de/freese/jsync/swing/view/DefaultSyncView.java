@@ -25,6 +25,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableCellRenderer;
+import de.freese.jsync.Options;
+import de.freese.jsync.Options.Builder;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.swing.GbcBuilder;
@@ -61,7 +63,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
     *
     */
-    private JButton buttonCompare = null;
+    private JButton buttonCompare;
 
     /**
     *
@@ -71,12 +73,27 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
     *
     */
-    private JCheckBox checkBoxChecksum = null;
+    private JCheckBox checkBoxChecksum;
 
     /**
     *
     */
-    private JCheckBox checkBoxParallelism = null;
+    private JCheckBox checkBoxDelete;
+
+    /**
+    *
+    */
+    private JCheckBox checkBoxDryRun;
+
+    /**
+    *
+    */
+    private JCheckBox checkBoxFollowSymLinks;
+
+    /**
+    *
+    */
+    private JCheckBox checkBoxParallelism;
 
     /**
     *
@@ -86,32 +103,32 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
     *
     */
-    private JProgressBar progressBarFiles = null;
+    private JProgressBar progressBarFiles;
 
     /**
     *
     */
-    private JProgressBar progressBarReceiver = null;
+    private JProgressBar progressBarReceiver;
 
     /**
     *
     */
-    private JProgressBar progressBarSender = null;
+    private JProgressBar progressBarSender;
 
     /**
      *
      */
-    private JTable table = null;
+    private JTable table;
 
     /**
     *
     */
-    private JTextField textFieldReceiverPath = null;
+    private JTextField textFieldReceiverPath;
 
     /**
     *
     */
-    private JTextField textFieldSenderPath = null;
+    private JTextField textFieldSenderPath;
 
     /**
      * Erstellt ein neues {@link DefaultSyncView} Object.
@@ -190,6 +207,24 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * @see de.freese.jsync.swing.view.SyncView#getOptions()
+     */
+    @Override
+    public Options getOptions()
+    {
+        // @formatter:off
+        return new Builder()
+                .checksum(this.checkBoxChecksum.isSelected())
+                .parallelism(this.checkBoxParallelism.isSelected())
+                .delete(this.checkBoxDelete.isSelected())
+                .followSymLinks(this.checkBoxFollowSymLinks.isSelected())
+                .dryRun(this.checkBoxDryRun.isSelected())
+                .build()
+                ;
+        // @formatter:on
+    }
+
+    /**
      * @see de.freese.jsync.swing.view.SyncView#getPanel()
      */
     @Override
@@ -240,10 +275,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         // Path-Selection Sender
         row++;
-        JLabel labelPath = new JLabel(getMessage("jsync.quelle"));
+        JLabel labelPath = new JLabel(getMessage("jsync.source"));
         this.panel.add(labelPath, new GbcBuilder(0, row));
         this.panel.add(getTextFieldSenderPath(), new GbcBuilder(1, row).fillHorizontal());
-        JButton buttonPath = new JButton(getMessage("jsync.oeffnen"));
+        JButton buttonPath = new JButton(getMessage("jsync.open"));
         buttonPath.addActionListener(event -> {
             File folder = selectFolder(getTextFieldSenderPath().getText());
 
@@ -261,10 +296,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.panel.add(Box.createGlue(), new GbcBuilder(3, row).weightx(0.1D));
 
         // Path-Selection Receiver
-        labelPath = new JLabel(getMessage("jsync.ziel"));
+        labelPath = new JLabel(getMessage("jsync.target"));
         this.panel.add(labelPath, new GbcBuilder(4, row).anchorEast());
         this.panel.add(getTextFieldReceiverPath(), new GbcBuilder(5, row).anchorEast().fillHorizontal());
-        buttonPath = new JButton(getMessage("jsync.oeffnen"));
+        buttonPath = new JButton(getMessage("jsync.open"));
         buttonPath.addActionListener(event -> {
             File folder = selectFolder(getTextFieldReceiverPath().getText());
 
@@ -314,24 +349,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
                 getButtonCompare().setEnabled(!getTextFieldSenderPath().getText().isBlank() && !getTextFieldReceiverPath().getText().isBlank());
             }
         });
-    }
-
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#isOptionChecksum()
-     */
-    @Override
-    public boolean isOptionChecksum()
-    {
-        return this.checkBoxChecksum.isSelected();
-    }
-
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#isOptionParallelism()
-     */
-    @Override
-    public boolean isOptionParallelism()
-    {
-        return this.checkBoxParallelism.isSelected();
     }
 
     /**
@@ -407,13 +424,22 @@ public class DefaultSyncView extends AbstractView implements SyncView
         // Optionen
         JPanel panelOptions = new JPanel();
         panelOptions.setLayout(new GridBagLayout());
-        panelOptions.setBorder(new TitledBorder(getMessage("jsync.optionen")));
-        confiPanel.add(panelOptions, new GbcBuilder(1, 0));
+        panelOptions.setBorder(new TitledBorder(getMessage("jsync.options")));
+        confiPanel.add(panelOptions, new GbcBuilder(1, 0).anchorWest());
 
-        this.checkBoxChecksum = new JCheckBox(getMessage("jsync.pruefsumme"), false);
-        panelOptions.add(this.checkBoxChecksum, new GbcBuilder(0, 0));
-        this.checkBoxParallelism = new JCheckBox(getMessage("jsync.parallelitaet"), false);
-        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 1));
+        this.checkBoxChecksum = new JCheckBox(getMessage("jsync.options.checksum"), false);
+        panelOptions.add(this.checkBoxChecksum, new GbcBuilder(0, 0).anchorWest());
+        this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallelism"), false);
+        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 1).anchorWest());
+
+        this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), false);
+        panelOptions.add(this.checkBoxDelete, new GbcBuilder(1, 0).anchorWest());
+        this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
+        panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 1).anchorWest());
+
+        this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), false);
+        panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(0, 2).anchorWest().gridwidth(2));
+
         confiPanel.add(panelOptions, new GbcBuilder(1, 0));
 
         // Button Synchronize
@@ -510,7 +536,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
                 int value = getTableModel().getRowCount();
                 getProgressBarFiles().setValue(value);
-                getProgressBarFiles().setString(getMessage("jsync.dateien") + ": " + value + "/" + getProgressBarFiles().getMaximum());
+                getProgressBarFiles().setString(getMessage("jsync.files") + ": " + value + "/" + getProgressBarFiles().getMaximum());
             });
 
             this.accumulatorTableAdd = sar;
@@ -526,7 +552,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     {
         if (this.buttonCompare == null)
         {
-            this.buttonCompare = new JButton(getMessage("jsync.vergleichen"));
+            this.buttonCompare = new JButton(getMessage("jsync.compare"));
             this.buttonCompare.setEnabled(false);
         }
 
@@ -540,7 +566,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     {
         if (this.buttonSyncronize == null)
         {
-            this.buttonSyncronize = new JButton(getMessage("jsync.synchronisieren"));
+            this.buttonSyncronize = new JButton(getMessage("jsync.synchronize"));
             this.buttonSyncronize.setEnabled(false);
         }
 

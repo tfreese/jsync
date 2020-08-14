@@ -119,7 +119,7 @@ public class JSyncConsole
      */
     public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener) throws Exception
     {
-        Client client = new DefaultClient(options, senderUri, receiverUri, clientListener);
+        Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
         List<SyncItem> syncItemsSender = new ArrayList<>();
@@ -136,13 +136,9 @@ public class JSyncConsole
 
         List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
 
-        // @formatter:off
-        syncList.stream()
-                .peek(SyncPair::validateStatus)
-                .forEach(clientListener::debugSyncPair);
-        // @formatter:on
+        syncList.stream().forEach(SyncPair::validateStatus);
 
-        client.syncReceiver(syncList);
+        client.syncReceiver(syncList, clientListener);
 
         client.disconnectFileSystems();
     }

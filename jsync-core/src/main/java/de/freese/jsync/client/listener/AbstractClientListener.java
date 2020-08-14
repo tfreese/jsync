@@ -4,8 +4,6 @@
 
 package de.freese.jsync.client.listener;
 
-import java.util.ArrayList;
-import java.util.List;
 import de.freese.jsync.Options;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.utils.JSyncUtils;
@@ -49,7 +47,7 @@ public abstract class AbstractClientListener implements ClientListener
      * @param syncItem {@link SyncItem}
      * @return String
      */
-    protected String copyFileMessage(final Options options, final SyncItem syncItem)
+    protected String copyMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("copy: %s", syncItem.getRelativePath());
 
@@ -59,105 +57,34 @@ public abstract class AbstractClientListener implements ClientListener
     }
 
     /**
+     * @param options {@link Options}
      * @param syncItem {@linkSyncItem}
-     * @param size long
      * @param bytesTransferred long
      * @return String
      */
-    protected String copyFileProgressMessage(final SyncItem syncItem, final long size, final long bytesTransferred)
+    protected String copyProgressMessage(final Options options, final SyncItem syncItem, final long bytesTransferred)
     {
-        String message = String.format("copy %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(bytesTransferred),
-                JSyncUtils.getPercent(bytesTransferred, size));
+        float percent = JSyncUtils.getPercent(bytesTransferred, syncItem.getSize());
+        String message = null;
 
-        return message;
-    }
-
-    /**
-     * @param options {@link Options}
-     * @param directory String
-     * @return String
-     */
-    protected String createDirectoryMessage(final Options options, final String directory)
-    {
-        String message = String.format("create: %s", directory);
-
-        message = appendDryRun(options, message);
-
-        return message;
-    }
-
-    /**
-     * @param options {@link Options}
-     * @param directory String
-     * @return String
-     */
-    protected String deleteDirectoryMessage(final Options options, final String directory)
-    {
-        String message = String.format("delete: %s", directory);
-
-        message = appendDryRun(options, message);
-
-        return message;
-    }
-
-    /**
-     * @param options {@link Options}
-     * @param file String
-     * @return String
-     */
-    protected String deleteFileMessage(final Options options, final String file)
-    {
-        String message = String.format("delete: %s", file);
-
-        message = appendDryRun(options, message);
-
-        return message;
-    }
-
-    /**
-     * @param options {@link Options}
-     * @return String
-     */
-    protected List<String> dryRunInfoMessage(final Options options)
-    {
-        List<String> messagesList = new ArrayList<>();
-
-        if (options.isDryRun())
+        if ((bytesTransferred == 0) || ((percent % 10) == 0))
         {
-            messagesList.add("**********************************************");
-            messagesList.add("Dry-Run: No file operations will be executed !");
-            messagesList.add("**********************************************");
+            message = String.format("copy %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(bytesTransferred), percent);
         }
 
-        return messagesList;
-    }
-
-    /**
-     * @return String
-     */
-    protected String generatingFileListInfoMessage()
-    {
-        String message = "Generating FileList...";
-
         return message;
     }
 
     /**
+     * @param options {@link Options}
+     * @param syncItem {@link SyncItem}
      * @return String
      */
-    protected String syncFinishedInfoMessage()
+    protected String deleteMessage(final Options options, final SyncItem syncItem)
     {
-        String message = "syncing process finished";
+        String message = String.format("delete: %s", syncItem.getRelativePath());
 
-        return message;
-    }
-
-    /**
-     * @return String
-     */
-    protected String syncStartInfoMessage()
-    {
-        String message = "start syncing process";
+        message = appendDryRun(options, message);
 
         return message;
     }
@@ -167,7 +94,7 @@ public abstract class AbstractClientListener implements ClientListener
      * @param syncItem {@link SyncItem}
      * @return String
      */
-    protected String updateDirectoryMessage(final Options options, final SyncItem syncItem)
+    protected String updateMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("update attributes: %s", syncItem.getRelativePath());
 
@@ -181,21 +108,7 @@ public abstract class AbstractClientListener implements ClientListener
      * @param syncItem {@link SyncItem}
      * @return String
      */
-    protected String updateFileMessage(final Options options, final SyncItem syncItem)
-    {
-        String message = String.format("update attributes: %s", syncItem.getRelativePath());
-
-        message = appendDryRun(options, message);
-
-        return message;
-    }
-
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     * @return String
-     */
-    protected String validateFileMessage(final Options options, final SyncItem syncItem)
+    protected String validateMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("validate: %s", syncItem.getRelativePath());
 

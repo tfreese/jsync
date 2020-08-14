@@ -12,6 +12,31 @@ import java.nio.charset.StandardCharsets;
 public class Options
 {
     /**
+     * Default: 4 MB
+     */
+    public static final int BUFFER_SIZE = 4 * 1024 * 1024;
+
+    /**
+     * Default: UTF-8
+     */
+    public static final Charset CHARSET = StandardCharsets.UTF_8;
+
+    /**
+    *
+    */
+    public static final String EMPTY_STRING = "";
+
+    /**
+     *
+     */
+    public static final boolean IS_LINUX = System.getProperty("os.name").toLowerCase().startsWith("linux");
+
+    /**
+     *
+     */
+    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
+
+    /**
      * @author Thomas Freese
      */
     public static class Builder
@@ -78,42 +103,27 @@ public class Options
             this.options.followSymLinks = followSymLinks;
             return this;
         }
+
+        /**
+         * @param parallelism boolean
+         * @return {@link Builder}
+         */
+        public Builder parallelism(final boolean parallelism)
+        {
+            this.options.parallelism = parallelism;
+            return this;
+        }
     }
 
     /**
-     * Default: 4 MB
+     *
      */
-    public static final int BUFFER_SIZE = 4 * 1024 * 1024;
-
-    /**
-     * Default: UTF-8
-     */
-    public static final Charset CHARSET = StandardCharsets.UTF_8;
-
-    /**
-    *
-    */
-    public static final String EMPTY_STRING = "";
+    private boolean checksum;
 
     /**
      *
      */
-    public static final boolean IS_LINUX = System.getProperty("os.name").toLowerCase().startsWith("linux");
-
-    /**
-     *
-     */
-    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
-
-    /**
-     *
-     */
-    private boolean checksum = false;
-
-    /**
-     *
-     */
-    private boolean delete = false;
+    private boolean delete;
 
     /**
      *
@@ -124,6 +134,11 @@ public class Options
      *
      */
     private boolean followSymLinks = true;
+
+    /**
+     *
+     */
+    private boolean parallelism;
 
     /**
      * Erzeugt eine neue Instanz von {@link Options}
@@ -163,5 +178,13 @@ public class Options
     public boolean isFollowSymLinks()
     {
         return this.followSymLinks;
+    }
+
+    /**
+     * @return boolean
+     */
+    public boolean isParallelism()
+    {
+        return this.parallelism;
     }
 }

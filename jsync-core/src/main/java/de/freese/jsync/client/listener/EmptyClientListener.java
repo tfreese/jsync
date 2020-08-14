@@ -6,7 +6,6 @@ package de.freese.jsync.client.listener;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.SyncPair;
 
 /**
  * @author Thomas Freese
@@ -22,55 +21,19 @@ public class EmptyClientListener implements ClientListener
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#copyFileProgress(de.freese.jsync.model.SyncItem, long, long)
+     * @see de.freese.jsync.client.listener.ClientListener#copyProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
      */
     @Override
-    public void copyFileProgress(final SyncItem syncItem, final long size, final long bytesTransferred)
+    public void copyProgress(final Options options, final SyncItem syncItem, final long bytesTransferred)
     {
         // Empty
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#createDirectory(de.freese.jsync.Options, java.lang.String)
+     * @see de.freese.jsync.client.listener.ClientListener#delete(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void createDirectory(final Options options, final String directory)
-    {
-        // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#debugSyncPair(de.freese.jsync.model.SyncPair)
-     */
-    @Override
-    public void debugSyncPair(final SyncPair syncPair)
-    {
-        // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#deleteDirectory(de.freese.jsync.Options, java.lang.String)
-     */
-    @Override
-    public void deleteDirectory(final Options options, final String directory)
-    {
-        // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#deleteFile(de.freese.jsync.Options, java.lang.String)
-     */
-    @Override
-    public void deleteFile(final Options options, final String file)
-    {
-        // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#dryRunInfo(de.freese.jsync.Options)
-     */
-    @Override
-    public void dryRunInfo(final Options options)
+    public void delete(final Options options, final SyncItem syncItem)
     {
         // Empty
     }
@@ -85,55 +48,19 @@ public class EmptyClientListener implements ClientListener
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#generatingFileListInfo()
+     * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void generatingFileListInfo()
+    public void update(final Options options, final SyncItem syncItem)
     {
         // Empty
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#syncFinishedInfo()
+     * @see de.freese.jsync.client.listener.ClientListener#validate(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void syncFinishedInfo()
-    {
-        // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#syncStartInfo()
-     */
-    @Override
-    public void syncStartInfo()
-    {
-        // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#updateDirectory(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void updateDirectory(final Options options, final SyncItem syncItem)
-    {
-        // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#updateFile(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void updateFile(final Options options, final SyncItem syncItem)
-    {
-        // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#validateFile(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void validateFile(final Options options, final SyncItem syncItem)
+    public void validate(final Options options, final SyncItem syncItem)
     {
         // Empty
     }

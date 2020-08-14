@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncPair;
 
@@ -54,6 +55,11 @@ public interface SyncView
     public void doOnSyncronize(Consumer<JButton> consumer);
 
     /**
+     * @return {@link Options}
+     */
+    public Options getOptions();
+
+    /**
      * @return {@link JPanel}
      */
     public JPanel getPanel();
@@ -68,16 +74,6 @@ public interface SyncView
      *
      */
     public void initGUI();
-
-    /**
-     * @return boolean
-     */
-    public boolean isOptionChecksum();
-
-    /**
-     * @return boolean
-     */
-    public boolean isOptionParallelism();
 
     /**
      * @param max int

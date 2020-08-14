@@ -14,7 +14,6 @@ import javax.swing.SwingWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
-import de.freese.jsync.Options.Builder;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -93,12 +92,7 @@ public class JsyncController
         getSyncView().doOnCompare(button -> button.setEnabled(false));
         getSyncView().doOnSyncronize(button -> button.setEnabled(false));
 
-        // @formatter:off
-        Options options = new Builder()
-                .checksum(getSyncView().isOptionChecksum())
-                .build()
-                ;
-        // @formatter:on
+        Options options = getSyncView().getOptions();
 
         URI senderUri = getSyncView().getUri(EFileSystem.SENDER);
         URI receiverUri = getSyncView().getUri(EFileSystem.RECEIVER);
@@ -108,7 +102,7 @@ public class JsyncController
         getSyncView().clearTable();
 
         // final boolean parallelism = !(senderUri.getScheme().equals("file") && receiverUri.getScheme().equals("file"));
-        final boolean parallelism = getSyncView().isOptionParallelism();
+        final boolean parallelism = options.isParallelism();
 
         ExecutorService executorService = JSyncSwingApplication.getInstance().getExecutorService();
 
@@ -232,7 +226,8 @@ public class JsyncController
         }
 
         Runnable runnable = () -> {
-            getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(), getMessage("jsync.pruefsumme") + ": " + syncItem.getRelativePath());
+            getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
+                    getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
 
             getClient().generateChecksum(fileSystem, syncItem, bytesRead -> getSyncView().addProgressBarValue(fileSystem, (int) bytesRead));
         };
@@ -251,7 +246,7 @@ public class JsyncController
 
             getClient().generateSyncItems(fileSystem, syncItem -> {
                 syncItems.add(syncItem);
-                getSyncView().addProgressBarText(fileSystem, getMessage("jsync.dateien.lade") + ": " + syncItems.size());
+                getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + syncItems.size());
             });
 
             getSyncView().setProgressBarIndeterminate(fileSystem, false);
@@ -275,7 +270,7 @@ public class JsyncController
             this.client = null;
         }
 
-        this.client = new DefaultClient(options, senderUri, receiverUri, null);
+        this.client = new DefaultClient(options, senderUri, receiverUri);
         this.client.connectFileSystems();
     }
 

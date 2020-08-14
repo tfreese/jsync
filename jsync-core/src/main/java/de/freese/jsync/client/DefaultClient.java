@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
+import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncPairComparator;
@@ -27,11 +28,10 @@ public class DefaultClient extends AbstractClient
      * @param options {@link Options}
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
-     * @param clientListener {@link ClientListener}
      */
-    public DefaultClient(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener)
+    public DefaultClient(final Options options, final URI senderUri, final URI receiverUri)
     {
-        super(options, senderUri, receiverUri, clientListener);
+        super(options, senderUri, receiverUri);
     }
 
     /**
@@ -58,12 +58,12 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @see de.freese.jsync.client.Client#syncReceiver(java.util.List)
+     * @see de.freese.jsync.client.Client#syncReceiver(java.util.List, de.freese.jsync.client.listener.ClientListener)
      */
     @Override
-    public void syncReceiver(final List<SyncPair> syncList)
+    public void syncReceiver(final List<SyncPair> syncList, final ClientListener clientListener)
     {
-        getClientListener().syncStartInfo();
+        ClientListener cl = clientListener != null ? clientListener : new EmptyClientListener();
 
         // Alles rausfiltern was bereits synchronized ist.
         Predicate<SyncPair> isSynchronised = p -> SyncStatus.SYNCHRONIZED.equals(p.getStatus());
@@ -72,19 +72,17 @@ public class DefaultClient extends AbstractClient
         // Löschen
         if (getOptions().isDelete())
         {
-            deleteFiles(list);
-            deleteDirectories(list);
+            deleteFiles(list, cl);
+            deleteDirectories(list, cl);
         }
 
         // Neue oder geänderte Dateien kopieren.
-        copyFiles(list);
+        copyFiles(list, cl);
 
         // Aktualisieren von Datei-Attributen.
-        updateFiles(list);
+        updateFiles(list, cl);
 
         // Aktualisieren von Verzeichniss-Attributen.
-        updateDirectories(list);
-
-        getClientListener().syncFinishedInfo();
+        updateDirectories(list, cl);
     }
 }

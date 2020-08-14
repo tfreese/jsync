@@ -6,6 +6,7 @@ package de.freese.jsync.client;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.Sender;
@@ -62,6 +63,7 @@ public interface Client
      * Synchronisiert das Ziel-Verzeichnis mit der Quelle.
      *
      * @param syncList {@link List}
+     * @param clientListener {@link ClientListener}
      */
-    public void syncReceiver(List<SyncPair> syncList);
+    public void syncReceiver(List<SyncPair> syncList, ClientListener clientListener);
 }
