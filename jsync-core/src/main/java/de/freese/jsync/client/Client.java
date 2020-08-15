@@ -31,10 +31,19 @@ public interface Client
     public void disconnectFileSystems();
 
     /**
+     * Existiert ein Verzeichnis/Datei ?
+     *
+     * @param syncItem {@link SyncItem}
+     * @param followSymLinks boolean
+     * @return boolean
+     */
+    public boolean existReceiver(SyncItem syncItem, boolean followSymLinks);
+
+    /**
      * Erzeugt die Prüfsumme einer Datei.<br>
      *
      * @param fileSystem {@link EFileSystem}
-     * @param syncItem SyncItem
+     * @param syncItem {@link SyncItem}
      * @param consumerBytesRead {@link LongConsumer}; optional
      */
     public void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerBytesRead);

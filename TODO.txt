@@ -1,0 +1,6 @@
+- Files.exists(path)
+- Files.notExists(path)
+	Wenn FollowSymLinks aktiv -> LinkOptions verwenden !
+	
+
+- Kopieren leerer Verzeichnisse.	

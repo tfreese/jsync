@@ -50,6 +50,15 @@ public class SyncListTableModel extends AbstractListTableModel<SyncPair>
     }
 
     /**
+     * @see de.freese.jsync.swing.components.AbstractListTableModel#getList()
+     */
+    @Override
+    public List<SyncPair> getList()
+    {
+        return super.getList();
+    }
+
+    /**
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     @Override

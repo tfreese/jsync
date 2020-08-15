@@ -60,6 +60,9 @@ public interface SyncItem
     public String getRelativePath();
 
     /**
+     * Verzeichnis: Anzahl der 1st-Level Childs<br>
+     * Datei: Größe
+     *
      * @return long
      */
     public long getSize();
@@ -108,6 +111,9 @@ public interface SyncItem
     public void setPermissions(final Set<PosixFilePermission> permissions);
 
     /**
+     * Verzeichnis: Anzahl der 1st-Level Childs<br>
+     * Datei: Größe
+     *
      * @param size long
      */
     public void setSize(final long size);

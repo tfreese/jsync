@@ -134,6 +134,7 @@ public final class DigestUtils
         byte[] bytes = null;
 
         LongConsumer consumer = consumerBytesRead != null ? consumerBytesRead : i -> {
+            // Empty
         };
 
         consumer.accept(0);

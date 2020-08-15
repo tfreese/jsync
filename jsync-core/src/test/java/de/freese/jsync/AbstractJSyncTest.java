@@ -50,7 +50,7 @@ public abstract class AbstractJSyncTest
     public void afterEach() throws Exception
     {
         System.out.println("Delete Source and Target Paths...\n");
-        JSyncUtils.deleteDirectoryRecursive(PATH_BASE);
+        JSyncUtils.delete(PATH_BASE, false);
     }
 
     /**

@@ -15,20 +15,23 @@ import de.freese.jsync.model.SyncItem;
 public interface Receiver extends FileSystem
 {
     /**
-     * Löscht ein Verzeichnis.
+     * Löscht ein Verzeichnis/Datei.
      *
      * @param baseDir String
-     * @param relativeDir String
+     * @param relativePath String
+     * @param followSymLinks boolean
      */
-    public void deleteDirectory(String baseDir, String relativeDir);
+    public void delete(String baseDir, String relativePath, boolean followSymLinks);
 
     /**
-     * Löscht eine Datei.
+     * Existiert ein Verzeichnis/Datei ?
      *
      * @param baseDir String
-     * @param relativeFile String
+     * @param relativePath String
+     * @param followSymLinks boolean
+     * @return boolean
      */
-    public void deleteFile(String baseDir, String relativeFile);
+    public boolean exist(String baseDir, String relativePath, boolean followSymLinks);
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String)
@@ -37,20 +40,12 @@ public interface Receiver extends FileSystem
     public WritableByteChannel getChannel(String baseDir, String relativeFile);
 
     /**
-     * Aktualisiert ein Verzeichnis.
+     * Aktualisiert ein {@link SyncItem}.
      *
      * @param baseDir String
      * @param syncItem {@link SyncItem}
      */
-    public void updateDirectory(String baseDir, SyncItem syncItem);
-
-    /**
-     * Aktualisiert eine Datei.
-     *
-     * @param baseDir String
-     * @param syncItem {@link SyncItem}
-     */
-    public void updateFile(String baseDir, SyncItem syncItem);
+    public void update(String baseDir, SyncItem syncItem);
 
     /**
      * Überprüfung der Datei auf Größe und Prüfsumme.

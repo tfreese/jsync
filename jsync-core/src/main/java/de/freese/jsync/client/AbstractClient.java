@@ -111,6 +111,17 @@ public abstract class AbstractClient implements Client
     }
 
     /**
+     * @see de.freese.jsync.client.Client#existReceiver(de.freese.jsync.model.SyncItem, boolean)
+     */
+    @Override
+    public boolean existReceiver(final SyncItem syncItem, final boolean followSymLinks)
+    {
+        boolean exist = getReceiver().exist(getReceiverUri().getPath(), syncItem.getRelativePath(), followSymLinks);
+
+        return exist;
+    }
+
+    /**
      * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
      *      java.util.function.LongConsumer)
      */
@@ -251,6 +262,31 @@ public abstract class AbstractClient implements Client
     }
 
     /**
+     * Löscht ein {@link SyncItem} mit relativem Pfad zum Basis-Verzeichnis.
+     *
+     * @param syncItem {@link SyncItem}
+     * @param clientListener {@link ClientListener}
+     */
+    protected void delete(final SyncItem syncItem, final ClientListener clientListener)
+    {
+        clientListener.delete(getOptions(), syncItem);
+
+        if (getOptions().isDryRun())
+        {
+            return;
+        }
+
+        try
+        {
+            getReceiver().delete(getReceiverUri().getPath(), syncItem.getRelativePath(), getOptions().isFollowSymLinks());
+        }
+        catch (Exception ex)
+        {
+            clientListener.error(null, ex);
+        }
+    }
+
+    /**
      * Löschen der Verzeichnisse und Dateien mit relativem Pfad zum Basis-Verzeichnis.<br>
      * {@link SyncStatus#ONLY_IN_TARGET}<br>
      *
@@ -267,58 +303,8 @@ public abstract class AbstractClient implements Client
         syncList.stream()
                 .filter(isExisting.and(isDirectory).and(isOnlyInTarget))
                 //.sorted(Comparator.comparing(SyncPair::getRelativePath).reversed())
-                .forEach(pair -> deleteDirectory(pair.getReceiverItem(),clientListener));
+                .forEach(pair -> delete(pair.getReceiverItem(),clientListener));
         // @formatter:on
-    }
-
-    /**
-     * Löscht ein Verzeichnismit relativem Pfad zum Basis-Verzeichnis.
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
-     */
-    protected void deleteDirectory(final SyncItem syncItem, final ClientListener clientListener)
-    {
-        clientListener.delete(getOptions(), syncItem);
-
-        if (getOptions().isDryRun())
-        {
-            return;
-        }
-
-        try
-        {
-            getReceiver().deleteDirectory(getReceiverUri().getPath(), syncItem.getRelativePath());
-        }
-        catch (Exception ex)
-        {
-            clientListener.error(null, ex);
-        }
-    }
-
-    /**
-     * Löscht eine Datei mit relativem Pfad zum Basis-Verzeichnis.
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
-     */
-    protected void deleteFile(final SyncItem syncItem, final ClientListener clientListener)
-    {
-        clientListener.delete(getOptions(), syncItem);
-
-        if (getOptions().isDryRun())
-        {
-            return;
-        }
-
-        try
-        {
-            getReceiver().deleteFile(getReceiverUri().getPath(), syncItem.getRelativePath());
-        }
-        catch (Exception ex)
-        {
-            clientListener.error(null, ex);
-        }
     }
 
     /**
@@ -338,7 +324,7 @@ public abstract class AbstractClient implements Client
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInTarget))
                 //.sorted(Comparator.comparing(SyncPair::getRelativePath).reversed())
-                .forEach(pair -> deleteFile(pair.getReceiverItem(),clientListener));
+                .forEach(pair -> delete(pair.getReceiverItem(),clientListener));
         // @formatter:on
     }
 
@@ -384,6 +370,31 @@ public abstract class AbstractClient implements Client
 
     /**
      * Aktualisieren von Verzeichniss-Attributen auf dem {@link Receiver}.<br>
+     *
+     * @param syncItem {@link SyncItem}
+     * @param clientListener {@link ClientListener}
+     */
+    protected void update(final SyncItem syncItem, final ClientListener clientListener)
+    {
+        clientListener.update(getOptions(), syncItem);
+
+        if (getOptions().isDryRun())
+        {
+            return;
+        }
+
+        try
+        {
+            getReceiver().update(getReceiverUri().getPath(), syncItem);
+        }
+        catch (Exception ex)
+        {
+            clientListener.error(null, ex);
+        }
+    }
+
+    /**
+     * Aktualisieren von Verzeichniss-Attributen auf dem {@link Receiver}.<br>
      * {@link SyncStatus#ONLY_IN_SOURCE}<br>
      * {@link SyncStatus#DIFFERENT_PERMISSIONS}<br>
      * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
@@ -406,63 +417,15 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isDirectory).and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> updateDirectory(pair.getSenderItem(),clientListener));
+                .forEach(pair -> update(pair.getSenderItem(),clientListener));
         // @formatter:on
     }
 
     /**
-     * Aktualisieren von Verzeichniss-Attributen auf dem {@link Receiver}.<br>
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
-     */
-    protected void updateDirectory(final SyncItem syncItem, final ClientListener clientListener)
-    {
-        clientListener.update(getOptions(), syncItem);
-
-        if (getOptions().isDryRun())
-        {
-            return;
-        }
-
-        try
-        {
-            getReceiver().updateDirectory(getReceiverUri().getPath(), syncItem);
-        }
-        catch (Exception ex)
-        {
-            clientListener.error(null, ex);
-        }
-    }
-
-    /**
      * Aktualisieren von Datei-Attributen auf dem {@link Receiver}.<br>
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
-     */
-    protected void updateFile(final SyncItem syncItem, final ClientListener clientListener)
-    {
-        clientListener.update(getOptions(), syncItem);
-
-        if (getOptions().isDryRun())
-        {
-            return;
-        }
-
-        try
-        {
-            getReceiver().updateFile(getReceiverUri().getPath(), syncItem);
-        }
-        catch (Exception ex)
-        {
-            clientListener.error(null, ex);
-        }
-    }
-
-    /**
-     * Aktualisieren von Datei-Attributen auf dem {@link Receiver}.<br>
+     * {@link SyncStatus#ONLY_IN_SOURCE}<br>
      * {@link SyncStatus#DIFFERENT_PERMISSIONS}<br>
+     * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
      * {@link SyncStatus#DIFFERENT_USER}<br>
      * {@link SyncStatus#DIFFERENT_GROUP}<br>
      *
@@ -473,14 +436,16 @@ public abstract class AbstractClient implements Client
     {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isFile = p -> p.getSenderItem().isFile();
+        Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
         Predicate<SyncPair> isDifferentPermission = p -> SyncStatus.DIFFERENT_PERMISSIONS.equals(p.getStatus());
+        Predicate<SyncPair> isDifferentTimestamp = p -> SyncStatus.DIFFERENT_LAST_MODIFIEDTIME.equals(p.getStatus());
         Predicate<SyncPair> isDifferentUser = p -> SyncStatus.DIFFERENT_USER.equals(p.getStatus());
         Predicate<SyncPair> isDifferentGroup = p -> SyncStatus.DIFFERENT_GROUP.equals(p.getStatus());
 
         // @formatter:off
         syncList.stream()
-                .filter(isExisting.and(isFile).and(isDifferentPermission.or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> updateFile(pair.getSenderItem(),clientListener));
+                .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
+                .forEach(pair -> update(pair.getSenderItem(),clientListener));
         // @formatter:on
     }
 }

@@ -18,12 +18,15 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 import de.freese.jsync.Options;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
 import de.freese.jsync.utils.DigestUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * Default-Implementierung des {@link Generator}.
@@ -83,11 +86,11 @@ public class DefaultGenerator extends AbstractGenerator
             return;
         }
 
-        FileVisitOption[] visitOptions = followSymLinks ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
+        FileVisitOption[] visitOptions = JSyncUtils.getFileVisitOptions(followSymLinks);
 
         Set<Path> paths = getPaths(base, visitOptions);
 
-        LinkOption[] linkOptions = followSymLinks ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
+        LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
 
         // @formatter:off
         paths.stream()
@@ -115,6 +118,14 @@ public class DefaultGenerator extends AbstractGenerator
 
         try
         {
+            // syncItem.setSize(Files.walk(directory, 1).count());
+            Predicate<Path> self = p -> p.getFileName().toString().startsWith(".");
+
+            try (Stream<Path> childs = Files.list(directory).filter(self.negate()))
+            {
+                syncItem.setSize(childs.count());
+            }
+
             if (Options.IS_WINDOWS)
             {
                 long lastModifiedTime = Files.getLastModifiedTime(directory, linkOptions).to(TimeUnit.SECONDS);

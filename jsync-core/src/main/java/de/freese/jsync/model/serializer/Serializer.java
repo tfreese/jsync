@@ -12,7 +12,7 @@ import de.freese.jsync.Options;
  * Interface zur Serialisierung.
  *
  * @author Thomas Freese
- * @param <T> Entity-Type
+ * @param <T> Type
  */
 public interface Serializer<T>
 {

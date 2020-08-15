@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -59,57 +61,18 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#deleteDirectory(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#delete(java.lang.String, java.lang.String, boolean)
      */
     @Override
-    public void deleteDirectory(final String baseDir, final String relativeDir)
+    public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        Path path = Paths.get(baseDir, relativeDir);
+        Path path = Paths.get(baseDir, relativePath);
 
         getLogger().debug("delete: {}", path);
 
         try
         {
-            JSyncUtils.deleteDirectoryRecursive(path);
-
-            if (Files.exists(path))
-            {
-                Files.delete(path);
-            }
-
-            // Da die Verzeichnisse immer am Ende nach den Dateien gelöscht werden, dürfte dies hier nicht notwendig sein.
-            //
-            // Path parent = path.getParent();
-            //
-            // try (Stream<Path> stream = Files.list(parent))
-            // {
-            // long fileCount = stream.count();
-            //
-            // if (fileCount == 0)
-            // {
-            // Files.delete(parent);
-            // }
-            // }
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#deleteFile(java.lang.String, java.lang.String)
-     */
-    @Override
-    public void deleteFile(final String baseDir, final String relativeFile)
-    {
-        Path path = Paths.get(baseDir, relativeFile);
-
-        getLogger().debug("delete: {}", path);
-
-        try
-        {
-            Files.delete(path);
+            JSyncUtils.delete(path, followSymLinks);
         }
         catch (IOException ex)
         {
@@ -124,6 +87,19 @@ public class LocalhostReceiver extends AbstractReceiver
     public void disconnect()
     {
         // Empty
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#exist(java.lang.String, java.lang.String, boolean)
+     */
+    @Override
+    public boolean exist(final String baseDir, final String relativePath, final boolean followSymLinks)
+    {
+        Path path = Paths.get(baseDir, relativePath);
+
+        LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
+
+        return Files.exists(path, linkOptions);
     }
 
     /**
@@ -142,12 +118,13 @@ public class LocalhostReceiver extends AbstractReceiver
     public WritableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
         Path path = Paths.get(baseDir, relativeFile);
+        Path parentPath = path.getParent();
 
         try
         {
-            if (Files.notExists(path))
+            if (Files.notExists(parentPath))
             {
-                Files.createDirectories(path);
+                Files.createDirectories(parentPath);
             }
 
             getLogger().debug("get WritableByteChannel: {}", path);
@@ -174,14 +151,16 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * Aktualisiert ein Verzeichnis oder Datei.
-     *
-     * @param path {@link Path}
-     * @param syncItem {@link SyncItem}
+     * @see de.freese.jsync.filesystem.receiver.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
      */
     @SuppressWarnings("resource")
-    protected void update(final Path path, final SyncItem syncItem)
+    @Override
+    public void update(final String baseDir, final SyncItem syncItem)
     {
+        Path path = Paths.get(baseDir, syncItem.getRelativePath());
+
+        getLogger().debug("update: {}", path);
+
         // In der Form "rwxr-xr-x"; optional, kann unter Windows null sein.
         String permissions = syncItem.getPermissionsToString();
 
@@ -196,6 +175,11 @@ public class LocalhostReceiver extends AbstractReceiver
 
         try
         {
+            if (Files.notExists(path))
+            {
+                Files.createDirectories(path);
+            }
+
             Files.setLastModifiedTime(path, FileTime.from(lastModifiedTime, TimeUnit.SECONDS));
 
             if (Options.IS_LINUX)
@@ -205,7 +189,8 @@ public class LocalhostReceiver extends AbstractReceiver
 
                 Files.setPosixFilePermissions(path, filePermissions);
 
-                UserPrincipalLookupService lookupService = path.getFileSystem().getUserPrincipalLookupService();
+                FileSystem fileSystem = path.getFileSystem();
+                UserPrincipalLookupService lookupService = fileSystem.getUserPrincipalLookupService();
 
                 PosixFileAttributeView fileAttributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class);
                 GroupPrincipal groupPrincipal = lookupService.lookupPrincipalByGroupName(groupName);
@@ -219,32 +204,6 @@ public class LocalhostReceiver extends AbstractReceiver
         {
             throw new UncheckedIOException(ex);
         }
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#updateDirectory(java.lang.String, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void updateDirectory(final String baseDir, final SyncItem syncItem)
-    {
-        Path path = Paths.get(baseDir, syncItem.getRelativePath());
-
-        getLogger().debug("update: {}", path);
-
-        update(path, syncItem);
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#updateFile(java.lang.String, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void updateFile(final String baseDir, final SyncItem syncItem)
-    {
-        Path path = Paths.get(baseDir, syncItem.getRelativePath());
-
-        getLogger().debug("update: {}", path);
-
-        update(path, syncItem);
     }
 
     /**

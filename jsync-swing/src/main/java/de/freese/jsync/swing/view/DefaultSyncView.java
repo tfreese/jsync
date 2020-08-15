@@ -8,6 +8,7 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.swing.Box;
@@ -234,6 +235,15 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * @see de.freese.jsync.swing.view.SyncView#getSyncList()
+     */
+    @Override
+    public List<SyncPair> getSyncList()
+    {
+        return getTableModel().getList();
+    }
+
+    /**
      * @see de.freese.jsync.swing.view.SyncView#getUri(de.freese.jsync.filesystem.EFileSystem)
      */
     @Override
@@ -437,7 +447,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
         panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 1).anchorWest());
 
-        this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), false);
+        this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), true);
         panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(0, 2).anchorWest().gridwidth(2));
 
         confiPanel.add(panelOptions, new GbcBuilder(1, 0));

@@ -82,6 +82,9 @@ public class DefaultClient extends AbstractClient
         // Aktualisieren von Datei-Attributen.
         updateFiles(list, cl);
 
+        // Neue leere Verzeichnisse
+        // TODO
+
         // Aktualisieren von Verzeichniss-Attributen.
         updateDirectories(list, cl);
     }

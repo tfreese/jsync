@@ -9,11 +9,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.SocketChannel;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -26,12 +29,46 @@ import de.freese.jsync.Options;
 public final class JSyncUtils
 {
     /**
+     * @see Files#walk(Path, FileVisitOption...)
+     */
+    private static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = new FileVisitOption[0];
+
+    /**
+     * @see Files#walk(Path, FileVisitOption...)
+     */
+    private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = new FileVisitOption[]
+    {
+            FileVisitOption.FOLLOW_LINKS
+    };
+
+    /**
     *
     */
     private static final char[] HEX_CHARS =
     {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
+
+    /**
+     * @see Files#exists(Path, LinkOption...)
+     * @see Files#notExists(Path, LinkOption...)
+     * @see Files#isDirectory(Path, LinkOption...)
+     * @see Files#getLastModifiedTime(Path, LinkOption...)
+     * @see Files#readAttributes(Path, String, LinkOption...)
+     */
+    private static final LinkOption[] LINKOPTION_NO_SYMLINKS = new LinkOption[]
+    {
+            LinkOption.NOFOLLOW_LINKS
+    };
+
+    /**
+     * @see Files#exists(Path, LinkOption...)
+     * @see Files#notExists(Path, LinkOption...)
+     * @see Files#isDirectory(Path, LinkOption...)
+     * @see Files#getLastModifiedTime(Path, LinkOption...)
+     * @see Files#readAttributes(Path, String, LinkOption...)
+     */
+    private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = new LinkOption[0];
 
     /**
      *
@@ -88,52 +125,75 @@ public final class JSyncUtils
     }
 
     /**
-     * Löscht das Verzeichnis rekursiv inklusive Dateien und Unterverzeichnisse.
+     * Ein Verzeichnis wird rekursiv inklusive aller Dateien und Unterverzeichnisse gelöscht.
      *
      * @param path {@link Path}
+     * @param followSymLinks boolean
      * @throws IOException Falls was schief geht.
      */
-    public static void deleteDirectoryRecursive(final Path path) throws IOException
+    public static void delete(final Path path, final boolean followSymLinks) throws IOException
     {
         if (path == null)
         {
-            throw new NullPointerException("path required");
+            throw new IllegalArgumentException("path required");
         }
 
-        if (!Files.exists(path))
+        LinkOption[] linkOptions = getLinkOptions(followSymLinks);
+
+        if (!Files.exists(path, linkOptions))
         {
             return;
         }
 
-        if (!Files.isDirectory(path))
+        FileVisitOption[] fileVisitOptions = getFileVisitOptions(followSymLinks);
+
+        if (Files.isDirectory(path, linkOptions))
         {
-            throw new IllegalArgumentException("path is not a dirctory: " + path);
+            Files.walkFileTree(path, Set.of(fileVisitOptions), Integer.MAX_VALUE, new SimpleFileVisitor<Path>()
+            {
+                /**
+                 * @see java.nio.file.SimpleFileVisitor#postVisitDirectory(java.lang.Object, java.io.IOException)
+                 */
+                @Override
+                public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
+                {
+                    Files.delete(dir);
+
+                    return FileVisitResult.CONTINUE;
+                }
+
+                /**
+                 * @see java.nio.file.SimpleFileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
+                 */
+                @Override
+                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
+                {
+                    Files.delete(file);
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         }
 
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>()
-        {
-            /**
-             * @see java.nio.file.SimpleFileVisitor#postVisitDirectory(java.lang.Object, java.io.IOException)
-             */
-            @Override
-            public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
-            {
-                Files.delete(dir);
+        Files.delete(path);
+    }
 
-                return FileVisitResult.CONTINUE;
-            }
+    /**
+     * @param followSymLinks boolean
+     * @return {@link FileVisitOption}
+     */
+    public static FileVisitOption[] getFileVisitOptions(final boolean followSymLinks)
+    {
+        return followSymLinks ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
+    }
 
-            /**
-             * @see java.nio.file.SimpleFileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
-             */
-            @Override
-            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
-            {
-                Files.delete(file);
-
-                return FileVisitResult.CONTINUE;
-            }
-        });
+    /**
+     * @param followSymLinks boolean
+     * @return {@link LinkOption}
+     */
+    public static LinkOption[] getLinkOptions(final boolean followSymLinks)
+    {
+        return followSymLinks ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
     }
 
     /**
@@ -368,7 +428,7 @@ public final class JSyncUtils
         }
         catch (InterruptedException ex)
         {
-            // Ignoren
+            // Empty
         }
     }
 

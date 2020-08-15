@@ -83,7 +83,7 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     /**
     *
     */
-    private SocketChannel socketChannel = null;
+    private SocketChannel socketChannel;
 
     /**
      * Erzeugt eine neue Instanz von {@link RemoteReceiverBlocking}.
@@ -122,30 +122,16 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#deleteDirectory(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#delete(java.lang.String, java.lang.String, boolean)
      */
     @Override
-    public void deleteDirectory(final String baseDir, final String relativeDir)
+    public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
         this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_DELETE_DIRECTORY);
+        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_DELETE);
         Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativeDir);
-
-        this.buffer.flip();
-        write(this.buffer);
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#deleteFile(java.lang.String, java.lang.String)
-     */
-    @Override
-    public void deleteFile(final String baseDir, final String relativeFile)
-    {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_DELETE_FILE);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativeFile);
+        Serializers.writeTo(this.buffer, relativePath);
+        Serializers.writeTo(this.buffer, followSymLinks);
 
         this.buffer.flip();
         write(this.buffer);
@@ -173,6 +159,30 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         {
             throw new UncheckedIOException(ex);
         }
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#exist(java.lang.String, java.lang.String, boolean)
+     */
+    @Override
+    public boolean exist(final String baseDir, final String relativePath, final boolean followSymLinks)
+    {
+        this.buffer.clear();
+        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_EXIST);
+        Serializers.writeTo(this.buffer, baseDir);
+        Serializers.writeTo(this.buffer, relativePath);
+        Serializers.writeTo(this.buffer, followSymLinks);
+
+        this.buffer.flip();
+        write(this.buffer);
+
+        this.buffer.clear();
+        read(this.buffer);
+        this.buffer.flip();
+
+        boolean exist = Serializers.readFrom(this.buffer, Boolean.class);
+
+        return exist;
     }
 
     /**
@@ -263,14 +273,6 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
-     * @return {@link Charset}
-     */
-    protected Charset getCharset()
-    {
-        return Options.CHARSET;
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
@@ -294,43 +296,13 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
-     * @param buf {@link ByteBuffer}
-     */
-    protected void read(final ByteBuffer buf)
-    {
-        try
-        {
-            this.socketChannel.read(this.buffer);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#updateDirectory(java.lang.String, de.freese.jsync.model.SyncItem)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void updateDirectory(final String baseDir, final SyncItem syncItem)
+    public void update(final String baseDir, final SyncItem syncItem)
     {
         this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_UPDATE_DIRECTORY);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, syncItem);
-
-        this.buffer.flip();
-        write(this.buffer);
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#updateFile(java.lang.String, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void updateFile(final String baseDir, final SyncItem syncItem)
-    {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_UPDATE_FILE);
+        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_UPDATE);
         Serializers.writeTo(this.buffer, baseDir);
         Serializers.writeTo(this.buffer, syncItem);
 
@@ -352,6 +324,29 @@ public class RemoteReceiverBlocking extends AbstractReceiver
 
         this.buffer.flip();
         write(this.buffer);
+    }
+
+    /**
+     * @return {@link Charset}
+     */
+    protected Charset getCharset()
+    {
+        return Options.CHARSET;
+    }
+
+    /**
+     * @param buf {@link ByteBuffer}
+     */
+    protected void read(final ByteBuffer buf)
+    {
+        try
+        {
+            this.socketChannel.read(this.buffer);
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     /**

@@ -2,6 +2,7 @@
 package de.freese.jsync.swing.view;
 
 import java.net.URI;
+import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -63,6 +64,11 @@ public interface SyncView
      * @return {@link JPanel}
      */
     public JPanel getPanel();
+
+    /**
+     * @return {@link List}
+     */
+    public List<SyncPair> getSyncList();
 
     /**
      * @param fileSystem {@link EFileSystem}

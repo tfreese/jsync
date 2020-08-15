@@ -60,7 +60,9 @@ public final class Serializers
     {
         super();
 
+        this.serializerMap.put(Boolean.class, BooleanSerializer.getInstance());
         this.serializerMap.put(String.class, StringSerializer.getInstance());
+
         this.serializerMap.put(Group.class, GroupSerializer.getInstance());
         this.serializerMap.put(User.class, UserSerializer.getInstance());
         this.serializerMap.put(Options.class, OptionsSerializer.getInstance());

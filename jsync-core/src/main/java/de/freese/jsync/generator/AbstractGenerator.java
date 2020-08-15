@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.TreeSet;
@@ -21,34 +20,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractGenerator implements Generator
 {
-    /**
-     * @see Files#walk(Path, FileVisitOption...)
-     */
-    protected static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = new FileVisitOption[0];
-
-    /**
-     * @see Files#walk(Path, FileVisitOption...)
-     */
-    protected static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = new FileVisitOption[]
-    {
-            FileVisitOption.FOLLOW_LINKS
-    };
-
-    /**
-     * @see Files#getLastModifiedTime(Path, LinkOption...)
-     * @see Files#readAttributes(Path, String, LinkOption...)
-     */
-    protected static final LinkOption[] LINKOPTION_NO_SYMLINKS = new LinkOption[]
-    {
-            LinkOption.NOFOLLOW_LINKS
-    };
-
-    /**
-     * @see Files#getLastModifiedTime(Path, LinkOption...)
-     * @see Files#readAttributes(Path, String, LinkOption...)
-     */
-    protected static final LinkOption[] LINKOPTION_WITH_SYMLINKS = new LinkOption[0];
-
     /**
     *
     */
@@ -83,9 +54,9 @@ public abstract class AbstractGenerator implements Generator
 
         try (Stream<Path> stream = Files.walk(base, visitOptions))
         {
+            // TODO Excludes filtern
             // @formatter:off
             set = stream
-                    //.filter(predicate) // TODO Excludes filtern
                     .collect(Collectors.toCollection(TreeSet::new))
                     ;
             // @formatter:on

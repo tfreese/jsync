@@ -8,7 +8,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import org.slf4j.Logger;
@@ -27,15 +26,6 @@ import de.freese.jsync.swing.view.SyncView;
  */
 public class JsyncController
 {
-    /**
-     * @param key String
-     * @return String
-     */
-    private static String getMessage(final String key)
-    {
-        return JSyncSwingApplication.getInstance().getMessages().getString(key);
-    }
-
     /**
      *
      */
@@ -89,13 +79,12 @@ public class JsyncController
      */
     private void compare()
     {
-        getSyncView().doOnCompare(button -> button.setEnabled(false));
-        getSyncView().doOnSyncronize(button -> button.setEnabled(false));
-
         Options options = getSyncView().getOptions();
-
         URI senderUri = getSyncView().getUri(EFileSystem.SENDER);
         URI receiverUri = getSyncView().getUri(EFileSystem.RECEIVER);
+
+        getSyncView().doOnCompare(button -> button.setEnabled(false));
+        getSyncView().doOnSyncronize(button -> button.setEnabled(false));
 
         createNewClient(options, senderUri, receiverUri);
 
@@ -106,9 +95,9 @@ public class JsyncController
 
         ExecutorService executorService = JSyncSwingApplication.getInstance().getExecutorService();
 
-        getSyncView().addProgressBarText(EFileSystem.SENDER, null);
+        getSyncView().addProgressBarText(EFileSystem.SENDER, "");
         getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, true);
-        getSyncView().addProgressBarText(EFileSystem.RECEIVER, null);
+        getSyncView().addProgressBarText(EFileSystem.RECEIVER, "");
         getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, true);
         getSyncView().setProgressBarFiles(0);
 
@@ -258,11 +247,30 @@ public class JsyncController
     }
 
     /**
+     *
+     */
+    private void synchronize()
+    {
+        // JOptionPane.showMessageDialog(JSyncSwingApplication.getInstance().getMainFrame(), "Not implemented !", "Error", JOptionPane.ERROR_MESSAGE);
+        SynchronizeWorker worker = new SynchronizeWorker(this);
+
+        worker.execute();
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
+    }
+
+    /**
      * @param options {@link Options}
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
      */
-    private void createNewClient(final Options options, final URI senderUri, final URI receiverUri)
+    void createNewClient(final Options options, final URI senderUri, final URI receiverUri)
     {
         if (this.client != null)
         {
@@ -277,33 +285,26 @@ public class JsyncController
     /**
      * @return {@link Client}
      */
-    private Client getClient()
+    Client getClient()
     {
         return this.client;
     }
 
     /**
+     * @param key String
+     * @return String
+     */
+    String getMessage(final String key)
+    {
+        return JSyncSwingApplication.getInstance().getMessages().getString(key);
+    }
+
+    /**
      * @return {@link SyncView}
      */
-    private SyncView getSyncView()
+    SyncView getSyncView()
     {
         return this.syncView;
-    }
-
-    /**
-     *
-     */
-    private void synchronize()
-    {
-        JOptionPane.showMessageDialog(JSyncSwingApplication.getInstance().getMainFrame(), "Not implemented !", "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
     }
 
     /**

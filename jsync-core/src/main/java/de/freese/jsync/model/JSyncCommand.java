@@ -44,27 +44,27 @@ public enum JSyncCommand
     /**
     *
     */
+    TARGET_CREATE_DIRECTORY,
+
+    /**
+    *
+    */
     TARGET_CREATE_SYNC_ITEMS,
 
     /**
     *
     */
-    TARGET_DELETE_DIRECTORY,
+    TARGET_DELETE,
 
     /**
     *
     */
-    TARGET_DELETE_FILE,
+    TARGET_EXIST,
 
     /**
     *
     */
-    TARGET_UPDATE_DIRECTORY,
-
-    /**
-    *
-    */
-    TARGET_UPDATE_FILE,
+    TARGET_UPDATE,
 
     /**
     *
