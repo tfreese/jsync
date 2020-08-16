@@ -442,7 +442,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallelism"), false);
         panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 1).anchorWest());
 
-        this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), false);
+        this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), true);
         panelOptions.add(this.checkBoxDelete, new GbcBuilder(1, 0).anchorWest());
         this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
         panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 1).anchorWest());

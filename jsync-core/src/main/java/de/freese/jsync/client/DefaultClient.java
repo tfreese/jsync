@@ -83,7 +83,7 @@ public class DefaultClient extends AbstractClient
         updateFiles(list, cl);
 
         // Neue leere Verzeichnisse
-        // TODO
+        createDirectories(syncList, clientListener);
 
         // Aktualisieren von Verzeichniss-Attributen.
         updateDirectories(list, cl);

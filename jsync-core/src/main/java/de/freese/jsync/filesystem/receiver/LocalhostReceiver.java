@@ -7,7 +7,6 @@ import java.net.URI;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -61,6 +60,27 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#createDirectory(java.lang.String, java.lang.String)
+     */
+    @Override
+    public void createDirectory(final String baseDir, final String relativePath)
+    {
+        Path path = Paths.get(baseDir, relativePath);
+
+        try
+        {
+            if (Files.notExists(path))
+            {
+                Files.createDirectories(path);
+            }
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    /**
      * @see de.freese.jsync.filesystem.receiver.Receiver#delete(java.lang.String, java.lang.String, boolean)
      */
     @Override
@@ -87,19 +107,6 @@ public class LocalhostReceiver extends AbstractReceiver
     public void disconnect()
     {
         // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#exist(java.lang.String, java.lang.String, boolean)
-     */
-    @Override
-    public boolean exist(final String baseDir, final String relativePath, final boolean followSymLinks)
-    {
-        Path path = Paths.get(baseDir, relativePath);
-
-        LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
-
-        return Files.exists(path, linkOptions);
     }
 
     /**
@@ -175,11 +182,6 @@ public class LocalhostReceiver extends AbstractReceiver
 
         try
         {
-            if (Files.notExists(path))
-            {
-                Files.createDirectories(path);
-            }
-
             Files.setLastModifiedTime(path, FileTime.from(lastModifiedTime, TimeUnit.SECONDS));
 
             if (Options.IS_LINUX)

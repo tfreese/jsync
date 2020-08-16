@@ -122,6 +122,21 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#createDirectory(java.lang.String, java.lang.String)
+     */
+    @Override
+    public void createDirectory(final String baseDir, final String relativePath)
+    {
+        this.buffer.clear();
+        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
+        Serializers.writeTo(this.buffer, baseDir);
+        Serializers.writeTo(this.buffer, relativePath);
+
+        this.buffer.flip();
+        write(this.buffer);
+    }
+
+    /**
      * @see de.freese.jsync.filesystem.receiver.Receiver#delete(java.lang.String, java.lang.String, boolean)
      */
     @Override
@@ -159,30 +174,6 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         {
             throw new UncheckedIOException(ex);
         }
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#exist(java.lang.String, java.lang.String, boolean)
-     */
-    @Override
-    public boolean exist(final String baseDir, final String relativePath, final boolean followSymLinks)
-    {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_EXIST);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativePath);
-        Serializers.writeTo(this.buffer, followSymLinks);
-
-        this.buffer.flip();
-        write(this.buffer);
-
-        this.buffer.clear();
-        read(this.buffer);
-        this.buffer.flip();
-
-        boolean exist = Serializers.readFrom(this.buffer, Boolean.class);
-
-        return exist;
     }
 
     /**

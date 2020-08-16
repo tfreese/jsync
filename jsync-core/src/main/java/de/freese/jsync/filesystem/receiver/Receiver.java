@@ -15,6 +15,14 @@ import de.freese.jsync.model.SyncItem;
 public interface Receiver extends FileSystem
 {
     /**
+     * Erstellt ein Verzeichnis.
+     *
+     * @param baseDir String
+     * @param relativePath String
+     */
+    public void createDirectory(String baseDir, String relativePath);
+
+    /**
      * Löscht ein Verzeichnis/Datei.
      *
      * @param baseDir String
@@ -22,16 +30,6 @@ public interface Receiver extends FileSystem
      * @param followSymLinks boolean
      */
     public void delete(String baseDir, String relativePath, boolean followSymLinks);
-
-    /**
-     * Existiert ein Verzeichnis/Datei ?
-     *
-     * @param baseDir String
-     * @param relativePath String
-     * @param followSymLinks boolean
-     * @return boolean
-     */
-    public boolean exist(String baseDir, String relativePath, boolean followSymLinks);
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String)

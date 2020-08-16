@@ -31,15 +31,6 @@ public interface Client
     public void disconnectFileSystems();
 
     /**
-     * Existiert ein Verzeichnis/Datei ?
-     *
-     * @param syncItem {@link SyncItem}
-     * @param followSymLinks boolean
-     * @return boolean
-     */
-    public boolean existReceiver(SyncItem syncItem, boolean followSymLinks);
-
-    /**
      * Erzeugt die Prüfsumme einer Datei.<br>
      *
      * @param fileSystem {@link EFileSystem}

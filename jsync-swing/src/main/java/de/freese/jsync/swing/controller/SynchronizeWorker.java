@@ -1,57 +1,18 @@
 // Created: 15.08.2020
 package de.freese.jsync.swing.controller;
 
-import java.net.URI;
 import java.util.List;
-import javax.swing.SwingWorker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
-import de.freese.jsync.client.Client;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.swing.view.SyncView;
 
 /**
  * @author Thomas Freese
  */
-class SynchronizeWorker extends SwingWorker<Void, Void> implements ClientListener
+class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientListener
 {
-    /**
-    *
-    */
-    public static final Logger LOGGER = LoggerFactory.getLogger(SynchronizeWorker.class);
-
-    /**
-     * @return {@link Logger}
-     */
-    private static Logger getLogger()
-    {
-        return LOGGER;
-    }
-
-    /**
-     *
-     */
-    private final JsyncController controller;
-
-    /**
-     *
-     */
-    private final Options options;
-
-    /**
-     *
-     */
-    private final URI receiverUri;
-
-    /**
-     *
-     */
-    private final URI senderUri;
-
     /**
      * Erstellt ein neues {@link SynchronizeWorker} Object.
      *
@@ -59,17 +20,10 @@ class SynchronizeWorker extends SwingWorker<Void, Void> implements ClientListene
      */
     SynchronizeWorker(final JsyncController controller)
     {
-        super();
-
-        this.controller = controller;
-        this.options = controller.getSyncView().getOptions();
-        this.senderUri = controller.getSyncView().getUri(EFileSystem.SENDER);
-        this.receiverUri = controller.getSyncView().getUri(EFileSystem.RECEIVER);
+        super(controller);
 
         controller.getSyncView().doOnCompare(button -> button.setEnabled(false));
         controller.getSyncView().doOnSyncronize(button -> button.setEnabled(false));
-
-        controller.createNewClient(this.options, this.senderUri, this.receiverUri);
 
         controller.getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
         controller.getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
@@ -84,11 +38,11 @@ class SynchronizeWorker extends SwingWorker<Void, Void> implements ClientListene
     {
         if (bytesTransferred == 0)
         {
-            getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, (int) syncItem.getSize(),
-                    this.controller.getMessage("jsync.files.copy") + ": " + syncItem.getRelativePath());
+            getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, (int) syncItem.getSize(),
+                    getMessage("jsync.files.copy") + ": " + syncItem.getRelativePath());
         }
 
-        getSyncView().addProgressBarValue(EFileSystem.RECEIVER, (int) bytesTransferred);
+        getSyncView().addProgressBarValue(EFileSystem.SENDER, (int) bytesTransferred);
     }
 
     /**
@@ -97,8 +51,7 @@ class SynchronizeWorker extends SwingWorker<Void, Void> implements ClientListene
     @Override
     public void delete(final Options options, final SyncItem syncItem)
     {
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0,
-                this.controller.getMessage("jsync.files.delete") + ": " + syncItem.getRelativePath());
+        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.delete") + ": " + syncItem.getRelativePath());
     }
 
     /**
@@ -116,8 +69,7 @@ class SynchronizeWorker extends SwingWorker<Void, Void> implements ClientListene
     @Override
     public void update(final Options options, final SyncItem syncItem)
     {
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0,
-                this.controller.getMessage("jsync.files.update") + ": " + syncItem.getRelativePath());
+        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.update") + ": " + syncItem.getRelativePath());
     }
 
     /**
@@ -126,10 +78,12 @@ class SynchronizeWorker extends SwingWorker<Void, Void> implements ClientListene
     @Override
     public void validate(final Options options, final SyncItem syncItem)
     {
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0,
-                this.controller.getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
+        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
     }
 
+    /**
+     * @see javax.swing.SwingWorker#doInBackground()
+     */
     @Override
     protected Void doInBackground() throws Exception
     {
@@ -155,24 +109,11 @@ class SynchronizeWorker extends SwingWorker<Void, Void> implements ClientListene
             getLogger().error(null, ex);
         }
 
+        getSyncView().clearTable();
+        getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
+        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
         getSyncView().doOnCompare(button -> button.setEnabled(true));
         getSyncView().doOnSyncronize(button -> button.setEnabled(true));
         getClient().disconnectFileSystems();
-    }
-
-    /**
-     * @return {@link Client}
-     */
-    Client getClient()
-    {
-        return this.controller.getClient();
-    }
-
-    /**
-     * @return {@link SyncView}
-     */
-    SyncView getSyncView()
-    {
-        return this.controller.getSyncView();
     }
 }

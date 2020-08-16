@@ -111,17 +111,6 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * @see de.freese.jsync.client.Client#existReceiver(de.freese.jsync.model.SyncItem, boolean)
-     */
-    @Override
-    public boolean existReceiver(final SyncItem syncItem, final boolean followSymLinks)
-    {
-        boolean exist = getReceiver().exist(getReceiverUri().getPath(), syncItem.getRelativePath(), followSymLinks);
-
-        return exist;
-    }
-
-    /**
      * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
      *      java.util.function.LongConsumer)
      */
@@ -257,8 +246,52 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFile(pair.getSenderItem(),clientListener));
+                .forEach(pair -> copyFile(pair.getSenderItem(), clientListener));
         //@formatter:on
+    }
+
+    /**
+     * Erstellen von leeren Verzeichnissen mit relativem Pfad zum Basis-Verzeichnis.<br>
+     * {@link SyncStatus#ONLY_IN_SOURCE}<br>
+     *
+     * @param syncList {@link List}
+     * @param clientListener {@link ClientListener}
+     */
+    protected void createDirectories(final List<SyncPair> syncList, final ClientListener clientListener)
+    {
+        Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
+        Predicate<SyncPair> isDirectory = p -> p.getSenderItem().isDirectory();
+        Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
+        Predicate<SyncPair> isEmpty = p -> p.getSenderItem().getSize() == 0;
+
+        // @formatter:off
+        syncList.stream()
+                .filter(isExisting.and(isDirectory).and(isOnlyInTarget).and(isEmpty))
+                .forEach(pair -> createDirectory(pair.getSenderItem(), clientListener));
+        // @formatter:on
+    }
+
+    /**
+     * Erstellt ein Verzeichnis auf dem {@link Receiver}.<br>
+     *
+     * @param syncItem {@link SyncItem}
+     * @param clientListener {@link ClientListener}
+     */
+    protected void createDirectory(final SyncItem syncItem, final ClientListener clientListener)
+    {
+        if (getOptions().isDryRun())
+        {
+            return;
+        }
+
+        try
+        {
+            getReceiver().createDirectory(getReceiverUri().getPath(), syncItem.getRelativePath());
+        }
+        catch (Exception ex)
+        {
+            clientListener.error(null, ex);
+        }
     }
 
     /**
@@ -302,8 +335,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isDirectory).and(isOnlyInTarget))
-                //.sorted(Comparator.comparing(SyncPair::getRelativePath).reversed())
-                .forEach(pair -> delete(pair.getReceiverItem(),clientListener));
+                .forEach(pair -> delete(pair.getReceiverItem(), clientListener));
         // @formatter:on
     }
 
@@ -323,8 +355,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInTarget))
-                //.sorted(Comparator.comparing(SyncPair::getRelativePath).reversed())
-                .forEach(pair -> delete(pair.getReceiverItem(),clientListener));
+                .forEach(pair -> delete(pair.getReceiverItem(), clientListener));
         // @formatter:on
     }
 
@@ -417,7 +448,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isDirectory).and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> update(pair.getSenderItem(),clientListener));
+                .forEach(pair -> update(pair.getSenderItem(), clientListener));
         // @formatter:on
     }
 
@@ -445,7 +476,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> update(pair.getSenderItem(),clientListener));
+                .forEach(pair -> update(pair.getSenderItem(), clientListener));
         // @formatter:on
     }
 }
