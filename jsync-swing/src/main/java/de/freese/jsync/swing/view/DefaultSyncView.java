@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -26,6 +27,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableCellRenderer;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -42,78 +44,68 @@ import de.freese.jsync.swing.components.SyncListTableModel;
 public class DefaultSyncView extends AbstractView implements SyncView
 {
     /**
-    *
-    */
+     *
+     */
     private final Map<EFileSystem, AccumulativeRunnable<Object[]>> accumulatorProgressBarMinMaxText = new HashMap<>();
 
     /**
-    *
-    */
+     *
+     */
     private final Map<EFileSystem, AccumulativeRunnable<String>> accumulatorProgressBarText = new HashMap<>();
 
     /**
-    *
-    */
+     *
+     */
     private final Map<EFileSystem, AccumulativeRunnable<Integer>> accumulatorProgressBarValue = new HashMap<>();
-
     /**
-    *
-    */
-    private AccumulativeRunnable<SyncPair> accumulatorTableAdd = null;
-
-    /**
-    *
-    */
-    private JButton buttonCompare;
-
-    /**
-    *
-    */
-    private JButton buttonSyncronize;
-
-    /**
-    *
-    */
-    private JCheckBox checkBoxChecksum;
-
-    /**
-    *
-    */
-    private JCheckBox checkBoxDelete;
-
-    /**
-    *
-    */
-    private JCheckBox checkBoxDryRun;
-
-    /**
-    *
-    */
-    private JCheckBox checkBoxFollowSymLinks;
-
-    /**
-    *
-    */
-    private JCheckBox checkBoxParallelism;
-
-    /**
-    *
-    */
+     *
+     */
     private final JPanel panel;
-
     /**
-    *
-    */
+     *
+     */
+    private AccumulativeRunnable<SyncPair> accumulatorTableAdd = null;
+    /**
+     *
+     */
+    private JButton buttonCompare;
+    /**
+     *
+     */
+    private JButton buttonSyncronize;
+    /**
+     *
+     */
+    private JCheckBox checkBoxChecksum;
+    /**
+     *
+     */
+    private JCheckBox checkBoxDelete;
+    /**
+     *
+     */
+    private JCheckBox checkBoxDryRun;
+    /**
+     *
+     */
+    private JCheckBox checkBoxFollowSymLinks;
+    /**
+     *
+     */
+    private JCheckBox checkBoxParallelism;
+    /**
+     *
+     */
     private JProgressBar progressBarFiles;
 
     /**
-    *
-    */
+     *
+     */
     private JProgressBar progressBarReceiver;
 
     /**
-    *
-    */
+     *
+     */
     private JProgressBar progressBarSender;
 
     /**
@@ -122,13 +114,13 @@ public class DefaultSyncView extends AbstractView implements SyncView
     private JTable table;
 
     /**
-    *
-    */
+     *
+     */
     private JTextField textFieldReceiverPath;
 
     /**
-    *
-    */
+     *
+     */
     private JTextField textFieldSenderPath;
 
     /**
@@ -148,9 +140,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
     public void addProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
     {
         getAccumulatorProgressBarMinMaxText(fileSystem).add(new Object[]
-        {
-                min, max, text
-        });
+                {
+                        min, max, text
+                });
     }
 
     /**
@@ -216,7 +208,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         // @formatter:off
         return new Builder()
                 .checksum(this.checkBoxChecksum.isSelected())
-                .parallelism(this.checkBoxParallelism.isSelected())
+                //.parallelism(this.checkBoxParallelism.isSelected())
                 .delete(this.checkBoxDelete.isSelected())
                 .followSymLinks(this.checkBoxFollowSymLinks.isSelected())
                 .dryRun(this.checkBoxDryRun.isSelected())
@@ -289,7 +281,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.panel.add(labelPath, new GbcBuilder(0, row));
         this.panel.add(getTextFieldSenderPath(), new GbcBuilder(1, row).fillHorizontal());
         JButton buttonPath = new JButton(getMessage("jsync.open"));
-        buttonPath.addActionListener(event -> {
+        buttonPath.addActionListener(event ->
+        {
             File folder = selectFolder(getTextFieldSenderPath().getText());
 
             if (folder != null)
@@ -310,7 +303,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.panel.add(labelPath, new GbcBuilder(4, row).anchorEast());
         this.panel.add(getTextFieldReceiverPath(), new GbcBuilder(5, row).anchorEast().fillHorizontal());
         buttonPath = new JButton(getMessage("jsync.open"));
-        buttonPath.addActionListener(event -> {
+        buttonPath.addActionListener(event ->
+        {
             File folder = selectFolder(getTextFieldReceiverPath().getText());
 
             if (folder != null)
@@ -359,30 +353,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
                 getButtonCompare().setEnabled(!getTextFieldSenderPath().getText().isBlank() && !getTextFieldReceiverPath().getText().isBlank());
             }
         });
-    }
-
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFiles(int)
-     */
-    @Override
-    public void setProgressBarFiles(final int max)
-    {
-        if (SwingUtilities.isEventDispatchThread())
-        {
-            getProgressBarFiles().setMinimum(0);
-            getProgressBarFiles().setMaximum(max);
-            getProgressBarFiles().setValue(0);
-            getProgressBarFiles().setString("");
-        }
-        else
-        {
-            SwingUtilities.invokeLater(() -> {
-                getProgressBarFiles().setMinimum(0);
-                getProgressBarFiles().setMaximum(max);
-                getProgressBarFiles().setValue(0);
-                getProgressBarFiles().setString("");
-            });
-        }
     }
 
     /**
@@ -439,16 +409,16 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         this.checkBoxChecksum = new JCheckBox(getMessage("jsync.options.checksum"), false);
         panelOptions.add(this.checkBoxChecksum, new GbcBuilder(0, 0).anchorWest());
-        this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallelism"), false);
-        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 1).anchorWest());
+        this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
+        panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 0).anchorWest());
+
+//        this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallelism"), false);
+//        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 1).anchorWest());
 
         this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), true);
-        panelOptions.add(this.checkBoxDelete, new GbcBuilder(1, 0).anchorWest());
-        this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
-        panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 1).anchorWest());
-
+        panelOptions.add(this.checkBoxDelete, new GbcBuilder(0, 1).anchorWest());
         this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), true);
-        panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(0, 2).anchorWest().gridwidth(2));
+        panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(1, 1).anchorWest().gridwidth(2));
 
         confiPanel.add(panelOptions, new GbcBuilder(1, 0));
 
@@ -460,6 +430,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
     /**
      * @param fileSystem {@link EFileSystem}
+     *
      * @return {@link AccumulativeRunnable}<Object[]>
      */
     private AccumulativeRunnable<Object[]> getAccumulatorProgressBarMinMaxText(final EFileSystem fileSystem)
@@ -471,7 +442,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
             ScheduledAccumulativeRunnable<Object[]> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
             final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
 
-            sar.doOnSubmit(chunks -> {
+            sar.doOnSubmit(chunks ->
+            {
                 Object[] chunk = chunks.get(chunks.size() - 1);
                 progressBar.setMinimum((int) chunk[0]);
                 progressBar.setMaximum((int) chunk[1]);
@@ -487,6 +459,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
     /**
      * @param fileSystem {@link EFileSystem}
+     *
      * @return {@link AccumulativeRunnable}<String>
      */
     private AccumulativeRunnable<String> getAccumulatorProgressBarText(final EFileSystem fileSystem)
@@ -509,6 +482,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
     /**
      * @param fileSystem {@link EFileSystem}
+     *
      * @return {@link AccumulativeRunnable}<Integer>
      */
     private AccumulativeRunnable<Integer> getAccumulatorProgressBarValue(final EFileSystem fileSystem)
@@ -537,7 +511,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
         if (this.accumulatorTableAdd == null)
         {
             ScheduledAccumulativeRunnable<SyncPair> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
-            sar.doOnSubmit(chunks -> {
+            sar.doOnSubmit(chunks ->
+            {
                 getTableModel().addAll(chunks);
 
                 int row = getTableModel().getRowCount() - 1;
@@ -596,6 +571,31 @@ public class DefaultSyncView extends AbstractView implements SyncView
         }
 
         return this.progressBarFiles;
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFiles(int)
+     */
+    @Override
+    public void setProgressBarFiles(final int max)
+    {
+        if (SwingUtilities.isEventDispatchThread())
+        {
+            getProgressBarFiles().setMinimum(0);
+            getProgressBarFiles().setMaximum(max);
+            getProgressBarFiles().setValue(0);
+            getProgressBarFiles().setString("");
+        }
+        else
+        {
+            SwingUtilities.invokeLater(() ->
+            {
+                getProgressBarFiles().setMinimum(0);
+                getProgressBarFiles().setMaximum(max);
+                getProgressBarFiles().setValue(0);
+                getProgressBarFiles().setString("");
+            });
+        }
     }
 
     /**

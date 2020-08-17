@@ -22,8 +22,8 @@ public class Options
     public static final Charset CHARSET = StandardCharsets.UTF_8;
 
     /**
-    *
-    */
+     *
+     */
     public static final String EMPTY_STRING = "";
 
     /**
@@ -66,6 +66,7 @@ public class Options
 
         /**
          * @param checksum boolean
+         *
          * @return {@link Builder}
          */
         public Builder checksum(final boolean checksum)
@@ -76,6 +77,7 @@ public class Options
 
         /**
          * @param delete boolean
+         *
          * @return {@link Builder}
          */
         public Builder delete(final boolean delete)
@@ -86,6 +88,7 @@ public class Options
 
         /**
          * @param dryRun boolean
+         *
          * @return {@link Builder}
          */
         public Builder dryRun(final boolean dryRun)
@@ -96,6 +99,7 @@ public class Options
 
         /**
          * @param followSymLinks boolean
+         *
          * @return {@link Builder}
          */
         public Builder followSymLinks(final boolean followSymLinks)
@@ -104,15 +108,15 @@ public class Options
             return this;
         }
 
-        /**
-         * @param parallelism boolean
-         * @return {@link Builder}
-         */
-        public Builder parallelism(final boolean parallelism)
-        {
-            this.options.parallelism = parallelism;
-            return this;
-        }
+//        /**
+//         * @param parallelism boolean
+//         * @return {@link Builder}
+//         */
+//        public Builder parallelism(final boolean parallelism)
+//        {
+//            this.options.parallelism = parallelism;
+//            return this;
+//        }
     }
 
     /**
@@ -135,10 +139,10 @@ public class Options
      */
     private boolean followSymLinks = true;
 
-    /**
-     *
-     */
-    private boolean parallelism;
+//    /**
+//     *
+//     */
+//    private boolean parallelism;
 
     /**
      * Erzeugt eine neue Instanz von {@link Options}
@@ -180,11 +184,11 @@ public class Options
         return this.followSymLinks;
     }
 
-    /**
-     * @return boolean
-     */
-    public boolean isParallelism()
-    {
-        return this.parallelism;
-    }
+//    /**
+//     * @return boolean
+//     */
+//    public boolean isParallelism()
+//    {
+//        return this.parallelism;
+//    }
 }

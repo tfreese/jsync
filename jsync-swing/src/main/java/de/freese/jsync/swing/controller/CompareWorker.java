@@ -13,14 +13,14 @@ import de.freese.jsync.model.SyncPair;
 /**
  * @author Thomas Freese
  */
-public class CompareWorker extends AbstractWorker<Void, Void>
+class CompareWorker extends AbstractWorker<Void, Void>
 {
     /**
      * Erstellt ein neues {@link CompareWorker} Object.
      *
      * @param controller {@link JsyncController}
      */
-    public CompareWorker(final JsyncController controller)
+    CompareWorker(final JsyncController controller)
     {
         super(controller);
 

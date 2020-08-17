@@ -1,7 +1,4 @@
-/**
- * Created: 04.05.2020
- */
-
+//Created: 04.05.2020
 package de.freese.jsync.swing;
 
 import java.awt.GridBagConstraints;
@@ -14,10 +11,7 @@ import java.awt.Insets;
  */
 public class GbcBuilder extends GridBagConstraints
 {
-    /**
-     *
-     */
-    private static final long serialVersionUID = 9216852015033867169L;
+    private static final long serialVersionUID = -7701391832421914842L;
 
     /**
      * Erstellt ein neues {@link GbcBuilder} Object.<br>
@@ -191,6 +185,7 @@ public class GbcBuilder extends GridBagConstraints
 
     /**
      * @param gridheight int
+     *
      * @return {@link GbcBuilder}
      */
     public GbcBuilder gridheight(final int gridheight)
@@ -202,6 +197,7 @@ public class GbcBuilder extends GridBagConstraints
 
     /**
      * @param gridwidth int
+     *
      * @return {@link GbcBuilder}
      */
     public GbcBuilder gridwidth(final int gridwidth)
@@ -213,6 +209,7 @@ public class GbcBuilder extends GridBagConstraints
 
     /**
      * @param insets {@link Insets}
+     *
      * @return {@link GbcBuilder}
      */
     public GbcBuilder insets(final Insets insets)
@@ -223,10 +220,11 @@ public class GbcBuilder extends GridBagConstraints
     }
 
     /**
-     * @param top int
-     * @param left int
+     * @param top    int
+     * @param left   int
      * @param bottom int
-     * @param right int
+     * @param right  int
+     *
      * @return {@link GbcBuilder}
      */
     public GbcBuilder insets(final int top, final int left, final int bottom, final int right)
@@ -238,6 +236,7 @@ public class GbcBuilder extends GridBagConstraints
 
     /**
      * @param weightx double
+     *
      * @return {@link GbcBuilder}
      */
     public GbcBuilder weightx(final double weightx)
@@ -249,6 +248,7 @@ public class GbcBuilder extends GridBagConstraints
 
     /**
      * @param weighty double
+     *
      * @return {@link GbcBuilder}
      */
     public GbcBuilder weighty(final double weighty)

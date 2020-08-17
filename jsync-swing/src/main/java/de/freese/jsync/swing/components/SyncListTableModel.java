@@ -5,6 +5,7 @@
 package de.freese.jsync.swing.components;
 
 import java.util.List;
+
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.swing.JSyncSwingApplication;
 import de.freese.jsync.utils.JSyncUtils;
@@ -38,15 +39,15 @@ public class SyncListTableModel extends AbstractListTableModel<SyncPair>
     public Class<? extends Object> getColumnClass(final int columnIndex)
     {
         return switch (columnIndex)
-        {
-            case 0, 1, 2, 3, 4 -> String.class;
+                {
+                    case 0, 1, 2, 3, 4 -> String.class;
 
-            default -> Object.class;
-            // default -> {
-            // System.err.println("Exception";
-            // yield "..."; // return Value
-            // }
-        };
+                    default -> Object.class;
+                    // default -> {
+                    // System.err.println("Exception";
+                    // yield "..."; // return Value
+                    // }
+                };
     }
 
     /**
@@ -67,19 +68,19 @@ public class SyncListTableModel extends AbstractListTableModel<SyncPair>
         SyncPair syncPair = getObjectAt(rowIndex);
 
         return switch (columnIndex)
-        {
-            case 0 -> syncPair.getSenderItem() != null ? syncPair.getSenderItem().getRelativePath() : null;
-            case 1 -> (syncPair.getSenderItem() != null) && syncPair.getSenderItem().isFile()
-                    ? JSyncUtils.toHumanReadableSize(syncPair.getSenderItem().getSize()) : null;
-            case 2 -> syncPair.getStatus();
-            case 3 -> syncPair.getReceiverItem() != null ? syncPair.getReceiverItem().getRelativePath() : null;
-            case 4 -> (syncPair.getReceiverItem() != null) && syncPair.getReceiverItem().isFile()
-                    ? JSyncUtils.toHumanReadableSize(syncPair.getReceiverItem().getSize()) : null;
-            default -> null;
-            // default -> {
-            // System.err.println("Exception";
-            // yield "..."; // return Value
-            // }
-        };
+                {
+                    case 0 -> syncPair.getSenderItem() != null ? syncPair.getSenderItem().getRelativePath() : null;
+                    case 1 -> (syncPair.getSenderItem() != null) && syncPair.getSenderItem().isFile()
+                            ? JSyncUtils.toHumanReadableSize(syncPair.getSenderItem().getSize()) : null;
+                    case 2 -> syncPair.getStatus();
+                    case 3 -> syncPair.getReceiverItem() != null ? syncPair.getReceiverItem().getRelativePath() : null;
+                    case 4 -> (syncPair.getReceiverItem() != null) && syncPair.getReceiverItem().isFile()
+                            ? JSyncUtils.toHumanReadableSize(syncPair.getReceiverItem().getSize()) : null;
+                    default -> null;
+                    // default -> {
+                    // System.err.println("Exception";
+                    // yield "..."; // return Value
+                    // }
+                };
     }
 }
