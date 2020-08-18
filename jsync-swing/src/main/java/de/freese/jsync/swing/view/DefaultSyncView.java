@@ -22,11 +22,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
-import javax.swing.table.DefaultTableCellRenderer;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
@@ -36,6 +34,7 @@ import de.freese.jsync.swing.GbcBuilder;
 import de.freese.jsync.swing.components.AccumulativeRunnable;
 import de.freese.jsync.swing.components.DocumentListenerAdapter;
 import de.freese.jsync.swing.components.ScheduledAccumulativeRunnable;
+import de.freese.jsync.swing.components.SyncListTableCellRenderer;
 import de.freese.jsync.swing.components.SyncListTableModel;
 
 /**
@@ -650,12 +649,13 @@ public class DefaultSyncView extends AbstractView implements SyncView
             this.table.getColumnModel().getColumn(4).setMinWidth(70);
             this.table.getColumnModel().getColumn(4).setMaxWidth(70);
 
-            DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
-            cellRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-
-            this.table.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
-            this.table.getColumnModel().getColumn(2).setCellRenderer(cellRenderer);
-            this.table.getColumnModel().getColumn(4).setCellRenderer(cellRenderer);
+            this.table.setDefaultRenderer(Object.class, new SyncListTableCellRenderer());
+//            DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
+//            cellRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+//
+//            this.table.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
+//            this.table.getColumnModel().getColumn(2).setCellRenderer(cellRenderer);
+//            this.table.getColumnModel().getColumn(4).setCellRenderer(cellRenderer);
         }
 
         return this.table;
