@@ -1,17 +1,13 @@
-/**
- * Created: 14.11.2018
- */
-
+// Created: 14.11.2018
 package de.freese.jsync.server;
 
 import java.nio.ByteBuffer;
 import java.util.Objects;
-import org.slf4j.Logger;
+
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.receiver.Receiver;
-import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
+import org.slf4j.Logger;
 
 /**
  * Session-Object für den Server.
@@ -21,18 +17,23 @@ import de.freese.jsync.model.SyncItem;
 public class JSyncSession
 {
     /**
-    *
-    */
+     *
+     */
     private final ByteBuffer buffer;
 
     /**
-    *
-    */
+     *
+     */
+    private final Logger logger;
+
+    /**
+     *
+     */
     private String checksum = null;
 
     /**
-    *
-    */
+     *
+     */
     private boolean followSymLinks = true;
 
     /**
@@ -43,21 +44,6 @@ public class JSyncSession
     /**
      *
      */
-    private final Logger logger;
-
-    /**
-     *
-     */
-    private Receiver receiver = null;
-
-    /**
-    *
-    */
-    private Sender sender = null;
-
-    /**
-    *
-    */
     private SyncItem syncItem = null;
 
     /**
@@ -90,54 +76,6 @@ public class JSyncSession
     }
 
     /**
-     * @return {@link JSyncCommand}
-     */
-    public JSyncCommand getLastCommand()
-    {
-        return this.lastCommand;
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    public Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
-     * @return {@link Receiver}
-     */
-    public Receiver getReceiver()
-    {
-        return this.receiver;
-    }
-
-    /**
-     * @return {@link Sender}
-     */
-    public Sender getSender()
-    {
-        return this.sender;
-    }
-
-    /**
-     * @return {@link SyncItem}
-     */
-    public SyncItem getSyncItem()
-    {
-        return this.syncItem;
-    }
-
-    /**
-     * @return boolean
-     */
-    public boolean isFollowSymLinks()
-    {
-        return this.followSymLinks;
-    }
-
-    /**
      * @param checksum String
      */
     public void setChecksum(final String checksum)
@@ -146,11 +84,11 @@ public class JSyncSession
     }
 
     /**
-     * @param followSymLinks boolean
+     * @return {@link JSyncCommand}
      */
-    public void setFollowSymLinks(final boolean followSymLinks)
+    public JSyncCommand getLastCommand()
     {
-        this.followSymLinks = followSymLinks;
+        return this.lastCommand;
     }
 
     /**
@@ -162,19 +100,19 @@ public class JSyncSession
     }
 
     /**
-     * @param receiver {@link Receiver}
+     * @return {@link Logger}
      */
-    public void setReceiver(final Receiver receiver)
+    public Logger getLogger()
     {
-        this.receiver = receiver;
+        return this.logger;
     }
 
     /**
-     * @param sender {@link Sender}
+     * @return {@link SyncItem}
      */
-    public void setSender(final Sender sender)
+    public SyncItem getSyncItem()
     {
-        this.sender = sender;
+        return this.syncItem;
     }
 
     /**
@@ -183,5 +121,21 @@ public class JSyncSession
     public void setSyncItem(final SyncItem syncItem)
     {
         this.syncItem = syncItem;
+    }
+
+    /**
+     * @return boolean
+     */
+    public boolean isFollowSymLinks()
+    {
+        return this.followSymLinks;
+    }
+
+    /**
+     * @param followSymLinks boolean
+     */
+    public void setFollowSymLinks(final boolean followSymLinks)
+    {
+        this.followSymLinks = followSymLinks;
     }
 }

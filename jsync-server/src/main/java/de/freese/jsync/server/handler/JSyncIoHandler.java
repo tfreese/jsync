@@ -1,28 +1,21 @@
-/**
- * Created: 04.11.2018
- */
-
+// Created: 04.11.2018
 package de.freese.jsync.server.handler;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.WritableByteChannel;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+import java.nio.channels.SocketChannel;
 import org.slf4j.Logger;
+import de.freese.jsync.Options;
+import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.filesystem.sender.Sender;
-import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
-import de.freese.jsync.server.JSyncSession;
 
 /**
  * Verarbeitet den Request und Response.<br>
@@ -34,6 +27,21 @@ import de.freese.jsync.server.JSyncSession;
 public class JSyncIoHandler extends AbstractIoHandler
 {
     /**
+     *
+     */
+    private static final ThreadLocal<ByteBuffer> THREAD_LOCAL_BUFFER = ThreadLocal.withInitial(() -> ByteBuffer.allocateDirect(Options.BUFFER_SIZE));
+
+    /**
+     *
+     */
+    private static final ThreadLocal<Receiver> THREAD_LOCAL_RECEIVER = ThreadLocal.withInitial(LocalhostReceiver::new);
+
+    /**
+     *
+     */
+    private static final ThreadLocal<Sender> THREAD_LOCAL_SENDER = ThreadLocal.withInitial(LocalhostSender::new);
+
+    /**
      * Erstellt ein neues {@link JSyncIoHandler} Object.
      */
     public JSyncIoHandler()
@@ -42,24 +50,23 @@ public class JSyncIoHandler extends AbstractIoHandler
     }
 
     /**
-     * @see de.freese.jsync.server.handler.IoHandler#read(java.nio.channels.SelectionKey, org.slf4j.Logger)
+     * @see IoHandler#read(SelectionKey, Logger)
      */
-    @Override
     @SuppressWarnings("resource")
+    @Override
     public void read(final SelectionKey selectionKey, final Logger logger) throws Exception
     {
         ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
 
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
         // JSyncCommand lesen.
-        ByteBuffer buffer = session != null ? session.getBuffer() : ByteBuffer.allocateDirect(256);
+        ByteBuffer buffer = THREAD_LOCAL_BUFFER.get();
 
         buffer.clear();
         channel.read(buffer);
         buffer.flip();
 
         JSyncCommand command = Serializers.readFrom(buffer, JSyncCommand.class);
+        logger.debug("read command: {}", command);
 
         if (command == null)
         {
@@ -71,713 +78,369 @@ public class JSyncIoHandler extends AbstractIoHandler
         switch (command)
         {
             case DISCONNECT:
-                logger.debug("read disconnect");
-
-                if (session != null)
-                {
-                    session.setLastCommand(null);
-                }
-
                 selectionKey.attach(null);
                 selectionKey.interestOps(SelectionKey.OP_CONNECT);
                 break;
+
             case CONNECT:
-                requestConnect(selectionKey, channel, logger);
-                break;
-
-            case TARGET_CREATE_SYNC_ITEMS:
-                receiverRequestCreateSyncItems(selectionKey, channel);
-                break;
-
-            case TARGET_DELETE_FILE:
-                receiverRequestDeleteFile(selectionKey, channel);
-                break;
-
-            case TARGET_DELETE_DIRECTORY:
-                receiverRequestDeleteDirectory(selectionKey, channel);
-                break;
-
-            case TARGET_WRITEABLE_FILE_CHANNEL:
-                receiverRequestFileChannel(selectionKey, channel);
-                break;
-
-            case TARGET_VALIDATE_FILE:
-                receiverRequestValidateFile(selectionKey, channel);
-                break;
-
-            case TARGET_UPDATE_FILE:
-                receiverRequestUpdateFile(selectionKey, channel);
-                break;
-
-            case TARGET_UPDATE_DIRECTORY:
-                receiverRequestUpdateDirectory(selectionKey, channel);
-                break;
-
-            case SOURCE_CREATE_SYNC_ITEMS:
-                senderRequestCreateSyncItems(selectionKey, channel);
-                break;
-
-            case SOURCE_READABLE_FILE_CHANNEL:
-                senderRequestFileChannel(selectionKey, channel);
-                break;
-
-            case SOURCE_CHECKSUM:
-                senderRequestChecksum(selectionKey, channel);
+                // Empty
                 break;
 
             case TARGET_CHECKSUM:
-                receiverRequestChecksum(selectionKey, channel);
+                createChecksum(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
                 break;
+
+            case TARGET_CREATE_SYNC_ITEMS:
+                createSyncItems(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
+                break;
+
+            case TARGET_DELETE:
+                delete(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
+                break;
+
+            // case TARGET_WRITEABLE_FILE_CHANNEL:
+            // receiverRequestFileChannel(selectionKey, channel);
+            // break;
+
+            case TARGET_VALIDATE_FILE:
+                validate(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
+                break;
+
+            case TARGET_UPDATE:
+                update(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
+                break;
+
+            case SOURCE_CHECKSUM:
+                createChecksum(selectionKey, buffer, logger, THREAD_LOCAL_SENDER.get());
+                break;
+
+            case SOURCE_CREATE_SYNC_ITEMS:
+                createSyncItems(selectionKey, buffer, logger, THREAD_LOCAL_SENDER.get());
+                break;
+
+            // case SOURCE_READABLE_FILE_CHANNEL:
+            // senderRequestFileChannel(selectionKey, channel);
+            // break;
 
             default:
                 break;
         }
+
+        selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
 
     /**
+     * @see IoHandler#write(SelectionKey, Logger)
+     */
+    @Override
+    public void write(final SelectionKey selectionKey, final Logger logger) throws Exception
+    {
+        // WritableByteChannel channel = (WritableByteChannel) selectionKey.channel();
+
+        selectionKey.interestOps(SelectionKey.OP_READ);
+    }
+
+    /**
+     * Create the checksum.
+     *
      * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
+     * @param buffer {@link ByteBuffer}
+     * @param logger {@link Logger}
+     * @param fileSystem {@link FileSystem}
      * @throws Exception Falls was schief geht.
      */
-    protected void receiverRequestChecksum(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
+    @SuppressWarnings("resource")
+    protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final FileSystem fileSystem) throws Exception
     {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
+        String baseDir = Serializers.readFrom(buffer, String.class);
+        String relativeFile = Serializers.readFrom(buffer, String.class);
 
-        session.getLogger().debug("receiver request: Checksum");
+        logger.debug("Create Checksum: {}/{}", baseDir, relativeFile);
 
-        ByteBuffer buffer = session.getBuffer();
-
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-
-        String relativeFile = new String(bytes, getCharset());
-
-        Receiver receiver = session.getReceiver();
-        String checksum = receiver.getChecksum(relativeFile, i -> {
+        String checksum = fileSystem.getChecksum(baseDir, relativeFile, i -> {
         });
 
-        session.setChecksum(checksum);
+        logger.debug("Checksum created: {}/{}", baseDir, relativeFile);
 
         buffer.clear();
-        session.setLastCommand(JSyncCommand.TARGET_CHECKSUM);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
+        Serializers.writeTo(buffer, checksum);
+        buffer.flip();
+
+        SocketChannel channel = (SocketChannel) selectionKey.channel();
+        channel.write(buffer);
     }
 
     /**
+     * Create the Sync-Items.
+     *
      * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
+     * @param buffer {@link ByteBuffer}
+     * @param logger {@link Logger}
+     * @param fileSystem {@link FileSystem}
      * @throws Exception Falls was schief geht.
      */
-    protected void receiverRequestCreateSyncItems(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
+    @SuppressWarnings("resource")
+    protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final FileSystem fileSystem) throws Exception
     {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
+        String baseDir = Serializers.readFrom(buffer, String.class);
+        boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
 
-        session.getLogger().debug("receiver request: Create SyncItems");
+        logger.debug("Create SyncItems: {}", baseDir);
 
-        ByteBuffer buffer = session.getBuffer();
+        SocketChannel channel = (SocketChannel) selectionKey.channel();
 
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-        String basePath = new String(bytes, getCharset());
+        fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
+            logger.debug("Send SyncItem: {}", syncItem);
 
-        boolean followSymLinks = buffer.get() == 1;
-        session.setFollowSymLinks(followSymLinks);
-
-        Path base = Paths.get(basePath);
-
-        Receiver receiver = new LocalhostReceiver(base.toUri());
-        session.setReceiver(receiver);
-
-        buffer.clear();
-        session.setLastCommand(JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void receiverRequestDeleteDirectory(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("receiver request: Delete Directory");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-        String directory = new String(bytes, getCharset());
-
-        session.getReceiver().deleteDirectory(directory);
-        session.setLastCommand(JSyncCommand.TARGET_DELETE_DIRECTORY);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void receiverRequestDeleteFile(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("receiver request: Delete File");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-        String file = new String(bytes, getCharset());
-
-        session.getReceiver().deleteFile(file);
-        session.setLastCommand(JSyncCommand.TARGET_DELETE_FILE);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void receiverRequestFileChannel(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("receiver request: FileChannel");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        long fileSize = buffer.getLong();
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-
-        String fileName = new String(bytes, getCharset());
-
-        SyncItem syncItem = new DefaultSyncItem(fileName);
-        syncItem.setFile(true);
-        syncItem.setSize(fileSize);
-
-        Receiver receiver = session.getReceiver();
-
-        long fileBytesTransferred = 0;
-
-        // BiConsumer<Long, Long> monitor = (written, gesamt) -> {
-        // String msg = String.format("Writen data for %s: %s = %6.2f %%", fileName, JSyncUtils.toHumanReadableSize(written),
-        // JSyncUtils.getPercent(written, gesamt));
-        // getLogger().debug(msg);
-        // };
-
-        // MessageDigest messageDigest = DigestUtils.createSha256Digest();
-        // DigestUtils.digest(messageDigest, buffer);
-
-        try (WritableByteChannel outChannel = receiver.getChannel(syncItem))
-        // try (WritableByteChannel outChannel = new MonitoringWritableByteChannel(receiver.getChannel(syncItem), monitor, fileSize))
-        {
-            // Restlichen Buffer in die Datei schreiben.
-            fileBytesTransferred += outChannel.write(buffer);
             buffer.clear();
+            Serializers.writeTo(buffer, syncItem);
+            buffer.flip();
 
-            while (fileBytesTransferred < fileSize)
+            try
             {
-                channel.read(buffer);
-                buffer.flip();
-
-                // DigestUtils.digest(messageDigest, buffer);
-
                 while (buffer.hasRemaining())
                 {
-                    fileBytesTransferred += outChannel.write(buffer);
+                    channel.write(buffer);
                 }
-
-                buffer.clear();
             }
-
-            if (outChannel instanceof FileChannel)
+            catch (IOException ioex)
             {
-                ((FileChannel) outChannel).force(true);
+                logger.error(null, ioex);
             }
-        }
+        });
 
-        // Funktioniert, ist aber falsche Stelle.
-        // String checksum = DigestUtils.digestAsHex(messageDigest);
-        // session.setLastCecksum(checksum);
-
-        session.setLastCommand(JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
+        logger.debug("SyncItems written: {}", baseDir);
     }
 
     /**
+     * Delete Directory or File.
+     *
      * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
+     * @param buffer {@link ByteBuffer}
+     * @param logger {@link Logger}
+     * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
-    protected void receiverRequestUpdateDirectory(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
+    protected void delete(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final Receiver receiver) throws Exception
     {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
+        String baseDir = Serializers.readFrom(buffer, String.class);
+        String relativePath = Serializers.readFrom(buffer, String.class);
+        boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
 
-        session.getLogger().debug("receiver request: Update Directory");
+        logger.debug("Delete: {}/{}", baseDir, relativePath);
 
-        ByteBuffer buffer = session.getBuffer();
+        receiver.delete(baseDir, relativePath, followSymLinks);
 
+        logger.debug("Deleted: {}/{}", baseDir, relativePath);
+    }
+
+    /**
+     * Update Directory or File.
+     *
+     * @param selectionKey {@link SelectionKey}
+     * @param buffer {@link ByteBuffer}
+     * @param logger {@link Logger}
+     * @param receiver {@link Receiver}
+     * @throws Exception Falls was schief geht.
+     */
+    protected void update(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final Receiver receiver) throws Exception
+    {
+        String baseDir = Serializers.readFrom(buffer, String.class);
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
 
-        Receiver receiver = session.getReceiver();
-        receiver.updateDirectory(syncItem);
+        logger.debug("Update: {}/{}", baseDir, syncItem.getRelativePath());
 
-        session.setLastCommand(JSyncCommand.TARGET_UPDATE_DIRECTORY);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
+        receiver.update(baseDir, syncItem);
+
+        logger.debug("Updated: {}/{}", baseDir, syncItem.getRelativePath());
     }
 
     /**
+     * Validate Directory or File.
+     *
      * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
+     * @param buffer {@link ByteBuffer}
+     * @param logger {@link Logger}
+     * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
-    protected void receiverRequestUpdateFile(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
+    protected void validate(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final Receiver receiver) throws Exception
     {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("receiver request: Update File");
-
-        ByteBuffer buffer = session.getBuffer();
-
+        String baseDir = Serializers.readFrom(buffer, String.class);
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
+        boolean withChecksum = Serializers.readFrom(buffer, Boolean.class);
 
-        Receiver receiver = session.getReceiver();
-        receiver.updateFile(syncItem);
-
-        session.setLastCommand(JSyncCommand.TARGET_UPDATE_FILE);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void receiverRequestValidateFile(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("receiver request: Validate File");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        long fileSize = buffer.getLong();
-        boolean withChecksum = buffer.get() == 1;
-
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-        String fileName = new String(bytes, getCharset());
-
-        SyncItem syncItem = new DefaultSyncItem(fileName);
-        syncItem.setFile(true);
-        syncItem.setSize(fileSize);
-
-        if (buffer.get() == 1)
-        {
-            bytes = new byte[buffer.getInt()];
-            buffer.get(bytes);
-
-            String checksum = new String(bytes, getCharset());
-            syncItem.setChecksum(checksum);
-        }
-
-        Receiver receiver = session.getReceiver();
+        logger.debug("Validate: {}/{}", baseDir, syncItem.getRelativePath());
 
         try
         {
-            receiver.validateFile(syncItem, withChecksum);
+            receiver.validateFile(baseDir, syncItem, withChecksum);
         }
         catch (Exception ex)
         {
-            session.getLogger().error(null, ex);
-        }
+            logger.error(null, ex);
 
-        session.setLastCommand(JSyncCommand.TARGET_VALIDATE_FILE);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link WritableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void receiverResponseChecksum(final SelectionKey selectionKey, final WritableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("receiver response: Checksum");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        String checksum = session.getChecksum();
-        byte[] bytes = checksum.getBytes(getCharset());
-
-        buffer.clear();
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
-        buffer.flip();
-        channel.write(buffer);
-
-        session.getLogger().debug("receiver response: Checksum written");
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link WritableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void receiverResponseCreateSyncItems(final SelectionKey selectionKey, final WritableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("receiver response: Create SyncItems");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        Receiver receiver = session.getReceiver();
-        List<SyncItem> syncItems = receiver.getSyncItems(session.isFollowSymLinks());
-
-        // Anzahl
-        buffer.clear();
-        buffer.putInt(syncItems.size());
-        buffer.flip();
-        channel.write(buffer);
-
-        syncItems.forEach(syncItem -> {
             buffer.clear();
-
-            Serializers.writeTo(buffer, syncItem);
-
+            Serializers.writeTo(buffer, ex.getMessage());
             buffer.flip();
-
-            try
-            {
-                while (buffer.hasRemaining())
-                {
-                    channel.write(buffer);
-                }
-            }
-            catch (IOException ioex)
-            {
-                session.getLogger().error(null, ioex);
-            }
-        });
-
-        session.getLogger().debug("receiver response: Create SyncItems written");
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
-     * @param logger {@link Logger}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void requestConnect(final SelectionKey selectionKey, final ReadableByteChannel channel, final Logger logger) throws Exception
-    {
-        logger.debug("request: Connect");
-
-        JSyncSession session = new JSyncSession(logger);
-
-        selectionKey.attach(session);
-
-        session.setLastCommand(JSyncCommand.CONNECT);
-        selectionKey.interestOps(SelectionKey.OP_READ);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void senderRequestChecksum(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("sender request: Checksum");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-
-        String relativePath = new String(bytes, getCharset());
-
-        Sender sender = session.getSender();
-        String checksum = sender.getChecksum(relativePath, i -> {
-        });
-
-        session.setChecksum(checksum);
-
-        buffer.clear();
-        session.setLastCommand(JSyncCommand.SOURCE_CHECKSUM);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void senderRequestCreateSyncItems(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("sender request: Create SyncItems");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-        String basePath = new String(bytes, getCharset());
-
-        boolean followSymLinks = buffer.get() == 1;
-        session.setFollowSymLinks(followSymLinks);
-
-        Path base = Paths.get(basePath);
-
-        Sender source = new LocalhostSender(base.toUri());
-        session.setSender(source);
-
-        buffer.clear();
-        session.setLastCommand(JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link ReadableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void senderRequestFileChannel(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("sender request: FileChannel");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        long fileSize = buffer.getLong();
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
-
-        String fileName = new String(bytes, getCharset());
-
-        SyncItem syncItem = new DefaultSyncItem(fileName);
-        syncItem.setFile(true);
-        syncItem.setSize(fileSize);
-
-        session.setSyncItem(syncItem);
-
-        session.setLastCommand(JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link WritableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void senderResponseChecksum(final SelectionKey selectionKey, final WritableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("sender response: Checksum");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        String checksum = session.getChecksum();
-        byte[] bytes = checksum.getBytes(getCharset());
-
-        buffer.clear();
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
-        buffer.flip();
-        channel.write(buffer);
-
-        session.getLogger().debug("sender response: Checksum written");
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link WritableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void senderResponseCreateSyncItems(final SelectionKey selectionKey, final WritableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("sender response: Create SyncItems");
-
-        ByteBuffer buffer = session.getBuffer();
-
-        Sender sender = session.getSender();
-        List<SyncItem> syncItems = sender.getSyncItems(session.isFollowSymLinks());
-
-        // Anzahl
-        buffer.clear();
-        buffer.putInt(syncItems.size());
-        buffer.flip();
-        channel.write(buffer);
-
-        syncItems.forEach(syncItem -> {
-            buffer.clear();
-
-            Serializers.writeTo(buffer, syncItem);
-
-            buffer.flip();
-
-            try
-            {
-                while (buffer.hasRemaining())
-                {
-                    channel.write(buffer);
-                }
-            }
-            catch (IOException ioex)
-            {
-                session.getLogger().error(null, ioex);
-            }
-        });
-
-        session.getLogger().debug("sender response: Create SyncItems written");
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param channel {@link WritableByteChannel}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void senderResponseFileChannel(final SelectionKey selectionKey, final WritableByteChannel channel) throws Exception
-    {
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-
-        session.getLogger().debug("sender response: FileChannel");
-
-        ByteBuffer buffer = session.getBuffer();
-        Sender sender = session.getSender();
-        SyncItem syncItem = session.getSyncItem();
-
-        long fileSize = syncItem.getSize();
-        long fileBytesTransferred = 0;
-
-        // BiConsumer<Long, Long> monitor = (read, gesamt) -> {
-        // String msg = String.format("read data for %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(read),
-        // JSyncUtils.getPercent(read, gesamt));
-        // getLogger().debug(msg);
-        // };
-
-        // MessageDigest messageDigest = DigestUtils.createSha256Digest();
-        // DigestUtils.digest(messageDigest, buffer);
-
-        buffer.clear();
-
-        try (ReadableByteChannel inChannel = sender.getChannel(syncItem))
-        // try (ReadableByteChannel inChannel = new MonitoringReadableByteChannel(sender.getChannel(syncItem), monitor, fileSize))
-        {
-            while (fileBytesTransferred < fileSize)
-            {
-                inChannel.read(buffer);
-                buffer.flip();
-
-                while (buffer.hasRemaining())
-                {
-                    fileBytesTransferred += channel.write(buffer);
-                }
-
-                buffer.clear();
-            }
-        }
-        finally
-        {
-            session.setSyncItem(null);
-        }
-    }
-
-    /**
-     * @see de.freese.jsync.server.handler.IoHandler#write(java.nio.channels.SelectionKey, org.slf4j.Logger)
-     */
-    @Override
-    @SuppressWarnings("resource")
-    public void write(final SelectionKey selectionKey, final Logger logger) throws Exception
-    {
-        WritableByteChannel channel = (WritableByteChannel) selectionKey.channel();
-        JSyncSession session = (JSyncSession) selectionKey.attachment();
-        ByteBuffer buffer = session.getBuffer();
-
-        switch (session.getLastCommand())
-        {
-            // case CONNECT:
-            // writeFinishFlag(channel, buffer);
-            // break;
-
-            case TARGET_CREATE_SYNC_ITEMS:
-                receiverResponseCreateSyncItems(selectionKey, channel);
-                // writeFinishFlag(channel, buffer);
-                break;
-
-            case TARGET_DELETE_FILE:
-                writeFinishFlag(channel, buffer);
-                break;
-
-            case TARGET_DELETE_DIRECTORY:
-                writeFinishFlag(channel, buffer);
-                break;
-
-            case TARGET_WRITEABLE_FILE_CHANNEL:
-                writeFinishFlag(channel, buffer);
-                break;
-
-            case TARGET_VALIDATE_FILE:
-                writeFinishFlag(channel, buffer);
-                break;
-
-            case TARGET_UPDATE_FILE:
-                writeFinishFlag(channel, buffer);
-                break;
-
-            case TARGET_UPDATE_DIRECTORY:
-                writeFinishFlag(channel, buffer);
-                break;
-
-            case SOURCE_CREATE_SYNC_ITEMS:
-                senderResponseCreateSyncItems(selectionKey, channel);
-                // writeFinishFlag(channel, buffer);
-                break;
-
-            case SOURCE_READABLE_FILE_CHANNEL:
-                senderResponseFileChannel(selectionKey, channel);
-                break;
-
-            case SOURCE_CHECKSUM:
-                senderResponseChecksum(selectionKey, channel);
-                break;
-
-            case TARGET_CHECKSUM:
-                receiverResponseChecksum(selectionKey, channel);
-                break;
-
-            default:
-                break;
         }
 
-        selectionKey.interestOps(SelectionKey.OP_READ);
+        logger.debug("Validated: {}/{}", baseDir, syncItem.getRelativePath());
     }
 
-    /**
-     * @param channel {@link WritableByteChannel}
-     * @param buffer {@link ByteBuffer}
-     * @throws IOException Falls was schief geht.
-     */
-    private void writeFinishFlag(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException
-    {
-        buffer.clear();
-        buffer.put(Byte.MIN_VALUE);
-        buffer.flip();
-        // channel.write(buffer);
-    }
+    // /**
+    // * @param selectionKey {@link SelectionKey}
+    // * @param channel {@link ReadableByteChannel}
+    // *
+    // * @throws Exception Falls was schief geht.
+    // */
+    // protected void receiverRequestFileChannel(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
+    // {
+    // JSyncSession session = (JSyncSession) selectionKey.attachment();
+    //
+    // session.getLogger().debug("receiver request: FileChannel");
+    //
+    // ByteBuffer buffer = session.getBuffer();
+    //
+    // String baseDir = Serializers.readFrom(buffer, String.class);
+    // String relativeFile = Serializers.readFrom(buffer, String.class);
+    //
+    //// long fileSize = buffer.getLong();
+    //// byte[] bytes = new byte[buffer.getInt()];
+    //// buffer.get(bytes);
+    ////
+    //// String fileName = new String(bytes, getCharset());
+    ////
+    //// SyncItem syncItem = new DefaultSyncItem(fileName);
+    //// syncItem.setFile(true);
+    //// syncItem.setSize(fileSize);
+    //
+    // Receiver receiver = THREAD_LOCAL_RECEIVER.get();
+    //
+    // long fileBytesTransferred = 0;
+    //
+    // // BiConsumer<Long, Long> monitor = (written, gesamt) -> {
+    // // String msg = String.format("Writen data for %s: %s = %6.2f %%", fileName, JSyncUtils.toHumanReadableSize(written),
+    // // JSyncUtils.getPercent(written, gesamt));
+    // // getLogger().debug(msg);
+    // // };
+    //
+    // // MessageDigest messageDigest = DigestUtils.createSha256Digest();
+    // // DigestUtils.digest(messageDigest, buffer);
+    //
+    // try (WritableByteChannel outChannel = receiver.getChannel(baseDir, relativeFile))
+    // // try (WritableByteChannel outChannel = new MonitoringWritableByteChannel(receiver.getChannel(syncItem), monitor, fileSize))
+    // {
+    // // Restlichen Buffer in die Datei schreiben.
+    // fileBytesTransferred += outChannel.write(buffer);
+    // buffer.clear();
+    //
+    //// while (fileBytesTransferred < fileSize)
+    // {
+    // channel.read(buffer);
+    // buffer.flip();
+    //
+    // // DigestUtils.digest(messageDigest, buffer);
+    //
+    // while (buffer.hasRemaining())
+    // {
+    // fileBytesTransferred += outChannel.write(buffer);
+    // }
+    //
+    // buffer.clear();
+    // }
+    //
+    // if (outChannel instanceof FileChannel)
+    // {
+    // ((FileChannel) outChannel).force(true);
+    // }
+    // }
+    //
+    // // Funktioniert, ist aber falsche Stelle.
+    // // String checksum = DigestUtils.digestAsHex(messageDigest);
+    // // session.setLastCecksum(checksum);
+    //
+    // session.setLastCommand(JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
+    // selectionKey.interestOps(SelectionKey.OP_WRITE);
+    // }
+
+    // /**
+    // * @param selectionKey {@link SelectionKey}
+    // * @param channel {@link ReadableByteChannel}
+    // *
+    // * @throws Exception Falls was schief geht.
+    // */
+    // protected void senderRequestFileChannel(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
+    // {
+    // JSyncSession session = (JSyncSession) selectionKey.attachment();
+    //
+    // session.getLogger().debug("sender request: FileChannel");
+    //
+    // ByteBuffer buffer = session.getBuffer();
+    //
+    // String baseDir = Serializers.readFrom(buffer, String.class);
+    // String relativeFile = Serializers.readFrom(buffer, String.class);
+    //
+    // SyncItem syncItem = new DefaultSyncItem(fileName);
+    // syncItem.setFile(true);
+    // syncItem.setSize(fileSize);
+    //
+    // session.setSyncItem(syncItem);
+    //
+    // session.setLastCommand(JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
+    // selectionKey.interestOps(SelectionKey.OP_WRITE);
+    // }
+
+    // /**
+    // * @param selectionKey {@link SelectionKey}
+    // * @param channel {@link WritableByteChannel}
+    // *
+    // * @throws Exception Falls was schief geht.
+    // */
+    // protected void senderResponseFileChannel(final SelectionKey selectionKey, final WritableByteChannel channel) throws Exception
+    // {
+    // JSyncSession session = (JSyncSession) selectionKey.attachment();
+    //
+    // session.getLogger().debug("sender response: FileChannel");
+    //
+    // ByteBuffer buffer = session.getBuffer();
+    //
+    // Sender sender = THREAD_LOCAL_SENDER.get();
+    // SyncItem syncItem = session.getSyncItem();
+    //
+    // long fileSize = syncItem.getSize();
+    // long fileBytesTransferred = 0;
+    //
+    // // BiConsumer<Long, Long> monitor = (read, gesamt) -> {
+    // // String msg = String.format("read data for %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(read),
+    // // JSyncUtils.getPercent(read, gesamt));
+    // // getLogger().debug(msg);
+    // // };
+    //
+    // // MessageDigest messageDigest = DigestUtils.createSha256Digest();
+    // // DigestUtils.digest(messageDigest, buffer);
+    //
+    // buffer.clear();
+    //
+    // try (ReadableByteChannel inChannel = sender.getChannel(syncItem))
+    // // try (ReadableByteChannel inChannel = new MonitoringReadableByteChannel(sender.getChannel(syncItem), monitor, fileSize))
+    // {
+    // while (fileBytesTransferred < fileSize)
+    // {
+    // inChannel.read(buffer);
+    // buffer.flip();
+    //
+    // while (buffer.hasRemaining())
+    // {
+    // fileBytesTransferred += channel.write(buffer);
+    // }
+    //
+    // buffer.clear();
+    // }
+    // }
+    // finally
+    // {
+    // session.setSyncItem(null);
+    // }
+    // }
 }

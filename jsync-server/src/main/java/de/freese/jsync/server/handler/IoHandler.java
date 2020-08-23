@@ -1,12 +1,10 @@
-/**
- * Created: 04.11.2018
- */
-
+// Created: 04.11.2018
 package de.freese.jsync.server.handler;
 
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+
 import org.slf4j.Logger;
 
 /**
@@ -17,8 +15,8 @@ import org.slf4j.Logger;
 public interface IoHandler
 {
     /**
-    *
-    */
+     *
+     */
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     /**
@@ -33,7 +31,8 @@ public interface IoHandler
      * Verarbeitet den Request.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param logger {@link Logger}
+     * @param logger       {@link Logger}
+     *
      * @throws Exception Falls was schief geht.
      */
     public void read(final SelectionKey selectionKey, final Logger logger) throws Exception;
@@ -42,7 +41,8 @@ public interface IoHandler
      * Verarbeitet den Response.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param logger {@link Logger}
+     * @param logger       {@link Logger}
+     *
      * @throws Exception Falls was schief geht.
      */
     public void write(final SelectionKey selectionKey, final Logger logger) throws Exception;

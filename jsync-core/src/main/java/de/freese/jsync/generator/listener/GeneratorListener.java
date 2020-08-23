@@ -1,11 +1,9 @@
-/**
- * Created: 22.11.2018
- */
-
+// Created: 22.11.2018
 package de.freese.jsync.generator.listener;
 
 import java.nio.file.Path;
 import java.util.EventListener;
+
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.SyncItem;
 
@@ -33,7 +31,7 @@ public interface GeneratorListener extends EventListener
     /**
      * Anzahl zu verarbeitender Path-Objekte (Verzeichnisse, Dateien).
      *
-     * @param path {@link Path}
+     * @param path      {@link Path}
      * @param itemCount int
      */
     public void itemCount(Path path, int itemCount);

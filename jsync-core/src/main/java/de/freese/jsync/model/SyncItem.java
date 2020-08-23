@@ -1,7 +1,4 @@
-/**
- * Created: 30.10.2016
- */
-
+// Created: 30.10.2016
 package de.freese.jsync.model;
 
 import java.nio.file.attribute.PosixFilePermission;
@@ -21,9 +18,19 @@ public interface SyncItem
     public String getChecksum();
 
     /**
+     * @param checksum String
+     */
+    public void setChecksum(final String checksum);
+
+    /**
      * @return {@link Group}
      */
     public Group getGroup();
+
+    /**
+     * @param group {@link Group}
+     */
+    public void setGroup(final Group group);
 
     /**
      * @return long
@@ -31,11 +38,21 @@ public interface SyncItem
     public long getLastModifiedTime();
 
     /**
+     * @param lastModifiedTime long
+     */
+    public void setLastModifiedTime(final long lastModifiedTime);
+
+    /**
      * Können unter Windows oder Netzlaufwerken null sein.
      *
      * @return Set<PosixFilePermission>
      */
     public Set<PosixFilePermission> getPermissions();
+
+    /**
+     * @param permissions Set<PosixFilePermission>
+     */
+    public void setPermissions(final Set<PosixFilePermission> permissions);
 
     /**
      * Können unter Windows oder Netzlaufwerken null sein.
@@ -68,9 +85,22 @@ public interface SyncItem
     public long getSize();
 
     /**
+     * Verzeichnis: Anzahl der 1st-Level Childs<br>
+     * Datei: Größe
+     *
+     * @param size long
+     */
+    public void setSize(final long size);
+
+    /**
      * @return {@link User}
      */
     public User getUser();
+
+    /**
+     * @param user {@link User}
+     */
+    public void setUser(final User user);
 
     /**
      * @return boolean
@@ -86,40 +116,7 @@ public interface SyncItem
     public boolean isFile();
 
     /**
-     * @param checksum String
-     */
-    public void setChecksum(final String checksum);
-
-    /**
      * @param isFile boolean
      */
     public void setFile(final boolean isFile);
-
-    /**
-     * @param group {@link Group}
-     */
-    public void setGroup(final Group group);
-
-    /**
-     * @param lastModifiedTime long
-     */
-    public void setLastModifiedTime(final long lastModifiedTime);
-
-    /**
-     * @param permissions Set<PosixFilePermission>
-     */
-    public void setPermissions(final Set<PosixFilePermission> permissions);
-
-    /**
-     * Verzeichnis: Anzahl der 1st-Level Childs<br>
-     * Datei: Größe
-     *
-     * @param size long
-     */
-    public void setSize(final long size);
-
-    /**
-     * @param user {@link User}
-     */
-    public void setUser(final User user);
 }

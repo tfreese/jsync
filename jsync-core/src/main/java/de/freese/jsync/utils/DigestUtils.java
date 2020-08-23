@@ -1,7 +1,4 @@
-/**
- * Created: 17.11.2018
- */
-
+// Created: 17.11.2018
 package de.freese.jsync.utils;
 
 import java.io.IOException;
@@ -35,7 +32,9 @@ public final class DigestUtils
      * SHA-256<br>
      *
      * @param algorithm String
+     *
      * @return {@link MessageDigest}
+     *
      * @throws RuntimeException Falls was schief geht.
      */
     public static MessageDigest createMessageDigest(final String algorithm)
@@ -65,7 +64,7 @@ public final class DigestUtils
      * {@link ByteBuffer#position(int)}<br>
      *
      * @param messageDigest {@link MessageDigest}
-     * @param byteBuffer {@link ByteBuffer}
+     * @param byteBuffer    {@link ByteBuffer}
      */
     public static void digest(final MessageDigest messageDigest, final ByteBuffer byteBuffer)
     {
@@ -78,6 +77,7 @@ public final class DigestUtils
 
     /**
      * @param messageDigest {@link MessageDigest}
+     *
      * @return String
      */
     public static String digestAsHex(final MessageDigest messageDigest)
@@ -90,6 +90,7 @@ public final class DigestUtils
 
     /**
      * @param bytes byte[]
+     *
      * @return byte[]
      */
     public static byte[] sha256Digest(final byte[] bytes)
@@ -103,7 +104,9 @@ public final class DigestUtils
      * Der {@link InputStream} wird NICHT geschlossen !
      *
      * @param inputStream {@link InputStream}
+     *
      * @return byte[]
+     *
      * @throws IOException Falls was schief geht.
      */
     public static byte[] sha256Digest(final InputStream inputStream) throws IOException
@@ -122,10 +125,12 @@ public final class DigestUtils
     }
 
     /**
-     * @param path {@link Path}
-     * @param bufferSize int
+     * @param path              {@link Path}
+     * @param bufferSize        int
      * @param consumerBytesRead {@link LongConsumer}; optional
+     *
      * @return byte[]
+     *
      * @throws IOException Falls was schief geht.
      */
     public static byte[] sha256Digest(final Path path, final int bufferSize, final LongConsumer consumerBytesRead) throws IOException
@@ -133,7 +138,8 @@ public final class DigestUtils
         final MessageDigest messageDigest = createSha256Digest();
         byte[] bytes = null;
 
-        LongConsumer consumer = consumerBytesRead != null ? consumerBytesRead : i -> {
+        LongConsumer consumer = consumerBytesRead != null ? consumerBytesRead : i ->
+        {
             // Empty
         };
 
@@ -164,9 +170,10 @@ public final class DigestUtils
     }
 
     /**
-     * @param path {@link Path}
-     * @param bufferSize int
+     * @param path              {@link Path}
+     * @param bufferSize        int
      * @param consumerBytesRead {@link LongConsumer}; optional
+     *
      * @return String
      */
     public static String sha256DigestAsHex(final Path path, final int bufferSize, final LongConsumer consumerBytesRead)

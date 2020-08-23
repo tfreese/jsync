@@ -1,7 +1,4 @@
-/**
- * Created: 23.11.2018
- */
-
+// Created: 23.11.2018
 package de.freese.jsync.client.listener;
 
 import de.freese.jsync.Options;
@@ -28,6 +25,7 @@ public abstract class AbstractClientListener implements ClientListener
      *
      * @param options {@link Options}
      * @param message String
+     *
      * @return String
      */
     protected String appendDryRun(final Options options, final String message)
@@ -43,8 +41,9 @@ public abstract class AbstractClientListener implements ClientListener
     }
 
     /**
-     * @param options {@link Options}
+     * @param options  {@link Options}
      * @param syncItem {@link SyncItem}
+     *
      * @return String
      */
     protected String copyMessage(final Options options, final SyncItem syncItem)
@@ -57,9 +56,10 @@ public abstract class AbstractClientListener implements ClientListener
     }
 
     /**
-     * @param options {@link Options}
-     * @param syncItem {@linkSyncItem}
+     * @param options          {@link Options}
+     * @param syncItem         {@linkSyncItem}
      * @param bytesTransferred long
+     *
      * @return String
      */
     protected String copyProgressMessage(final Options options, final SyncItem syncItem, final long bytesTransferred)
@@ -76,8 +76,9 @@ public abstract class AbstractClientListener implements ClientListener
     }
 
     /**
-     * @param options {@link Options}
+     * @param options  {@link Options}
      * @param syncItem {@link SyncItem}
+     *
      * @return String
      */
     protected String deleteMessage(final Options options, final SyncItem syncItem)
@@ -90,8 +91,9 @@ public abstract class AbstractClientListener implements ClientListener
     }
 
     /**
-     * @param options {@link Options}
+     * @param options  {@link Options}
      * @param syncItem {@link SyncItem}
+     *
      * @return String
      */
     protected String updateMessage(final Options options, final SyncItem syncItem)
@@ -104,8 +106,9 @@ public abstract class AbstractClientListener implements ClientListener
     }
 
     /**
-     * @param options {@link Options}
+     * @param options  {@link Options}
      * @param syncItem {@link SyncItem}
+     *
      * @return String
      */
     protected String validateMessage(final Options options, final SyncItem syncItem)

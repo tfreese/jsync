@@ -1,7 +1,4 @@
-/**
- * Created: 31.10.2016
- */
-
+// Created: 31.10.2016
 package de.freese.jsync.server;
 
 import java.io.IOException;
@@ -29,13 +26,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.function.BiConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.server.handler.IoHandler;
-import de.freese.jsync.server.handler.TestJSyncIoHandler;
+import de.freese.jsync.server.handler.JSyncIoHandler;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.NamePreservingRunnable;
 import de.freese.jsync.utils.io.MonitoringReadableByteChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Der Server nimmt nur die neuen Client-Verbindungen entgegen und übergibt sie einem {@link Processor}.<br>
@@ -49,22 +47,23 @@ import de.freese.jsync.utils.io.MonitoringReadableByteChannel;
 public class JSyncServer
 {
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncServer.class);
 
     /**
      * @param args String[]
+     *
      * @throws Exception Falls was schief geht.
      */
-    @SuppressWarnings("resource")
     public static void main(final String[] args) throws Exception
     {
         ExecutorService executorService = Executors.newCachedThreadPool();
 
         JSyncServer server = new JSyncServer(8001, 2, executorService);
         // server.setIoHandler(new HttpIoHandler());
-        server.setIoHandler(new TestJSyncIoHandler());
+//        server.setIoHandler(new TestJSyncIoHandler());
+        server.setIoHandler(new JSyncIoHandler());
         server.start();
 
         System.out.println();
@@ -81,7 +80,8 @@ public class JSyncServer
         System.setIn(pis);
 
         // Client Task starten
-        executorService.submit(() -> {
+        executorService.submit(() ->
+        {
 
             Thread.sleep(1000);
 
@@ -158,51 +158,43 @@ public class JSyncServer
     private final ExecutorService executorService;
 
     /**
-    *
-    */
+     *
+     */
     private final boolean externalExecutor;
-
     /**
      *
      */
-    private IoHandler ioHandler = null;
-
-    /**
-    *
-    */
-    private boolean isShutdown = false;
-
-    /**
-    *
-    */
     private final int numOfProcessors;
-
     /**
      *
      */
     private final int port;
-
     /**
      * Queue für die {@link Processor}.
      */
     // private final Queue<Processor> processors = new ArrayBlockingQueue<>(NUM_OF_PROCESSORS);
     // private final Queue<Processor> processors = new ConcurrentLinkedQueue<>();
     private final LinkedList<Processor> processors = new LinkedList<>();
-
     /**
-    *
-    */
-    private Selector selector = null;
-
-    /**
-    *
-    */
-    private ServerSocketChannel serverSocketChannel = null;
-
-    /**
-    *
-    */
+     *
+     */
     private final Semaphore stopLock = new Semaphore(1, true);
+    /**
+     *
+     */
+    private IoHandler ioHandler = null;
+    /**
+     *
+     */
+    private boolean isShutdown = false;
+    /**
+     *
+     */
+    private Selector selector = null;
+    /**
+     *
+     */
+    private ServerSocketChannel serverSocketChannel = null;
 
     /**
      * Erstellt ein neues {@link JSyncServer} Object.
@@ -217,7 +209,7 @@ public class JSyncServer
     /**
      * Erstellt ein neues {@link JSyncServer} Object.
      *
-     * @param port int
+     * @param port            int
      * @param numOfProcessors int
      */
     public JSyncServer(final int port, final int numOfProcessors)
@@ -228,7 +220,7 @@ public class JSyncServer
     /**
      * Erstellt ein neues {@link JSyncServer} Object.
      *
-     * @param port int
+     * @param port            int
      * @param numOfProcessors int
      * @param executorService {@link ExecutorService}; optional
      */
@@ -255,6 +247,87 @@ public class JSyncServer
     }
 
     /**
+     * Starten des Servers.
+     *
+     * @throws IOException Falls was schief geht.
+     */
+    public void start() throws IOException
+    {
+        getLogger().info("starting server on port: {}", this.port);
+
+        Objects.requireNonNull(this.ioHandler, "ioHandler requried");
+
+        this.selector = Selector.open();
+
+        this.serverSocketChannel = ServerSocketChannel.open();
+        this.serverSocketChannel.configureBlocking(false);
+
+        ServerSocket socket = this.serverSocketChannel.socket();
+        socket.setReuseAddress(true);
+        socket.bind(new InetSocketAddress(this.port), 50);
+
+        SelectionKey selectionKey = this.serverSocketChannel.register(this.selector, SelectionKey.OP_ACCEPT);
+        // selectionKey.attach(this);
+
+        // Erzeugen der Prozessoren.
+        while (this.processors.size() < getNumOfProcessors())
+        {
+            Processor processor = new Processor(getIoHandler());
+
+            this.processors.add(processor);
+            getExecutorService().execute(new NamePreservingRunnable(processor, "Processor-" + this.processors.size()));
+        }
+
+        getExecutorService().execute(new NamePreservingRunnable(this::listen, getClass().getSimpleName()));
+    }
+
+    /**
+     * Stoppen des Servers.
+     */
+    public void stop()
+    {
+        getLogger().info("stopping server on port: {}", this.port);
+
+        this.isShutdown = true;
+
+        this.processors.forEach(Processor::stop);
+
+        this.selector.wakeup();
+
+        this.stopLock.acquireUninterruptibly();
+
+        try
+        {
+            SelectionKey selectionKey = this.serverSocketChannel.keyFor(this.selector);
+
+            if (selectionKey != null)
+            {
+                selectionKey.cancel();
+            }
+
+            this.serverSocketChannel.close();
+
+            if (this.selector.isOpen())
+            {
+                this.selector.close();
+            }
+        }
+        catch (IOException ex)
+        {
+            getLogger().error(null, ex);
+        }
+        finally
+        {
+            this.stopLock.release();
+        }
+
+        if (!this.externalExecutor)
+        {
+            JSyncUtils.shutdown(getExecutorService(), getLogger());
+        }
+    }
+
+    /**
      * @return {@link ExecutorService}
      */
     protected ExecutorService getExecutorService()
@@ -268,6 +341,14 @@ public class JSyncServer
     protected IoHandler getIoHandler()
     {
         return this.ioHandler;
+    }
+
+    /**
+     * @param ioHandler {@link IoHandler}
+     */
+    public void setIoHandler(final IoHandler ioHandler)
+    {
+        this.ioHandler = ioHandler;
     }
 
     /**
@@ -289,7 +370,6 @@ public class JSyncServer
     /**
      * Reagieren auf Requests.
      */
-    @SuppressWarnings("resource")
     private void listen()
     {
         getLogger().info("server listening on port: {}", this.serverSocketChannel.socket().getLocalPort());
@@ -372,96 +452,5 @@ public class JSyncServer
         this.processors.add(processor);
 
         return processor;
-    }
-
-    /**
-     * @param ioHandler {@link IoHandler}
-     */
-    public void setIoHandler(final IoHandler ioHandler)
-    {
-        this.ioHandler = ioHandler;
-    }
-
-    /**
-     * Starten des Servers.
-     *
-     * @throws IOException Falls was schief geht.
-     */
-    @SuppressWarnings("resource")
-    public void start() throws IOException
-    {
-        getLogger().info("starting server on port: {}", this.port);
-
-        Objects.requireNonNull(this.ioHandler, "ioHandler requried");
-
-        this.selector = Selector.open();
-
-        this.serverSocketChannel = ServerSocketChannel.open();
-        this.serverSocketChannel.configureBlocking(false);
-
-        ServerSocket socket = this.serverSocketChannel.socket();
-        socket.setReuseAddress(true);
-        socket.bind(new InetSocketAddress(this.port), 50);
-
-        @SuppressWarnings("unused")
-        SelectionKey selectionKey = this.serverSocketChannel.register(this.selector, SelectionKey.OP_ACCEPT);
-        // selectionKey.attach(this);
-
-        // Erzeugen der Prozessoren.
-        while (this.processors.size() < getNumOfProcessors())
-        {
-            Processor processor = new Processor(getIoHandler());
-
-            this.processors.add(processor);
-            getExecutorService().execute(new NamePreservingRunnable(processor, "Processor-" + this.processors.size()));
-        }
-
-        getExecutorService().execute(new NamePreservingRunnable(this::listen, getClass().getSimpleName()));
-    }
-
-    /**
-     * Stoppen des Servers.
-     */
-    public void stop()
-    {
-        getLogger().info("stopping server on port: {}", this.port);
-
-        this.isShutdown = true;
-
-        this.processors.forEach(Processor::stop);
-
-        this.selector.wakeup();
-
-        this.stopLock.acquireUninterruptibly();
-
-        try
-        {
-            SelectionKey selectionKey = this.serverSocketChannel.keyFor(this.selector);
-
-            if (selectionKey != null)
-            {
-                selectionKey.cancel();
-            }
-
-            this.serverSocketChannel.close();
-
-            if (this.selector.isOpen())
-            {
-                this.selector.close();
-            }
-        }
-        catch (IOException ex)
-        {
-            getLogger().error(null, ex);
-        }
-        finally
-        {
-            this.stopLock.release();
-        }
-
-        if (!this.externalExecutor)
-        {
-            JSyncUtils.shutdown(getExecutorService(), getLogger());
-        }
     }
 }

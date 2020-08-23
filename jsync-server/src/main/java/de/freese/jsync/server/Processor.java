@@ -1,7 +1,4 @@
-/**
- * Created: 04.11.2018
- */
-
+// Created: 04.11.2018
 package de.freese.jsync.server;
 
 import java.io.IOException;
@@ -27,8 +24,8 @@ import de.freese.jsync.server.handler.IoHandler;
 class Processor implements Runnable
 {
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class);
 
     /**
@@ -37,18 +34,18 @@ class Processor implements Runnable
     private final IoHandler ioHandler;
 
     /**
-    *
-    */
-    private boolean isShutdown = false;
+     *
+     */
+    private boolean isShutdown;
 
     /**
-    *
-    */
+     *
+     */
     private final Queue<SocketChannel> newSessions = new ConcurrentLinkedQueue<>();
 
     /**
-    *
-    */
+     *
+     */
     private final Selector selector;
 
     /**
@@ -76,7 +73,6 @@ class Processor implements Runnable
      * @param socketChannel {@link SocketChannel}
      * @throws IOException Falls was schief geht.
      */
-    @SuppressWarnings("resource")
     public void addSession(final SocketChannel socketChannel) throws IOException
     {
         Objects.requireNonNull(socketChannel, "socketChannel required");
@@ -84,43 +80,6 @@ class Processor implements Runnable
         this.newSessions.add(socketChannel);
 
         this.selector.wakeup();
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return LOGGER;
-    }
-
-    /**
-     * Die neuen Sessions zum Selector hinzufügen.
-     *
-     * @throws IOException Falls was schief geht.
-     */
-    @SuppressWarnings("resource")
-    protected void processNewSessions() throws IOException
-    {
-        // for (SocketChannel socketChannel = this.newSessions.poll(); socketChannel != null; socketChannel =
-        // this.newSessions.poll())
-        while (!this.newSessions.isEmpty())
-        {
-            SocketChannel socketChannel = this.newSessions.poll();
-
-            if (socketChannel == null)
-            {
-                continue;
-            }
-
-            socketChannel.configureBlocking(false);
-
-            getLogger().debug("attach new session: {}", socketChannel);
-
-            @SuppressWarnings("unused")
-            SelectionKey selectionKey = socketChannel.register(this.selector, SelectionKey.OP_READ);
-            // sk.attach(obj)
-        }
     }
 
     /**
@@ -187,6 +146,41 @@ class Processor implements Runnable
         finally
         {
             this.stopLock.release();
+        }
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return LOGGER;
+    }
+
+    /**
+     * Die neuen Sessions zum Selector hinzufügen.
+     *
+     * @throws IOException Falls was schief geht.
+     */
+    protected void processNewSessions() throws IOException
+    {
+        // for (SocketChannel socketChannel = this.newSessions.poll(); socketChannel != null; socketChannel =
+        // this.newSessions.poll())
+        while (!this.newSessions.isEmpty())
+        {
+            SocketChannel socketChannel = this.newSessions.poll();
+
+            if (socketChannel == null)
+            {
+                continue;
+            }
+
+            socketChannel.configureBlocking(false);
+
+            getLogger().debug("attach new session: {}", socketChannel);
+
+            SelectionKey selectionKey = socketChannel.register(this.selector, SelectionKey.OP_READ);
+            // selectionKey.attach(obj)
         }
     }
 

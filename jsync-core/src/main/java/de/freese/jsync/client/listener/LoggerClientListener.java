@@ -1,13 +1,10 @@
-/**
- * Created: 23.11.2018
- */
-
+// Created: 23.11.2018
 package de.freese.jsync.client.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
 import de.freese.jsync.model.SyncItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link Logger}-Implementierung des {@link ClientListener}.
@@ -17,8 +14,8 @@ import de.freese.jsync.model.SyncItem;
 public class LoggerClientListener extends AbstractClientListener
 {
     /**
-    *
-    */
+     *
+     */
     private final Logger logger = LoggerFactory.getLogger("Client");
 
     /**

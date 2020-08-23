@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
@@ -22,7 +23,6 @@ import de.freese.jsync.model.serializer.Serializers;
  *
  * @author Thomas Freese
  */
-@SuppressWarnings("resource")
 public class RemoteReceiverBlocking extends AbstractReceiver
 {
     /**
@@ -81,8 +81,8 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     private final ByteBuffer buffer;
 
     /**
-    *
-    */
+     *
+     */
     private SocketChannel socketChannel;
 
     /**
@@ -187,16 +187,16 @@ public class RemoteReceiverBlocking extends AbstractReceiver
             this.buffer.clear();
             Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
             Serializers.writeTo(this.buffer, baseDir);
-            this.buffer.put(followSymLinks ? (byte) 1 : (byte) 0);
+            Serializers.writeTo(this.buffer, followSymLinks);
 
             this.buffer.flip();
             write(this.buffer);
 
             // Response lesen.
-            boolean sizeRead = false;
-            boolean finished = false;
-            int countSyncItems = -1;
-            int counter = 0;
+//            boolean sizeRead = false;
+//            boolean finished = false;
+//            int countSyncItems = -1;
+//            int counter = 0;
 
             this.buffer.clear();
 
@@ -204,30 +204,30 @@ public class RemoteReceiverBlocking extends AbstractReceiver
             {
                 this.buffer.flip();
 
-                if (!sizeRead)
-                {
-                    countSyncItems = this.buffer.getInt();
-                    sizeRead = true;
-                }
+//                if (!sizeRead)
+//                {
+//                    countSyncItems = this.buffer.getInt();
+//                    sizeRead = true;
+//                }
 
                 while (this.buffer.hasRemaining())
                 {
                     SyncItem syncItem = Serializers.readFrom(this.buffer, SyncItem.class);
                     consumerSyncItem.accept(syncItem);
-                    counter++;
+//                    counter++;
 
-                    if (counter == countSyncItems)
-                    {
-                        // Finish-Flag.
-                        finished = true;
-                        break;
-                    }
+//                    if (counter == countSyncItems)
+//                    {
+//                        // Finish-Flag.
+//                        finished = true;
+//                        break;
+//                    }
                 }
 
-                if (finished)
-                {
-                    break;
-                }
+//                if (finished)
+//                {
+//                    break;
+//                }
 
                 this.buffer.clear();
             }
@@ -311,7 +311,7 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         Serializers.writeTo(this.buffer, JSyncCommand.TARGET_VALIDATE_FILE);
         Serializers.writeTo(this.buffer, baseDir);
         Serializers.writeTo(this.buffer, syncItem);
-        this.buffer.put(withChecksum ? (byte) 1 : (byte) 0);
+        Serializers.writeTo(this.buffer, withChecksum);
 
         this.buffer.flip();
         write(this.buffer);

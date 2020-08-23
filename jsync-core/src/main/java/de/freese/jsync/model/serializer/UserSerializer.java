@@ -1,10 +1,8 @@
-/**
- * Created: 28.04.2020
- */
-
+// Created: 28.04.2020
 package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
+
 import de.freese.jsync.model.User;
 
 /**

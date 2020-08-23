@@ -1,11 +1,9 @@
-/**
- * Created: 28.04.2020
- */
-
+// Created: 28.04.2020
 package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
 import java.nio.file.attribute.PosixFilePermissions;
+
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
@@ -17,8 +15,8 @@ import de.freese.jsync.model.User;
 class SyncItemSerializer implements Serializer<SyncItem>
 {
     /**
-    *
-    */
+     *
+     */
     private static final Serializer<SyncItem> INSTANCE = new SyncItemSerializer();
 
     /**

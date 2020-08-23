@@ -1,7 +1,4 @@
-/**
- * Created: 04.11.2018
- */
-
+// Created: 04.11.2018
 package de.freese.jsync.server.handler;
 
 import java.nio.charset.CharsetDecoder;
@@ -17,18 +14,20 @@ import java.nio.charset.CharsetEncoder;
 public abstract class AbstractIoHandler implements IoHandler
 {
     /**
-    *
-    */
-    private final ThreadLocal<CharsetDecoder> CHARSET_DECODER = ThreadLocal.withInitial(() -> {
+     *
+     */
+    private final ThreadLocal<CharsetDecoder> CHARSET_DECODER = ThreadLocal.withInitial(() ->
+    {
         CharsetDecoder decoder = getCharset().newDecoder();
 
         return decoder;
     });
 
     /**
-    *
-    */
-    private final ThreadLocal<CharsetEncoder> CHARSET_ENCODER = ThreadLocal.withInitial(() -> {
+     *
+     */
+    private final ThreadLocal<CharsetEncoder> CHARSET_ENCODER = ThreadLocal.withInitial(() ->
+    {
         CharsetEncoder encoder = getCharset().newEncoder();
 
         return encoder;

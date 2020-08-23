@@ -1,12 +1,10 @@
-/**
- * Created: 28.04.2020
- */
-
+// Created: 28.04.2020
 package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
@@ -20,13 +18,14 @@ import de.freese.jsync.model.User;
 public final class Serializers
 {
     /**
-    *
-    */
+     *
+     */
     private static final Serializers INSTANCE = new Serializers();
 
     /**
      * @param buffer {@link ByteBuffer}
-     * @param clazz Class
+     * @param clazz  Class
+     *
      * @return {@link JSyncCommand}
      */
     public static <T> T readFrom(final ByteBuffer buffer, final Class<T> clazz)
@@ -38,9 +37,8 @@ public final class Serializers
 
     /**
      * @param buffer {@link ByteBuffer}
-     * @param obj T
+     * @param obj    T
      */
-    @SuppressWarnings("unchecked")
     public static <T> void writeTo(final ByteBuffer buffer, final T obj)
     {
         Serializer<T> serializer = INSTANCE.getSerializer((Class<T>) obj.getClass());
@@ -72,11 +70,11 @@ public final class Serializers
     }
 
     /**
-     * @param <T> Entity-Type
+     * @param <T>   Entity-Type
      * @param clazz Class
+     *
      * @return {@link Serializer}
      */
-    @SuppressWarnings("unchecked")
     private <T> Serializer<T> getSerializer(final Class<T> clazz)
     {
         return (Serializer<T>) this.serializerMap.get(clazz);

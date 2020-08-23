@@ -10,8 +10,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Basis-Implementierung des {@link Generator}.
@@ -21,11 +19,6 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractGenerator implements Generator
 {
     /**
-    *
-    */
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    /**
      * Erzeugt eine neue Instanz von {@link AbstractGenerator}.
      */
     public AbstractGenerator()
@@ -34,18 +27,11 @@ public abstract class AbstractGenerator implements Generator
     }
 
     /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
      * Liefert ein Set mit allen Path-Objekten (Verzeichnisse, Dateien) das Basis-Verzeichnisses.
      *
-     * @param base {@link Path}
+     * @param base         {@link Path}
      * @param visitOptions {@link FileVisitOption}
+     *
      * @return {@link Set}
      */
     protected Set<Path> getPaths(final Path base, final FileVisitOption[] visitOptions)

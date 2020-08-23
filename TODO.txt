@@ -1,6 +1,11 @@
-- Files.exists(path)
-- Files.notExists(path)
-	Wenn FollowSymLinks aktiv -> LinkOptions verwenden !
-	
+Java NIO Transfer File Remote
+	- https://examples.javacodegeeks.com/core-java/nio/java-nio-large-file-transfer-tutorial/
 
-- Kopieren leerer Verzeichnisse.	
+SSL with Java-NIO
+	- https://examples.javacodegeeks.com/core-java/nio/java-nio-ssl-example/
+	- https://docs.oracle.com/javase/6/docs/technotes/guides/security/jsse/JSSERefGuide.html#SSLENG
+	- https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/samples/sslengine/SSLEngineSimpleDemo.java
+	- https://github.com/baswerc/niossl
+	- http://rox-xmlrpc.sourceforge.net/niotut/
+	- https://github.com/alkarn/sslengine.example
+	

@@ -1,7 +1,4 @@
-/**
- * Created: 26.07.2020
- */
-
+// Created: 26.07.2020
 package de.freese.jsync.client.listener;
 
 import de.freese.jsync.Options;

@@ -1,13 +1,11 @@
-/**
- * Created: 14.07.2020
- */
-
+// Created: 14.07.2020
 package de.freese.jsync.generator.listener;
 
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.model.SyncItem;
 
 /**

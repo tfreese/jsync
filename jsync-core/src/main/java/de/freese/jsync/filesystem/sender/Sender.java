@@ -1,9 +1,8 @@
-/**
- * Created on 22.10.2016 10:42:26
- */
+// Created: 28.04.2020
 package de.freese.jsync.filesystem.sender;
 
 import java.nio.channels.ReadableByteChannel;
+
 import de.freese.jsync.filesystem.FileSystem;
 
 /**

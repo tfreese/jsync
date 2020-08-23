@@ -1,15 +1,13 @@
-/**
- * Created: 23.11.2018
- */
-
+// Created: 23.11.2018
 package de.freese.jsync.generator.listener;
 
 import java.nio.file.Path;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.model.SyncItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link Logger}-Implementierung des {@link ClientListener}.
@@ -41,7 +39,7 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum( long)
+     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long)
      */
     @Override
     public void checksum(final long bytesRead)
@@ -61,14 +59,6 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
      * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
      */
     @Override
@@ -77,5 +67,13 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
         String message = itemCountMessage(path, itemCount, this.prefix);
 
         getLogger().info(message);
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
     }
 }

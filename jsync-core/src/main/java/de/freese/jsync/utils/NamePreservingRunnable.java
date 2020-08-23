@@ -1,10 +1,8 @@
-/**
- * Created: 04.11.2018
- */
-
+// Created: 04.11.2018
 package de.freese.jsync.utils;
 
 import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,24 +15,24 @@ import org.slf4j.LoggerFactory;
 public class NamePreservingRunnable implements Runnable
 {
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(NamePreservingRunnable.class);
 
     /**
-    *
-    */
+     *
+     */
     private final Runnable runnable;
 
     /**
-    *
-    */
+     *
+     */
     private final String runnableName;
 
     /**
      * Erstellt ein neues {@link NamePreservingRunnable} Object.
      *
-     * @param runnable {@link Runnable}
+     * @param runnable     {@link Runnable}
      * @param runnableName String
      */
     public NamePreservingRunnable(final Runnable runnable, final String runnableName)
@@ -71,7 +69,7 @@ public class NamePreservingRunnable implements Runnable
      * Eine auftretende {@link SecurityException} wird als Warning geloggt.
      *
      * @param thread {@link Thread}
-     * @param name String
+     * @param name   String
      */
     private void setName(final Thread thread, final String name)
     {

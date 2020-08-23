@@ -74,6 +74,7 @@ public abstract class AbstractClient implements Client
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
             this.sender = new RemoteSenderBlocking();
+            // this.sender = new RemoteSenderAsync();
         }
         else
         {

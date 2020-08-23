@@ -1,7 +1,4 @@
-/**
- * Created: 22.10.2016
- */
-
+// Created: 22.10.2016
 package de.freese.jsync.model;
 
 /**
@@ -54,5 +51,5 @@ public enum SyncStatus
     /**
      * Quelle und Ziel identisch.
      */
-    SYNCHRONIZED;
+    SYNCHRONIZED
 }

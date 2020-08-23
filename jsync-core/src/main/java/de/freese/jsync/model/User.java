@@ -1,7 +1,4 @@
-/**
- * Created: 29.10.2016
- */
-
+// Created: 29.10.2016
 package de.freese.jsync.model;
 
 import java.util.Objects;
@@ -42,7 +39,7 @@ public class User
      * Erstellt ein neues {@link User} Object.
      *
      * @param name String
-     * @param uid int
+     * @param uid  int
      */
     public User(final String name, final int uid)
     {
@@ -119,6 +116,7 @@ public class User
     {
         final int prime = 31;
         int result = 1;
+
         result = (prime * result) + ((this.name == null) ? 0 : this.name.hashCode());
         result = (prime * result) + this.uid;
 

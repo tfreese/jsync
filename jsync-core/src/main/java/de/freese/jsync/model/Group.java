@@ -1,7 +1,4 @@
-/**
- * Created: 29.10.2016
- */
-
+// Created: 29.10.2016
 package de.freese.jsync.model;
 
 import java.util.Objects;
@@ -42,7 +39,7 @@ public class Group
      * Erstellt ein neues {@link Group} Object.
      *
      * @param name String
-     * @param gid int
+     * @param gid  int
      */
     public Group(final String name, final int gid)
     {

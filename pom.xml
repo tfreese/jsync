@@ -29,7 +29,7 @@
         <module>jsync-console</module>
         <module>jsync-swing</module>
         <module>jsync-javafx</module>
-        <!--module>jsync-server</module-->
+        <module>jsync-server</module>
     </modules>
 
 </project>

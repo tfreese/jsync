@@ -1,7 +1,4 @@
-/**
- * Created: 04.11.2018
- */
-
+// Created: 04.11.2018
 package de.freese.jsync.server.handler;
 
 import java.nio.ByteBuffer;
@@ -12,6 +9,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.Date;
+
 import org.slf4j.Logger;
 
 /**
@@ -39,7 +37,6 @@ public class HttpIoHandler extends AbstractIoHandler
     {
         CharsetDecoder charsetDecoder = getCharsetDecoder();
 
-        @SuppressWarnings("resource")
         ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
 
         ByteBuffer inputBuffer = ByteBuffer.allocate(1024);
@@ -67,7 +64,6 @@ public class HttpIoHandler extends AbstractIoHandler
     {
         CharsetEncoder charsetEncoder = getCharsetEncoder();
 
-        @SuppressWarnings("resource")
         WritableByteChannel channel = (WritableByteChannel) selectionKey.channel();
 
         CharBuffer charBufferBody = CharBuffer.allocate(256);

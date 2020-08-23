@@ -1,6 +1,4 @@
-/**
- * Created: 22.10.2016
- */
+// Created: 22.10.2016
 package de.freese.jsync.model;
 
 import java.util.Objects;
@@ -31,7 +29,7 @@ public class SyncPair
     /**
      * Erstellt ein neues {@link SyncPair} Object.
      *
-     * @param senderItem {@link SyncItem}; wenn null -> nur im Receiver enthalten
+     * @param senderItem   {@link SyncItem}; wenn null -> nur im Receiver enthalten
      * @param receiverItem {@link SyncItem}; wenn null -> nur im Sender enthalten
      */
     public SyncPair(final SyncItem senderItem, final SyncItem receiverItem)

@@ -1,7 +1,4 @@
-/**
- * Created: 29.07.2020
- */
-
+// Created: 29.07.2020
 package de.freese.jsync.model;
 
 import java.util.Comparator;

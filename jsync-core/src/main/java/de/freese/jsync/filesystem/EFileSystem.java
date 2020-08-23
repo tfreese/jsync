@@ -1,7 +1,4 @@
-/**
- * Created: 27.07.2020
- */
-
+// Created: 27.07.2020
 package de.freese.jsync.filesystem;
 
 /**
@@ -17,5 +14,5 @@ public enum EFileSystem
     /**
      *
      */
-    SENDER;
+    SENDER
 }

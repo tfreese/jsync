@@ -1,7 +1,4 @@
-/**
- * Created: 30.10.2016
- */
-
+// Created: 30.10.2016
 package de.freese.jsync.model;
 
 import java.nio.file.attribute.PosixFilePermission;
@@ -17,43 +14,43 @@ import java.util.Set;
 public class DefaultSyncItem implements SyncItem
 {
     /**
-    *
-    */
+     *
+     */
     private String checksum = null;
 
     /**
-    *
-    */
+     *
+     */
     private Group group = null;
 
     /**
-    *
-    */
+     *
+     */
     private boolean isFile = false;
 
     /**
-    *
-    */
+     *
+     */
     private long lastModifiedTime = 0;
 
     /**
-    *
-    */
+     *
+     */
     private Set<PosixFilePermission> permissions = null;
 
     /**
-    *
-    */
+     *
+     */
     private final String relativePath;
 
     /**
-    *
-    */
+     *
+     */
     private long size = 0;
 
     /**
-    *
-    */
+     *
+     */
     private User user = null;
 
     /**
@@ -211,7 +208,6 @@ public class DefaultSyncItem implements SyncItem
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        // sb.append(getClass().getSimpleName()).append(" [");
         sb.append("SyncItem [");
         sb.append("relativePath=").append(getRelativePath());
         sb.append("]");

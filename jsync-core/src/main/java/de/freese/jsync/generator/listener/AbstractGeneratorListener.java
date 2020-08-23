@@ -1,10 +1,8 @@
-/**
- * Created: 23.11.2018
- */
-
+// Created: 23.11.2018
 package de.freese.jsync.generator.listener;
 
 import java.nio.file.Path;
+
 import de.freese.jsync.model.SyncItem;
 
 /**
@@ -24,7 +22,8 @@ public abstract class AbstractGeneratorListener implements GeneratorListener
 
     /**
      * @param syncItem {@link SyncItem}
-     * @param prefix String
+     * @param prefix   String
+     *
      * @return String
      */
     protected String currentItemMessage(final SyncItem syncItem, final String prefix)
@@ -35,9 +34,10 @@ public abstract class AbstractGeneratorListener implements GeneratorListener
     }
 
     /**
-     * @param path {@link Path}
+     * @param path      {@link Path}
      * @param itemCount int
-     * @param prefix String
+     * @param prefix    String
+     *
      * @return String
      */
     protected String itemCountMessage(final Path path, final int itemCount, final String prefix)

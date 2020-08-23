@@ -1,7 +1,4 @@
-/**
- * Created: 23.07.2020
- */
-
+// Created: 23.07.2020
 package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
@@ -12,8 +9,8 @@ import java.nio.ByteBuffer;
 class StringSerializer implements Serializer<String>
 {
     /**
-    *
-    */
+     *
+     */
     private static final Serializer<String> INSTANCE = new StringSerializer();
 
     /**
