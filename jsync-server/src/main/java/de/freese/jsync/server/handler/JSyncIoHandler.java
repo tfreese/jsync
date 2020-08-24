@@ -137,6 +137,12 @@ public class JSyncIoHandler extends AbstractIoHandler
     {
         // WritableByteChannel channel = (WritableByteChannel) selectionKey.channel();
 
+        if (selectionKey.attachment() instanceof Runnable)
+        {
+            Runnable task = (Runnable) selectionKey.attachment();
+            task.run();
+        }
+
         selectionKey.interestOps(SelectionKey.OP_READ);
     }
 
@@ -185,31 +191,38 @@ public class JSyncIoHandler extends AbstractIoHandler
         String baseDir = Serializers.readFrom(buffer, String.class);
         boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
 
-        logger.debug("Create SyncItems: {}", baseDir);
+        Runnable task = () -> {
 
-        SocketChannel channel = (SocketChannel) selectionKey.channel();
+            logger.debug("Create SyncItems: {}", baseDir);
 
-        fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
-            logger.debug("Send SyncItem: {}", syncItem);
+            SocketChannel channel = (SocketChannel) selectionKey.channel();
 
-            buffer.clear();
-            Serializers.writeTo(buffer, syncItem);
-            buffer.flip();
+            fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
+                logger.debug("Send SyncItem: {}", syncItem);
 
-            try
-            {
-                while (buffer.hasRemaining())
+                buffer.clear();
+                Serializers.writeTo(buffer, syncItem);
+                buffer.flip();
+
+                try
                 {
-                    channel.write(buffer);
+                    while (buffer.hasRemaining())
+                    {
+                        channel.write(buffer);
+                    }
                 }
-            }
-            catch (IOException ioex)
-            {
-                logger.error(null, ioex);
-            }
-        });
+                catch (IOException ioex)
+                {
+                    logger.error(null, ioex);
+                }
+            });
 
-        logger.debug("SyncItems written: {}", baseDir);
+            logger.debug("SyncItems written: {}", baseDir);
+        };
+
+        selectionKey.attach(task);
+
+        selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
 
     /**

@@ -3,7 +3,6 @@ package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
 import java.nio.file.attribute.PosixFilePermissions;
-
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
@@ -49,6 +48,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
         // is File / Directory
         syncItem.setFile(buffer.get() == 1);
 
+        // size
         syncItem.setSize(buffer.getLong());
 
         // lastModifiedTime
@@ -93,9 +93,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
     public void writeTo(final ByteBuffer buffer, final SyncItem obj)
     {
         // relativePath
-        byte[] bytes = obj.getRelativePath().getBytes(getCharset());
-        buffer.putInt(bytes.length);
-        buffer.put(bytes);
+        StringSerializer.getInstance().writeTo(buffer, obj.getRelativePath());
 
         // is File / Directory
         buffer.put(obj.isFile() ? (byte) 1 : (byte) 0);

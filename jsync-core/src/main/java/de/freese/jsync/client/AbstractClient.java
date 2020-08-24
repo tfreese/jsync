@@ -18,7 +18,7 @@ import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.receiver.RemoteReceiverBlocking;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.filesystem.sender.RemoteSenderBlocking;
+import de.freese.jsync.filesystem.sender.RemoteSenderAsync;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
@@ -73,8 +73,8 @@ public abstract class AbstractClient implements Client
 
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
-            this.sender = new RemoteSenderBlocking();
-            // this.sender = new RemoteSenderAsync();
+            // this.sender = new RemoteSenderBlocking();
+            this.sender = new RemoteSenderAsync();
         }
         else
         {

@@ -24,12 +24,12 @@ public class SyncPair
     /**
      *
      */
-    private SyncStatus status = null;
+    private SyncStatus status;
 
     /**
      * Erstellt ein neues {@link SyncPair} Object.
      *
-     * @param senderItem   {@link SyncItem}; wenn null -> nur im Receiver enthalten
+     * @param senderItem {@link SyncItem}; wenn null -> nur im Receiver enthalten
      * @param receiverItem {@link SyncItem}; wenn null -> nur im Sender enthalten
      */
     public SyncPair(final SyncItem senderItem, final SyncItem receiverItem)
@@ -85,10 +85,9 @@ public class SyncPair
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("SyncPair [relativePath=");
-        builder.append(getRelativePath());
-        builder.append(", status=");
-        builder.append(getStatus());
+        builder.append("SyncPair [");
+        builder.append("relativePath=").append(getRelativePath());
+        builder.append(", status=").append(getStatus());
         builder.append("]");
 
         return builder.toString();

@@ -1,7 +1,6 @@
 // Created: 18.11.2018
 package de.freese.jsync.filesystem.sender;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
@@ -92,7 +91,8 @@ public class RemoteSenderBlocking extends AbstractSender
     {
         super();
 
-        this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
+        // this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
+        this.buffer = ByteBuffer.allocate(Options.BUFFER_SIZE);
     }
 
     /**
@@ -166,8 +166,7 @@ public class RemoteSenderBlocking extends AbstractSender
             // Response lesen.
             this.buffer.clear();
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(Options.BUFFER_SIZE);
-            byte[] littleBuf = new byte[1];
+            // ByteArrayOutputStream baos = new ByteArrayOutputStream(Options.BUFFER_SIZE);
 
             while (this.socketChannel.read(this.buffer) > 0)
             {
@@ -175,22 +174,23 @@ public class RemoteSenderBlocking extends AbstractSender
 
                 while (this.buffer.hasRemaining())
                 {
-                    // SyncItem syncItem = Serializers.readFrom(this.buffer, SyncItem.class);
-                    // consumerSyncItem.accept(syncItem);
-                    this.buffer.get(littleBuf);
-                    baos.write(littleBuf);
+                    SyncItem syncItem = Serializers.readFrom(this.buffer, SyncItem.class);
+                    consumerSyncItem.accept(syncItem);
+
+                    // byte[] bytes = new byte[this.buffer.remaining()];
+                    // baos.writeBytes(bytes);
                 }
 
-                this.buffer.clear();
+                // this.buffer.clear();
             }
 
-            ByteBuffer holeDataBuffer = ByteBuffer.wrap(baos.toByteArray());
-
-            while (holeDataBuffer.hasRemaining())
-            {
-                SyncItem syncItem = Serializers.readFrom(holeDataBuffer, SyncItem.class);
-                consumerSyncItem.accept(syncItem);
-            }
+            // ByteBuffer holeDataBuffer = ByteBuffer.wrap(baos.toByteArray());
+            //
+            // while (holeDataBuffer.hasRemaining())
+            // {
+            // SyncItem syncItem = Serializers.readFrom(holeDataBuffer, SyncItem.class);
+            // consumerSyncItem.accept(syncItem);
+            // }
         }
         catch (RuntimeException rex)
         {

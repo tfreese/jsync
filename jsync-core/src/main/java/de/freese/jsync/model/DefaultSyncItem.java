@@ -16,17 +16,17 @@ public class DefaultSyncItem implements SyncItem
     /**
      *
      */
-    private String checksum = null;
+    private String checksum;
 
     /**
      *
      */
-    private Group group = null;
+    private Group group;
 
     /**
      *
      */
-    private boolean isFile = false;
+    private boolean isFile;
 
     /**
      *
@@ -36,7 +36,7 @@ public class DefaultSyncItem implements SyncItem
     /**
      *
      */
-    private Set<PosixFilePermission> permissions = null;
+    private Set<PosixFilePermission> permissions;
 
     /**
      *
@@ -51,7 +51,7 @@ public class DefaultSyncItem implements SyncItem
     /**
      *
      */
-    private User user = null;
+    private User user;
 
     /**
      * Erstellt ein neues {@link DefaultSyncItem} Object.
