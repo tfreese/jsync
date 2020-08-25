@@ -41,8 +41,6 @@ class UserSerializer implements Serializer<User>
         int uid = buffer.getInt();
 
         // name
-        byte[] bytes = new byte[buffer.getInt()];
-        buffer.get(bytes);
         String name = StringSerializer.getInstance().readFrom(buffer);
 
         return new User(name, uid);

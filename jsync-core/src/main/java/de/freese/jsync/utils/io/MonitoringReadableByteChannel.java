@@ -45,8 +45,8 @@ public class MonitoringReadableByteChannel implements ReadableByteChannel
     {
         super();
 
-        this.delegate = Objects.requireNonNull(delegate, () -> "delegate required");
-        this.monitor = Objects.requireNonNull(monitor, () -> "monitor required");
+        this.delegate = Objects.requireNonNull(delegate, "delegate required");
+        this.monitor = Objects.requireNonNull(monitor, "monitor required");
         this.size = size;
     }
 

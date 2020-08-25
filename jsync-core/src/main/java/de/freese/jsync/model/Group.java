@@ -116,6 +116,7 @@ public class Group
     {
         final int prime = 31;
         int result = 1;
+
         result = (prime * result) + this.gid;
         result = (prime * result) + ((this.name == null) ? 0 : this.name.hashCode());
 
@@ -123,18 +124,17 @@ public class Group
     }
 
     /**
-     * @see java.lang.Object#toString()
+     * @see Object#toString()
      */
     @Override
     public String toString()
     {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Group [gid=");
-        builder.append(this.gid);
-        builder.append(", name=");
-        builder.append(this.name);
-        builder.append("]");
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append(" [");
+        sb.append("gid=").append(this.gid);
+        sb.append(", name='").append(this.name).append('\'');
+        sb.append(']');
 
-        return builder.toString();
+        return sb.toString();
     }
 }

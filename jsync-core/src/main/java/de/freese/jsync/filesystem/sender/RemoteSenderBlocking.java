@@ -152,45 +152,47 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
-        // Callable<Void> callable = () -> {
         try
         {
-            this.buffer.clear();
-            Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
-            Serializers.writeTo(this.buffer, baseDir);
-            Serializers.writeTo(this.buffer, followSymLinks);
+            // // this.buffer.clear();
+            // // Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+            // // Serializers.writeTo(this.buffer, baseDir);
+            // // Serializers.writeTo(this.buffer, followSymLinks);
+            //
+            // // this.buffer.flip();
+            // // write(this.buffer);
 
-            this.buffer.flip();
-            write(this.buffer);
+            // ByteBuffer bufRequest = ByteBuffer.allocateDirect(64);
+            // Serializers.writeTo(bufRequest, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+            // Serializers.writeTo(bufRequest, baseDir);
+            // Serializers.writeTo(bufRequest, followSymLinks);
+            //
+            // bufRequest.flip();
+            // write(bufRequest);
+            // bufRequest.clear();
 
             // Response lesen.
             this.buffer.clear();
 
-            // ByteArrayOutputStream baos = new ByteArrayOutputStream(Options.BUFFER_SIZE);
+            int bytesRead = 0;
 
-            while (this.socketChannel.read(this.buffer) > 0)
+            while ((bytesRead = this.socketChannel.read(this.buffer)) != 1)
             {
                 this.buffer.flip();
 
-                while (this.buffer.hasRemaining())
+                while (this.buffer.remaining() > 3)
                 {
                     SyncItem syncItem = Serializers.readFrom(this.buffer, SyncItem.class);
                     consumerSyncItem.accept(syncItem);
-
-                    // byte[] bytes = new byte[this.buffer.remaining()];
-                    // baos.writeBytes(bytes);
                 }
 
-                // this.buffer.clear();
-            }
+                if (Serializers.isEOL(this.buffer))
+                {
+                    break;
+                }
 
-            // ByteBuffer holeDataBuffer = ByteBuffer.wrap(baos.toByteArray());
-            //
-            // while (holeDataBuffer.hasRemaining())
-            // {
-            // SyncItem syncItem = Serializers.readFrom(holeDataBuffer, SyncItem.class);
-            // consumerSyncItem.accept(syncItem);
-            // }
+                this.buffer.clear();
+            }
         }
         catch (RuntimeException rex)
         {
@@ -204,29 +206,6 @@ public class RemoteSenderBlocking extends AbstractSender
         {
             throw new RuntimeException(ex);
         }
-
-        // return null;
-        // };
-        //
-        // try
-        // {
-        // callable.call();
-        // }
-        // catch (Exception ex)
-        // {
-        // ex.printStackTrace();
-        // }
-
-        // Future<Void> future = ForkJoinPool.commonPool().submit(callable);
-        //
-        // try
-        // {
-        // future.get();
-        // }
-        // catch (InterruptedException | ExecutionException ex)
-        // {
-        // ex.printStackTrace();
-        // }
     }
 
     /**

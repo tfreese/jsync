@@ -45,8 +45,8 @@ public class MonitoringWritableByteChannel implements WritableByteChannel
     {
         super();
 
-        this.delegate = Objects.requireNonNull(delegate, () -> "delegate required");
-        this.monitor = Objects.requireNonNull(monitor, () -> "monitor required");
+        this.delegate = Objects.requireNonNull(delegate, "delegate required");
+        this.monitor = Objects.requireNonNull(monitor, "monitor required");
         this.size = size;
     }
 

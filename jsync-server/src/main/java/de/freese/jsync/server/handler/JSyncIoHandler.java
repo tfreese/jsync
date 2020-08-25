@@ -42,6 +42,22 @@ public class JSyncIoHandler extends AbstractIoHandler
     private static final ThreadLocal<Sender> THREAD_LOCAL_SENDER = ThreadLocal.withInitial(LocalhostSender::new);
 
     /**
+     * @param selectionKey {@link SelectionKey}
+     * @param buffer {@link ByteBuffer}
+     * @throws IOException @throws Exception Falls was schief geht
+     */
+    @SuppressWarnings("resource")
+    private static void writeBuffer(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
+    {
+        SocketChannel channel = (SocketChannel) selectionKey.channel();
+
+        while (buffer.hasRemaining())
+        {
+            channel.write(buffer);
+        }
+    }
+
+    /**
      * Erstellt ein neues {@link JSyncIoHandler} Object.
      */
     public JSyncIoHandler()
@@ -155,7 +171,6 @@ public class JSyncIoHandler extends AbstractIoHandler
      * @param fileSystem {@link FileSystem}
      * @throws Exception Falls was schief geht.
      */
-    @SuppressWarnings("resource")
     protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final FileSystem fileSystem) throws Exception
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
@@ -172,8 +187,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         Serializers.writeTo(buffer, checksum);
         buffer.flip();
 
-        SocketChannel channel = (SocketChannel) selectionKey.channel();
-        channel.write(buffer);
+        writeBuffer(selectionKey, buffer);
     }
 
     /**
@@ -185,44 +199,45 @@ public class JSyncIoHandler extends AbstractIoHandler
      * @param fileSystem {@link FileSystem}
      * @throws Exception Falls was schief geht.
      */
-    @SuppressWarnings("resource")
     protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final FileSystem fileSystem) throws Exception
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
 
-        Runnable task = () -> {
+        // Runnable task = () ->
+        // {
+        logger.debug("Create SyncItems: {}", baseDir);
 
-            logger.debug("Create SyncItems: {}", baseDir);
+        fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
+            logger.debug("Send SyncItem: {}", syncItem);
 
-            SocketChannel channel = (SocketChannel) selectionKey.channel();
+            buffer.clear();
+            Serializers.writeTo(buffer, syncItem);
+            buffer.flip();
 
-            fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
-                logger.debug("Send SyncItem: {}", syncItem);
+            try
+            {
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                logger.error(null, ioex);
+            }
+        });
 
-                buffer.clear();
-                Serializers.writeTo(buffer, syncItem);
-                buffer.flip();
+        // EOL
+        buffer.clear();
+        Serializers.writeEOL(buffer);
+        buffer.flip();
 
-                try
-                {
-                    while (buffer.hasRemaining())
-                    {
-                        channel.write(buffer);
-                    }
-                }
-                catch (IOException ioex)
-                {
-                    logger.error(null, ioex);
-                }
-            });
+        writeBuffer(selectionKey, buffer);
 
-            logger.debug("SyncItems written: {}", baseDir);
-        };
-
-        selectionKey.attach(task);
-
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
+        logger.debug("SyncItems written: {}", baseDir);
+        // };
+        //
+        // selectionKey.attach(task);
+        //
+        // selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
 
     /**
@@ -296,6 +311,8 @@ public class JSyncIoHandler extends AbstractIoHandler
             buffer.clear();
             Serializers.writeTo(buffer, ex.getMessage());
             buffer.flip();
+
+            writeBuffer(selectionKey, buffer);
         }
 
         logger.debug("Validated: {}/{}", baseDir, syncItem.getRelativePath());

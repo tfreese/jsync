@@ -4,7 +4,6 @@ package de.freese.jsync.model.serializer;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
@@ -20,12 +19,40 @@ public final class Serializers
     /**
      *
      */
+    private static final byte[] EOL = new byte[]
+    {
+            0x45, 0x4F, 0x4C
+    };
+
+    /**
+     *
+     */
     private static final Serializers INSTANCE = new Serializers();
 
     /**
      * @param buffer {@link ByteBuffer}
-     * @param clazz  Class
-     *
+     * @return boolean
+     */
+    public static boolean isEOL(final ByteBuffer buffer)
+    {
+        if (!buffer.hasRemaining())
+        {
+            // Buffer kann nicht mehr gelesen werden.
+            return false;
+        }
+
+        int index = buffer.position();
+
+        byte e = buffer.get(index);
+        byte o = buffer.get(index + 1);
+        byte l = buffer.get(index + 2);
+
+        return (EOL[0] == e) && (EOL[1] == o) && (EOL[2] == l);
+    }
+
+    /**
+     * @param buffer {@link ByteBuffer}
+     * @param clazz Class
      * @return {@link JSyncCommand}
      */
     public static <T> T readFrom(final ByteBuffer buffer, final Class<T> clazz)
@@ -37,8 +64,17 @@ public final class Serializers
 
     /**
      * @param buffer {@link ByteBuffer}
-     * @param obj    T
      */
+    public static void writeEOL(final ByteBuffer buffer)
+    {
+        buffer.put(EOL);
+    }
+
+    /**
+     * @param buffer {@link ByteBuffer}
+     * @param obj T
+     */
+    @SuppressWarnings("unchecked")
     public static <T> void writeTo(final ByteBuffer buffer, final T obj)
     {
         Serializer<T> serializer = INSTANCE.getSerializer((Class<T>) obj.getClass());
@@ -70,11 +106,11 @@ public final class Serializers
     }
 
     /**
-     * @param <T>   Entity-Type
+     * @param <T> Entity-Type
      * @param clazz Class
-     *
      * @return {@link Serializer}
      */
+    @SuppressWarnings("unchecked")
     private <T> Serializer<T> getSerializer(final Class<T> clazz)
     {
         return (Serializer<T>) this.serializerMap.get(clazz);

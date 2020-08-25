@@ -4,7 +4,6 @@ package de.freese.jsync.generator.listener;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.Objects;
-
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.model.SyncItem;
 
@@ -13,6 +12,7 @@ import de.freese.jsync.model.SyncItem;
  *
  * @author Thomas Freese
  */
+@SuppressWarnings("resource")
 public class ConsoleGeneratorListener extends AbstractGeneratorListener
 {
     /**
