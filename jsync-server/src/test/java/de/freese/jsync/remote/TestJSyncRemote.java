@@ -5,11 +5,12 @@
 package de.freese.jsync.remote;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import de.freese.jsync.AbstractJSyncTest;
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
@@ -22,9 +23,6 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.server.JSyncServer;
 import de.freese.jsync.server.handler.IoHandler;
 import de.freese.jsync.server.handler.JSyncIoHandler;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * @author Thomas Freese
@@ -35,40 +33,36 @@ class TestJSyncRemote extends AbstractJSyncTest
     /**
      * Sync directories.
      *
-     * @param options        {@link Options} options
-     * @param senderUri      {@link URI}
-     * @param receiverUri    {@link URI}
+     * @param options {@link Options} options
+     * @param senderUri {@link URI}
+     * @param receiverUri {@link URI}
      * @param clientListener {@link ClientListener}
-     *
      * @throws Exception Falls was schief geht.
      */
-    private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener)
-            throws Exception
+    private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener) throws Exception
     {
         Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
         List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.SENDER, syncItem ->
-        {
+        client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
             syncItemsSender.add(syncItem);
-//            client.generateChecksum(EFileSystem.SENDER, syncItem, null);
+            client.generateChecksum(EFileSystem.SENDER, syncItem, null);
         });
 
         List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.RECEIVER, syncItem ->
-        {
+        client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
             syncItemsReceiver.add(syncItem);
             client.generateChecksum(EFileSystem.RECEIVER, syncItem, null);
         });
 
-//        List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
-//
-//        syncList.stream().forEach(SyncPair::validateStatus);
-//
-//        client.syncReceiver(syncList, clientListener);
-//
-//        client.disconnectFileSystems();
+        // List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
+        //
+        // syncList.stream().forEach(SyncPair::validateStatus);
+        //
+        // client.syncReceiver(syncList, clientListener);
+        //
+        // client.disconnectFileSystems();
     }
 
     /**

@@ -103,11 +103,6 @@ public class RemoteSenderAsync extends AbstractSender
     /**
     *
     */
-    private final ByteBuffer buffer;
-
-    /**
-    *
-    */
     private AsynchronousChannelGroup channelGroup;
 
     /**
@@ -123,7 +118,6 @@ public class RemoteSenderAsync extends AbstractSender
         super();
 
         this.executorService = Executors.newCachedThreadPool();
-        this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
     }
 
     /**
@@ -132,7 +126,9 @@ public class RemoteSenderAsync extends AbstractSender
     @Override
     public void connect(final URI uri)
     {
+        // TODO Connection-Pool aufbauen !!!
         InetSocketAddress serverAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
+        ByteBuffer buffer = getBuffer();
 
         try
         {
@@ -146,13 +142,13 @@ public class RemoteSenderAsync extends AbstractSender
             Future<Void> futureConnect = this.asyncSocketChannel.connect(serverAddress);
             futureConnect.get();
 
-            this.buffer.clear();
+            buffer.clear();
 
             // JSyncCommand senden.
-            Serializers.writeTo(this.buffer, JSyncCommand.CONNECT);
+            Serializers.writeTo(buffer, JSyncCommand.CONNECT);
 
-            this.buffer.flip();
-            write(this.buffer);
+            buffer.flip();
+            write(buffer);
         }
         catch (IOException ex)
         {
@@ -165,6 +161,10 @@ public class RemoteSenderAsync extends AbstractSender
         catch (Exception ex)
         {
             throw new RuntimeException(ex);
+        }
+        finally
+        {
+            releaseBuffer(buffer);
         }
     }
 
@@ -197,33 +197,35 @@ public class RemoteSenderAsync extends AbstractSender
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
+        ByteBuffer buffer = getBuffer();
+
         try
         {
-            this.buffer.clear();
-            Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
-            Serializers.writeTo(this.buffer, baseDir);
-            Serializers.writeTo(this.buffer, followSymLinks);
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, followSymLinks);
 
-            this.buffer.flip();
-            write(this.buffer);
+            buffer.flip();
+            write(buffer);
 
             // Response lesen.
-            this.buffer.clear();
-            Future<Integer> futureResponse = this.asyncSocketChannel.read(this.buffer);
+            buffer.clear();
+            Future<Integer> futureResponse = this.asyncSocketChannel.read(buffer);
 
             // while (getClient().read(bufferfer) > 0)
             while (futureResponse.get() > 0)
             {
-                this.buffer.flip();
+                buffer.flip();
 
-                while (this.buffer.hasRemaining())
+                while (buffer.hasRemaining())
                 {
-                    SyncItem syncItem = Serializers.readFrom(this.buffer, SyncItem.class);
+                    SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
                     consumerSyncItem.accept(syncItem);
                 }
 
-                this.buffer.clear();
-                futureResponse = this.asyncSocketChannel.read(this.buffer);
+                buffer.clear();
+                futureResponse = this.asyncSocketChannel.read(buffer);
             }
         }
         catch (RuntimeException rex)
@@ -234,6 +236,10 @@ public class RemoteSenderAsync extends AbstractSender
         {
             throw new RuntimeException(ex);
         }
+        finally
+        {
+            releaseBuffer(buffer);
+        }
     }
 
     /**
@@ -242,13 +248,15 @@ public class RemoteSenderAsync extends AbstractSender
     @Override
     public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativeFile);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, relativeFile);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
+        releaseBuffer(buffer);
 
         return new NoCloseReadableByteChannel(this.asyncSocketChannel);
     }
@@ -259,16 +267,17 @@ public class RemoteSenderAsync extends AbstractSender
     @Override
     public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_CHECKSUM);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativeFile);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, relativeFile);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
 
-        this.buffer.clear();
-        Future<Integer> futureResponse = this.asyncSocketChannel.read(this.buffer);
+        buffer.clear();
+        Future<Integer> futureResponse = this.asyncSocketChannel.read(buffer);
 
         try
         {
@@ -283,8 +292,9 @@ public class RemoteSenderAsync extends AbstractSender
             throw new RuntimeException(ex);
         }
 
-        this.buffer.flip();
-        String checksum = Serializers.readFrom(this.buffer, String.class);
+        buffer.flip();
+        String checksum = Serializers.readFrom(buffer, String.class);
+        releaseBuffer(buffer);
 
         return checksum;
     }

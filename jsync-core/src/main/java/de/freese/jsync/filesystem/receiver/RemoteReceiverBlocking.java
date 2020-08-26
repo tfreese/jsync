@@ -12,7 +12,6 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
@@ -78,11 +77,6 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     /**
      *
      */
-    private final ByteBuffer buffer;
-
-    /**
-     *
-     */
     private SocketChannel socketChannel;
 
     /**
@@ -91,8 +85,6 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     public RemoteReceiverBlocking()
     {
         super();
-
-        this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
     }
 
     /**
@@ -101,7 +93,9 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     @Override
     public void connect(final URI uri)
     {
+        // TODO Connection-Pool aufbauen !!!
         InetSocketAddress serverAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
+        ByteBuffer buffer = getBuffer();
 
         try
         {
@@ -114,11 +108,13 @@ public class RemoteReceiverBlocking extends AbstractReceiver
             throw new UncheckedIOException(ex);
         }
 
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.CONNECT);
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.CONNECT);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
+
+        releaseBuffer(buffer);
     }
 
     /**
@@ -127,13 +123,15 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativePath);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, relativePath);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
+        releaseBuffer(buffer);
     }
 
     /**
@@ -142,14 +140,16 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_DELETE);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativePath);
-        Serializers.writeTo(this.buffer, followSymLinks);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.TARGET_DELETE);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, relativePath);
+        Serializers.writeTo(buffer, followSymLinks);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
+        releaseBuffer(buffer);
     }
 
     /**
@@ -158,11 +158,12 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     @Override
     public void disconnect()
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.DISCONNECT);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
 
         try
         {
@@ -174,6 +175,10 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         {
             throw new UncheckedIOException(ex);
         }
+        finally
+        {
+            releaseBuffer(buffer);
+        }
     }
 
     /**
@@ -182,54 +187,32 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
+        ByteBuffer buffer = getBuffer();
+
         try
         {
-            this.buffer.clear();
-            Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
-            Serializers.writeTo(this.buffer, baseDir);
-            Serializers.writeTo(this.buffer, followSymLinks);
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, followSymLinks);
 
-            this.buffer.flip();
-            write(this.buffer);
+            buffer.flip();
+            write(buffer);
 
             // Response lesen.
-//            boolean sizeRead = false;
-//            boolean finished = false;
-//            int countSyncItems = -1;
-//            int counter = 0;
+            buffer.clear();
 
-            this.buffer.clear();
-
-            while (this.socketChannel.read(this.buffer) > 0)
+            while (this.socketChannel.read(buffer) > 0)
             {
-                this.buffer.flip();
+                buffer.flip();
 
-//                if (!sizeRead)
-//                {
-//                    countSyncItems = this.buffer.getInt();
-//                    sizeRead = true;
-//                }
-
-                while (this.buffer.hasRemaining())
+                while (buffer.hasRemaining())
                 {
-                    SyncItem syncItem = Serializers.readFrom(this.buffer, SyncItem.class);
+                    SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
                     consumerSyncItem.accept(syncItem);
-//                    counter++;
-
-//                    if (counter == countSyncItems)
-//                    {
-//                        // Finish-Flag.
-//                        finished = true;
-//                        break;
-//                    }
                 }
 
-//                if (finished)
-//                {
-//                    break;
-//                }
-
-                this.buffer.clear();
+                buffer.clear();
             }
         }
         catch (RuntimeException rex)
@@ -244,6 +227,10 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         {
             throw new RuntimeException(ex);
         }
+        finally
+        {
+            releaseBuffer(buffer);
+        }
     }
 
     /**
@@ -252,13 +239,15 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     @Override
     public WritableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativeFile);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, relativeFile);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
+        releaseBuffer(buffer);
 
         return new NoCloseWritableByteChannel(this.socketChannel);
     }
@@ -269,19 +258,21 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     @Override
     public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_CHECKSUM);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativeFile);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.TARGET_CHECKSUM);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, relativeFile);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
 
-        this.buffer.clear();
-        read(this.buffer);
-        this.buffer.flip();
+        buffer.clear();
+        read(buffer);
+        buffer.flip();
 
-        String checksum = Serializers.readFrom(this.buffer, String.class);
+        String checksum = Serializers.readFrom(buffer, String.class);
+        releaseBuffer(buffer);
 
         return checksum;
     }
@@ -292,13 +283,15 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_UPDATE);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, syncItem);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.TARGET_UPDATE);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, syncItem);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
+        releaseBuffer(buffer);
     }
 
     /**
@@ -307,14 +300,16 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.TARGET_VALIDATE_FILE);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, syncItem);
-        Serializers.writeTo(this.buffer, withChecksum);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.TARGET_VALIDATE_FILE);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, syncItem);
+        Serializers.writeTo(buffer, withChecksum);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
+        releaseBuffer(buffer);
     }
 
     /**
@@ -326,13 +321,13 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
-     * @param buf {@link ByteBuffer}
+     * @param buffer {@link ByteBuffer}
      */
-    protected void read(final ByteBuffer buf)
+    protected void read(final ByteBuffer buffer)
     {
         try
         {
-            this.socketChannel.read(this.buffer);
+            this.socketChannel.read(buffer);
         }
         catch (IOException ex)
         {
@@ -341,15 +336,15 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
-     * @param buf {@link ByteBuffer}
+     * @param buffer {@link ByteBuffer}
      */
-    protected void write(final ByteBuffer buf)
+    protected void write(final ByteBuffer buffer)
     {
         try
         {
-            while (buf.hasRemaining())
+            while (buffer.hasRemaining())
             {
-                this.socketChannel.write(buf);
+                this.socketChannel.write(buffer);
             }
         }
         catch (IOException ex)

@@ -77,11 +77,6 @@ public class RemoteSenderBlocking extends AbstractSender
     /**
      *
      */
-    private final ByteBuffer buffer;
-
-    /**
-     *
-     */
     private SocketChannel socketChannel;
 
     /**
@@ -90,9 +85,6 @@ public class RemoteSenderBlocking extends AbstractSender
     public RemoteSenderBlocking()
     {
         super();
-
-        // this.buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
-        this.buffer = ByteBuffer.allocate(Options.BUFFER_SIZE);
     }
 
     /**
@@ -101,6 +93,7 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public void connect(final URI uri)
     {
+        // TODO Connection-Pool aufbauen !!!
         InetSocketAddress serverAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
 
         try
@@ -115,11 +108,14 @@ public class RemoteSenderBlocking extends AbstractSender
             throw new UncheckedIOException(ex);
         }
 
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.CONNECT);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.CONNECT);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
+
+        releaseBuffer(buffer);
     }
 
     /**
@@ -128,11 +124,12 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public void disconnect()
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.DISCONNECT);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
 
         try
         {
@@ -144,6 +141,10 @@ public class RemoteSenderBlocking extends AbstractSender
         {
             throw new UncheckedIOException(ex);
         }
+        finally
+        {
+            releaseBuffer(buffer);
+        }
     }
 
     /**
@@ -152,46 +153,40 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
+        ByteBuffer buffer = getBuffer();
+
         try
         {
-            // // this.buffer.clear();
-            // // Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
-            // // Serializers.writeTo(this.buffer, baseDir);
-            // // Serializers.writeTo(this.buffer, followSymLinks);
-            //
-            // // this.buffer.flip();
-            // // write(this.buffer);
 
-            // ByteBuffer bufRequest = ByteBuffer.allocateDirect(64);
-            // Serializers.writeTo(bufRequest, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
-            // Serializers.writeTo(bufRequest, baseDir);
-            // Serializers.writeTo(bufRequest, followSymLinks);
-            //
-            // bufRequest.flip();
-            // write(bufRequest);
-            // bufRequest.clear();
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, followSymLinks);
+
+            buffer.flip();
+            write(buffer);
 
             // Response lesen.
-            this.buffer.clear();
+            buffer.clear();
 
             int bytesRead = 0;
 
-            while ((bytesRead = this.socketChannel.read(this.buffer)) != 1)
+            while ((bytesRead = this.socketChannel.read(buffer)) != 1)
             {
-                this.buffer.flip();
+                buffer.flip();
 
-                while (this.buffer.remaining() > 3)
+                while (buffer.remaining() > 3)
                 {
-                    SyncItem syncItem = Serializers.readFrom(this.buffer, SyncItem.class);
+                    SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
                     consumerSyncItem.accept(syncItem);
                 }
 
-                if (Serializers.isEOL(this.buffer))
+                if (Serializers.isEOL(buffer))
                 {
                     break;
                 }
 
-                this.buffer.clear();
+                buffer.clear();
             }
         }
         catch (RuntimeException rex)
@@ -206,6 +201,10 @@ public class RemoteSenderBlocking extends AbstractSender
         {
             throw new RuntimeException(ex);
         }
+        finally
+        {
+            releaseBuffer(buffer);
+        }
     }
 
     /**
@@ -214,13 +213,15 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativeFile);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, relativeFile);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
+        releaseBuffer(buffer);
 
         return new NoCloseReadableByteChannel(this.socketChannel);
     }
@@ -231,19 +232,21 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        this.buffer.clear();
-        Serializers.writeTo(this.buffer, JSyncCommand.SOURCE_CHECKSUM);
-        Serializers.writeTo(this.buffer, baseDir);
-        Serializers.writeTo(this.buffer, relativeFile);
+        ByteBuffer buffer = getBuffer();
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, relativeFile);
 
-        this.buffer.flip();
-        write(this.buffer);
+        buffer.flip();
+        write(buffer);
 
-        this.buffer.clear();
-        read(this.buffer);
-        this.buffer.flip();
+        buffer.clear();
+        read(buffer);
+        buffer.flip();
 
-        String checksum = Serializers.readFrom(this.buffer, String.class);
+        String checksum = Serializers.readFrom(buffer, String.class);
+        releaseBuffer(buffer);
 
         return checksum;
     }
@@ -257,13 +260,13 @@ public class RemoteSenderBlocking extends AbstractSender
     }
 
     /**
-     * @param buf {@link ByteBuffer}
+     * @param buffer {@link ByteBuffer}
      */
-    protected void read(final ByteBuffer buf)
+    protected void read(final ByteBuffer buffer)
     {
         try
         {
-            this.socketChannel.read(this.buffer);
+            this.socketChannel.read(buffer);
         }
         catch (IOException ex)
         {
@@ -272,15 +275,15 @@ public class RemoteSenderBlocking extends AbstractSender
     }
 
     /**
-     * @param buf {@link ByteBuffer}
+     * @param buffer {@link ByteBuffer}
      */
-    protected void write(final ByteBuffer buf)
+    protected void write(final ByteBuffer buffer)
     {
         try
         {
-            while (buf.hasRemaining())
+            while (buffer.hasRemaining())
             {
-                this.socketChannel.write(buf);
+                this.socketChannel.write(buffer);
             }
         }
         catch (IOException ex)

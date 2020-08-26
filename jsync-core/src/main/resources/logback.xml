@@ -73,12 +73,8 @@
         <appender-ref ref="FILE" />
     </appender>
 
-    <!--logger name="javax.mail" level="INFO"/>
-    <logger name="org.apache.tomcat.jdbc.pool" level="INFO"/>
-    <logger name="org.springframework.boot.autoconfigure" level="INFO"/>
-    <logger name="org.springframework.jdbc.core.JdbcTemplate" level="INFO"/-->
-
     <logger name="de.freese.jsync" level="INFO" />
+    <logger name="de.freese.jsync.server.handler" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

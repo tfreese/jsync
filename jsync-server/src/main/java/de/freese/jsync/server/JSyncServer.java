@@ -6,18 +6,10 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -25,15 +17,12 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.function.BiConsumer;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import de.freese.jsync.server.handler.IoHandler;
 import de.freese.jsync.server.handler.JSyncIoHandler;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.NamePreservingRunnable;
-import de.freese.jsync.utils.io.MonitoringReadableByteChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Der Server nimmt nur die neuen Client-Verbindungen entgegen und übergibt sie einem {@link Processor}.<br>
@@ -53,7 +42,6 @@ public class JSyncServer
 
     /**
      * @param args String[]
-     *
      * @throws Exception Falls was schief geht.
      */
     public static void main(final String[] args) throws Exception
@@ -62,7 +50,7 @@ public class JSyncServer
 
         JSyncServer server = new JSyncServer(8001, 2, executorService);
         // server.setIoHandler(new HttpIoHandler());
-//        server.setIoHandler(new TestJSyncIoHandler());
+        // server.setIoHandler(new TestJSyncIoHandler());
         server.setIoHandler(new JSyncIoHandler());
         server.start();
 
@@ -80,63 +68,63 @@ public class JSyncServer
         System.setIn(pis);
 
         // Client Task starten
-        executorService.submit(() ->
-        {
-
-            Thread.sleep(1000);
-
-            InetSocketAddress hostAddress = new InetSocketAddress("localhost", 8001);
-
-            try (SocketChannel client = SocketChannel.open(hostAddress))
-            {
-                client.configureBlocking(false);
-
-                // byte[] message = new String(companyName).getBytes();
-                // ByteBuffer buffer = ByteBuffer.wrap(message);
-
-                Path pathSrc = null;
-                pathSrc = Paths.get(System.getProperty("user.dir"), "pom.xml");
-                // pathSrc = Paths.get(System.getProperty("user.home"), "dokumente/spiele/eve-online", "Haladas_Bergbauhandbuch_V.3.pdf");
-
-                long fileSize = Files.size(pathSrc);
-                byte[] fileNameBytes = pathSrc.getFileName().toString().getBytes(StandardCharsets.UTF_8);
-
-                // TransferHeader mit allen benötigten Infos basteln.
-                ByteBuffer buffer = ByteBuffer.allocateDirect(1024 * 1024);
-                buffer.putLong(fileSize);
-                buffer.putInt(fileNameBytes.length);
-                buffer.put(fileNameBytes);
-
-                // Header senden.
-                buffer.flip();
-                client.write(buffer);
-                buffer.clear();
-
-                // Datei-Transfer
-                BiConsumer<Long, Long> monitor =
-                        (written, gesamt) -> System.out.printf("Read: %d / %d = %.2f %%%n", written, gesamt, JSyncUtils.getPercent(written, gesamt));
-
-                try (ReadableByteChannel fileChannel = new MonitoringReadableByteChannel(FileChannel.open(pathSrc, StandardOpenOption.READ), monitor, fileSize))
-                {
-                    while (fileChannel.read(buffer) != -1)
-                    {
-                        buffer.flip();
-
-                        while (buffer.hasRemaining())
-                        {
-                            client.write(buffer);
-                        }
-
-                        buffer.clear();
-                    }
-                }
-            }
-
-            // Console simulieren.
-            pos.write(0);
-
-            return null;
-        });
+        // executorService.submit(() ->
+        // {
+        //
+        // Thread.sleep(1000);
+        //
+        // InetSocketAddress hostAddress = new InetSocketAddress("localhost", 8001);
+        //
+        // try (SocketChannel client = SocketChannel.open(hostAddress))
+        // {
+        // client.configureBlocking(false);
+        //
+        // // byte[] message = new String(companyName).getBytes();
+        // // ByteBuffer buffer = ByteBuffer.wrap(message);
+        //
+        // Path pathSrc = null;
+        // pathSrc = Paths.get(System.getProperty("user.dir"), "pom.xml");
+        // // pathSrc = Paths.get(System.getProperty("user.home"), "dokumente/spiele/eve-online", "Haladas_Bergbauhandbuch_V.3.pdf");
+        //
+        // long fileSize = Files.size(pathSrc);
+        // byte[] fileNameBytes = pathSrc.getFileName().toString().getBytes(StandardCharsets.UTF_8);
+        //
+        // // TransferHeader mit allen benötigten Infos basteln.
+        // ByteBuffer buffer = ByteBuffer.allocateDirect(1024 * 1024);
+        // buffer.putLong(fileSize);
+        // buffer.putInt(fileNameBytes.length);
+        // buffer.put(fileNameBytes);
+        //
+        // // Header senden.
+        // buffer.flip();
+        // client.write(buffer);
+        // buffer.clear();
+        //
+        // // Datei-Transfer
+        // BiConsumer<Long, Long> monitor =
+        // (written, gesamt) -> System.out.printf("Read: %d / %d = %.2f %%%n", written, gesamt, JSyncUtils.getPercent(written, gesamt));
+        //
+        // try (ReadableByteChannel fileChannel = new MonitoringReadableByteChannel(FileChannel.open(pathSrc, StandardOpenOption.READ), monitor, fileSize))
+        // {
+        // while (fileChannel.read(buffer) != -1)
+        // {
+        // buffer.flip();
+        //
+        // while (buffer.hasRemaining())
+        // {
+        // client.write(buffer);
+        // }
+        //
+        // buffer.clear();
+        // }
+        // }
+        // }
+        //
+        // // Console simulieren.
+        // pos.write(0);
+        //
+        // return null;
+        // });
 
         try
         {
@@ -164,6 +152,14 @@ public class JSyncServer
     /**
      *
      */
+    private IoHandler ioHandler = null;
+    /**
+     *
+     */
+    private boolean isShutdown = false;
+    /**
+     *
+     */
     private final int numOfProcessors;
     /**
      *
@@ -178,23 +174,15 @@ public class JSyncServer
     /**
      *
      */
-    private final Semaphore stopLock = new Semaphore(1, true);
-    /**
-     *
-     */
-    private IoHandler ioHandler = null;
-    /**
-     *
-     */
-    private boolean isShutdown = false;
-    /**
-     *
-     */
     private Selector selector = null;
     /**
      *
      */
     private ServerSocketChannel serverSocketChannel = null;
+    /**
+     *
+     */
+    private final Semaphore stopLock = new Semaphore(1, true);
 
     /**
      * Erstellt ein neues {@link JSyncServer} Object.
@@ -209,7 +197,7 @@ public class JSyncServer
     /**
      * Erstellt ein neues {@link JSyncServer} Object.
      *
-     * @param port            int
+     * @param port int
      * @param numOfProcessors int
      */
     public JSyncServer(final int port, final int numOfProcessors)
@@ -220,7 +208,7 @@ public class JSyncServer
     /**
      * Erstellt ein neues {@link JSyncServer} Object.
      *
-     * @param port            int
+     * @param port int
      * @param numOfProcessors int
      * @param executorService {@link ExecutorService}; optional
      */
@@ -244,6 +232,14 @@ public class JSyncServer
             this.executorService = executorService;
             this.externalExecutor = true;
         }
+    }
+
+    /**
+     * @param ioHandler {@link IoHandler}
+     */
+    public void setIoHandler(final IoHandler ioHandler)
+    {
+        this.ioHandler = ioHandler;
     }
 
     /**
@@ -325,46 +321,6 @@ public class JSyncServer
         {
             JSyncUtils.shutdown(getExecutorService(), getLogger());
         }
-    }
-
-    /**
-     * @return {@link ExecutorService}
-     */
-    protected ExecutorService getExecutorService()
-    {
-        return this.executorService;
-    }
-
-    /**
-     * @return {@link IoHandler}
-     */
-    protected IoHandler getIoHandler()
-    {
-        return this.ioHandler;
-    }
-
-    /**
-     * @param ioHandler {@link IoHandler}
-     */
-    public void setIoHandler(final IoHandler ioHandler)
-    {
-        this.ioHandler = ioHandler;
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return LOGGER;
-    }
-
-    /**
-     * @return int
-     */
-    protected int getNumOfProcessors()
-    {
-        return this.numOfProcessors;
     }
 
     /**
@@ -452,5 +408,37 @@ public class JSyncServer
         this.processors.add(processor);
 
         return processor;
+    }
+
+    /**
+     * @return {@link ExecutorService}
+     */
+    protected ExecutorService getExecutorService()
+    {
+        return this.executorService;
+    }
+
+    /**
+     * @return {@link IoHandler}
+     */
+    protected IoHandler getIoHandler()
+    {
+        return this.ioHandler;
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return LOGGER;
+    }
+
+    /**
+     * @return int
+     */
+    protected int getNumOfProcessors()
+    {
+        return this.numOfProcessors;
     }
 }
