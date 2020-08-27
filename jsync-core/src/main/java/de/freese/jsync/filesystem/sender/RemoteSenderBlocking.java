@@ -3,7 +3,6 @@ package de.freese.jsync.filesystem.sender;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -16,12 +15,15 @@ import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.SocketChannelPool;
 
 /**
  * {@link Sender} für Remote-Filesysteme.
  *
  * @author Thomas Freese
  */
+@SuppressWarnings("resource")
 public class RemoteSenderBlocking extends AbstractSender
 {
     /**
@@ -52,7 +54,7 @@ public class RemoteSenderBlocking extends AbstractSender
         @Override
         public void close() throws IOException
         {
-            // Empty
+            RemoteSenderBlocking.this.channelPool.releaseChannel((SocketChannel) this.delegate);
         }
 
         /**
@@ -77,7 +79,11 @@ public class RemoteSenderBlocking extends AbstractSender
     /**
      *
      */
-    private SocketChannel socketChannel;
+    private final ByteBufferPool byteBufferPool = new ByteBufferPool();
+    /**
+     *
+     */
+    private SocketChannelPool channelPool;
 
     /**
      * Erstellt ein neues {@link RemoteSenderBlocking} Object.
@@ -93,29 +99,29 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public void connect(final URI uri)
     {
-        // TODO Connection-Pool aufbauen !!!
-        InetSocketAddress serverAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
+        this.channelPool = new SocketChannelPool(uri);
 
-        try
-        {
-            // this.socketChannel = SocketChannel.open();
-            // this.socketChannel.connect(serverAddress);
-            this.socketChannel = SocketChannel.open(serverAddress);
-            this.socketChannel = (SocketChannel) this.socketChannel.configureBlocking(true);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
+        SocketChannel channel = this.channelPool.getChannel();
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
 
-        ByteBuffer buffer = getBuffer();
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.CONNECT);
 
         buffer.flip();
-        write(buffer);
+        write(channel, buffer);
 
-        releaseBuffer(buffer);
+        this.byteBufferPool.releaseBuffer(buffer);
+        this.channelPool.releaseChannel(channel);
+
+        // Warum funktioniert die weitere Kommunikation nur mit dem Thread.sleep ???
+        try
+        {
+            Thread.sleep(10);
+        }
+        catch (Exception ex)
+        {
+            // Empty
+        }
     }
 
     /**
@@ -124,27 +130,20 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public void disconnect()
     {
-        ByteBuffer buffer = getBuffer();
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
 
-        buffer.flip();
-        write(buffer);
+        Consumer<SocketChannel> disconnector = channel -> {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
-        try
-        {
-            this.socketChannel.shutdownInput();
-            this.socketChannel.shutdownOutput();
-            this.socketChannel.close();
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        finally
-        {
-            releaseBuffer(buffer);
-        }
+            buffer.flip();
+            write(channel, buffer);
+        };
+
+        this.channelPool.clear(disconnector);
+
+        this.byteBufferPool.releaseBuffer(buffer);
+        this.byteBufferPool.clear();
     }
 
     /**
@@ -153,7 +152,8 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
-        ByteBuffer buffer = getBuffer();
+        SocketChannel channel = this.channelPool.getChannel();
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
 
         try
         {
@@ -164,14 +164,15 @@ public class RemoteSenderBlocking extends AbstractSender
             Serializers.writeTo(buffer, followSymLinks);
 
             buffer.flip();
-            write(buffer);
+            write(channel, buffer);
 
             // Response lesen.
             buffer.clear();
 
-            int bytesRead = 0;
+            // int bytesRead = 0;
 
-            while ((bytesRead = this.socketChannel.read(buffer)) != 1)
+            // while ((bytesRead = channel.read(buffer)) != 1)
+            while (channel.read(buffer) != 1)
             {
                 buffer.flip();
 
@@ -203,7 +204,8 @@ public class RemoteSenderBlocking extends AbstractSender
         }
         finally
         {
-            releaseBuffer(buffer);
+            this.byteBufferPool.releaseBuffer(buffer);
+            this.channelPool.releaseChannel(channel);
         }
     }
 
@@ -213,17 +215,20 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
-        ByteBuffer buffer = getBuffer();
+        SocketChannel channel = this.channelPool.getChannel();
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
         Serializers.writeTo(buffer, baseDir);
         Serializers.writeTo(buffer, relativeFile);
 
         buffer.flip();
-        write(buffer);
-        releaseBuffer(buffer);
+        write(channel, buffer);
 
-        return new NoCloseReadableByteChannel(this.socketChannel);
+        this.byteBufferPool.releaseBuffer(buffer);
+
+        return new NoCloseReadableByteChannel(channel);
     }
 
     /**
@@ -232,21 +237,25 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        ByteBuffer buffer = getBuffer();
+        SocketChannel channel = this.channelPool.getChannel();
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
         Serializers.writeTo(buffer, baseDir);
         Serializers.writeTo(buffer, relativeFile);
 
         buffer.flip();
-        write(buffer);
+        write(channel, buffer);
 
         buffer.clear();
-        read(buffer);
+        read(channel, buffer);
         buffer.flip();
 
         String checksum = Serializers.readFrom(buffer, String.class);
-        releaseBuffer(buffer);
+
+        this.byteBufferPool.releaseBuffer(buffer);
+        this.channelPool.releaseChannel(channel);
 
         return checksum;
     }
@@ -260,13 +269,14 @@ public class RemoteSenderBlocking extends AbstractSender
     }
 
     /**
+     * @param channel {@link SocketChannel}
      * @param buffer {@link ByteBuffer}
      */
-    protected void read(final ByteBuffer buffer)
+    protected void read(final SocketChannel channel, final ByteBuffer buffer)
     {
         try
         {
-            this.socketChannel.read(buffer);
+            channel.read(buffer);
         }
         catch (IOException ex)
         {
@@ -275,15 +285,16 @@ public class RemoteSenderBlocking extends AbstractSender
     }
 
     /**
+     * @param channel {@link SocketChannel}
      * @param buffer {@link ByteBuffer}
      */
-    protected void write(final ByteBuffer buffer)
+    protected void write(final SocketChannel channel, final ByteBuffer buffer)
     {
         try
         {
             while (buffer.hasRemaining())
             {
-                this.socketChannel.write(buffer);
+                channel.write(buffer);
             }
         }
         catch (IOException ex)

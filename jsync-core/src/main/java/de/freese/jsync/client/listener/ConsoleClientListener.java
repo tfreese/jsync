@@ -5,7 +5,6 @@ package de.freese.jsync.client.listener;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.model.SyncItem;
 
@@ -14,6 +13,7 @@ import de.freese.jsync.model.SyncItem;
  *
  * @author Thomas Freese
  */
+@SuppressWarnings("resource")
 public class ConsoleClientListener extends AbstractClientListener
 {
     /**

@@ -33,6 +33,7 @@ import de.freese.jsync.utils.NamePreservingRunnable;
  *
  * @author Thomas Freese
  */
+@SuppressWarnings("resource")
 public class JSyncServer
 {
     /**
@@ -152,11 +153,11 @@ public class JSyncServer
     /**
      *
      */
-    private IoHandler ioHandler = null;
+    private IoHandler ioHandler;
     /**
      *
      */
-    private boolean isShutdown = false;
+    private boolean isShutdown;
     /**
      *
      */
@@ -174,11 +175,11 @@ public class JSyncServer
     /**
      *
      */
-    private Selector selector = null;
+    private Selector selector;
     /**
      *
      */
-    private ServerSocketChannel serverSocketChannel = null;
+    private ServerSocketChannel serverSocketChannel;
     /**
      *
      */
@@ -355,7 +356,7 @@ public class JSyncServer
 
                         if (!selectionKey.isValid())
                         {
-                            getLogger().debug("SelectionKey not valid: {}", selectionKey);
+                            getLogger().debug("SelectionKey not valid: {}", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
                         }
 
                         if (selectionKey.isAcceptable())
@@ -364,14 +365,13 @@ public class JSyncServer
                             SocketChannel socketChannel = this.serverSocketChannel.accept();
 
                             getLogger().debug("Connection Accepted: {}", socketChannel.getRemoteAddress());
-                            getLogger().debug("add new session: {}", socketChannel);
 
                             // Socket dem Processor übergeben.
                             nextProcessor().addSession(socketChannel);
                         }
                         else if (selectionKey.isConnectable())
                         {
-                            getLogger().debug("Client Connected");
+                            getLogger().debug("Client Connected: {}", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
                         }
                     }
 

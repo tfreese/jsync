@@ -7,6 +7,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
@@ -24,18 +25,21 @@ import de.freese.jsync.model.serializer.Serializers;
  * @author Thomas Freese
  * @see IoHandler
  */
-public class JSyncIoHandler extends AbstractIoHandler
+@SuppressWarnings("resource")
+public class JSyncIoHandler implements IoHandler
 {
     /**
      *
      */
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncIoHandler.class);
+    /**
+     *
+     */
     private static final ThreadLocal<ByteBuffer> THREAD_LOCAL_BUFFER = ThreadLocal.withInitial(() -> ByteBuffer.allocateDirect(Options.BUFFER_SIZE));
-
     /**
      *
      */
     private static final ThreadLocal<Receiver> THREAD_LOCAL_RECEIVER = ThreadLocal.withInitial(LocalhostReceiver::new);
-
     /**
      *
      */
@@ -46,7 +50,6 @@ public class JSyncIoHandler extends AbstractIoHandler
      * @param buffer {@link ByteBuffer}
      * @throws IOException @throws Exception Falls was schief geht
      */
-    @SuppressWarnings("resource")
     private static void writeBuffer(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
     {
         SocketChannel channel = (SocketChannel) selectionKey.channel();
@@ -66,11 +69,10 @@ public class JSyncIoHandler extends AbstractIoHandler
     }
 
     /**
-     * @see IoHandler#read(SelectionKey, Logger)
+     * @see IoHandler#read(SelectionKey)
      */
-    @SuppressWarnings("resource")
     @Override
-    public void read(final SelectionKey selectionKey, final Logger logger) throws Exception
+    public void read(final SelectionKey selectionKey) throws Exception
     {
         ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
 
@@ -78,15 +80,23 @@ public class JSyncIoHandler extends AbstractIoHandler
         ByteBuffer buffer = THREAD_LOCAL_BUFFER.get();
 
         buffer.clear();
-        channel.read(buffer);
+
+        int bytesRead = channel.read(buffer);
+
+        if (bytesRead == -1)
+        {
+            // Nach Disconnect
+            return;
+        }
+
         buffer.flip();
 
         JSyncCommand command = Serializers.readFrom(buffer, JSyncCommand.class);
-        logger.debug("read command: {}", command);
+        getLogger().debug("read command: {}", command);
 
         if (command == null)
         {
-            logger.error("unknown JSyncCommand");
+            getLogger().error("unknown JSyncCommand");
             selectionKey.interestOps(SelectionKey.OP_READ);
             return;
         }
@@ -95,7 +105,8 @@ public class JSyncIoHandler extends AbstractIoHandler
         {
             case DISCONNECT:
                 selectionKey.attach(null);
-                selectionKey.interestOps(SelectionKey.OP_CONNECT);
+                // selectionKey.interestOps(SelectionKey.OP_CONNECT);
+                selectionKey.cancel();
                 break;
 
             case CONNECT:
@@ -103,15 +114,15 @@ public class JSyncIoHandler extends AbstractIoHandler
                 break;
 
             case TARGET_CHECKSUM:
-                createChecksum(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
+                createChecksum(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                 break;
 
             case TARGET_CREATE_SYNC_ITEMS:
-                createSyncItems(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
+                createSyncItems(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                 break;
 
             case TARGET_DELETE:
-                delete(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
+                delete(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                 break;
 
             // case TARGET_WRITEABLE_FILE_CHANNEL:
@@ -119,19 +130,19 @@ public class JSyncIoHandler extends AbstractIoHandler
             // break;
 
             case TARGET_VALIDATE_FILE:
-                validate(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
+                validate(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                 break;
 
             case TARGET_UPDATE:
-                update(selectionKey, buffer, logger, THREAD_LOCAL_RECEIVER.get());
+                update(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                 break;
 
             case SOURCE_CHECKSUM:
-                createChecksum(selectionKey, buffer, logger, THREAD_LOCAL_SENDER.get());
+                createChecksum(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
                 break;
 
             case SOURCE_CREATE_SYNC_ITEMS:
-                createSyncItems(selectionKey, buffer, logger, THREAD_LOCAL_SENDER.get());
+                createSyncItems(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
                 break;
 
             // case SOURCE_READABLE_FILE_CHANNEL:
@@ -142,14 +153,15 @@ public class JSyncIoHandler extends AbstractIoHandler
                 break;
         }
 
-        selectionKey.interestOps(SelectionKey.OP_WRITE);
+        // selectionKey.interestOps(SelectionKey.OP_READ);
+        // selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
 
     /**
-     * @see IoHandler#write(SelectionKey, Logger)
+     * @see IoHandler#write(SelectionKey)
      */
     @Override
-    public void write(final SelectionKey selectionKey, final Logger logger) throws Exception
+    public void write(final SelectionKey selectionKey) throws Exception
     {
         // WritableByteChannel channel = (WritableByteChannel) selectionKey.channel();
 
@@ -163,25 +175,32 @@ public class JSyncIoHandler extends AbstractIoHandler
     }
 
     /**
+     * @return {@link Logger}
+     */
+    private Logger getLogger()
+    {
+        return LOGGER;
+    }
+
+    /**
      * Create the checksum.
      *
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
-     * @param logger {@link Logger}
      * @param fileSystem {@link FileSystem}
      * @throws Exception Falls was schief geht.
      */
-    protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final FileSystem fileSystem) throws Exception
+    protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativeFile = Serializers.readFrom(buffer, String.class);
 
-        logger.debug("Create Checksum: {}/{}", baseDir, relativeFile);
+        getLogger().debug("Create Checksum: {}/{}", baseDir, relativeFile);
 
         String checksum = fileSystem.getChecksum(baseDir, relativeFile, i -> {
         });
 
-        logger.debug("Checksum created: {}/{}", baseDir, relativeFile);
+        getLogger().debug("Checksum created: {}/{}", baseDir, relativeFile);
 
         buffer.clear();
         Serializers.writeTo(buffer, checksum);
@@ -195,21 +214,18 @@ public class JSyncIoHandler extends AbstractIoHandler
      *
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
-     * @param logger {@link Logger}
      * @param fileSystem {@link FileSystem}
      * @throws Exception Falls was schief geht.
      */
-    protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final FileSystem fileSystem) throws Exception
+    protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
 
-        // Runnable task = () ->
-        // {
-        logger.debug("Create SyncItems: {}", baseDir);
+        getLogger().debug("Create SyncItems: {}", baseDir);
 
         fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
-            logger.debug("Send SyncItem: {}", syncItem);
+            getLogger().debug("Send SyncItem: {}", syncItem);
 
             buffer.clear();
             Serializers.writeTo(buffer, syncItem);
@@ -221,7 +237,7 @@ public class JSyncIoHandler extends AbstractIoHandler
             }
             catch (IOException ioex)
             {
-                logger.error(null, ioex);
+                getLogger().error(null, ioex);
             }
         });
 
@@ -232,12 +248,7 @@ public class JSyncIoHandler extends AbstractIoHandler
 
         writeBuffer(selectionKey, buffer);
 
-        logger.debug("SyncItems written: {}", baseDir);
-        // };
-        //
-        // selectionKey.attach(task);
-        //
-        // selectionKey.interestOps(SelectionKey.OP_WRITE);
+        getLogger().debug("SyncItems written: {}", baseDir);
     }
 
     /**
@@ -245,21 +256,20 @@ public class JSyncIoHandler extends AbstractIoHandler
      *
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
-     * @param logger {@link Logger}
      * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
-    protected void delete(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final Receiver receiver) throws Exception
+    protected void delete(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativePath = Serializers.readFrom(buffer, String.class);
         boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
 
-        logger.debug("Delete: {}/{}", baseDir, relativePath);
+        getLogger().debug("Delete: {}/{}", baseDir, relativePath);
 
         receiver.delete(baseDir, relativePath, followSymLinks);
 
-        logger.debug("Deleted: {}/{}", baseDir, relativePath);
+        getLogger().debug("Deleted: {}/{}", baseDir, relativePath);
     }
 
     /**
@@ -267,20 +277,19 @@ public class JSyncIoHandler extends AbstractIoHandler
      *
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
-     * @param logger {@link Logger}
      * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
-    protected void update(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final Receiver receiver) throws Exception
+    protected void update(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
 
-        logger.debug("Update: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().debug("Update: {}/{}", baseDir, syncItem.getRelativePath());
 
         receiver.update(baseDir, syncItem);
 
-        logger.debug("Updated: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().debug("Updated: {}/{}", baseDir, syncItem.getRelativePath());
     }
 
     /**
@@ -288,17 +297,16 @@ public class JSyncIoHandler extends AbstractIoHandler
      *
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
-     * @param logger {@link Logger}
      * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
-    protected void validate(final SelectionKey selectionKey, final ByteBuffer buffer, final Logger logger, final Receiver receiver) throws Exception
+    protected void validate(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
         boolean withChecksum = Serializers.readFrom(buffer, Boolean.class);
 
-        logger.debug("Validate: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().debug("Validate: {}/{}", baseDir, syncItem.getRelativePath());
 
         try
         {
@@ -306,7 +314,7 @@ public class JSyncIoHandler extends AbstractIoHandler
         }
         catch (Exception ex)
         {
-            logger.error(null, ex);
+            getLogger().error(null, ex);
 
             buffer.clear();
             Serializers.writeTo(buffer, ex.getMessage());
@@ -315,7 +323,7 @@ public class JSyncIoHandler extends AbstractIoHandler
             writeBuffer(selectionKey, buffer);
         }
 
-        logger.debug("Validated: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().debug("Validated: {}/{}", baseDir, syncItem.getRelativePath());
     }
 
     // /**

@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.io.MonitoringReadableByteChannel;
 
@@ -23,8 +24,14 @@ import de.freese.jsync.utils.io.MonitoringReadableByteChannel;
  * @author Thomas Freese
  * @see IoHandler
  */
-public class TestJSyncIoHandler extends AbstractIoHandler
+@SuppressWarnings("resource")
+public class TestJSyncIoHandler implements IoHandler
 {
+    /**
+     *
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestJSyncIoHandler.class);
+
     /**
      * Erstellt ein neues {@link TestJSyncIoHandler} Object.
      */
@@ -34,11 +41,10 @@ public class TestJSyncIoHandler extends AbstractIoHandler
     }
 
     /**
-     * @see de.freese.jsync.server.handler.IoHandler#read(java.nio.channels.SelectionKey, org.slf4j.Logger)
+     * @see de.freese.jsync.server.handler.IoHandler#read(java.nio.channels.SelectionKey)
      */
-    @SuppressWarnings("resource")
     @Override
-    public void read(final SelectionKey selectionKey, final Logger logger) throws Exception
+    public void read(final SelectionKey selectionKey) throws Exception
     {
         ReadableByteChannel inChannel = (ReadableByteChannel) selectionKey.channel();
 
@@ -74,7 +80,7 @@ public class TestJSyncIoHandler extends AbstractIoHandler
 
                 while (buffer.hasRemaining())
                 {
-                    logger.debug("Transfered data for file: {} / {}", bytesTransferred, pathDst);
+                    getLogger().debug("Transfered data for file: {} / {}", bytesTransferred, pathDst);
                     outChannel.write(buffer);
                 }
 
@@ -86,11 +92,19 @@ public class TestJSyncIoHandler extends AbstractIoHandler
     }
 
     /**
-     * @see de.freese.jsync.server.handler.IoHandler#write(java.nio.channels.SelectionKey, org.slf4j.Logger)
+     * @see de.freese.jsync.server.handler.IoHandler#write(java.nio.channels.SelectionKey)
      */
     @Override
-    public void write(final SelectionKey selectionKey, final Logger logger) throws Exception
+    public void write(final SelectionKey selectionKey) throws Exception
     {
         // NOOP
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    private Logger getLogger()
+    {
+        return LOGGER;
     }
 }

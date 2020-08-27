@@ -20,8 +20,8 @@ import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.ConsoleClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.server.JSyncServer;
-import de.freese.jsync.server.handler.IoHandler;
 import de.freese.jsync.server.handler.JSyncIoHandler;
 
 /**
@@ -56,13 +56,13 @@ class TestJSyncRemote extends AbstractJSyncTest
             client.generateChecksum(EFileSystem.RECEIVER, syncItem, null);
         });
 
-        // List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
-        //
-        // syncList.stream().forEach(SyncPair::validateStatus);
-        //
+        List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
+
+        syncList.stream().forEach(SyncPair::validateStatus);
+
         // client.syncReceiver(syncList, clientListener);
-        //
-        // client.disconnectFileSystems();
+
+        client.disconnectFileSystems();
     }
 
     /**
@@ -73,10 +73,8 @@ class TestJSyncRemote extends AbstractJSyncTest
     {
         System.out.println();
 
-        IoHandler jsyncIoHandler = new JSyncIoHandler();
-
-        JSyncServer serverSender = new JSyncServer(8001, 1);
-        serverSender.setIoHandler(jsyncIoHandler);
+        JSyncServer serverSender = new JSyncServer(8001, 3);
+        serverSender.setIoHandler(new JSyncIoHandler());
         serverSender.start();
 
         Options options = new Builder().delete(true).dryRun(false).followSymLinks(false).checksum(true).build();
@@ -86,7 +84,7 @@ class TestJSyncRemote extends AbstractJSyncTest
 
         syncDirectories(options, senderUri, receiverUri, new ConsoleClientListener());
 
-        serverSender.stop();
+        // serverSender.stop();
 
         assertTrue(true);
     }
@@ -99,14 +97,12 @@ class TestJSyncRemote extends AbstractJSyncTest
     {
         System.out.println();
 
-        IoHandler jsyncIoHandler = new JSyncIoHandler();
-
-        JSyncServer serverSender = new JSyncServer(8001, 1);
-        serverSender.setIoHandler(jsyncIoHandler);
+        JSyncServer serverSender = new JSyncServer(8001, 3);
+        serverSender.setIoHandler(new JSyncIoHandler());
         serverSender.start();
 
-        JSyncServer serverReceiver = new JSyncServer(8002, 1);
-        serverReceiver.setIoHandler(jsyncIoHandler);
+        JSyncServer serverReceiver = new JSyncServer(8002, 3);
+        serverReceiver.setIoHandler(new JSyncIoHandler());
         serverReceiver.start();
 
         Options options = new Builder().delete(true).dryRun(false).followSymLinks(false).checksum(true).build();

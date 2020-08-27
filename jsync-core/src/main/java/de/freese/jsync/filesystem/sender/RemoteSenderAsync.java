@@ -2,17 +2,13 @@
 package de.freese.jsync.filesystem.sender;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -21,7 +17,8 @@ import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
-import de.freese.jsync.utils.JSyncUtils;
+import de.freese.jsync.utils.pool.AsynchronousSocketChannelPool;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /***
  * {@link Sender} für Remote-Filesysteme.
@@ -37,8 +34,8 @@ public class RemoteSenderAsync extends AbstractSender
     private class NoCloseReadableByteChannel implements ReadableByteChannel
     {
         /**
-        *
-        */
+         *
+         */
         private final AsynchronousSocketChannel delegate;
 
         /**
@@ -59,7 +56,7 @@ public class RemoteSenderAsync extends AbstractSender
         @Override
         public void close() throws IOException
         {
-            // Empty
+            RemoteSenderAsync.this.channelPool.releaseChannel(this.delegate);
         }
 
         /**
@@ -96,19 +93,13 @@ public class RemoteSenderAsync extends AbstractSender
     }
 
     /**
-    *
-    */
-    private AsynchronousSocketChannel asyncSocketChannel;
-
+     *
+     */
+    private final ByteBufferPool byteBufferPool = new ByteBufferPool();
     /**
-    *
-    */
-    private AsynchronousChannelGroup channelGroup;
-
-    /**
-    *
-    */
-    private final ExecutorService executorService;
+     *
+     */
+    private AsynchronousSocketChannelPool channelPool;
 
     /**
      * Erstellt ein neues {@link RemoteSenderAsync} Object.
@@ -116,8 +107,6 @@ public class RemoteSenderAsync extends AbstractSender
     public RemoteSenderAsync()
     {
         super();
-
-        this.executorService = Executors.newCachedThreadPool();
     }
 
     /**
@@ -126,45 +115,28 @@ public class RemoteSenderAsync extends AbstractSender
     @Override
     public void connect(final URI uri)
     {
-        // TODO Connection-Pool aufbauen !!!
-        InetSocketAddress serverAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
-        ByteBuffer buffer = getBuffer();
+        this.channelPool = new AsynchronousSocketChannelPool(uri, Executors.newCachedThreadPool());
 
+        AsynchronousSocketChannel channel = this.channelPool.getChannel();
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.CONNECT);
+
+        buffer.flip();
+        write(channel, buffer);
+
+        this.byteBufferPool.releaseBuffer(buffer);
+        this.channelPool.releaseChannel(channel);
+
+        // Warum funktioniert die weitere Kommunikation nur mit dem Thread.sleep ???
         try
         {
-            // int poolSize = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
-            // this.channelGroup = AsynchronousChannelGroup.withThreadPool(Executors.newFixedThreadPool(poolSize));
-            this.channelGroup = AsynchronousChannelGroup.withThreadPool(this.executorService);
-
-            this.asyncSocketChannel = AsynchronousSocketChannel.open(this.channelGroup);
-            // this.client = AsynchronousSocketChannel.open();
-
-            Future<Void> futureConnect = this.asyncSocketChannel.connect(serverAddress);
-            futureConnect.get();
-
-            buffer.clear();
-
-            // JSyncCommand senden.
-            Serializers.writeTo(buffer, JSyncCommand.CONNECT);
-
-            buffer.flip();
-            write(buffer);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
+            Thread.sleep(10);
         }
         catch (Exception ex)
         {
-            throw new RuntimeException(ex);
-        }
-        finally
-        {
-            releaseBuffer(buffer);
+            // Empty
         }
     }
 
@@ -174,21 +146,35 @@ public class RemoteSenderAsync extends AbstractSender
     @Override
     public void disconnect()
     {
-        try
-        {
-            this.asyncSocketChannel.shutdownInput();
-            this.asyncSocketChannel.shutdownOutput();
-            this.asyncSocketChannel.close();
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
 
-        if (this.channelGroup != null)
-        {
-            JSyncUtils.shutdown(this.channelGroup, getLogger());
-        }
+        Consumer<AsynchronousSocketChannel> disconnector = channel -> {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
+
+            buffer.flip();
+            write(channel, buffer);
+        };
+
+        this.channelPool.clear(disconnector);
+
+        this.byteBufferPool.releaseBuffer(buffer);
+        this.byteBufferPool.clear();
+
+        // AsynchronousSocketChannel channel = this.channelPool.getChannel();
+        // ByteBuffer buffer = this.byteBufferPool.getBuffer();
+        //
+        // buffer.clear();
+        // Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
+        //
+        // buffer.flip();
+        // write(channel, buffer);
+        //
+        // this.byteBufferPool.releaseBuffer(buffer);
+        // this.channelPool.releaseChannel(channel);
+        //
+        // this.byteBufferPool.clear();
+        // this.channelPool.clear();
     }
 
     /**
@@ -197,7 +183,8 @@ public class RemoteSenderAsync extends AbstractSender
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
-        ByteBuffer buffer = getBuffer();
+        AsynchronousSocketChannel channel = this.channelPool.getChannel();
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
 
         try
         {
@@ -207,11 +194,11 @@ public class RemoteSenderAsync extends AbstractSender
             Serializers.writeTo(buffer, followSymLinks);
 
             buffer.flip();
-            write(buffer);
+            write(channel, buffer);
 
             // Response lesen.
             buffer.clear();
-            Future<Integer> futureResponse = this.asyncSocketChannel.read(buffer);
+            Future<Integer> futureResponse = channel.read(buffer);
 
             // while (getClient().read(bufferfer) > 0)
             while (futureResponse.get() > 0)
@@ -225,7 +212,7 @@ public class RemoteSenderAsync extends AbstractSender
                 }
 
                 buffer.clear();
-                futureResponse = this.asyncSocketChannel.read(buffer);
+                futureResponse = channel.read(buffer);
             }
         }
         catch (RuntimeException rex)
@@ -238,7 +225,8 @@ public class RemoteSenderAsync extends AbstractSender
         }
         finally
         {
-            releaseBuffer(buffer);
+            this.byteBufferPool.releaseBuffer(buffer);
+            this.channelPool.releaseChannel(channel);
         }
     }
 
@@ -248,17 +236,20 @@ public class RemoteSenderAsync extends AbstractSender
     @Override
     public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
-        ByteBuffer buffer = getBuffer();
+        AsynchronousSocketChannel channel = this.channelPool.getChannel();
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
         Serializers.writeTo(buffer, baseDir);
         Serializers.writeTo(buffer, relativeFile);
 
         buffer.flip();
-        write(buffer);
-        releaseBuffer(buffer);
+        write(channel, buffer);
 
-        return new NoCloseReadableByteChannel(this.asyncSocketChannel);
+        this.byteBufferPool.releaseBuffer(buffer);
+
+        return new NoCloseReadableByteChannel(channel);
     }
 
     /**
@@ -267,17 +258,19 @@ public class RemoteSenderAsync extends AbstractSender
     @Override
     public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        ByteBuffer buffer = getBuffer();
+        AsynchronousSocketChannel channel = this.channelPool.getChannel();
+        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
         Serializers.writeTo(buffer, baseDir);
         Serializers.writeTo(buffer, relativeFile);
 
         buffer.flip();
-        write(buffer);
+        write(channel, buffer);
 
         buffer.clear();
-        Future<Integer> futureResponse = this.asyncSocketChannel.read(buffer);
+        Future<Integer> futureResponse = channel.read(buffer);
 
         try
         {
@@ -294,7 +287,9 @@ public class RemoteSenderAsync extends AbstractSender
 
         buffer.flip();
         String checksum = Serializers.readFrom(buffer, String.class);
-        releaseBuffer(buffer);
+
+        this.byteBufferPool.releaseBuffer(buffer);
+        this.channelPool.releaseChannel(channel);
 
         return checksum;
     }
@@ -308,17 +303,18 @@ public class RemoteSenderAsync extends AbstractSender
     }
 
     /**
+     * @param channel {@link AsynchronousSocketChannel}
      * @param buffer {@link ByteBuffer}
      */
-    protected void write(final ByteBuffer buffer)
+    protected void write(final AsynchronousSocketChannel channel, final ByteBuffer buffer)
     {
-        Future<Integer> futureRequest = this.asyncSocketChannel.write(buffer);
+        Future<Integer> futureRequest = channel.write(buffer);
 
         try
         {
             while (futureRequest.get() > 0)
             {
-                futureRequest = this.asyncSocketChannel.write(buffer);
+                futureRequest = channel.write(buffer);
             }
         }
         catch (RuntimeException rex)

@@ -21,6 +21,7 @@ import de.freese.jsync.server.handler.IoHandler;
  *
  * @author Thomas Freese
  */
+@SuppressWarnings("resource")
 class Processor implements Runnable
 {
     /**
@@ -32,22 +33,18 @@ class Processor implements Runnable
      *
      */
     private final IoHandler ioHandler;
-
     /**
      *
      */
     private boolean isShutdown;
-
     /**
      *
      */
     private final Queue<SocketChannel> newSessions = new ConcurrentLinkedQueue<>();
-
     /**
      *
      */
     private final Selector selector;
-
     /**
      *
      */
@@ -113,22 +110,22 @@ class Processor implements Runnable
 
                         if (!selectionKey.isValid())
                         {
-                            getLogger().debug("SelectionKey not valid: {}", selectionKey);
+                            getLogger().debug("SelectionKey not valid: {}", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
                         }
 
                         if (selectionKey.isReadable())
                         {
-                            getLogger().debug("Read Request");
+                            getLogger().debug("Read Request: {}", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                             // Request lesen.
-                            this.ioHandler.read(selectionKey, getLogger());
+                            this.ioHandler.read(selectionKey);
                         }
                         else if (selectionKey.isWritable())
                         {
-                            getLogger().debug("Write Response");
+                            getLogger().debug("Write Response: {}", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                             // Response schreiben.
-                            this.ioHandler.write(selectionKey, getLogger());
+                            this.ioHandler.write(selectionKey);
                         }
                     }
 
@@ -177,7 +174,7 @@ class Processor implements Runnable
 
             socketChannel.configureBlocking(false);
 
-            getLogger().debug("attach new session: {}", socketChannel);
+            getLogger().debug("attach new session: {}", socketChannel.getRemoteAddress());
 
             SelectionKey selectionKey = socketChannel.register(this.selector, SelectionKey.OP_READ);
             // selectionKey.attach(obj)
