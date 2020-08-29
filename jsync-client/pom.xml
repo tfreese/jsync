@@ -9,17 +9,17 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jsync-remote</artifactId>
+    <artifactId>jsync-client</artifactId>
     <packaging>jar</packaging>
 
     <name>${project.groupId} - ${project.artifactId}</name>
-    <description>A Java rsync clone: Remote Module</description>
+    <description>A Java rsync clone: Client Module</description>
 
     <dependencies>
         <!-- compile scope -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jsync-core</artifactId>
+            <artifactId>jsync-remote-nio</artifactId>
             <version>${project.version}</version>
         </dependency>
 

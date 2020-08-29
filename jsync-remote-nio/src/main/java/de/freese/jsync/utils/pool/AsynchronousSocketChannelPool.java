@@ -15,24 +15,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+
+import de.freese.jsync.utils.JSyncUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
  */
-@SuppressWarnings("resource")
 public class AsynchronousSocketChannelPool
 {
     /**
      *
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AsynchronousSocketChannelPool.class);
-    /**
-       *
-       */
-    private AsynchronousChannelGroup channelGroup;
     /**
      *
      */
@@ -42,14 +38,18 @@ public class AsynchronousSocketChannelPool
      */
     private final ReentrantLock lock = new ReentrantLock(true);
     /**
-    *
-    */
+     *
+     */
     private final URI uri;
+    /**
+     *
+     */
+    private AsynchronousChannelGroup channelGroup;
 
     /**
      * Erzeugt eine neue Instanz von {@link AsynchronousSocketChannelPool}
      *
-     * @param uri {@link URI}
+     * @param uri             {@link URI}
      * @param executorService {@link ExecutorService}
      */
     public AsynchronousSocketChannelPool(final URI uri, final ExecutorService executorService)
@@ -77,7 +77,7 @@ public class AsynchronousSocketChannelPool
 
         try
         {
-            for (Iterator<AsynchronousSocketChannel> iterator = this.channelPool.iterator(); iterator.hasNext();)
+            for (Iterator<AsynchronousSocketChannel> iterator = this.channelPool.iterator(); iterator.hasNext(); )
             {
                 AsynchronousSocketChannel channel = iterator.next();
 
@@ -154,6 +154,22 @@ public class AsynchronousSocketChannelPool
     }
 
     /**
+     * @return {@link ReentrantLock}
+     */
+    private ReentrantLock getLock()
+    {
+        return this.lock;
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    private Logger getLogger()
+    {
+        return LOGGER;
+    }
+
+    /**
      * @param channel {@link AsynchronousSocketChannel}
      */
     public void releaseChannel(final AsynchronousSocketChannel channel)
@@ -168,21 +184,5 @@ public class AsynchronousSocketChannelPool
         {
             getLock().unlock();
         }
-    }
-
-    /**
-     * @return {@link ReentrantLock}
-     */
-    private ReentrantLock getLock()
-    {
-        return this.lock;
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    private Logger getLogger()
-    {
-        return LOGGER;
     }
 }
