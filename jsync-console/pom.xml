@@ -19,7 +19,7 @@
         <!-- compile scope -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jsync-remote</artifactId>
+            <artifactId>jsync-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 

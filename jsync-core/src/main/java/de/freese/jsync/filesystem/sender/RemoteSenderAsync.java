@@ -13,10 +13,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
 import de.freese.jsync.utils.pool.AsynchronousSocketChannelPool;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
@@ -25,7 +27,6 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
  *
  * @author Thomas Freese
  */
-@SuppressWarnings("resource")
 public class RemoteSenderAsync extends AbstractSender
 {
     /**
@@ -95,7 +96,7 @@ public class RemoteSenderAsync extends AbstractSender
     /**
      *
      */
-    private final ByteBufferPool byteBufferPool = new ByteBufferPool();
+    private final ByteBufferPool byteBufferPool = ByteBufferPool.getInstance();
     /**
      *
      */
@@ -148,7 +149,8 @@ public class RemoteSenderAsync extends AbstractSender
     {
         ByteBuffer buffer = this.byteBufferPool.getBuffer();
 
-        Consumer<AsynchronousSocketChannel> disconnector = channel -> {
+        Consumer<AsynchronousSocketChannel> disconnector = channel ->
+        {
             buffer.clear();
             Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
@@ -160,21 +162,6 @@ public class RemoteSenderAsync extends AbstractSender
 
         this.byteBufferPool.releaseBuffer(buffer);
         this.byteBufferPool.clear();
-
-        // AsynchronousSocketChannel channel = this.channelPool.getChannel();
-        // ByteBuffer buffer = this.byteBufferPool.getBuffer();
-        //
-        // buffer.clear();
-        // Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
-        //
-        // buffer.flip();
-        // write(channel, buffer);
-        //
-        // this.byteBufferPool.releaseBuffer(buffer);
-        // this.channelPool.releaseChannel(channel);
-        //
-        // this.byteBufferPool.clear();
-        // this.channelPool.clear();
     }
 
     /**
@@ -198,6 +185,10 @@ public class RemoteSenderAsync extends AbstractSender
 
             // Response lesen.
             buffer.clear();
+
+            // Wegen Chunked-Data den Response erst mal sammeln.
+            SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
+
             Future<Integer> futureResponse = channel.read(buffer);
 
             // while (getClient().read(bufferfer) > 0)
@@ -205,14 +196,29 @@ public class RemoteSenderAsync extends AbstractSender
             {
                 buffer.flip();
 
-                while (buffer.hasRemaining())
+                while (buffer.remaining() > Serializers.getLengthOfEOL())
                 {
-                    SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
-                    consumerSyncItem.accept(syncItem);
+                    sbaos.write(buffer, buffer.remaining() - Serializers.getLengthOfEOL());
                 }
+
+                if (Serializers.isEOL(buffer))
+                {
+                    buffer.clear();
+                    break;
+                }
+
+                sbaos.write(buffer, buffer.remaining());
 
                 buffer.clear();
                 futureResponse = channel.read(buffer);
+            }
+
+            ByteBuffer bufferData = sbaos.toByteBuffer();
+
+            while (bufferData.hasRemaining())
+            {
+                SyncItem syncItem = Serializers.readFrom(bufferData, SyncItem.class);
+                consumerSyncItem.accept(syncItem);
             }
         }
         catch (RuntimeException rex)
@@ -250,6 +256,14 @@ public class RemoteSenderAsync extends AbstractSender
         this.byteBufferPool.releaseBuffer(buffer);
 
         return new NoCloseReadableByteChannel(channel);
+    }
+
+    /**
+     * @return {@link Charset}
+     */
+    protected Charset getCharset()
+    {
+        return Options.CHARSET;
     }
 
     /**
@@ -295,16 +309,8 @@ public class RemoteSenderAsync extends AbstractSender
     }
 
     /**
-     * @return {@link Charset}
-     */
-    protected Charset getCharset()
-    {
-        return Options.CHARSET;
-    }
-
-    /**
      * @param channel {@link AsynchronousSocketChannel}
-     * @param buffer {@link ByteBuffer}
+     * @param buffer  {@link ByteBuffer}
      */
     protected void write(final AsynchronousSocketChannel channel, final ByteBuffer buffer)
     {

@@ -4,33 +4,28 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>de.freese</groupId>
-        <artifactId>maven-parent</artifactId>
+        <groupId>de.freese.jsync</groupId>
+        <artifactId>jsync</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath /> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>de.freese.jsync</groupId>
-    <artifactId>jsync</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>jsync-remote</artifactId>
+    <packaging>jar</packaging>
 
     <name>${project.groupId} - ${project.artifactId}</name>
-    <description>A Java rsync clone</description>
+    <description>A Java rsync clone: Remote Module</description>
 
     <dependencies>
         <!-- compile scope -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jsync-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- runtime scope -->
         <!-- provided scope -->
         <!-- test scope -->
     </dependencies>
-
-    <modules>
-        <module>jsync-core</module>
-        <module>jsync-remote</module>
-        <module>jsync-console</module>
-        <module>jsync-swing</module>
-        <module>jsync-javafx</module>
-        <module>jsync-server</module>
-    </modules>
 
 </project>

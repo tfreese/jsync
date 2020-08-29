@@ -11,10 +11,12 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 import de.freese.jsync.utils.pool.SocketChannelPool;
 
@@ -23,7 +25,6 @@ import de.freese.jsync.utils.pool.SocketChannelPool;
  *
  * @author Thomas Freese
  */
-@SuppressWarnings("resource")
 public class RemoteReceiverBlocking extends AbstractReceiver
 {
     /**
@@ -79,7 +80,7 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     /**
      *
      */
-    private final ByteBufferPool byteBufferPool = new ByteBufferPool();
+    private final ByteBufferPool byteBufferPool = ByteBufferPool.getInstance();
     /**
      *
      */
@@ -165,7 +166,8 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     {
         ByteBuffer buffer = this.byteBufferPool.getBuffer();
 
-        Consumer<SocketChannel> disconnector = channel -> {
+        Consumer<SocketChannel> disconnector = channel ->
+        {
             buffer.clear();
             Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
@@ -201,17 +203,34 @@ public class RemoteReceiverBlocking extends AbstractReceiver
             // Response lesen.
             buffer.clear();
 
+            // Wegen Chunked-Data den Response erst mal sammeln.
+            SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
+
             while (channel.read(buffer) > 0)
             {
                 buffer.flip();
 
-                while (buffer.hasRemaining())
+                while (buffer.remaining() > Serializers.getLengthOfEOL())
                 {
-                    SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
-                    consumerSyncItem.accept(syncItem);
+                    sbaos.write(buffer, buffer.remaining() - Serializers.getLengthOfEOL());
                 }
 
+                if (Serializers.isEOL(buffer))
+                {
+                    break;
+                }
+
+                sbaos.write(buffer, buffer.remaining());
+
                 buffer.clear();
+            }
+
+            ByteBuffer bufferData = sbaos.toByteBuffer();
+
+            while (bufferData.hasRemaining())
+            {
+                SyncItem syncItem = Serializers.readFrom(bufferData, SyncItem.class);
+                consumerSyncItem.accept(syncItem);
             }
         }
         catch (RuntimeException rex)
@@ -256,6 +275,14 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
+     * @return {@link Charset}
+     */
+    protected Charset getCharset()
+    {
+        return Options.CHARSET;
+    }
+
+    /**
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
@@ -282,6 +309,22 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         this.channelPool.releaseChannel(channel);
 
         return checksum;
+    }
+
+    /**
+     * @param channel {@link SocketChannel}
+     * @param buffer  {@link ByteBuffer}
+     */
+    protected void read(final SocketChannel channel, final ByteBuffer buffer)
+    {
+        try
+        {
+            channel.read(buffer);
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     /**
@@ -328,32 +371,8 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
-     * @return {@link Charset}
-     */
-    protected Charset getCharset()
-    {
-        return Options.CHARSET;
-    }
-
-    /**
      * @param channel {@link SocketChannel}
-     * @param buffer {@link ByteBuffer}
-     */
-    protected void read(final SocketChannel channel, final ByteBuffer buffer)
-    {
-        try
-        {
-            channel.read(buffer);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-    }
-
-    /**
-     * @param channel {@link SocketChannel}
-     * @param buffer {@link ByteBuffer}
+     * @param buffer  {@link ByteBuffer}
      */
     protected void write(final SocketChannel channel, final ByteBuffer buffer)
     {

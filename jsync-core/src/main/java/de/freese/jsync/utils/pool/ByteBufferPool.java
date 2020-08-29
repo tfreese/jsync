@@ -14,6 +14,35 @@ import de.freese.jsync.Options;
 public class ByteBufferPool
 {
     /**
+     * @return {@link ByteBufferPool}
+     */
+    public static ByteBufferPool getInstance()
+    {
+        return ByteBufferPoolHolder.INSTANCE;
+    }
+
+    /**
+     * ThreadSafe Singleton-Pattern.
+     *
+     * @author Thomas Freese
+     */
+    private static final class ByteBufferPoolHolder
+    {
+        /**
+         *
+         */
+        private static final ByteBufferPool INSTANCE = new ByteBufferPool();
+
+        /**
+         * Erstellt ein neues {@link ByteBufferPoolHolder} Object.
+         */
+        private ByteBufferPoolHolder()
+        {
+            super();
+        }
+    }
+
+    /**
      *
      */
     private final List<ByteBuffer> bufferPool = new ArrayList<>();
@@ -26,7 +55,7 @@ public class ByteBufferPool
     /**
      * Erzeugt eine neue Instanz von {@link ByteBufferPool}
      */
-    public ByteBufferPool()
+    private ByteBufferPool()
     {
         super();
     }

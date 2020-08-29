@@ -84,7 +84,7 @@ class TestJSyncRemote extends AbstractJSyncTest
 
         syncDirectories(options, senderUri, receiverUri, new ConsoleClientListener());
 
-        // serverSender.stop();
+        serverSender.stop();
 
         assertTrue(true);
     }

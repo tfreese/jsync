@@ -30,14 +30,22 @@ public final class Serializers
     private static final Serializers INSTANCE = new Serializers();
 
     /**
+     * @return int
+     */
+    public static int getLengthOfEOL()
+    {
+        return EOL.length;
+    }
+
+    /**
      * @param buffer {@link ByteBuffer}
      * @return boolean
      */
     public static boolean isEOL(final ByteBuffer buffer)
     {
-        if (!buffer.hasRemaining())
+        if ((buffer.limit() - buffer.position()) < 3)
         {
-            // Buffer kann nicht mehr gelesen werden.
+            // Buffer hat keine 3 Bytes mehr.
             return false;
         }
 

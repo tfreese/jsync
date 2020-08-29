@@ -9,3 +9,9 @@ SSL with Java-NIO
 	- http://rox-xmlrpc.sourceforge.net/niotut/
 	- https://github.com/alkarn/sslengine.example
 	
+	
+	
+TODO:
+- Chunked-Data
+	RemoteSender....generateSyncItems(String, boolean, Consumer<SyncItem>)
+	ByteBuffer nicht clearen, wenn kein EOL erreicht.
