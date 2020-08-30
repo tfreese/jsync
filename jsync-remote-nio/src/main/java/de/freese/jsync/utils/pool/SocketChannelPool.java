@@ -54,9 +54,10 @@ public class SocketChannelPool
      */
     public void clear(final Consumer<SocketChannel> disconnector)
     {
-        getLock().lock();
-
-        try
+        // getLock().lock();
+        //
+        // try
+        synchronized (this)
         {
             for (Iterator<SocketChannel> iterator = this.channelPool.iterator(); iterator.hasNext();)
             {
@@ -78,10 +79,10 @@ public class SocketChannelPool
                 iterator.remove();
             }
         }
-        finally
-        {
-            getLock().unlock();
-        }
+        // finally
+        // {
+        // getLock().unlock();
+        // }
     }
 
     /**
@@ -89,9 +90,10 @@ public class SocketChannelPool
      */
     public SocketChannel getChannel()
     {
-        getLock().lock();
-
-        try
+        // getLock().lock();
+        //
+        // try
+        synchronized (this)
         {
             SocketChannel channel = null;
 
@@ -116,10 +118,10 @@ public class SocketChannelPool
 
             return channel;
         }
-        finally
-        {
-            getLock().unlock();
-        }
+        // finally
+        // {
+        // getLock().unlock();
+        // }
     }
 
     /**
@@ -127,16 +129,17 @@ public class SocketChannelPool
      */
     public void releaseChannel(final SocketChannel channel)
     {
-        getLock().lock();
-
-        try
+        // getLock().lock();
+        //
+        // try
+        synchronized (this)
         {
             this.channelPool.add(channel);
         }
-        finally
-        {
-            getLock().unlock();
-        }
+        // finally
+        // {
+        // getLock().unlock();
+        // }
     }
 
     /**

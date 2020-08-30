@@ -14,6 +14,11 @@ import de.freese.jsync.Options;
 public class ByteBufferPool
 {
     /**
+     *
+     */
+    private static final boolean ENABLED = false;
+
+    /**
      * @return {@link ByteBufferPool}
      */
     public static ByteBufferPool getInstance()
@@ -65,9 +70,11 @@ public class ByteBufferPool
      */
     public void clear()
     {
-        getLock().lock();
-
-        try
+        // getLock().lock();
+        //
+        // try
+        // {
+        synchronized (this)
         {
             for (Iterator<ByteBuffer> iterator = this.bufferPool.iterator(); iterator.hasNext();)
             {
@@ -79,10 +86,10 @@ public class ByteBufferPool
                 iterator.remove();
             }
         }
-        finally
-        {
-            getLock().unlock();
-        }
+        // finally
+        // {
+        // getLock().unlock();
+        // }
     }
 
     /**
@@ -90,9 +97,15 @@ public class ByteBufferPool
      */
     public ByteBuffer getBuffer()
     {
-        getLock().lock();
+        // getLock().lock();
 
-        try
+        if (!ENABLED)
+        {
+            return ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
+        }
+
+        // try
+        synchronized (this)
         {
             ByteBuffer buffer = null;
 
@@ -107,10 +120,10 @@ public class ByteBufferPool
 
             return buffer;
         }
-        finally
-        {
-            getLock().unlock();
-        }
+        // finally
+        // {
+        // getLock().unlock();
+        // }
     }
 
     /**
@@ -118,16 +131,22 @@ public class ByteBufferPool
      */
     public void releaseBuffer(final ByteBuffer buffer)
     {
-        getLock().lock();
+        // getLock().lock();
 
-        try
+        if (!ENABLED)
+        {
+            return;
+        }
+
+        // try
+        synchronized (this)
         {
             this.bufferPool.add(buffer);
         }
-        finally
-        {
-            getLock().unlock();
-        }
+        // finally
+        // {
+        // getLock().unlock();
+        // }
     }
 
     /**

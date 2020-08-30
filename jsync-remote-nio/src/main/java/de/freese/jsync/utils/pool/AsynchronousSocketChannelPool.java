@@ -15,20 +15,24 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-
-import de.freese.jsync.utils.JSyncUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
  */
+@SuppressWarnings("resource")
 public class AsynchronousSocketChannelPool
 {
     /**
      *
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AsynchronousSocketChannelPool.class);
+    /**
+     *
+     */
+    private AsynchronousChannelGroup channelGroup;
     /**
      *
      */
@@ -41,15 +45,11 @@ public class AsynchronousSocketChannelPool
      *
      */
     private final URI uri;
-    /**
-     *
-     */
-    private AsynchronousChannelGroup channelGroup;
 
     /**
      * Erzeugt eine neue Instanz von {@link AsynchronousSocketChannelPool}
      *
-     * @param uri             {@link URI}
+     * @param uri {@link URI}
      * @param executorService {@link ExecutorService}
      */
     public AsynchronousSocketChannelPool(final URI uri, final ExecutorService executorService)
@@ -73,11 +73,12 @@ public class AsynchronousSocketChannelPool
      */
     public void clear(final Consumer<AsynchronousSocketChannel> disconnector)
     {
-        getLock().lock();
-
-        try
+        // getLock().lock();
+        //
+        // try
+        synchronized (this)
         {
-            for (Iterator<AsynchronousSocketChannel> iterator = this.channelPool.iterator(); iterator.hasNext(); )
+            for (Iterator<AsynchronousSocketChannel> iterator = this.channelPool.iterator(); iterator.hasNext();)
             {
                 AsynchronousSocketChannel channel = iterator.next();
 
@@ -99,10 +100,10 @@ public class AsynchronousSocketChannelPool
 
             JSyncUtils.shutdown(this.channelGroup, getLogger());
         }
-        finally
-        {
-            getLock().unlock();
-        }
+        // finally
+        // {
+        // getLock().unlock();
+        // }
     }
 
     /**
@@ -110,9 +111,10 @@ public class AsynchronousSocketChannelPool
      */
     public AsynchronousSocketChannel getChannel()
     {
-        getLock().lock();
-
-        try
+        // getLock().lock();
+        //
+        // try
+        synchronized (this)
         {
             AsynchronousSocketChannel channel = null;
 
@@ -147,10 +149,28 @@ public class AsynchronousSocketChannelPool
 
             return channel;
         }
-        finally
+        // finally
+        // {
+        // getLock().unlock();
+        // }
+    }
+
+    /**
+     * @param channel {@link AsynchronousSocketChannel}
+     */
+    public void releaseChannel(final AsynchronousSocketChannel channel)
+    {
+        // getLock().lock();
+        //
+        // try
+        synchronized (this)
         {
-            getLock().unlock();
+            this.channelPool.add(channel);
         }
+        // finally
+        // {
+        // getLock().unlock();
+        // }
     }
 
     /**
@@ -167,22 +187,5 @@ public class AsynchronousSocketChannelPool
     private Logger getLogger()
     {
         return LOGGER;
-    }
-
-    /**
-     * @param channel {@link AsynchronousSocketChannel}
-     */
-    public void releaseChannel(final AsynchronousSocketChannel channel)
-    {
-        getLock().lock();
-
-        try
-        {
-            this.channelPool.add(channel);
-        }
-        finally
-        {
-            getLock().unlock();
-        }
     }
 }

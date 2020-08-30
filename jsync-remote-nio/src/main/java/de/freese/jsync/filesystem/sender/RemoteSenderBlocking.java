@@ -11,7 +11,6 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
@@ -133,8 +132,7 @@ public class RemoteSenderBlocking extends AbstractSender
     {
         ByteBuffer buffer = this.byteBufferPool.getBuffer();
 
-        Consumer<SocketChannel> disconnector = channel ->
-        {
+        Consumer<SocketChannel> disconnector = channel -> {
             buffer.clear();
             Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
@@ -159,7 +157,6 @@ public class RemoteSenderBlocking extends AbstractSender
 
         try
         {
-
             buffer.clear();
             Serializers.writeTo(buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
             Serializers.writeTo(buffer, baseDir);
@@ -246,14 +243,6 @@ public class RemoteSenderBlocking extends AbstractSender
     }
 
     /**
-     * @return {@link Charset}
-     */
-    protected Charset getCharset()
-    {
-        return Options.CHARSET;
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
@@ -283,8 +272,16 @@ public class RemoteSenderBlocking extends AbstractSender
     }
 
     /**
+     * @return {@link Charset}
+     */
+    protected Charset getCharset()
+    {
+        return Options.CHARSET;
+    }
+
+    /**
      * @param channel {@link SocketChannel}
-     * @param buffer  {@link ByteBuffer}
+     * @param buffer {@link ByteBuffer}
      */
     protected void read(final SocketChannel channel, final ByteBuffer buffer)
     {
@@ -300,7 +297,7 @@ public class RemoteSenderBlocking extends AbstractSender
 
     /**
      * @param channel {@link SocketChannel}
-     * @param buffer  {@link ByteBuffer}
+     * @param buffer {@link ByteBuffer}
      */
     protected void write(final SocketChannel channel, final ByteBuffer buffer)
     {

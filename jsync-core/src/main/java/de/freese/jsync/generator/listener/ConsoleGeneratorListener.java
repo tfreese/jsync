@@ -4,7 +4,6 @@ package de.freese.jsync.generator.listener;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.Objects;
-
 import de.freese.jsync.model.SyncItem;
 
 /**
@@ -12,6 +11,7 @@ import de.freese.jsync.model.SyncItem;
  *
  * @author Thomas Freese
  */
+@SuppressWarnings("resource")
 public class ConsoleGeneratorListener extends AbstractGeneratorListener
 {
     /**
@@ -77,6 +77,17 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
+     * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
+     */
+    @Override
+    public void itemCount(final Path path, final int itemCount)
+    {
+        String message = itemCountMessage(path, itemCount, this.prefix);
+
+        getPrintStream().println(message);
+    }
+
+    /**
      * @return {@link PrintStream}
      */
     protected PrintStream getPrintStream()
@@ -90,16 +101,5 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener
     protected PrintStream getPrintStreamError()
     {
         return this.printStreamError;
-    }
-
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
-     */
-    @Override
-    public void itemCount(final Path path, final int itemCount)
-    {
-        String message = itemCountMessage(path, itemCount, this.prefix);
-
-        getPrintStream().println(message);
     }
 }

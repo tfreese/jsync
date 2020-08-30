@@ -23,6 +23,7 @@ import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * Basis-Implementierung des {@link Client}.
@@ -180,23 +181,22 @@ public abstract class AbstractClient implements Client
             return;
         }
 
+        // readableByteChannel = new MonitoringReadableByteChannel(readableByteChannel, monitorRead, fileSize);
+        // writableByteChannel = new MonitoringWritableByteChannel(writableByteChannel, monitorWrite, fileSize);
+        // FileChannel.transferFrom(ReadableByteChannel, position, count);
+        // FileChannel.transferTo(position, count, WritableByteChannel);
+
+        // long bytesRead = 0;
+        long bytesWrote = 0;
+
+        ByteBuffer buffer = ByteBufferPool.getInstance().getBuffer();
+        buffer.clear();
+
         try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderUri().getPath(), syncItem.getRelativePath());
              WritableByteChannel writableByteChannel = getReceiver().getChannel(getReceiverUri().getPath(), syncItem.getRelativePath()))
         {
-            // readableByteChannel = new MonitoringReadableByteChannel(readableByteChannel, monitorRead, fileSize);
-            // writableByteChannel = new MonitoringWritableByteChannel(writableByteChannel, monitorWrite, fileSize);
-            // FileChannel.transferFrom(ReadableByteChannel, position, count);
-            // FileChannel.transferTo(position, count, WritableByteChannel);
-
-            ByteBuffer buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
-
-            // long bytesRead = 0;
-            long bytesWrote = 0;
-
-            while (bytesWrote < syncItem.getSize())
+            while (readableByteChannel.read(buffer) > 0)
             {
-                // bytesRead +=
-                readableByteChannel.read(buffer);
                 buffer.flip();
 
                 while (buffer.hasRemaining())
@@ -211,6 +211,10 @@ public abstract class AbstractClient implements Client
         catch (Exception ex)
         {
             clientListener.error(null, ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().releaseBuffer(buffer);
         }
 
         try

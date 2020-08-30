@@ -356,7 +356,7 @@ public class JSyncServer
 
                         if (!selectionKey.isValid())
                         {
-                            getLogger().debug("SelectionKey not valid: {}", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
+                            getLogger().debug("{}: SelectionKey not valid", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
                         }
 
                         if (selectionKey.isAcceptable())
@@ -364,14 +364,14 @@ public class JSyncServer
                             // Verbindung mit Client herstellen.
                             SocketChannel socketChannel = this.serverSocketChannel.accept();
 
-                            getLogger().debug("Connection Accepted: {}", socketChannel.getRemoteAddress());
+                            getLogger().debug("{}: Connection Accepted", socketChannel.getRemoteAddress());
 
                             // Socket dem Processor übergeben.
                             nextProcessor().addSession(socketChannel);
                         }
                         else if (selectionKey.isConnectable())
                         {
-                            getLogger().debug("Client Connected: {}", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
+                            getLogger().debug("{}: Client Connected", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
                         }
                     }
 

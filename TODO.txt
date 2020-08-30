@@ -12,6 +12,5 @@ SSL with Java-NIO
 	
 	
 TODO:
-- Chunked-Data
-	RemoteSender....generateSyncItems(String, boolean, Consumer<SyncItem>)
-	ByteBuffer nicht clearen, wenn kein EOL erreicht.
+- Channels funktionieren bei Remote nicht
+    -> Umstellung auf Chunked-Transfer vom Sender zum Receiver !
