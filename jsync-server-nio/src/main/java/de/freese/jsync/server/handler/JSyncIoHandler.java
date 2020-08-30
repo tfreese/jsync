@@ -6,8 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
@@ -17,6 +16,9 @@ import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.utils.JSyncUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Verarbeitet den Request und Response.<br>
@@ -25,7 +27,6 @@ import de.freese.jsync.model.serializer.Serializers;
  * @author Thomas Freese
  * @see IoHandler
  */
-@SuppressWarnings("resource")
 public class JSyncIoHandler implements IoHandler
 {
     /**
@@ -47,7 +48,8 @@ public class JSyncIoHandler implements IoHandler
 
     /**
      * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
+     * @param buffer       {@link ByteBuffer}
+     *
      * @throws IOException @throws Exception Falls was schief geht
      */
     private static void writeBuffer(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
@@ -66,6 +68,126 @@ public class JSyncIoHandler implements IoHandler
     public JSyncIoHandler()
     {
         super();
+    }
+
+    /**
+     * Create the checksum.
+     *
+     * @param selectionKey {@link SelectionKey}
+     * @param buffer       {@link ByteBuffer}
+     * @param fileSystem   {@link FileSystem}
+     *
+     * @throws Exception Falls was schief geht.
+     */
+    protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
+    {
+        String baseDir = Serializers.readFrom(buffer, String.class);
+        String relativeFile = Serializers.readFrom(buffer, String.class);
+
+        getLogger().debug("{}: Create Checksum: {}/{}", getRemoteAddress(selectionKey), baseDir, relativeFile);
+
+        String checksum = fileSystem.getChecksum(baseDir, relativeFile, i ->
+        {
+        });
+
+        getLogger().debug("{}: Checksum created: {}/{}", getRemoteAddress(selectionKey), baseDir, relativeFile);
+
+        buffer.clear();
+        Serializers.writeTo(buffer, checksum);
+        buffer.flip();
+
+        writeBuffer(selectionKey, buffer);
+    }
+
+    /**
+     * Create the Sync-Items.
+     *
+     * @param selectionKey {@link SelectionKey}
+     * @param buffer       {@link ByteBuffer}
+     * @param fileSystem   {@link FileSystem}
+     *
+     * @throws Exception Falls was schief geht.
+     */
+    protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
+    {
+        String baseDir = Serializers.readFrom(buffer, String.class);
+        boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
+
+        getLogger().debug("{}: Create SyncItems: {}", getRemoteAddress(selectionKey), baseDir);
+
+        fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem ->
+        {
+            getLogger().debug("{}: Send SyncItem: {}", getRemoteAddress(selectionKey), syncItem);
+
+            buffer.clear();
+            Serializers.writeTo(buffer, syncItem);
+            buffer.flip();
+
+            try
+            {
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        });
+
+        // EOL
+        buffer.clear();
+        Serializers.writeEOL(buffer);
+        buffer.flip();
+
+        writeBuffer(selectionKey, buffer);
+
+        getLogger().debug("{}: SyncItems written: {}", getRemoteAddress(selectionKey), baseDir);
+    }
+
+    /**
+     * Delete Directory or File.
+     *
+     * @param selectionKey {@link SelectionKey}
+     * @param buffer       {@link ByteBuffer}
+     * @param receiver     {@link Receiver}
+     *
+     * @throws Exception Falls was schief geht.
+     */
+    protected void delete(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
+    {
+        String baseDir = Serializers.readFrom(buffer, String.class);
+        String relativePath = Serializers.readFrom(buffer, String.class);
+        boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
+
+        getLogger().debug("{}: Delete: {}/{}", getRemoteAddress(selectionKey), baseDir, relativePath);
+
+        receiver.delete(baseDir, relativePath, followSymLinks);
+
+        getLogger().debug("{}: Deleted: {}/{}", getRemoteAddress(selectionKey), baseDir, relativePath);
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    private Logger getLogger()
+    {
+        return LOGGER;
+    }
+
+    /**
+     * @param selectionKey SelectionKey
+     *
+     * @return String
+     */
+    private String getRemoteAddress(SelectionKey selectionKey)
+    {
+        try
+        {
+            return ((SocketChannel) selectionKey.channel()).getRemoteAddress().toString();
+        }
+        catch (IOException ex)
+        {
+            return "";
+        }
     }
 
     /**
@@ -92,7 +214,7 @@ public class JSyncIoHandler implements IoHandler
         buffer.flip();
 
         JSyncCommand command = Serializers.readFrom(buffer, JSyncCommand.class);
-        getLogger().debug("read command: {}", command);
+        getLogger().debug("{}: read command: {}", getRemoteAddress(selectionKey), command);
 
         if (command == null)
         {
@@ -145,9 +267,9 @@ public class JSyncIoHandler implements IoHandler
                 createSyncItems(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
                 break;
 
-            // case SOURCE_READABLE_FILE_CHANNEL:
-            // senderRequestFileChannel(selectionKey, channel);
-            // break;
+            case SOURCE_READABLE_FILE_CHANNEL:
+                senderFileChannel(selectionKey, buffer);
+                break;
 
             default:
                 break;
@@ -158,126 +280,53 @@ public class JSyncIoHandler implements IoHandler
     }
 
     /**
-     * @see IoHandler#write(SelectionKey)
-     */
-    @Override
-    public void write(final SelectionKey selectionKey) throws Exception
-    {
-        // WritableByteChannel channel = (WritableByteChannel) selectionKey.channel();
-
-        if (selectionKey.attachment() instanceof Runnable)
-        {
-            Runnable task = (Runnable) selectionKey.attachment();
-            task.run();
-        }
-
-        selectionKey.interestOps(SelectionKey.OP_READ);
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    private Logger getLogger()
-    {
-        return LOGGER;
-    }
-
-    /**
-     * Create the checksum.
+     * Die Daten werden zum Client gesendet.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
-     * @param fileSystem {@link FileSystem}
+     * @param buffer       {@link ByteBuffer}
+     *
      * @throws Exception Falls was schief geht.
      */
-    protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
+    protected void senderFileChannel(final SelectionKey selectionKey, final ByteBuffer buffer) throws Exception
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativeFile = Serializers.readFrom(buffer, String.class);
 
-        getLogger().debug("Create Checksum: {}/{}", baseDir, relativeFile);
+        getLogger().debug("{}: sender: send File {}/{}", getRemoteAddress(selectionKey), baseDir, relativeFile);
 
-        String checksum = fileSystem.getChecksum(baseDir, relativeFile, i -> {
-        });
+        Sender sender = THREAD_LOCAL_SENDER.get();
 
-        getLogger().debug("Checksum created: {}/{}", baseDir, relativeFile);
+        SocketChannel outChannel = (SocketChannel) selectionKey.channel();
+
+        long fileBytesTransferred = 0;
 
         buffer.clear();
-        Serializers.writeTo(buffer, checksum);
-        buffer.flip();
 
-        writeBuffer(selectionKey, buffer);
-    }
-
-    /**
-     * Create the Sync-Items.
-     *
-     * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
-     * @param fileSystem {@link FileSystem}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
-    {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
-
-        getLogger().debug("Create SyncItems: {}", baseDir);
-
-        fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
-            getLogger().debug("Send SyncItem: {}", syncItem);
-
-            buffer.clear();
-            Serializers.writeTo(buffer, syncItem);
-            buffer.flip();
-
-            try
+        try (ReadableByteChannel inChannel = sender.getChannel(baseDir, relativeFile))
+        {
+            while (inChannel.read(buffer) > 0)
             {
-                writeBuffer(selectionKey, buffer);
+                buffer.flip();
+
+                while (buffer.hasRemaining())
+                {
+                    fileBytesTransferred += outChannel.write(buffer);
+                }
+
+                buffer.clear();
             }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        });
+        }
 
-        // EOL
-        buffer.clear();
-        Serializers.writeEOL(buffer);
-        buffer.flip();
-
-        writeBuffer(selectionKey, buffer);
-
-        getLogger().debug("SyncItems written: {}", baseDir);
-    }
-
-    /**
-     * Delete Directory or File.
-     *
-     * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
-     * @param receiver {@link Receiver}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void delete(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
-    {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        String relativePath = Serializers.readFrom(buffer, String.class);
-        boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
-
-        getLogger().debug("Delete: {}/{}", baseDir, relativePath);
-
-        receiver.delete(baseDir, relativePath, followSymLinks);
-
-        getLogger().debug("Deleted: {}/{}", baseDir, relativePath);
+        getLogger().debug("{}: sender: File send {}/{}; size = {}", getRemoteAddress(selectionKey), baseDir, relativeFile, JSyncUtils.toHumanReadableSize(fileBytesTransferred));
     }
 
     /**
      * Update Directory or File.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
-     * @param receiver {@link Receiver}
+     * @param buffer       {@link ByteBuffer}
+     * @param receiver     {@link Receiver}
+     *
      * @throws Exception Falls was schief geht.
      */
     protected void update(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
@@ -285,19 +334,20 @@ public class JSyncIoHandler implements IoHandler
         String baseDir = Serializers.readFrom(buffer, String.class);
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
 
-        getLogger().debug("Update: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().debug("{}: Update: {}/{}", getRemoteAddress(selectionKey), baseDir, syncItem.getRelativePath());
 
         receiver.update(baseDir, syncItem);
 
-        getLogger().debug("Updated: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().debug("{}: Updated: {}/{}", getRemoteAddress(selectionKey), baseDir, syncItem.getRelativePath());
     }
 
     /**
      * Validate Directory or File.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
-     * @param receiver {@link Receiver}
+     * @param buffer       {@link ByteBuffer}
+     * @param receiver     {@link Receiver}
+     *
      * @throws Exception Falls was schief geht.
      */
     protected void validate(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
@@ -306,7 +356,7 @@ public class JSyncIoHandler implements IoHandler
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
         boolean withChecksum = Serializers.readFrom(buffer, Boolean.class);
 
-        getLogger().debug("Validate: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().debug("{}: Validate: {}/{}", getRemoteAddress(selectionKey), baseDir, syncItem.getRelativePath());
 
         try
         {
@@ -323,7 +373,7 @@ public class JSyncIoHandler implements IoHandler
             writeBuffer(selectionKey, buffer);
         }
 
-        getLogger().debug("Validated: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().debug("{}: Validated: {}/{}", getRemoteAddress(selectionKey), baseDir, syncItem.getRelativePath());
     }
 
     // /**
@@ -402,83 +452,20 @@ public class JSyncIoHandler implements IoHandler
     // selectionKey.interestOps(SelectionKey.OP_WRITE);
     // }
 
-    // /**
-    // * @param selectionKey {@link SelectionKey}
-    // * @param channel {@link ReadableByteChannel}
-    // *
-    // * @throws Exception Falls was schief geht.
-    // */
-    // protected void senderRequestFileChannel(final SelectionKey selectionKey, final ReadableByteChannel channel) throws Exception
-    // {
-    // JSyncSession session = (JSyncSession) selectionKey.attachment();
-    //
-    // session.getLogger().debug("sender request: FileChannel");
-    //
-    // ByteBuffer buffer = session.getBuffer();
-    //
-    // String baseDir = Serializers.readFrom(buffer, String.class);
-    // String relativeFile = Serializers.readFrom(buffer, String.class);
-    //
-    // SyncItem syncItem = new DefaultSyncItem(fileName);
-    // syncItem.setFile(true);
-    // syncItem.setSize(fileSize);
-    //
-    // session.setSyncItem(syncItem);
-    //
-    // session.setLastCommand(JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
-    // selectionKey.interestOps(SelectionKey.OP_WRITE);
-    // }
+    /**
+     * @see IoHandler#write(SelectionKey)
+     */
+    @Override
+    public void write(final SelectionKey selectionKey) throws Exception
+    {
+        // WritableByteChannel channel = (WritableByteChannel) selectionKey.channel();
 
-    // /**
-    // * @param selectionKey {@link SelectionKey}
-    // * @param channel {@link WritableByteChannel}
-    // *
-    // * @throws Exception Falls was schief geht.
-    // */
-    // protected void senderResponseFileChannel(final SelectionKey selectionKey, final WritableByteChannel channel) throws Exception
-    // {
-    // JSyncSession session = (JSyncSession) selectionKey.attachment();
-    //
-    // session.getLogger().debug("sender response: FileChannel");
-    //
-    // ByteBuffer buffer = session.getBuffer();
-    //
-    // Sender sender = THREAD_LOCAL_SENDER.get();
-    // SyncItem syncItem = session.getSyncItem();
-    //
-    // long fileSize = syncItem.getSize();
-    // long fileBytesTransferred = 0;
-    //
-    // // BiConsumer<Long, Long> monitor = (read, gesamt) -> {
-    // // String msg = String.format("read data for %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(read),
-    // // JSyncUtils.getPercent(read, gesamt));
-    // // getLogger().debug(msg);
-    // // };
-    //
-    // // MessageDigest messageDigest = DigestUtils.createSha256Digest();
-    // // DigestUtils.digest(messageDigest, buffer);
-    //
-    // buffer.clear();
-    //
-    // try (ReadableByteChannel inChannel = sender.getChannel(syncItem))
-    // // try (ReadableByteChannel inChannel = new MonitoringReadableByteChannel(sender.getChannel(syncItem), monitor, fileSize))
-    // {
-    // while (fileBytesTransferred < fileSize)
-    // {
-    // inChannel.read(buffer);
-    // buffer.flip();
-    //
-    // while (buffer.hasRemaining())
-    // {
-    // fileBytesTransferred += channel.write(buffer);
-    // }
-    //
-    // buffer.clear();
-    // }
-    // }
-    // finally
-    // {
-    // session.setSyncItem(null);
-    // }
-    // }
+        if (selectionKey.attachment() instanceof Runnable)
+        {
+            Runnable task = (Runnable) selectionKey.attachment();
+            task.run();
+        }
+
+        selectionKey.interestOps(SelectionKey.OP_READ);
+    }
 }
