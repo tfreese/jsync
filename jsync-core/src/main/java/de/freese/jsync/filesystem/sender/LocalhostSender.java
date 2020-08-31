@@ -4,6 +4,9 @@ package de.freese.jsync.filesystem.sender;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +17,7 @@ import java.util.function.LongConsumer;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * {@link Sender} für Localhost-Filesysteme.
@@ -70,7 +74,6 @@ public class LocalhostSender extends AbstractSender
     @Override
     public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
-        // Path path = getBasePath().resolve(syncItem.getRelativePath());
         Path path = Paths.get(baseDir, relativeFile);
 
         getLogger().debug("get ReadableByteChannel: {}", path);
@@ -104,5 +107,40 @@ public class LocalhostSender extends AbstractSender
         String checksum = this.generator.generateChecksum(baseDir, relativeFile, consumerBytesRead);
 
         return checksum;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, int, int)
+     */
+    @Override
+    public ByteBuffer readChunk(final String baseDir, final String relativeFile, final int position, final int size)
+    {
+        Path path = Paths.get(baseDir, relativeFile);
+
+        getLogger().debug("read chunk: {}, position={}, size={}", path, position, size);
+
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            // try (RandomAccessFile randomAccessFile = new RandomAccessFile(path.toFile(), "r"))
+            // {
+            // FileChannel fileChannel = randomAccessFile.getChannel();
+            try (FileChannel fileChannel = (FileChannel) Files.newByteChannel(path, StandardOpenOption.READ))
+            {
+                MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, size);
+
+                buffer.clear();
+                buffer.put(mappedByteBuffer);
+            }
+        }
+        catch (IOException ex)
+        {
+            ByteBufferPool.getInstance().release(buffer);
+
+            throw new UncheckedIOException(ex);
+        }
+
+        return buffer;
     }
 }

@@ -137,7 +137,7 @@ public final class DigestUtils
 
         consumer.accept(0);
 
-        final ByteBuffer buffer = ByteBufferPool.getInstance().getBuffer();
+        final ByteBuffer buffer = ByteBufferPool.getInstance().get();
         buffer.clear();
 
         try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
@@ -158,7 +158,7 @@ public final class DigestUtils
         }
         finally
         {
-            ByteBufferPool.getInstance().releaseBuffer(buffer);
+            ByteBufferPool.getInstance().release(buffer);
         }
 
         return bytes;

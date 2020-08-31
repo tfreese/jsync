@@ -2,30 +2,13 @@
 package de.freese.jsync.utils.pool;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 import de.freese.jsync.Options;
 
 /**
  * @author Thomas Freese
  */
-public class ByteBufferPool
+public class ByteBufferPool extends AbstractPool<ByteBuffer>
 {
-    /**
-     *
-     */
-    private static final boolean ENABLED = false;
-
-    /**
-     * @return {@link ByteBufferPool}
-     */
-    public static ByteBufferPool getInstance()
-    {
-        return ByteBufferPoolHolder.INSTANCE;
-    }
-
     /**
      * ThreadSafe Singleton-Pattern.
      *
@@ -48,14 +31,12 @@ public class ByteBufferPool
     }
 
     /**
-     *
+     * @return {@link ByteBufferPool}
      */
-    private final List<ByteBuffer> bufferPool = new ArrayList<>();
-
-    /**
-     *
-     */
-    private final ReentrantLock lock = new ReentrantLock(true);
+    public static ByteBufferPool getInstance()
+    {
+        return ByteBufferPoolHolder.INSTANCE;
+    }
 
     /**
      * Erzeugt eine neue Instanz von {@link ByteBufferPool}
@@ -70,90 +51,26 @@ public class ByteBufferPool
      */
     public void clear()
     {
-        // getLock().lock();
-        //
-        // try
-        // {
-        synchronized (this)
-        {
-            for (Iterator<ByteBuffer> iterator = this.bufferPool.iterator(); iterator.hasNext();)
-            {
-                ByteBuffer buffer = iterator.next();
-
-                // ByteBuffer haben nichts zum aufräumen.
-                buffer.clear();
-
-                iterator.remove();
-            }
-        }
-        // finally
-        // {
-        // getLock().unlock();
-        // }
+        super.clear(obj -> {
+        });
     }
 
     /**
-     * @return {@link ByteBuffer}
+     * @see de.freese.jsync.utils.pool.AbstractPool#createObject()
      */
-    public ByteBuffer getBuffer()
+    @Override
+    protected ByteBuffer createObject()
     {
-        // getLock().lock();
-
-        if (!ENABLED)
-        {
-            return ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
-        }
-
-        // try
-        synchronized (this)
-        {
-            ByteBuffer buffer = null;
-
-            if (this.bufferPool.isEmpty())
-            {
-                buffer = ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
-            }
-            else
-            {
-                buffer = this.bufferPool.remove(0);
-            }
-
-            return buffer;
-        }
-        // finally
-        // {
-        // getLock().unlock();
-        // }
+        return ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
     }
 
     /**
-     * @param buffer {@link ByteBuffer}
+     * @see de.freese.jsync.utils.pool.AbstractPool#destroyObject(java.lang.Object)
      */
-    public void releaseBuffer(final ByteBuffer buffer)
+    @Override
+    protected void destroyObject(final ByteBuffer object)
     {
-        // getLock().lock();
-
-        if (!ENABLED)
-        {
-            return;
-        }
-
-        // try
-        synchronized (this)
-        {
-            this.bufferPool.add(buffer);
-        }
-        // finally
-        // {
-        // getLock().unlock();
-        // }
-    }
-
-    /**
-     * @return {@link ReentrantLock}
-     */
-    private ReentrantLock getLock()
-    {
-        return this.lock;
+        // ByteBuffer haben nichts zum aufräumen.
+        object.clear();
     }
 }

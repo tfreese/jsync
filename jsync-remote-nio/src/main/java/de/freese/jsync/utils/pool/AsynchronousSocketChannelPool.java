@@ -7,40 +7,22 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
  */
-@SuppressWarnings("resource")
-public class AsynchronousSocketChannelPool
+public class AsynchronousSocketChannelPool extends AbstractPool<AsynchronousSocketChannel>
 {
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AsynchronousSocketChannelPool.class);
-    /**
-     *
-     */
     private AsynchronousChannelGroup channelGroup;
-    /**
-     *
-     */
-    private final List<AsynchronousSocketChannel> channelPool = new ArrayList<>();
-    /**
-     *
-     */
-    private final ReentrantLock lock = new ReentrantLock(true);
+
     /**
      *
      */
@@ -69,123 +51,62 @@ public class AsynchronousSocketChannelPool
     }
 
     /**
-     * @param disconnector {@link Consumer}
+     * @see de.freese.jsync.utils.pool.AbstractPool#clear(java.util.function.Consumer)
      */
-    public void clear(final Consumer<AsynchronousSocketChannel> disconnector)
+    @Override
+    public void clear(final Consumer<AsynchronousSocketChannel> cleaner)
     {
-        // getLock().lock();
-        //
-        // try
-        synchronized (this)
-        {
-            for (Iterator<AsynchronousSocketChannel> iterator = this.channelPool.iterator(); iterator.hasNext();)
-            {
-                AsynchronousSocketChannel channel = iterator.next();
+        super.clear(cleaner);
 
-                disconnector.accept(channel);
-
-                try
-                {
-                    channel.shutdownInput();
-                    channel.shutdownOutput();
-                    channel.close();
-                }
-                catch (IOException ex)
-                {
-                    getLogger().error(null, ex);
-                }
-
-                iterator.remove();
-            }
-
-            JSyncUtils.shutdown(this.channelGroup, getLogger());
-        }
-        // finally
-        // {
-        // getLock().unlock();
-        // }
+        JSyncUtils.shutdown(this.channelGroup, getLogger());
     }
 
     /**
-     * @return {@link AsynchronousSocketChannel}
+     * @see de.freese.jsync.utils.pool.AbstractPool#createObject()
      */
-    public AsynchronousSocketChannel getChannel()
+    @Override
+    protected AsynchronousSocketChannel createObject()
     {
-        // getLock().lock();
-        //
-        // try
-        synchronized (this)
+        try
         {
-            AsynchronousSocketChannel channel = null;
+            InetSocketAddress serverAddress = new InetSocketAddress(this.uri.getHost(), this.uri.getPort());
 
-            if (this.channelPool.isEmpty())
-            {
-                try
-                {
-                    InetSocketAddress serverAddress = new InetSocketAddress(this.uri.getHost(), this.uri.getPort());
+            AsynchronousSocketChannel channel = AsynchronousSocketChannel.open(this.channelGroup);
 
-                    channel = AsynchronousSocketChannel.open(this.channelGroup);
-
-                    Future<Void> futureConnect = channel.connect(serverAddress);
-                    futureConnect.get();
-                }
-                catch (RuntimeException ex)
-                {
-                    throw ex;
-                }
-                catch (IOException ex)
-                {
-                    throw new UncheckedIOException(ex);
-                }
-                catch (InterruptedException | ExecutionException ex)
-                {
-                    throw new RuntimeException(ex);
-                }
-            }
-            else
-            {
-                channel = this.channelPool.remove(0);
-            }
+            Future<Void> futureConnect = channel.connect(serverAddress);
+            futureConnect.get();
 
             return channel;
         }
-        // finally
-        // {
-        // getLock().unlock();
-        // }
-    }
-
-    /**
-     * @param channel {@link AsynchronousSocketChannel}
-     */
-    public void releaseChannel(final AsynchronousSocketChannel channel)
-    {
-        // getLock().lock();
-        //
-        // try
-        synchronized (this)
+        catch (RuntimeException ex)
         {
-            this.channelPool.add(channel);
+            throw ex;
         }
-        // finally
-        // {
-        // getLock().unlock();
-        // }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (InterruptedException | ExecutionException ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
 
     /**
-     * @return {@link ReentrantLock}
+     * @see de.freese.jsync.utils.pool.AbstractPool#destroyObject(java.lang.Object)
      */
-    private ReentrantLock getLock()
+    @Override
+    protected void destroyObject(final AsynchronousSocketChannel object)
     {
-        return this.lock;
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    private Logger getLogger()
-    {
-        return LOGGER;
+        try
+        {
+            object.shutdownInput();
+            object.shutdownOutput();
+            object.close();
+        }
+        catch (IOException ex)
+        {
+            getLogger().error(null, ex);
+        }
     }
 }

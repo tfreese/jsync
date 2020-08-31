@@ -103,75 +103,12 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * @see de.freese.jsync.client.Client#disconnectFileSystems()
-     */
-    @Override
-    public void disconnectFileSystems()
-    {
-        getSender().disconnect();
-        getReceiver().disconnect();
-    }
-
-    /**
-     * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
-     *      java.util.function.LongConsumer)
-     */
-    @Override
-    public void generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer consumerBytesRead)
-    {
-        if (!getOptions().isChecksum() || !syncItem.isFile())
-        {
-            return;
-        }
-
-        FileSystem fs = null;
-        URI uri = null;
-
-        if (EFileSystem.SENDER.equals(fileSystem))
-        {
-            fs = getSender();
-            uri = getSenderUri();
-        }
-        else
-        {
-            fs = getReceiver();
-            uri = getReceiverUri();
-        }
-
-        String checksum = fs.getChecksum(uri.getPath(), syncItem.getRelativePath(), consumerBytesRead);
-        syncItem.setChecksum(checksum);
-    }
-
-    /**
-     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.Consumer)
-     */
-    @Override
-    public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem)
-    {
-        FileSystem fs = null;
-        URI uri = null;
-
-        if (EFileSystem.SENDER.equals(fileSystem))
-        {
-            fs = getSender();
-            uri = getSenderUri();
-        }
-        else
-        {
-            fs = getReceiver();
-            uri = getReceiverUri();
-        }
-
-        fs.generateSyncItems(uri.getPath(), getOptions().isFollowSymLinks(), consumerSyncItem);
-    }
-
-    /**
      * Kopieren der Dateien von der Quelle in die Senke<br>
      *
      * @param syncItem {@link SyncItem}
      * @param clientListener {@link ClientListener}
      */
-    protected void copyFile(final SyncItem syncItem, final ClientListener clientListener)
+    protected void copyFileByChannel(final SyncItem syncItem, final ClientListener clientListener)
     {
         clientListener.copyProgress(getOptions(), syncItem, 0);
 
@@ -189,7 +126,7 @@ public abstract class AbstractClient implements Client
         // long bytesRead = 0;
         long bytesWrote = 0;
 
-        ByteBuffer buffer = ByteBufferPool.getInstance().getBuffer();
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
         buffer.clear();
 
         try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderUri().getPath(), syncItem.getRelativePath());
@@ -211,10 +148,76 @@ public abstract class AbstractClient implements Client
         catch (Exception ex)
         {
             clientListener.error(null, ex);
+
+            return;
         }
         finally
         {
-            ByteBufferPool.getInstance().releaseBuffer(buffer);
+            ByteBufferPool.getInstance().release(buffer);
+        }
+
+        try
+        {
+            // Datei überprüfen.
+            clientListener.validate(getOptions(), syncItem);
+            getReceiver().validateFile(getReceiverUri().getPath(), syncItem, getOptions().isChecksum());
+        }
+        catch (Exception ex)
+        {
+            clientListener.error(null, ex);
+        }
+    }
+
+    /**
+     * Kopieren der Dateien von der Quelle in die Senke<br>
+     *
+     * @param syncItem {@link SyncItem}
+     * @param clientListener {@link ClientListener}
+     */
+    protected void copyFileByChunk(final SyncItem syncItem, final ClientListener clientListener)
+    {
+        clientListener.copyProgress(getOptions(), syncItem, 0);
+
+        if (getOptions().isDryRun())
+        {
+            clientListener.copyProgress(getOptions(), syncItem, syncItem.getSize());
+            return;
+        }
+
+        double valueD = syncItem.getSize() / Options.BUFFER_SIZE;
+        int valueI = (int) Math.ceil(valueD);
+
+        int numOfChunks = Math.min(1, valueI);
+        int size = (int) Math.min(syncItem.getSize(), Options.BUFFER_SIZE);
+
+        try
+        {
+            for (int chunk = 0; chunk < numOfChunks; chunk++)
+            {
+                int position = chunk * Options.BUFFER_SIZE;
+
+                if (chunk > 0)
+                {
+                    position++;
+                }
+
+                ByteBuffer buffer = getSender().readChunk(getSenderUri().getPath(), syncItem.getRelativePath(), position, size);
+
+                try
+                {
+                    getReceiver().writeChunk(getSenderUri().getPath(), syncItem.getRelativePath(), position, buffer);
+                }
+                finally
+                {
+                    ByteBufferPool.getInstance().release(buffer);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            clientListener.error(null, ex);
+
+            return;
         }
 
         try
@@ -251,7 +254,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFile(pair.getSenderItem(), clientListener));
+                .forEach(pair -> copyFileByChannel(pair.getSenderItem(), clientListener));
         //@formatter:on
     }
 
@@ -362,6 +365,69 @@ public abstract class AbstractClient implements Client
                 .filter(isExisting.and(isFile).and(isOnlyInTarget))
                 .forEach(pair -> delete(pair.getReceiverItem(), clientListener));
         // @formatter:on
+    }
+
+    /**
+     * @see de.freese.jsync.client.Client#disconnectFileSystems()
+     */
+    @Override
+    public void disconnectFileSystems()
+    {
+        getSender().disconnect();
+        getReceiver().disconnect();
+    }
+
+    /**
+     * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
+     *      java.util.function.LongConsumer)
+     */
+    @Override
+    public void generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer consumerBytesRead)
+    {
+        if (!getOptions().isChecksum() || !syncItem.isFile())
+        {
+            return;
+        }
+
+        FileSystem fs = null;
+        URI uri = null;
+
+        if (EFileSystem.SENDER.equals(fileSystem))
+        {
+            fs = getSender();
+            uri = getSenderUri();
+        }
+        else
+        {
+            fs = getReceiver();
+            uri = getReceiverUri();
+        }
+
+        String checksum = fs.getChecksum(uri.getPath(), syncItem.getRelativePath(), consumerBytesRead);
+        syncItem.setChecksum(checksum);
+    }
+
+    /**
+     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.Consumer)
+     */
+    @Override
+    public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem)
+    {
+        FileSystem fs = null;
+        URI uri = null;
+
+        if (EFileSystem.SENDER.equals(fileSystem))
+        {
+            fs = getSender();
+            uri = getSenderUri();
+        }
+        else
+        {
+            fs = getReceiver();
+            uri = getReceiverUri();
+        }
+
+        fs.generateSyncItems(uri.getPath(), getOptions().isFollowSymLinks(), consumerSyncItem);
     }
 
     /**

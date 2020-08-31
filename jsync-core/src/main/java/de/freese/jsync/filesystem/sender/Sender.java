@@ -1,8 +1,8 @@
 // Created: 28.04.2020
 package de.freese.jsync.filesystem.sender;
 
+import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-
 import de.freese.jsync.filesystem.FileSystem;
 
 /**
@@ -17,4 +17,15 @@ public interface Sender extends FileSystem
      */
     @Override
     public ReadableByteChannel getChannel(String baseDir, String relativeFile);
+
+    /**
+     * Liest nur einen bestimmten Bereich aus einer Datei.
+     *
+     * @param baseDir String
+     * @param relativeFile String
+     * @param position int
+     * @param size int
+     * @return {@link ByteBuffer}
+     */
+    public ByteBuffer readChunk(String baseDir, String relativeFile, int position, int size);
 }

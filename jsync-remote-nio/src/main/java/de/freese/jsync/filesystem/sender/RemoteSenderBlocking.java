@@ -54,7 +54,7 @@ public class RemoteSenderBlocking extends AbstractSender
         @Override
         public void close() throws IOException
         {
-            RemoteSenderBlocking.this.channelPool.releaseChannel((SocketChannel) this.delegate);
+            RemoteSenderBlocking.this.channelPool.release((SocketChannel) this.delegate);
         }
 
         /**
@@ -101,8 +101,8 @@ public class RemoteSenderBlocking extends AbstractSender
     {
         this.channelPool = new SocketChannelPool(uri);
 
-        SocketChannel channel = this.channelPool.getChannel();
-        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+        SocketChannel channel = this.channelPool.get();
+        ByteBuffer buffer = this.byteBufferPool.get();
 
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.CONNECT);
@@ -110,8 +110,8 @@ public class RemoteSenderBlocking extends AbstractSender
         buffer.flip();
         write(channel, buffer);
 
-        this.byteBufferPool.releaseBuffer(buffer);
-        this.channelPool.releaseChannel(channel);
+        this.byteBufferPool.release(buffer);
+        this.channelPool.release(channel);
 
         // Warum funktioniert die weitere Kommunikation nur mit dem Thread.sleep ???
         try
@@ -130,7 +130,7 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public void disconnect()
     {
-        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+        ByteBuffer buffer = this.byteBufferPool.get();
 
         Consumer<SocketChannel> disconnector = channel -> {
             buffer.clear();
@@ -142,7 +142,7 @@ public class RemoteSenderBlocking extends AbstractSender
 
         this.channelPool.clear(disconnector);
 
-        this.byteBufferPool.releaseBuffer(buffer);
+        this.byteBufferPool.release(buffer);
         this.byteBufferPool.clear();
     }
 
@@ -152,8 +152,8 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
-        SocketChannel channel = this.channelPool.getChannel();
-        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+        SocketChannel channel = this.channelPool.get();
+        ByteBuffer buffer = this.byteBufferPool.get();
 
         try
         {
@@ -215,8 +215,8 @@ public class RemoteSenderBlocking extends AbstractSender
         }
         finally
         {
-            this.byteBufferPool.releaseBuffer(buffer);
-            this.channelPool.releaseChannel(channel);
+            this.byteBufferPool.release(buffer);
+            this.channelPool.release(channel);
         }
     }
 
@@ -226,8 +226,8 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
-        SocketChannel channel = this.channelPool.getChannel();
-        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+        SocketChannel channel = this.channelPool.get();
+        ByteBuffer buffer = this.byteBufferPool.get();
 
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
@@ -237,9 +237,17 @@ public class RemoteSenderBlocking extends AbstractSender
         buffer.flip();
         write(channel, buffer);
 
-        this.byteBufferPool.releaseBuffer(buffer);
+        this.byteBufferPool.release(buffer);
 
         return new NoCloseReadableByteChannel(channel);
+    }
+
+    /**
+     * @return {@link Charset}
+     */
+    protected Charset getCharset()
+    {
+        return Options.CHARSET;
     }
 
     /**
@@ -248,8 +256,8 @@ public class RemoteSenderBlocking extends AbstractSender
     @Override
     public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        SocketChannel channel = this.channelPool.getChannel();
-        ByteBuffer buffer = this.byteBufferPool.getBuffer();
+        SocketChannel channel = this.channelPool.get();
+        ByteBuffer buffer = this.byteBufferPool.get();
 
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
@@ -265,18 +273,10 @@ public class RemoteSenderBlocking extends AbstractSender
 
         String checksum = Serializers.readFrom(buffer, String.class);
 
-        this.byteBufferPool.releaseBuffer(buffer);
-        this.channelPool.releaseChannel(channel);
+        this.byteBufferPool.release(buffer);
+        this.channelPool.release(channel);
 
         return checksum;
-    }
-
-    /**
-     * @return {@link Charset}
-     */
-    protected Charset getCharset()
-    {
-        return Options.CHARSET;
     }
 
     /**

@@ -4,6 +4,8 @@ package de.freese.jsync.filesystem.receiver;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
@@ -237,6 +239,39 @@ public class LocalhostReceiver extends AbstractReceiver
                     String message = String.format("checksum does not match with source: %s", syncItem.getRelativePath());
                     throw new IllegalStateException(message);
                 }
+            }
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, int, java.nio.ByteBuffer)
+     */
+    @Override
+    public void writeChunk(final String baseDir, final String relativeFile, final int position, final ByteBuffer buffer)
+    {
+        Path path = Paths.get(baseDir, relativeFile);
+
+        getLogger().debug("write chunk: {}, position={}, size={}", path, position, buffer.remaining());
+
+        Path parentPath = path.getParent();
+
+        try
+        {
+            if (Files.notExists(parentPath))
+            {
+                Files.createDirectories(parentPath);
+            }
+
+            try (FileChannel fileChannel =
+                    (FileChannel) Files.newByteChannel(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))
+            {
+                fileChannel.write(buffer, position);
+
+                fileChannel.force(false);
             }
         }
         catch (IOException ex)
