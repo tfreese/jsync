@@ -386,4 +386,30 @@ public class RemoteReceiverBlocking extends AbstractReceiver
             throw new UncheckedIOException(ex);
         }
     }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
+     */
+    @Override
+    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
+    {
+        SocketChannel channel = this.channelPool.get();
+        ByteBuffer bufferCmd = this.byteBufferPool.get();
+
+        bufferCmd.clear();
+        Serializers.writeTo(bufferCmd, JSyncCommand.WRITE_CHUNK);
+        Serializers.writeTo(bufferCmd, baseDir);
+        Serializers.writeTo(bufferCmd, relativeFile);
+        Serializers.writeTo(bufferCmd, position);
+        Serializers.writeTo(bufferCmd, size);
+
+        bufferCmd.flip();
+        write(channel, bufferCmd);
+
+        buffer.flip();
+        write(channel, buffer);
+
+        this.byteBufferPool.release(bufferCmd);
+        this.channelPool.release(channel);
+    }
 }

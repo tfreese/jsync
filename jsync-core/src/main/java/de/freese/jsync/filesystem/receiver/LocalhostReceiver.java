@@ -248,14 +248,14 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, int, java.nio.ByteBuffer)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void writeChunk(final String baseDir, final String relativeFile, final int position, final ByteBuffer buffer)
+    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
     {
         Path path = Paths.get(baseDir, relativeFile);
 
-        getLogger().debug("write chunk: {}, position={}, size={}", path, position, buffer.remaining());
+        getLogger().debug("write chunk: {}, position={}, size={}", path, position, size);
 
         Path parentPath = path.getParent();
 
@@ -265,6 +265,8 @@ public class LocalhostReceiver extends AbstractReceiver
             {
                 Files.createDirectories(parentPath);
             }
+
+            buffer.flip();
 
             try (FileChannel fileChannel =
                     (FileChannel) Files.newByteChannel(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))

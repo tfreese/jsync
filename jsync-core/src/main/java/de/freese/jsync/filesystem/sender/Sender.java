@@ -23,9 +23,9 @@ public interface Sender extends FileSystem
      *
      * @param baseDir String
      * @param relativeFile String
-     * @param position int
-     * @param size int
+     * @param position long
+     * @param size long
      * @return {@link ByteBuffer}
      */
-    public ByteBuffer readChunk(String baseDir, String relativeFile, int position, int size);
+    public ByteBuffer readChunk(String baseDir, String relativeFile, long position, long size);
 }

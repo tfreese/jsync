@@ -103,6 +103,7 @@ public final class Serializers
         super();
 
         this.serializerMap.put(Boolean.class, BooleanSerializer.getInstance());
+        this.serializerMap.put(Long.class, LongSerializer.getInstance());
         this.serializerMap.put(String.class, StringSerializer.getInstance());
 
         this.serializerMap.put(Group.class, GroupSerializer.getInstance());

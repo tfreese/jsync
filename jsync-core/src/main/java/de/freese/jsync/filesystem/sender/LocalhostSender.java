@@ -110,10 +110,10 @@ public class LocalhostSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, int, int)
+     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long)
      */
     @Override
-    public ByteBuffer readChunk(final String baseDir, final String relativeFile, final int position, final int size)
+    public ByteBuffer readChunk(final String baseDir, final String relativeFile, final long position, final long size)
     {
         Path path = Paths.get(baseDir, relativeFile);
 

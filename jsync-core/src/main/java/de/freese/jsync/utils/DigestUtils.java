@@ -150,6 +150,7 @@ public final class DigestUtils
 
                 consumer.accept(bytesRead);
 
+                buffer.flip();
                 messageDigest.update(buffer);
                 buffer.clear();
             }

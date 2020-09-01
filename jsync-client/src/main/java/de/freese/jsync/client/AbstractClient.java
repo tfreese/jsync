@@ -184,28 +184,35 @@ public abstract class AbstractClient implements Client
             return;
         }
 
-        double valueD = syncItem.getSize() / Options.BUFFER_SIZE;
-        int valueI = (int) Math.ceil(valueD);
+        // double valueD = syncItem.getSize() / Options.BUFFER_SIZE;
+        // int valueI = (int) Math.ceil(valueD);
 
-        int numOfChunks = Math.min(1, valueI);
-        int size = (int) Math.min(syncItem.getSize(), Options.BUFFER_SIZE);
+        long sizeOfChunk = Math.min(syncItem.getSize(), Options.BUFFER_SIZE);
+
+        int numOfChunks = (int) Math.ceil((double) syncItem.getSize() / sizeOfChunk);
 
         try
         {
             for (int chunk = 0; chunk < numOfChunks; chunk++)
             {
-                int position = chunk * Options.BUFFER_SIZE;
+                long position = chunk * Options.BUFFER_SIZE;
 
                 if (chunk > 0)
                 {
                     position++;
                 }
 
-                ByteBuffer buffer = getSender().readChunk(getSenderUri().getPath(), syncItem.getRelativePath(), position, size);
+                // Letzter Chunk
+                if ((position + sizeOfChunk) > syncItem.getSize())
+                {
+                    sizeOfChunk = syncItem.getSize() - position;
+                }
+
+                ByteBuffer buffer = getSender().readChunk(getSenderUri().getPath(), syncItem.getRelativePath(), position, sizeOfChunk);
 
                 try
                 {
-                    getReceiver().writeChunk(getSenderUri().getPath(), syncItem.getRelativePath(), position, buffer);
+                    getReceiver().writeChunk(getReceiverUri().getPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
                 }
                 finally
                 {
@@ -254,7 +261,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFileByChannel(pair.getSenderItem(), clientListener));
+                .forEach(pair -> copyFileByChunk(pair.getSenderItem(), clientListener));
         //@formatter:on
     }
 

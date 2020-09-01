@@ -8,10 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
-
-import de.freese.jsync.utils.JSyncUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
@@ -103,8 +102,8 @@ public abstract class AbstractJSyncTest
         {
             try (RandomAccessFile raf = new RandomAccessFile(pathFile.toFile(), "rw"))
             {
-                // 32 MB
-                raf.setLength(1024 * 1024 * 32);
+                // 32 MB und ein paar zerquetschte...
+                raf.setLength((1024 * 1024 * 32) + 1024);
             }
         }
 

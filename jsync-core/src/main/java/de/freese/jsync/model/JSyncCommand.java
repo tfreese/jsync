@@ -1,4 +1,4 @@
-//Created: 14.11.2018
+// Created: 14.11.2018
 package de.freese.jsync.model;
 
 /**
@@ -17,6 +17,11 @@ public enum JSyncCommand
      *
      */
     DISCONNECT,
+
+    /**
+    *
+    */
+    READ_CHUNK,
 
     /**
      *
@@ -71,5 +76,10 @@ public enum JSyncCommand
     /**
      *
      */
-    TARGET_WRITEABLE_FILE_CHANNEL
+    TARGET_WRITEABLE_FILE_CHANNEL,
+
+    /**
+    *
+    */
+    WRITE_CHUNK
 }

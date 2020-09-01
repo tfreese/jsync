@@ -32,20 +32,6 @@ import de.freese.jsync.server.handler.JSyncIoHandler;
 class TestJSyncRemote extends AbstractJSyncTest
 {
     /**
-     *
-     */
-    private static Options options = null;
-
-    /**
-     *
-     */
-    @BeforeAll
-    static void beforeAll()
-    {
-        options = new Builder().delete(true).dryRun(false).followSymLinks(false).checksum(true).build();
-    }
-
-    /**
      * @author Thomas Freese
      */
     private static class TestConsoleClientListener extends ConsoleClientListener
@@ -60,6 +46,20 @@ class TestJSyncRemote extends AbstractJSyncTest
 
             assertTrue(false, th.getMessage());
         }
+    }
+
+    /**
+     *
+     */
+    private static Options options = null;
+
+    /**
+     *
+     */
+    @BeforeAll
+    static void beforeAll()
+    {
+        options = new Builder().delete(true).dryRun(false).followSymLinks(false).checksum(true).build();
     }
 
     /**
@@ -116,7 +116,7 @@ class TestJSyncRemote extends AbstractJSyncTest
     /**
      * @throws Exception Falls was schief geht.
      */
-    // @Test
+    @Test
     void test020RemoteToLocal() throws Exception
     {
         System.out.println();
@@ -138,7 +138,7 @@ class TestJSyncRemote extends AbstractJSyncTest
     /**
      * @throws Exception Falls was schief geht.
      */
-    // @Test
+    @Test
     void test030LocalToRemote() throws Exception
     {
         System.out.println();
@@ -160,7 +160,7 @@ class TestJSyncRemote extends AbstractJSyncTest
     /**
      * @throws Exception Falls was schief geht.
      */
-    // @Test
+    @Test
     void test040RemoteToRemote() throws Exception
     {
         System.out.println();

@@ -13,7 +13,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
@@ -149,8 +148,7 @@ public class RemoteSenderAsync extends AbstractSender
     {
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        Consumer<AsynchronousSocketChannel> disconnector = channel ->
-        {
+        Consumer<AsynchronousSocketChannel> disconnector = channel -> {
             buffer.clear();
             Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
@@ -309,8 +307,58 @@ public class RemoteSenderAsync extends AbstractSender
     }
 
     /**
+     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long)
+     */
+    @Override
+    public ByteBuffer readChunk(final String baseDir, final String relativeFile, final long position, final long size)
+    {
+        AsynchronousSocketChannel channel = this.channelPool.get();
+        ByteBuffer buffer = this.byteBufferPool.get();
+        ByteBuffer bufferData = this.byteBufferPool.get();
+
+        buffer.clear();
+        Serializers.writeTo(buffer, JSyncCommand.READ_CHUNK);
+        Serializers.writeTo(buffer, baseDir);
+        Serializers.writeTo(buffer, relativeFile);
+        Serializers.writeTo(buffer, position);
+        Serializers.writeTo(buffer, size);
+
+        buffer.flip();
+        write(channel, buffer);
+
+        bufferData.clear();
+
+        try
+        {
+            while (bufferData.position() < size)
+            {
+                Future<Integer> futureResponse = channel.read(buffer);
+                futureResponse.get();
+
+                buffer.flip();
+                bufferData.put(buffer);
+
+                buffer.clear();
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+
+        // this.byteBufferPool.release(buffer);
+        this.channelPool.release(channel);
+
+        return buffer;
+    }
+
+    /**
      * @param channel {@link AsynchronousSocketChannel}
-     * @param buffer  {@link ByteBuffer}
+     * @param buffer {@link ByteBuffer}
      */
     protected void write(final AsynchronousSocketChannel channel, final ByteBuffer buffer)
     {
