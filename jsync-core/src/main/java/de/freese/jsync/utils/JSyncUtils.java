@@ -18,9 +18,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import de.freese.jsync.Options;
 import org.slf4j.Logger;
+import de.freese.jsync.Options;
 
 /**
  * @author Thomas Freese
@@ -36,17 +35,17 @@ public final class JSyncUtils
      * @see Files#walk(Path, FileVisitOption...)
      */
     private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = new FileVisitOption[]
-            {
-                    FileVisitOption.FOLLOW_LINKS
-            };
+    {
+            FileVisitOption.FOLLOW_LINKS
+    };
 
     /**
      *
      */
     private static final char[] HEX_CHARS =
-            {
-                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-            };
+    {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
 
     /**
      * @see Files#exists(Path, LinkOption...)
@@ -56,9 +55,9 @@ public final class JSyncUtils
      * @see Files#readAttributes(Path, String, LinkOption...)
      */
     private static final LinkOption[] LINKOPTION_NO_SYMLINKS = new LinkOption[]
-            {
-                    LinkOption.NOFOLLOW_LINKS
-            };
+    {
+            LinkOption.NOFOLLOW_LINKS
+    };
 
     /**
      * @see Files#exists(Path, LinkOption...)
@@ -73,9 +72,9 @@ public final class JSyncUtils
      *
      */
     private static final String[] SIZE_UNITS = new String[]
-            {
-                    "B", "KB", "MB", "GB", "TB"
-            };
+    {
+            "B", "KB", "MB", "GB", "TB"
+    };
 
     /**
      * String hex = javax.xml.bind.DatatypeConverter.printHexBinary(checksum);<br>
@@ -83,7 +82,6 @@ public final class JSyncUtils
      * String hex = String.format("%02x", element);<br>
      *
      * @param bytes byte[]
-     *
      * @return String
      */
     public static String bytesToHex(final byte[] bytes)
@@ -127,9 +125,8 @@ public final class JSyncUtils
     /**
      * Ein Verzeichnis wird rekursiv inklusive aller Dateien und Unterverzeichnisse gelöscht.
      *
-     * @param path           {@link Path}
+     * @param path {@link Path}
      * @param followSymLinks boolean
-     *
      * @throws IOException Falls was schief geht.
      */
     public static void delete(final Path path, final boolean followSymLinks) throws IOException
@@ -183,7 +180,6 @@ public final class JSyncUtils
 
     /**
      * @param followSymLinks boolean
-     *
      * @return {@link FileVisitOption}
      */
     public static FileVisitOption[] getFileVisitOptions(final boolean followSymLinks)
@@ -193,7 +189,6 @@ public final class JSyncUtils
 
     /**
      * @param followSymLinks boolean
-     *
      * @return {@link LinkOption}
      */
     public static LinkOption[] getLinkOptions(final boolean followSymLinks)
@@ -205,8 +200,7 @@ public final class JSyncUtils
      * Mit 2 Nachkommastellen.
      *
      * @param value long
-     * @param max   long
-     *
+     * @param max long
      * @return float 0.0 - 100.0
      */
     public static float getPercent(final long value, final long max)
@@ -219,8 +213,7 @@ public final class JSyncUtils
 
     /**
      * @param value long
-     * @param max   long
-     *
+     * @param max long
      * @return float 0.0 - 1.0
      */
     public static float getProgress(final long value, final long max)
@@ -242,7 +235,6 @@ public final class JSyncUtils
 
     /**
      * @param hexString {@link CharSequence}
-     *
      * @return byte[]
      */
     public static byte[] hexToBytes(final CharSequence hexString)
@@ -274,7 +266,6 @@ public final class JSyncUtils
      * Normalisiert den {@link URI#getPath()} je nach Betriebssystem.
      *
      * @param uri {@link URI}
-     *
      * @return String
      */
     public static String normalizedPath(final URI uri)
@@ -306,10 +297,33 @@ public final class JSyncUtils
     }
 
     /**
+     * Entfernt führende '//' und das abschließende '/'.
+     *
+     * @param uri {@link URI}
+     * @return String
+     */
+    public static String normalizePath(final URI uri)
+    {
+        String path = uri.getPath();
+
+        if (path.startsWith("//"))
+        {
+            path = path.substring(1, path.length());
+        }
+
+        if (path.endsWith("/"))
+        {
+            path = path.substring(0, path.length() - 1);
+        }
+
+        return path;
+    }
+
+    /**
      * Shutdown der {@link AsynchronousChannelGroup}.
      *
      * @param channelGroup {@link AsynchronousChannelGroup}
-     * @param logger       {@link Logger}
+     * @param logger {@link Logger}
      */
     public static void shutdown(final AsynchronousChannelGroup channelGroup, final Logger logger)
     {
@@ -367,7 +381,7 @@ public final class JSyncUtils
      * Shutdown des {@link ExecutorService}.
      *
      * @param executorService {@link ExecutorService}
-     * @param logger          {@link Logger}
+     * @param logger {@link Logger}
      */
     public static void shutdown(final ExecutorService executorService, final Logger logger)
     {
@@ -427,7 +441,7 @@ public final class JSyncUtils
 
     /**
      * @param timeUnit {@link TimeUnit}
-     * @param timeout  long
+     * @param timeout long
      */
     public static void sleep(final TimeUnit timeUnit, final long timeout)
     {
@@ -443,7 +457,6 @@ public final class JSyncUtils
 
     /**
      * @param size long
-     *
      * @return String, z.B. '___,___ MB'
      */
     public static String toHumanReadableSize(final long size)

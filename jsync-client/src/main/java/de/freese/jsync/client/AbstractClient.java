@@ -23,6 +23,7 @@ import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
+import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -45,12 +46,22 @@ public abstract class AbstractClient implements Client
     /**
      *
      */
+    private final String receiverPath;
+
+    /**
+     *
+     */
     private final URI receiverUri;
 
     /**
      *
      */
     private final Sender sender;
+
+    /**
+     *
+     */
+    private final String senderPath;
 
     /**
      *
@@ -71,6 +82,8 @@ public abstract class AbstractClient implements Client
         this.options = Objects.requireNonNull(options, "options required");
         this.senderUri = Objects.requireNonNull(senderUri, "senderUri required");
         this.receiverUri = Objects.requireNonNull(receiverUri, "receiverUri required");
+        this.senderPath = JSyncUtils.normalizePath(senderUri);
+        this.receiverPath = JSyncUtils.normalizePath(receiverUri);
 
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
@@ -129,8 +142,8 @@ public abstract class AbstractClient implements Client
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
         buffer.clear();
 
-        try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderUri().getPath(), syncItem.getRelativePath());
-             WritableByteChannel writableByteChannel = getReceiver().getChannel(getReceiverUri().getPath(), syncItem.getRelativePath()))
+        try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderPath(), syncItem.getRelativePath());
+             WritableByteChannel writableByteChannel = getReceiver().getChannel(getReceiverPath(), syncItem.getRelativePath()))
         {
             while (readableByteChannel.read(buffer) > 0)
             {
@@ -160,7 +173,7 @@ public abstract class AbstractClient implements Client
         {
             // Datei überprüfen.
             clientListener.validate(getOptions(), syncItem);
-            getReceiver().validateFile(getReceiverUri().getPath(), syncItem, getOptions().isChecksum());
+            getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum());
         }
         catch (Exception ex)
         {
@@ -184,41 +197,60 @@ public abstract class AbstractClient implements Client
             return;
         }
 
-        // double valueD = syncItem.getSize() / Options.BUFFER_SIZE;
-        // int valueI = (int) Math.ceil(valueD);
-
-        long sizeOfChunk = Math.min(syncItem.getSize(), Options.BUFFER_SIZE);
-
-        int numOfChunks = (int) Math.ceil((double) syncItem.getSize() / sizeOfChunk);
-
         try
         {
-            for (int chunk = 0; chunk < numOfChunks; chunk++)
+            long totalSize = syncItem.getSize();
+            long position = 0;
+
+            while (position < totalSize)
             {
-                long position = chunk * Options.BUFFER_SIZE;
+                long sizeOfChunk = Math.min(totalSize - position, Options.BUFFER_SIZE);
 
-                if (chunk > 0)
-                {
-                    position++;
-                }
-
-                // Letzter Chunk
-                if ((position + sizeOfChunk) > syncItem.getSize())
-                {
-                    sizeOfChunk = syncItem.getSize() - position;
-                }
-
-                ByteBuffer buffer = getSender().readChunk(getSenderUri().getPath(), syncItem.getRelativePath(), position, sizeOfChunk);
+                ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
                 try
                 {
-                    getReceiver().writeChunk(getReceiverUri().getPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
+                    getSender().readChunk(getSenderPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
+                    getReceiver().writeChunk(getReceiverPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
+
+                    position += sizeOfChunk;
                 }
                 finally
                 {
                     ByteBufferPool.getInstance().release(buffer);
                 }
             }
+
+            // long sizeOfChunk = Math.min(syncItem.getSize(), Options.BUFFER_SIZE);
+            // int numOfChunks = (int) Math.ceil((double) syncItem.getSize() / sizeOfChunk);
+            //
+            // for (int chunk = 0; chunk < numOfChunks; chunk++)
+            // {
+            // long position = chunk * Options.BUFFER_SIZE;
+            //
+            // // if (chunk > 0)
+            // // {
+            // // position++;
+            // // }
+            //
+            // // Letzter Chunk
+            // if ((position + sizeOfChunk) > syncItem.getSize())
+            // {
+            // sizeOfChunk = syncItem.getSize() - position;
+            // }
+            //
+            // ByteBuffer buffer = ByteBufferPool.getInstance().get();
+            //
+            // try
+            // {
+            // getSender().readChunk(getSenderPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
+            // getReceiver().writeChunk(getReceiverPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
+            // }
+            // finally
+            // {
+            // ByteBufferPool.getInstance().release(buffer);
+            // }
+            // }
         }
         catch (Exception ex)
         {
@@ -231,7 +263,7 @@ public abstract class AbstractClient implements Client
         {
             // Datei überprüfen.
             clientListener.validate(getOptions(), syncItem);
-            getReceiver().validateFile(getReceiverUri().getPath(), syncItem, getOptions().isChecksum());
+            getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum());
         }
         catch (Exception ex)
         {
@@ -301,7 +333,7 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            getReceiver().createDirectory(getReceiverUri().getPath(), syncItem.getRelativePath());
+            getReceiver().createDirectory(getReceiverPath(), syncItem.getRelativePath());
         }
         catch (Exception ex)
         {
@@ -326,7 +358,7 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            getReceiver().delete(getReceiverUri().getPath(), syncItem.getRelativePath(), getOptions().isFollowSymLinks());
+            getReceiver().delete(getReceiverPath(), syncItem.getRelativePath(), getOptions().isFollowSymLinks());
         }
         catch (Exception ex)
         {
@@ -397,20 +429,20 @@ public abstract class AbstractClient implements Client
         }
 
         FileSystem fs = null;
-        URI uri = null;
+        String baseDir = null;
 
         if (EFileSystem.SENDER.equals(fileSystem))
         {
             fs = getSender();
-            uri = getSenderUri();
+            baseDir = getSenderPath();
         }
         else
         {
             fs = getReceiver();
-            uri = getReceiverUri();
+            baseDir = getReceiverPath();
         }
 
-        String checksum = fs.getChecksum(uri.getPath(), syncItem.getRelativePath(), consumerBytesRead);
+        String checksum = fs.getChecksum(baseDir, syncItem.getRelativePath(), consumerBytesRead);
         syncItem.setChecksum(checksum);
     }
 
@@ -421,20 +453,20 @@ public abstract class AbstractClient implements Client
     public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem)
     {
         FileSystem fs = null;
-        URI uri = null;
+        String baseDir = null;
 
         if (EFileSystem.SENDER.equals(fileSystem))
         {
             fs = getSender();
-            uri = getSenderUri();
+            baseDir = getSenderPath();
         }
         else
         {
             fs = getReceiver();
-            uri = getReceiverUri();
+            baseDir = getReceiverPath();
         }
 
-        fs.generateSyncItems(uri.getPath(), getOptions().isFollowSymLinks(), consumerSyncItem);
+        fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), consumerSyncItem);
     }
 
     /**
@@ -454,6 +486,14 @@ public abstract class AbstractClient implements Client
     }
 
     /**
+     * @return String
+     */
+    protected String getReceiverPath()
+    {
+        return this.receiverPath;
+    }
+
+    /**
      * @return {@link URI}
      */
     protected URI getReceiverUri()
@@ -467,6 +507,14 @@ public abstract class AbstractClient implements Client
     protected Sender getSender()
     {
         return this.sender;
+    }
+
+    /**
+     * @return String
+     */
+    protected String getSenderPath()
+    {
+        return this.senderPath;
     }
 
     /**
@@ -494,7 +542,7 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            getReceiver().update(getReceiverUri().getPath(), syncItem);
+            getReceiver().update(getReceiverPath(), syncItem);
         }
         catch (Exception ex)
         {

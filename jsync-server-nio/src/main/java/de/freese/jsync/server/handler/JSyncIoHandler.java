@@ -10,7 +10,6 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -19,7 +18,6 @@ import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
-import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -36,14 +34,12 @@ public class JSyncIoHandler implements IoHandler
      *
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncIoHandler.class);
-    /**
-     *
-     */
-    private static final ThreadLocal<ByteBuffer> THREAD_LOCAL_BUFFER = ThreadLocal.withInitial(() -> ByteBuffer.allocateDirect(Options.BUFFER_SIZE));
+
     /**
      *
      */
     private static final ThreadLocal<Receiver> THREAD_LOCAL_RECEIVER = ThreadLocal.withInitial(LocalhostReceiver::new);
+
     /**
      *
      */
@@ -85,12 +81,8 @@ public class JSyncIoHandler implements IoHandler
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativeFile = Serializers.readFrom(buffer, String.class);
 
-        getLogger().debug("{}: Create Checksum: {}/{}", getRemoteAddress(selectionKey), baseDir, relativeFile);
-
         String checksum = fileSystem.getChecksum(baseDir, relativeFile, i -> {
         });
-
-        getLogger().debug("{}: Checksum created: {}/{}", getRemoteAddress(selectionKey), baseDir, relativeFile);
 
         buffer.clear();
         Serializers.writeTo(buffer, checksum);
@@ -111,8 +103,6 @@ public class JSyncIoHandler implements IoHandler
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
-
-        getLogger().debug("{}: Create SyncItems: {}", getRemoteAddress(selectionKey), baseDir);
 
         fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
             getLogger().debug("{}: Send SyncItem: {}", getRemoteAddress(selectionKey), syncItem);
@@ -137,8 +127,6 @@ public class JSyncIoHandler implements IoHandler
         buffer.flip();
 
         writeBuffer(selectionKey, buffer);
-
-        getLogger().debug("{}: SyncItems written: {}", getRemoteAddress(selectionKey), baseDir);
     }
 
     /**
@@ -155,11 +143,7 @@ public class JSyncIoHandler implements IoHandler
         String relativePath = Serializers.readFrom(buffer, String.class);
         boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
 
-        getLogger().debug("{}: Delete: {}/{}", getRemoteAddress(selectionKey), baseDir, relativePath);
-
         receiver.delete(baseDir, relativePath, followSymLinks);
-
-        getLogger().debug("{}: Deleted: {}/{}", getRemoteAddress(selectionKey), baseDir, relativePath);
     }
 
     /**
@@ -172,8 +156,6 @@ public class JSyncIoHandler implements IoHandler
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativeFile = Serializers.readFrom(buffer, String.class);
-
-        getLogger().debug("{}: receive File {}/{}", getRemoteAddress(selectionKey), baseDir, relativeFile);
 
         ReadableByteChannel inChannel = (ReadableByteChannel) selectionKey.channel();
 
@@ -212,9 +194,6 @@ public class JSyncIoHandler implements IoHandler
                 ((FileChannel) outChannel).force(true);
             }
         }
-
-        getLogger().debug("{}: file received {}/{}; bytesWrote = {}", getRemoteAddress(selectionKey), baseDir, relativeFile,
-                JSyncUtils.toHumanReadableSize(bytesWrote));
     }
 
     /**
@@ -229,8 +208,6 @@ public class JSyncIoHandler implements IoHandler
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativeFile = Serializers.readFrom(buffer, String.class);
-
-        getLogger().debug("{}: send File {}/{}", getRemoteAddress(selectionKey), baseDir, relativeFile);
 
         WritableByteChannel outChannel = (WritableByteChannel) selectionKey.channel();
 
@@ -252,9 +229,6 @@ public class JSyncIoHandler implements IoHandler
                 buffer.clear();
             }
         }
-
-        getLogger().debug("{}: file send {}/{}; bytesWrote = {}", getRemoteAddress(selectionKey), baseDir, relativeFile,
-                JSyncUtils.toHumanReadableSize(bytesWrote));
     }
 
     /**
@@ -290,7 +264,7 @@ public class JSyncIoHandler implements IoHandler
         ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
 
         // JSyncCommand lesen.
-        ByteBuffer buffer = THREAD_LOCAL_BUFFER.get();
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
         buffer.clear();
 
@@ -375,6 +349,7 @@ public class JSyncIoHandler implements IoHandler
                 break;
         }
 
+        ByteBufferPool.getInstance().release(buffer);
         // selectionKey.interestOps(SelectionKey.OP_READ);
         // selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
@@ -394,21 +369,20 @@ public class JSyncIoHandler implements IoHandler
         long position = Serializers.readFrom(buffer, Long.class);
         long size = Serializers.readFrom(buffer, Long.class);
 
-        getLogger().debug("{}: read chunk: {}/{} from position {} and size {}", getRemoteAddress(selectionKey), baseDir, relativeFile, position, size);
-
         try
         {
-            ByteBuffer bufferData = sender.readChunk(baseDir, relativeFile, position, size);
-
-            bufferData.flip();
+            ByteBuffer bufferChunk = ByteBufferPool.getInstance().get();
 
             try
             {
-                writeBuffer(selectionKey, bufferData);
+                sender.readChunk(baseDir, relativeFile, position, size, bufferChunk);
+
+                bufferChunk.flip();
+                writeBuffer(selectionKey, bufferChunk);
             }
             finally
             {
-                ByteBufferPool.getInstance().release(bufferData);
+                ByteBufferPool.getInstance().release(bufferChunk);
             }
         }
         catch (Exception ex)
@@ -421,8 +395,6 @@ public class JSyncIoHandler implements IoHandler
 
             writeBuffer(selectionKey, buffer);
         }
-
-        getLogger().debug("{}: chunk read: {}/{} from position {} and size {}", getRemoteAddress(selectionKey), baseDir, relativeFile, position, size);
     }
 
     /**
@@ -438,11 +410,7 @@ public class JSyncIoHandler implements IoHandler
         String baseDir = Serializers.readFrom(buffer, String.class);
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
 
-        getLogger().debug("{}: Update: {}/{}", getRemoteAddress(selectionKey), baseDir, syncItem.getRelativePath());
-
         receiver.update(baseDir, syncItem);
-
-        getLogger().debug("{}: Updated: {}/{}", getRemoteAddress(selectionKey), baseDir, syncItem.getRelativePath());
     }
 
     /**
@@ -459,8 +427,6 @@ public class JSyncIoHandler implements IoHandler
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
         boolean withChecksum = Serializers.readFrom(buffer, Boolean.class);
 
-        getLogger().debug("{}: Validate: {}/{}", getRemoteAddress(selectionKey), baseDir, syncItem.getRelativePath());
-
         try
         {
             receiver.validateFile(baseDir, syncItem, withChecksum);
@@ -475,8 +441,6 @@ public class JSyncIoHandler implements IoHandler
 
             writeBuffer(selectionKey, buffer);
         }
-
-        getLogger().debug("{}: Validated: {}/{}", getRemoteAddress(selectionKey), baseDir, syncItem.getRelativePath());
     }
 
     /**
@@ -510,8 +474,6 @@ public class JSyncIoHandler implements IoHandler
         String relativeFile = Serializers.readFrom(buffer, String.class);
         long position = Serializers.readFrom(buffer, Long.class);
         long size = Serializers.readFrom(buffer, Long.class);
-
-        getLogger().debug("{}: write chunk: {}/{}, position={}, size={}", getRemoteAddress(selectionKey), baseDir, relativeFile, position, size);
 
         ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
 
@@ -548,7 +510,5 @@ public class JSyncIoHandler implements IoHandler
 
             writeBuffer(selectionKey, buffer);
         }
-
-        getLogger().debug("{}: chunk written: {}/{}, position={}, size={}", getRemoteAddress(selectionKey), baseDir, relativeFile, position, size);
     }
 }

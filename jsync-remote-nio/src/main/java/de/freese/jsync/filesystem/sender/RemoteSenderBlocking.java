@@ -296,13 +296,12 @@ public class RemoteSenderBlocking extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long)
+     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public ByteBuffer readChunk(final String baseDir, final String relativeFile, final long position, final long size)
+    public void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
     {
         SocketChannel channel = this.channelPool.get();
-        ByteBuffer buffer = this.byteBufferPool.get();
 
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.READ_CHUNK);
@@ -321,10 +320,7 @@ public class RemoteSenderBlocking extends AbstractSender
             read(channel, buffer);
         }
 
-        // this.byteBufferPool.release(buffer);
         this.channelPool.release(channel);
-
-        return buffer;
     }
 
     /**

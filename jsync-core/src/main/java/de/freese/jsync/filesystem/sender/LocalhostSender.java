@@ -17,7 +17,6 @@ import java.util.function.LongConsumer;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * {@link Sender} für Localhost-Filesysteme.
@@ -65,6 +64,8 @@ public class LocalhostSender extends AbstractSender
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
+        getLogger().debug("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
+
         this.generator.generateItems(baseDir, followSymLinks, consumerSyncItem);
     }
 
@@ -74,9 +75,9 @@ public class LocalhostSender extends AbstractSender
     @Override
     public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
-        Path path = Paths.get(baseDir, relativeFile);
+        getLogger().debug("get channel: {}/{}", baseDir, relativeFile);
 
-        getLogger().debug("get ReadableByteChannel: {}", path);
+        Path path = Paths.get(baseDir, relativeFile);
 
         if (!Files.exists(path))
         {
@@ -104,22 +105,24 @@ public class LocalhostSender extends AbstractSender
     @Override
     public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
+        getLogger().debug("create checksum: {}/{}", baseDir, relativeFile);
+
         String checksum = this.generator.generateChecksum(baseDir, relativeFile, consumerBytesRead);
 
         return checksum;
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long)
+     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public ByteBuffer readChunk(final String baseDir, final String relativeFile, final long position, final long size)
+    public void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
     {
+        getLogger().debug("read chunk: {}/{}, position={}, size={}", baseDir, relativeFile, position, size);
+
         Path path = Paths.get(baseDir, relativeFile);
 
-        getLogger().debug("read chunk: {}, position={}, size={}", path, position, size);
-
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        buffer.clear();
 
         try
         {
@@ -136,11 +139,7 @@ public class LocalhostSender extends AbstractSender
         }
         catch (IOException ex)
         {
-            ByteBufferPool.getInstance().release(buffer);
-
             throw new UncheckedIOException(ex);
         }
-
-        return buffer;
     }
 }

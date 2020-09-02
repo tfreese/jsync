@@ -12,5 +12,6 @@ SSL with Java-NIO
 	
 	
 TODO:
-- Channels funktionieren bei Remote nicht
-    -> Umstellung auf Chunked-Transfer vom Sender zum Receiver !
+- Finish-Flag vom Server einbauen, sonst überholen sich die Operationen.
+- Im Finish-Flag die Infos für Exception einbauen
+

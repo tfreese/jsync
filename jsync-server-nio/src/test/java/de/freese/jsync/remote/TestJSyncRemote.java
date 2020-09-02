@@ -18,7 +18,7 @@ import de.freese.jsync.Options.Builder;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.client.listener.ClientListener;
-import de.freese.jsync.client.listener.ConsoleClientListener;
+import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
@@ -34,16 +34,14 @@ class TestJSyncRemote extends AbstractJSyncTest
     /**
      * @author Thomas Freese
      */
-    private static class TestConsoleClientListener extends ConsoleClientListener
+    private static class TestClientListener extends EmptyClientListener
     {
         /**
-         * @see de.freese.jsync.client.listener.ConsoleClientListener#error(java.lang.String, java.lang.Throwable)
+         * @see de.freese.jsync.client.listener.EmptyClientListener#error(java.lang.String, java.lang.Throwable)
          */
         @Override
         public void error(final String message, final Throwable th)
         {
-            super.error(message, th);
-
             assertTrue(false, th.getMessage());
         }
     }
@@ -108,7 +106,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = PATH_ZIEL.toUri();
 
-        syncDirectories(options, senderUri, receiverUri, new TestConsoleClientListener());
+        syncDirectories(options, senderUri, receiverUri, new TestClientListener());
 
         assertTrue(true);
     }
@@ -128,7 +126,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
 
-        syncDirectories(options, senderUri, receiverUri, new TestConsoleClientListener());
+        syncDirectories(options, senderUri, receiverUri, new TestClientListener());
 
         serverSender.stop();
 
@@ -150,7 +148,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
-        syncDirectories(options, senderUri, receiverUri, new TestConsoleClientListener());
+        syncDirectories(options, senderUri, receiverUri, new TestClientListener());
 
         serverReceiver.stop();
 
@@ -178,7 +176,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
-        syncDirectories(options, senderUri, receiverUri, new TestConsoleClientListener());
+        syncDirectories(options, senderUri, receiverUri, new TestClientListener());
 
         serverSender.stop();
         serverReceiver.stop();

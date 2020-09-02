@@ -307,14 +307,13 @@ public class RemoteSenderAsync extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long)
+     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public ByteBuffer readChunk(final String baseDir, final String relativeFile, final long position, final long size)
+    public void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer bufferChunk)
     {
         AsynchronousSocketChannel channel = this.channelPool.get();
         ByteBuffer buffer = this.byteBufferPool.get();
-        ByteBuffer bufferData = this.byteBufferPool.get();
 
         buffer.clear();
         Serializers.writeTo(buffer, JSyncCommand.READ_CHUNK);
@@ -326,18 +325,18 @@ public class RemoteSenderAsync extends AbstractSender
         buffer.flip();
         write(channel, buffer);
 
-        bufferData.clear();
+        buffer.clear();
+        bufferChunk.clear();
 
         try
         {
-            while (bufferData.position() < size)
+            while (bufferChunk.position() < size)
             {
                 Future<Integer> futureResponse = channel.read(buffer);
                 futureResponse.get();
 
                 buffer.flip();
-                bufferData.put(buffer);
-
+                bufferChunk.put(buffer);
                 buffer.clear();
             }
         }
@@ -350,10 +349,8 @@ public class RemoteSenderAsync extends AbstractSender
             throw new RuntimeException(ex);
         }
 
-        // this.byteBufferPool.release(buffer);
+        this.byteBufferPool.release(buffer);
         this.channelPool.release(channel);
-
-        return buffer;
     }
 
     /**

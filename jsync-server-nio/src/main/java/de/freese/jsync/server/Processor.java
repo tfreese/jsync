@@ -85,6 +85,41 @@ class Processor implements Runnable
     }
 
     /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return LOGGER;
+    }
+
+    /**
+     * Die neuen Sessions zum Selector hinzufügen.
+     *
+     * @throws IOException Falls was schief geht.
+     */
+    protected void processNewSessions() throws IOException
+    {
+        // for (SocketChannel socketChannel = this.newSessions.poll(); socketChannel != null; socketChannel =
+        // this.newSessions.poll())
+        while (!this.newSessions.isEmpty())
+        {
+            SocketChannel socketChannel = this.newSessions.poll();
+
+            if (socketChannel == null)
+            {
+                continue;
+            }
+
+            socketChannel.configureBlocking(false);
+
+            getLogger().debug("{}: attach new session", socketChannel.getRemoteAddress());
+
+            SelectionKey selectionKey = socketChannel.register(this.selector, SelectionKey.OP_READ);
+            // selectionKey.attach(obj)
+        }
+    }
+
+    /**
      * @see java.lang.Runnable#run()
      */
     @Override
@@ -120,14 +155,14 @@ class Processor implements Runnable
 
                         if (selectionKey.isReadable())
                         {
-                            getLogger().debug("{}: Read Request", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
+                            // getLogger().debug("{}: Read Request", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                             // Request lesen.
                             this.ioHandler.read(selectionKey);
                         }
                         else if (selectionKey.isWritable())
                         {
-                            getLogger().debug("{}: Write Response", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
+                            // getLogger().debug("{}: Write Response", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                             // Response schreiben.
                             this.ioHandler.write(selectionKey);
@@ -148,41 +183,6 @@ class Processor implements Runnable
         finally
         {
             this.stopLock.release();
-        }
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return LOGGER;
-    }
-
-    /**
-     * Die neuen Sessions zum Selector hinzufügen.
-     *
-     * @throws IOException Falls was schief geht.
-     */
-    protected void processNewSessions() throws IOException
-    {
-        // for (SocketChannel socketChannel = this.newSessions.poll(); socketChannel != null; socketChannel =
-        // this.newSessions.poll())
-        while (!this.newSessions.isEmpty())
-        {
-            SocketChannel socketChannel = this.newSessions.poll();
-
-            if (socketChannel == null)
-            {
-                continue;
-            }
-
-            socketChannel.configureBlocking(false);
-
-            getLogger().debug("{}: attach new session", socketChannel.getRemoteAddress());
-
-            SelectionKey selectionKey = socketChannel.register(this.selector, SelectionKey.OP_READ);
-            // selectionKey.attach(obj)
         }
     }
 

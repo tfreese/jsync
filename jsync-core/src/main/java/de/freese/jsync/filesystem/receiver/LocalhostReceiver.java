@@ -67,6 +67,8 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
+        getLogger().debug("create: {}/{}", baseDir, relativePath);
+
         Path path = Paths.get(baseDir, relativePath);
 
         try
@@ -88,9 +90,9 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        Path path = Paths.get(baseDir, relativePath);
+        getLogger().debug("delete: {}/{}", baseDir, relativePath);
 
-        getLogger().debug("delete: {}", path);
+        Path path = Paths.get(baseDir, relativePath);
 
         try
         {
@@ -117,6 +119,8 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
+        getLogger().debug("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
+
         this.generator.generateItems(baseDir, followSymLinks, consumerSyncItem);
     }
 
@@ -126,6 +130,8 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public WritableByteChannel getChannel(final String baseDir, final String relativeFile)
     {
+        getLogger().debug("get channel: {}/{}", baseDir, relativeFile);
+
         Path path = Paths.get(baseDir, relativeFile);
         Path parentPath = path.getParent();
 
@@ -135,8 +141,6 @@ public class LocalhostReceiver extends AbstractReceiver
             {
                 Files.createDirectories(parentPath);
             }
-
-            getLogger().debug("get WritableByteChannel: {}", path);
 
             // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
@@ -154,6 +158,8 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
+        getLogger().debug("create checksum: {}/{}", baseDir, relativeFile);
+
         String checksum = this.generator.generateChecksum(baseDir, relativeFile, consumerBytesRead);
 
         return checksum;
@@ -166,9 +172,9 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        Path path = Paths.get(baseDir, syncItem.getRelativePath());
+        getLogger().debug("update: {}/{}", baseDir, syncItem.getRelativePath());
 
-        getLogger().debug("update: {}", path);
+        Path path = Paths.get(baseDir, syncItem.getRelativePath());
 
         // In der Form "rwxr-xr-x"; optional, kann unter Windows null sein.
         String permissions = syncItem.getPermissionsToString();
@@ -216,27 +222,27 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
     {
-        Path path = Paths.get(baseDir, syncItem.getRelativePath());
+        getLogger().debug("validate file: {}/{}, withChecksum={}", baseDir, syncItem.getRelativePath(), withChecksum);
 
-        getLogger().debug("validate: {}", path);
+        Path path = Paths.get(baseDir, syncItem.getRelativePath());
 
         try
         {
             if (Files.size(path) != syncItem.getSize())
             {
-                String message = String.format("fileSize does not match with source: %s", syncItem.getRelativePath());
+                String message = String.format("fileSize does not match with source: %s/%s", baseDir, syncItem.getRelativePath());
                 throw new IllegalStateException(message);
             }
 
             if (withChecksum)
             {
-                getLogger().debug("building Checksum: {}", path);
+                getLogger().debug("building Checksum: {}/{}", baseDir, syncItem.getRelativePath());
 
                 String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, null);
 
                 if (!checksum.equals(syncItem.getChecksum()))
                 {
-                    String message = String.format("checksum does not match with source: %s", syncItem.getRelativePath());
+                    String message = String.format("checksum does not match with source: %s/%s", baseDir, syncItem.getRelativePath());
                     throw new IllegalStateException(message);
                 }
             }
@@ -253,9 +259,9 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
     {
-        Path path = Paths.get(baseDir, relativeFile);
+        getLogger().debug("write chunk: {}/{}, position={}, size={}", baseDir, relativeFile, position, size);
 
-        getLogger().debug("write chunk: {}, position={}, size={}", path, position, size);
+        Path path = Paths.get(baseDir, relativeFile);
 
         Path parentPath = path.getParent();
 
