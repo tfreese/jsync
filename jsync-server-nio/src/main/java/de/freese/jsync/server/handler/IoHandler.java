@@ -29,17 +29,13 @@ public interface IoHandler
      * Verarbeitet den Request.
      *
      * @param selectionKey {@link SelectionKey}
-     *
-     * @throws Exception Falls was schief geht.
      */
-    public void read(final SelectionKey selectionKey) throws Exception;
+    public void read(final SelectionKey selectionKey);
 
     /**
      * Verarbeitet den Response.
      *
      * @param selectionKey {@link SelectionKey}
-     *
-     * @throws Exception Falls was schief geht.
      */
-    public void write(final SelectionKey selectionKey) throws Exception;
+    public void write(final SelectionKey selectionKey);
 }

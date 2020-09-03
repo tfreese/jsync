@@ -156,7 +156,7 @@ public class RemoteSenderAsync extends AbstractSender
             write(channel, buffer);
         };
 
-        this.channelPool.clear(disconnector);
+        this.channelPool.destroy(disconnector);
 
         this.byteBufferPool.release(buffer);
         this.byteBufferPool.clear();

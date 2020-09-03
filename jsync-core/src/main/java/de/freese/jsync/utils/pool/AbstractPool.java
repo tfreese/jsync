@@ -41,7 +41,7 @@ public abstract class AbstractPool<T>
     /**
      * @param cleaner {@link Consumer}
      */
-    public void clear(final Consumer<T> cleaner)
+    public void destroy(final Consumer<T> cleaner)
     {
         getLock().lock();
 

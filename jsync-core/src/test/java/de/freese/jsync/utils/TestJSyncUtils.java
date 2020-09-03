@@ -2,7 +2,7 @@
  * Created: 22.10.2016
  */
 
-package de.freese.jsync;
+package de.freese.jsync.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.file.Path;

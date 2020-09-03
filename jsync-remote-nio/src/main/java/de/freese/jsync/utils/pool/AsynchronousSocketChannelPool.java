@@ -51,12 +51,12 @@ public class AsynchronousSocketChannelPool extends AbstractPool<AsynchronousSock
     }
 
     /**
-     * @see de.freese.jsync.utils.pool.AbstractPool#clear(java.util.function.Consumer)
+     * @see de.freese.jsync.utils.pool.AbstractPool#destroy(java.util.function.Consumer)
      */
     @Override
-    public void clear(final Consumer<AsynchronousSocketChannel> cleaner)
+    public void destroy(final Consumer<AsynchronousSocketChannel> cleaner)
     {
-        super.clear(cleaner);
+        super.destroy(cleaner);
 
         JSyncUtils.shutdown(this.channelGroup, getLogger());
     }

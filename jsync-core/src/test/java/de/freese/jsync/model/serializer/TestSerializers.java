@@ -1,18 +1,17 @@
 package de.freese.jsync.model.serializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.nio.ByteBuffer;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * @author Thomas Freese
@@ -21,12 +20,26 @@ import org.junit.jupiter.api.TestMethodOrder;
 class TestSerializers
 {
     /**
+     * 1MB
+     */
+    private static final ByteBuffer BUFFER = ByteBuffer.allocate(1024 * 1024 * 1);
+
+    /**
+    *
+    */
+    @BeforeEach
+    void beforeEach()
+    {
+        BUFFER.clear();
+    }
+
+    /**
      *
      */
     @Test
     void test010String()
     {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(32);
+        ByteBuffer buffer = BUFFER;
 
         Serializers.writeTo(buffer, "A");
         Serializers.writeTo(buffer, "BB");
@@ -49,7 +62,7 @@ class TestSerializers
     @Test
     void test020Group()
     {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(48);
+        ByteBuffer buffer = BUFFER;
 
         Group group1 = new Group("TestGroupA", 41);
         Group group2 = new Group("TestGroupB", 42);
@@ -78,7 +91,7 @@ class TestSerializers
     @Test
     void test030User()
     {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(64);
+        ByteBuffer buffer = BUFFER;
 
         User user1 = new User("TestUserA", 41);
         User user2 = new User("TestUserB", 42);
@@ -107,7 +120,7 @@ class TestSerializers
     @Test
     void test040User()
     {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(256);
+        ByteBuffer buffer = BUFFER;
 
         SyncItem syncItem1 = new DefaultSyncItem("/");
         syncItem1.setChecksum("ABC");
@@ -161,5 +174,27 @@ class TestSerializers
         assertEquals(987654321, syncItem2.getSize());
         assertEquals("TestUserB", syncItem2.getUser().getName());
         assertEquals(42, syncItem2.getUser().getUid());
+    }
+
+    /**
+    *
+    */
+    @Test
+    void test050Exception()
+    {
+        ByteBuffer buffer = BUFFER;
+
+        Exception exception1 = new UnsupportedOperationException("Test Fail");
+        Serializers.writeTo(buffer, exception1, Exception.class);
+
+        buffer.flip();
+        Exception exception2 = Serializers.readFrom(buffer, Exception.class);
+
+        assertEquals(UnsupportedOperationException.class, exception2.getClass());
+        assertEquals("Test Fail", exception2.getMessage());
+        assertEquals(exception1.getStackTrace().length, exception2.getStackTrace().length);
+
+        // LoggerFactory.getLogger(getClass()).error(null, exception1);
+        // LoggerFactory.getLogger(getClass()).error(null, exception2);
     }
 }

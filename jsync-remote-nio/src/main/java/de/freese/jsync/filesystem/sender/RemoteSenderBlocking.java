@@ -140,7 +140,7 @@ public class RemoteSenderBlocking extends AbstractSender
             write(channel, buffer);
         };
 
-        this.channelPool.clear(disconnector);
+        this.channelPool.destroy(disconnector);
 
         this.byteBufferPool.release(buffer);
         this.byteBufferPool.clear();
@@ -165,16 +165,12 @@ public class RemoteSenderBlocking extends AbstractSender
             buffer.flip();
             write(channel, buffer);
 
-            // Response lesen.
             buffer.clear();
 
             // Wegen Chunked-Data den Response erst mal sammeln.
             SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
 
-            // int bytesRead = 0;
-
-            // while ((bytesRead = channel.read(buffer)) != 1)
-            while (channel.read(buffer) != 1)
+            while (channel.read(buffer) > 0)
             {
                 buffer.flip();
 
@@ -194,6 +190,7 @@ public class RemoteSenderBlocking extends AbstractSender
             }
 
             ByteBuffer bufferData = sbaos.toByteBuffer();
+            // int itemCount = bufferData.getInt();
 
             while (bufferData.hasRemaining())
             {
@@ -307,8 +304,8 @@ public class RemoteSenderBlocking extends AbstractSender
         Serializers.writeTo(buffer, JSyncCommand.READ_CHUNK);
         Serializers.writeTo(buffer, baseDir);
         Serializers.writeTo(buffer, relativeFile);
-        Serializers.writeTo(buffer, position);
-        Serializers.writeTo(buffer, size);
+        buffer.putLong(position);
+        buffer.putLong(size);
 
         buffer.flip();
         write(channel, buffer);

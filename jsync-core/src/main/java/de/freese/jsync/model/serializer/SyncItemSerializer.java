@@ -41,7 +41,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
     public SyncItem readFrom(final ByteBuffer buffer)
     {
         // relativePath
-        String relativePath = StringSerializer.getInstance().readFrom(buffer);
+        String relativePath = Serializers.readFrom(buffer, String.class);
 
         SyncItem syncItem = new DefaultSyncItem(relativePath);
 
@@ -58,28 +58,28 @@ class SyncItemSerializer implements Serializer<SyncItem>
         // permissions
         if (buffer.get() == 1)
         {
-            String permissions = StringSerializer.getInstance().readFrom(buffer);
+            String permissions = Serializers.readFrom(buffer, String.class);
             syncItem.setPermissions(PosixFilePermissions.fromString(permissions));
         }
 
         // group
         if (buffer.get() == 1)
         {
-            Group group = GroupSerializer.getInstance().readFrom(buffer);
+            Group group = Serializers.readFrom(buffer, Group.class);
             syncItem.setGroup(group);
         }
 
         // user
         if (buffer.get() == 1)
         {
-            User user = UserSerializer.getInstance().readFrom(buffer);
+            User user = Serializers.readFrom(buffer, User.class);
             syncItem.setUser(user);
         }
 
         // checksum
         if (buffer.get() == 1)
         {
-            String checksum = StringSerializer.getInstance().readFrom(buffer);
+            String checksum = Serializers.readFrom(buffer, String.class);
             syncItem.setChecksum(checksum);
         }
 
@@ -93,7 +93,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
     public void writeTo(final ByteBuffer buffer, final SyncItem obj)
     {
         // relativePath
-        StringSerializer.getInstance().writeTo(buffer, obj.getRelativePath());
+        Serializers.writeTo(buffer, obj.getRelativePath());
 
         // is File / Directory
         buffer.put(obj.isFile() ? (byte) 1 : (byte) 0);
@@ -114,7 +114,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
         else
         {
             buffer.put((byte) 1);
-            StringSerializer.getInstance().writeTo(buffer, permissions);
+            Serializers.writeTo(buffer, permissions);
         }
 
         // group
@@ -125,7 +125,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
         else
         {
             buffer.put((byte) 1);
-            GroupSerializer.getInstance().writeTo(buffer, obj.getGroup());
+            Serializers.writeTo(buffer, obj.getGroup());
         }
 
         // user
@@ -136,7 +136,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
         else
         {
             buffer.put((byte) 1);
-            UserSerializer.getInstance().writeTo(buffer, obj.getUser());
+            Serializers.writeTo(buffer, obj.getUser());
         }
 
         // checksum
@@ -147,7 +147,7 @@ class SyncItemSerializer implements Serializer<SyncItem>
         else
         {
             buffer.put((byte) 1);
-            StringSerializer.getInstance().writeTo(buffer, obj.getChecksum());
+            Serializers.writeTo(buffer, obj.getChecksum());
         }
     }
 }

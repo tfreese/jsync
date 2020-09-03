@@ -2,7 +2,6 @@
 package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
-
 import de.freese.jsync.model.JSyncCommand;
 
 /**
@@ -37,7 +36,7 @@ public class JSyncCommandSerializer implements Serializer<JSyncCommand>
     @Override
     public JSyncCommand readFrom(final ByteBuffer buffer)
     {
-        String name = StringSerializer.getInstance().readFrom(buffer);
+        String name = Serializers.readFrom(buffer, String.class);
 
         if (!name.isBlank())
         {
@@ -53,6 +52,6 @@ public class JSyncCommandSerializer implements Serializer<JSyncCommand>
     @Override
     public void writeTo(final ByteBuffer buffer, final JSyncCommand obj)
     {
-        StringSerializer.getInstance().writeTo(buffer, obj.name());
+        Serializers.writeTo(buffer, obj.name());
     }
 }

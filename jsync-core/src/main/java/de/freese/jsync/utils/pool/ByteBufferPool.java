@@ -51,7 +51,7 @@ public class ByteBufferPool extends AbstractPool<ByteBuffer>
      */
     public void clear()
     {
-        super.clear(obj -> {
+        super.destroy(obj -> {
         });
     }
 

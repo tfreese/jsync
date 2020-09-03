@@ -85,7 +85,18 @@ public final class Serializers
     @SuppressWarnings("unchecked")
     public static <T> void writeTo(final ByteBuffer buffer, final T obj)
     {
-        Serializer<T> serializer = INSTANCE.getSerializer((Class<T>) obj.getClass());
+        writeTo(buffer, obj, (Class<T>) obj.getClass());
+    }
+
+    /**
+     * @param <T> Type
+     * @param buffer {@link ByteBuffer}
+     * @param obj T
+     * @param clazz {@link Class}
+     */
+    public static <T> void writeTo(final ByteBuffer buffer, final T obj, final Class<T> clazz)
+    {
+        Serializer<T> serializer = INSTANCE.getSerializer(clazz);
 
         serializer.writeTo(buffer, obj);
     }
@@ -103,7 +114,6 @@ public final class Serializers
         super();
 
         this.serializerMap.put(Boolean.class, BooleanSerializer.getInstance());
-        this.serializerMap.put(Long.class, LongSerializer.getInstance());
         this.serializerMap.put(String.class, StringSerializer.getInstance());
 
         this.serializerMap.put(Group.class, GroupSerializer.getInstance());
@@ -112,6 +122,8 @@ public final class Serializers
         this.serializerMap.put(JSyncCommand.class, JSyncCommandSerializer.getInstance());
         this.serializerMap.put(SyncItem.class, SyncItemSerializer.getInstance());
         this.serializerMap.put(DefaultSyncItem.class, SyncItemSerializer.getInstance());
+        this.serializerMap.put(Exception.class, ExceptionSerializer.getInstance());
+        this.serializerMap.put(StackTraceElement.class, StackTracelElementSerializer.getInstance());
     }
 
     /**

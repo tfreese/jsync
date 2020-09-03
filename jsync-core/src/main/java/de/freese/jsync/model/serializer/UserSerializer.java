@@ -2,7 +2,6 @@
 package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
-
 import de.freese.jsync.model.User;
 
 /**
@@ -41,7 +40,7 @@ class UserSerializer implements Serializer<User>
         int uid = buffer.getInt();
 
         // name
-        String name = StringSerializer.getInstance().readFrom(buffer);
+        String name = Serializers.readFrom(buffer, String.class);
 
         return new User(name, uid);
     }
@@ -56,6 +55,6 @@ class UserSerializer implements Serializer<User>
         buffer.putInt(obj.getUid());
 
         // name
-        StringSerializer.getInstance().writeTo(buffer, obj.getName());
+        Serializers.writeTo(buffer, obj.getName());
     }
 }

@@ -2,7 +2,6 @@
 package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
-
 import de.freese.jsync.model.Group;
 
 /**
@@ -41,7 +40,7 @@ class GroupSerializer implements Serializer<Group>
         int gid = buffer.getInt();
 
         // name
-        String name = StringSerializer.getInstance().readFrom(buffer);
+        String name = Serializers.readFrom(buffer, String.class);
 
         return new Group(name, gid);
     }
@@ -56,6 +55,6 @@ class GroupSerializer implements Serializer<Group>
         buffer.putInt(obj.getGid());
 
         // name
-        StringSerializer.getInstance().writeTo(buffer, obj.getName());
+        Serializers.writeTo(buffer, obj.getName());
     }
 }

@@ -8,6 +8,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.filesystem.FileSystem;
@@ -54,6 +56,16 @@ public class JSyncIoHandler implements IoHandler
     {
         SocketChannel channel = (SocketChannel) selectionKey.channel();
 
+        writeBuffer(channel, buffer);
+    }
+
+    /**
+     * @param channel {@link SocketChannel}
+     * @param buffer {@link ByteBuffer}
+     * @throws IOException @throws Exception Falls was schief geht
+     */
+    private static void writeBuffer(final SocketChannel channel, final ByteBuffer buffer) throws IOException
+    {
         while (buffer.hasRemaining())
         {
             channel.write(buffer);
@@ -97,36 +109,78 @@ public class JSyncIoHandler implements IoHandler
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param fileSystem {@link FileSystem}
-     * @throws Exception Falls was schief geht.
      */
-    protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
+    protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem)
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
 
-        fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
-            getLogger().debug("{}: Send SyncItem: {}", getRemoteAddress(selectionKey), syncItem);
+        List<SyncItem> syncItems = new ArrayList<>(128);
+        Exception exception = null;
 
-            buffer.clear();
-            Serializers.writeTo(buffer, syncItem);
-            buffer.flip();
+        try
+        {
+            fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
+                getLogger().debug("{}: SyncItem generated: {}", getRemoteAddress(selectionKey), syncItem);
+
+                syncItems.add(syncItem);
+            });
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
 
             try
             {
+                // Anzahl SyncItems senden.
+                buffer.clear();
+                buffer.putInt(0);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+
+                // Exception senden.
+                // TODO
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Anzahl SyncItems senden.
+                buffer.clear();
+                buffer.putInt(syncItems.size());
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+
+                // SyncItems senden.
+                for (SyncItem syncItem : syncItems)
+                {
+                    buffer.clear();
+                    Serializers.writeTo(buffer, syncItem);
+                    buffer.flip();
+                    writeBuffer(selectionKey, buffer);
+                }
+
+                // EOL senden.
+                buffer.clear();
+                Serializers.writeEOL(buffer);
+                buffer.flip();
                 writeBuffer(selectionKey, buffer);
             }
             catch (IOException ioex)
             {
                 getLogger().error(null, ioex);
             }
-        });
-
-        // EOL
-        buffer.clear();
-        Serializers.writeEOL(buffer);
-        buffer.flip();
-
-        writeBuffer(selectionKey, buffer);
+        }
     }
 
     /**
@@ -259,99 +313,109 @@ public class JSyncIoHandler implements IoHandler
      * @see IoHandler#read(SelectionKey)
      */
     @Override
-    public void read(final SelectionKey selectionKey) throws Exception
+    public void read(final SelectionKey selectionKey)
     {
-        ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
-
-        // JSyncCommand lesen.
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
-        buffer.clear();
-
-        int bytesRead = channel.read(buffer);
-
-        if (bytesRead == -1)
+        try
         {
-            // Nach Disconnect
-            return;
+            ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
+
+            // JSyncCommand lesen.
+            buffer.clear();
+
+            int bytesRead = channel.read(buffer);
+
+            if (bytesRead == -1)
+            {
+                // Nach Disconnect
+                return;
+            }
+
+            buffer.flip();
+
+            JSyncCommand command = Serializers.readFrom(buffer, JSyncCommand.class);
+            getLogger().debug("{}: read command: {}", getRemoteAddress(selectionKey), command);
+
+            if (command == null)
+            {
+                getLogger().error("unknown JSyncCommand");
+                selectionKey.interestOps(SelectionKey.OP_READ);
+                return;
+            }
+
+            switch (command)
+            {
+                case DISCONNECT:
+                    selectionKey.attach(null);
+                    // selectionKey.interestOps(SelectionKey.OP_CONNECT);
+                    selectionKey.channel().close();
+                    selectionKey.cancel();
+                    break;
+
+                case CONNECT:
+                    // Empty
+                    break;
+
+                case READ_CHUNK:
+                    readChunk(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    break;
+
+                case TARGET_CHECKSUM:
+                    createChecksum(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    break;
+
+                case TARGET_CREATE_SYNC_ITEMS:
+                    createSyncItems(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    break;
+
+                case TARGET_DELETE:
+                    delete(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    break;
+
+                case TARGET_WRITEABLE_FILE_CHANNEL:
+                    fileChannel(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    break;
+
+                case TARGET_VALIDATE_FILE:
+                    validate(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    break;
+
+                case TARGET_UPDATE:
+                    update(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    break;
+
+                case SOURCE_CHECKSUM:
+                    createChecksum(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    break;
+
+                case SOURCE_CREATE_SYNC_ITEMS:
+                    createSyncItems(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    break;
+
+                case SOURCE_READABLE_FILE_CHANNEL:
+                    fileChannel(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    break;
+
+                case WRITE_CHUNK:
+                    writeChunk(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    break;
+
+                default:
+                    break;
+            }
+
+            // selectionKey.interestOps(SelectionKey.OP_READ);
+            // selectionKey.interestOps(SelectionKey.OP_WRITE);
         }
-
-        buffer.flip();
-
-        JSyncCommand command = Serializers.readFrom(buffer, JSyncCommand.class);
-        getLogger().debug("{}: read command: {}", getRemoteAddress(selectionKey), command);
-
-        if (command == null)
+        catch (Exception ex)
         {
-            getLogger().error("unknown JSyncCommand");
-            selectionKey.interestOps(SelectionKey.OP_READ);
-            return;
+            getLogger().error(null, ex);
         }
-
-        switch (command)
+        finally
         {
-            case DISCONNECT:
-                selectionKey.attach(null);
-                // selectionKey.interestOps(SelectionKey.OP_CONNECT);
-                selectionKey.channel().close();
-                selectionKey.cancel();
-                break;
-
-            case CONNECT:
-                // Empty
-                break;
-
-            case READ_CHUNK:
-                readChunk(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
-                break;
-
-            case TARGET_CHECKSUM:
-                createChecksum(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
-                break;
-
-            case TARGET_CREATE_SYNC_ITEMS:
-                createSyncItems(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
-                break;
-
-            case TARGET_DELETE:
-                delete(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
-                break;
-
-            case TARGET_WRITEABLE_FILE_CHANNEL:
-                fileChannel(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
-                break;
-
-            case TARGET_VALIDATE_FILE:
-                validate(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
-                break;
-
-            case TARGET_UPDATE:
-                update(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
-                break;
-
-            case SOURCE_CHECKSUM:
-                createChecksum(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
-                break;
-
-            case SOURCE_CREATE_SYNC_ITEMS:
-                createSyncItems(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
-                break;
-
-            case SOURCE_READABLE_FILE_CHANNEL:
-                fileChannel(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
-                break;
-
-            case WRITE_CHUNK:
-                writeChunk(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
-                break;
-
-            default:
-                break;
+            ByteBufferPool.getInstance().release(buffer);
         }
-
-        ByteBufferPool.getInstance().release(buffer);
-        // selectionKey.interestOps(SelectionKey.OP_READ);
-        // selectionKey.interestOps(SelectionKey.OP_WRITE);
     }
 
     /**
@@ -366,8 +430,8 @@ public class JSyncIoHandler implements IoHandler
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativeFile = Serializers.readFrom(buffer, String.class);
-        long position = Serializers.readFrom(buffer, Long.class);
-        long size = Serializers.readFrom(buffer, Long.class);
+        long position = buffer.getLong();
+        long size = buffer.getLong();
 
         try
         {
@@ -447,17 +511,24 @@ public class JSyncIoHandler implements IoHandler
      * @see IoHandler#write(SelectionKey)
      */
     @Override
-    public void write(final SelectionKey selectionKey) throws Exception
+    public void write(final SelectionKey selectionKey)
     {
-        // WritableByteChannel channel = (WritableByteChannel) selectionKey.channel();
-
-        if (selectionKey.attachment() instanceof Runnable)
+        try
         {
-            Runnable task = (Runnable) selectionKey.attachment();
-            task.run();
-        }
+            // WritableByteChannel channel = (WritableByteChannel) selectionKey.channel();
 
-        selectionKey.interestOps(SelectionKey.OP_READ);
+            if (selectionKey.attachment() instanceof Runnable)
+            {
+                Runnable task = (Runnable) selectionKey.attachment();
+                task.run();
+            }
+
+            selectionKey.interestOps(SelectionKey.OP_READ);
+        }
+        catch (Exception ex)
+        {
+            getLogger().error(null, ex);
+        }
     }
 
     /**
@@ -472,8 +543,8 @@ public class JSyncIoHandler implements IoHandler
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativeFile = Serializers.readFrom(buffer, String.class);
-        long position = Serializers.readFrom(buffer, Long.class);
-        long size = Serializers.readFrom(buffer, Long.class);
+        long position = buffer.getLong();
+        long size = buffer.getLong();
 
         ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
 

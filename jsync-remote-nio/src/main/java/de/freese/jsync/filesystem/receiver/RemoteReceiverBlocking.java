@@ -173,7 +173,7 @@ public class RemoteReceiverBlocking extends AbstractReceiver
             write(channel, buffer);
         };
 
-        this.channelPool.clear(disconnector);
+        this.channelPool.destroy(disconnector);
 
         this.byteBufferPool.release(buffer);
         this.byteBufferPool.clear();
@@ -198,7 +198,6 @@ public class RemoteReceiverBlocking extends AbstractReceiver
             buffer.flip();
             write(channel, buffer);
 
-            // Response lesen.
             buffer.clear();
 
             // Wegen Chunked-Data den Response erst mal sammeln.
@@ -400,8 +399,8 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         Serializers.writeTo(bufferCmd, JSyncCommand.WRITE_CHUNK);
         Serializers.writeTo(bufferCmd, baseDir);
         Serializers.writeTo(bufferCmd, relativeFile);
-        Serializers.writeTo(bufferCmd, position);
-        Serializers.writeTo(bufferCmd, size);
+        bufferCmd.putLong(position);
+        bufferCmd.putLong(size);
 
         bufferCmd.flip();
         write(channel, bufferCmd);
