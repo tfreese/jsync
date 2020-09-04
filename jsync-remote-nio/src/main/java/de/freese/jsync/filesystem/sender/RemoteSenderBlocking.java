@@ -11,10 +11,12 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.utils.RemoteUtils;
 import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 import de.freese.jsync.utils.pool.SocketChannelPool;
@@ -132,7 +134,8 @@ public class RemoteSenderBlocking extends AbstractSender
     {
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        Consumer<SocketChannel> disconnector = channel -> {
+        Consumer<SocketChannel> disconnector = channel ->
+        {
             buffer.clear();
             Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
@@ -174,12 +177,12 @@ public class RemoteSenderBlocking extends AbstractSender
             {
                 buffer.flip();
 
-                while (buffer.remaining() > Serializers.getLengthOfEOL())
+                while (buffer.remaining() > RemoteUtils.getLengthOfEOL())
                 {
-                    sbaos.write(buffer, buffer.remaining() - Serializers.getLengthOfEOL());
+                    sbaos.write(buffer, buffer.remaining() - RemoteUtils.getLengthOfEOL());
                 }
 
-                if (Serializers.isEOL(buffer))
+                if (RemoteUtils.isEOL(buffer))
                 {
                     break;
                 }
@@ -190,12 +193,22 @@ public class RemoteSenderBlocking extends AbstractSender
             }
 
             ByteBuffer bufferData = sbaos.toByteBuffer();
-            // int itemCount = bufferData.getInt();
 
-            while (bufferData.hasRemaining())
+            if (!RemoteUtils.isResponseOK(buffer))
             {
-                SyncItem syncItem = Serializers.readFrom(bufferData, SyncItem.class);
-                consumerSyncItem.accept(syncItem);
+                Exception exception = Serializers.readFrom(buffer, Exception.class);
+
+                throw exception;
+            }
+            else
+            {
+                int itemCount = bufferData.getInt();
+
+                while (bufferData.hasRemaining())
+                {
+                    SyncItem syncItem = Serializers.readFrom(bufferData, SyncItem.class);
+                    consumerSyncItem.accept(syncItem);
+                }
             }
         }
         catch (RuntimeException rex)
@@ -256,29 +269,77 @@ public class RemoteSenderBlocking extends AbstractSender
         SocketChannel channel = this.channelPool.get();
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
-        Serializers.writeTo(buffer, baseDir);
-        Serializers.writeTo(buffer, relativeFile);
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativeFile);
 
-        buffer.flip();
-        write(channel, buffer);
+            buffer.flip();
+            write(channel, buffer);
 
-        buffer.clear();
-        read(channel, buffer);
-        buffer.flip();
+            buffer.clear();
 
-        String checksum = Serializers.readFrom(buffer, String.class);
+            // Wegen Chunked-Data den Response erst mal sammeln.
+            SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
 
-        this.byteBufferPool.release(buffer);
-        this.channelPool.release(channel);
+            while (channel.read(buffer) > 0)
+            {
+                buffer.flip();
 
-        return checksum;
+                while (buffer.remaining() > RemoteUtils.getLengthOfEOL())
+                {
+                    sbaos.write(buffer, buffer.remaining() - RemoteUtils.getLengthOfEOL());
+                }
+
+                if (RemoteUtils.isEOL(buffer))
+                {
+                    break;
+                }
+
+                sbaos.write(buffer, buffer.remaining());
+
+                buffer.clear();
+            }
+
+            ByteBuffer bufferData = sbaos.toByteBuffer();
+
+            if (!RemoteUtils.isResponseOK(buffer))
+            {
+                Exception exception = Serializers.readFrom(buffer, Exception.class);
+
+                throw exception;
+            }
+            else
+            {
+                String checksum = Serializers.readFrom(buffer, String.class);
+
+                return checksum;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(buffer);
+            this.channelPool.release(channel);
+        }
     }
 
     /**
      * @param channel {@link SocketChannel}
-     * @param buffer {@link ByteBuffer}
+     * @param buffer  {@link ByteBuffer}
      */
     protected void read(final SocketChannel channel, final ByteBuffer buffer)
     {
@@ -322,7 +383,7 @@ public class RemoteSenderBlocking extends AbstractSender
 
     /**
      * @param channel {@link SocketChannel}
-     * @param buffer {@link ByteBuffer}
+     * @param buffer  {@link ByteBuffer}
      */
     protected void write(final SocketChannel channel, final ByteBuffer buffer)
     {

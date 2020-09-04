@@ -13,10 +13,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.utils.RemoteUtils;
 import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
 import de.freese.jsync.utils.pool.AsynchronousSocketChannelPool;
 import de.freese.jsync.utils.pool.ByteBufferPool;
@@ -148,7 +150,8 @@ public class RemoteSenderAsync extends AbstractSender
     {
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        Consumer<AsynchronousSocketChannel> disconnector = channel -> {
+        Consumer<AsynchronousSocketChannel> disconnector = channel ->
+        {
             buffer.clear();
             Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
@@ -194,12 +197,12 @@ public class RemoteSenderAsync extends AbstractSender
             {
                 buffer.flip();
 
-                while (buffer.remaining() > Serializers.getLengthOfEOL())
+                while (buffer.remaining() > RemoteUtils.getLengthOfEOL())
                 {
-                    sbaos.write(buffer, buffer.remaining() - Serializers.getLengthOfEOL());
+                    sbaos.write(buffer, buffer.remaining() - RemoteUtils.getLengthOfEOL());
                 }
 
-                if (Serializers.isEOL(buffer))
+                if (RemoteUtils.isEOL(buffer))
                 {
                     buffer.clear();
                     break;
@@ -355,7 +358,7 @@ public class RemoteSenderAsync extends AbstractSender
 
     /**
      * @param channel {@link AsynchronousSocketChannel}
-     * @param buffer {@link ByteBuffer}
+     * @param buffer  {@link ByteBuffer}
      */
     protected void write(final AsynchronousSocketChannel channel, final ByteBuffer buffer)
     {

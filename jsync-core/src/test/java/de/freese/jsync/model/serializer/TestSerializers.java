@@ -1,17 +1,19 @@
 package de.freese.jsync.model.serializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.nio.ByteBuffer;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * @author Thomas Freese
@@ -20,13 +22,13 @@ import de.freese.jsync.model.User;
 class TestSerializers
 {
     /**
-     * 1MB
+     * 8 kb
      */
-    private static final ByteBuffer BUFFER = ByteBuffer.allocate(1024 * 1024 * 1);
+    private static final ByteBuffer BUFFER = ByteBuffer.allocate(1024 * 8);
 
     /**
-    *
-    */
+     *
+     */
     @BeforeEach
     void beforeEach()
     {
@@ -177,8 +179,8 @@ class TestSerializers
     }
 
     /**
-    *
-    */
+     *
+     */
     @Test
     void test050Exception()
     {
