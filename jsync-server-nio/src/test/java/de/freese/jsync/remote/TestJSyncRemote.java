@@ -4,6 +4,7 @@
 
 package de.freese.jsync.remote;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URI;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         @Override
         public void error(final String message, final Throwable th)
         {
-            assertTrue(false, th.getMessage());
+            assertNull(th);
         }
     }
 

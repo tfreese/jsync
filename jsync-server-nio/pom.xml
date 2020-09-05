@@ -23,7 +23,7 @@
         <!-- compile scope -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jsync-client</artifactId>
+            <artifactId>jsync-remote-nio</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -39,6 +39,12 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jsync-client</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>        
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>

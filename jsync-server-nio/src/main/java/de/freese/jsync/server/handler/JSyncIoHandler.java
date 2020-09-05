@@ -10,7 +10,8 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -21,8 +22,6 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
 import de.freese.jsync.utils.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Verarbeitet den Request und Response.<br>
@@ -50,8 +49,7 @@ public class JSyncIoHandler implements IoHandler
 
     /**
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     *
+     * @param buffer {@link ByteBuffer}
      * @throws IOException @throws Exception Falls was schief geht
      */
     private static void writeBuffer(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
@@ -63,8 +61,7 @@ public class JSyncIoHandler implements IoHandler
 
     /**
      * @param channel {@link SocketChannel}
-     * @param buffer  {@link ByteBuffer}
-     *
+     * @param buffer {@link ByteBuffer}
      * @throws IOException @throws Exception Falls was schief geht
      */
     private static void writeBuffer(final SocketChannel channel, final ByteBuffer buffer) throws IOException
@@ -87,9 +84,8 @@ public class JSyncIoHandler implements IoHandler
      * Create the checksum.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     * @param fileSystem   {@link FileSystem}
-     *
+     * @param buffer {@link ByteBuffer}
+     * @param fileSystem {@link FileSystem}
      * @throws Exception Falls was schief geht.
      */
     protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
@@ -102,8 +98,7 @@ public class JSyncIoHandler implements IoHandler
 
         try
         {
-            checksum = fileSystem.getChecksum(baseDir, relativeFile, i ->
-            {
+            checksum = fileSystem.getChecksum(baseDir, relativeFile, i -> {
             });
         }
         catch (Exception ex)
@@ -117,20 +112,10 @@ public class JSyncIoHandler implements IoHandler
 
             try
             {
-                // Status senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
-
                 // Exception senden.
                 buffer.clear();
-                Serializers.writeTo(buffer, exception);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
-
-                // EOL senden.
-                buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -144,20 +129,10 @@ public class JSyncIoHandler implements IoHandler
         {
             try
             {
-                // Status senden.
+                // Response senden.
                 buffer.clear();
                 RemoteUtils.writeResponseOK(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
-
-                // Prüfsumme senden.
-                buffer.clear();
                 Serializers.writeTo(buffer, checksum);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
-
-                // EOL senden.
-                buffer.clear();
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -173,8 +148,68 @@ public class JSyncIoHandler implements IoHandler
      * Create the Sync-Items.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     * @param fileSystem   {@link FileSystem}
+     * @param buffer {@link ByteBuffer}
+     * @param receiver {@link Receiver}
+     */
+    protected void createDirectory(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver)
+    {
+        String baseDir = Serializers.readFrom(buffer, String.class);
+        String relativePath = Serializers.readFrom(buffer, String.class);
+
+        Exception exception = null;
+
+        try
+        {
+            receiver.createDirectory(baseDir, relativePath);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
+            {
+                // Exception senden.
+                buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Response senden.
+                buffer.clear();
+                RemoteUtils.writeResponseOK(buffer);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+    }
+
+    /**
+     * Create the Sync-Items.
+     *
+     * @param selectionKey {@link SelectionKey}
+     * @param buffer {@link ByteBuffer}
+     * @param fileSystem {@link FileSystem}
      */
     protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem)
     {
@@ -186,8 +221,7 @@ public class JSyncIoHandler implements IoHandler
 
         try
         {
-            fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem ->
-            {
+            fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
                 getLogger().debug("{}: SyncItem generated: {}", getRemoteAddress(selectionKey), syncItem);
 
                 syncItems.add(syncItem);
@@ -204,20 +238,10 @@ public class JSyncIoHandler implements IoHandler
 
             try
             {
-                // Status senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
-
                 // Exception senden.
                 buffer.clear();
-                Serializers.writeTo(buffer, exception);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
-
-                // EOL senden.
-                buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -231,14 +255,9 @@ public class JSyncIoHandler implements IoHandler
         {
             try
             {
-                // Status senden.
+                // Response senden.
                 buffer.clear();
                 RemoteUtils.writeResponseOK(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
-
-                // Anzahl SyncItems senden.
-                buffer.clear();
                 buffer.putInt(syncItems.size());
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -269,9 +288,8 @@ public class JSyncIoHandler implements IoHandler
      * Delete Directory or File.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     * @param receiver     {@link Receiver}
-     *
+     * @param buffer {@link ByteBuffer}
+     * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
     protected void delete(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
@@ -280,14 +298,58 @@ public class JSyncIoHandler implements IoHandler
         String relativePath = Serializers.readFrom(buffer, String.class);
         boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
 
-        receiver.delete(baseDir, relativePath, followSymLinks);
+        Exception exception = null;
+
+        try
+        {
+            receiver.delete(baseDir, relativePath, followSymLinks);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
+            {
+                // Exception senden.
+                buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Response senden.
+                buffer.clear();
+                RemoteUtils.writeResponseOK(buffer);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
     }
 
     /**
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     * @param receiver     {@link Receiver}
-     *
+     * @param buffer {@link ByteBuffer}
+     * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
     protected void fileChannel(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
@@ -338,9 +400,8 @@ public class JSyncIoHandler implements IoHandler
      * Die Daten werden zum Client gesendet.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     * @param sender       {@link Sender}
-     *
+     * @param buffer {@link ByteBuffer}
+     * @param sender {@link Sender}
      * @throws Exception Falls was schief geht.
      */
     protected void fileChannel(final SelectionKey selectionKey, final ByteBuffer buffer, final Sender sender) throws Exception
@@ -380,7 +441,6 @@ public class JSyncIoHandler implements IoHandler
 
     /**
      * @param selectionKey SelectionKey
-     *
      * @return String
      */
     private String getRemoteAddress(final SelectionKey selectionKey)
@@ -440,7 +500,12 @@ public class JSyncIoHandler implements IoHandler
                     break;
 
                 case CONNECT:
-                    // Empty
+                    // Response senden.
+                    buffer.clear();
+                    RemoteUtils.writeResponseOK(buffer);
+                    RemoteUtils.writeEOL(buffer);
+                    buffer.flip();
+                    writeBuffer(selectionKey, buffer);
                     break;
 
                 case READ_CHUNK:
@@ -449,6 +514,10 @@ public class JSyncIoHandler implements IoHandler
 
                 case TARGET_CHECKSUM:
                     createChecksum(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    break;
+
+                case TARGET_CREATE_DIRECTORY:
+                    createDirectory(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_CREATE_SYNC_ITEMS:
@@ -508,9 +577,8 @@ public class JSyncIoHandler implements IoHandler
      * Read File-Chunk from Sender.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     * @param sender       {@link Sender}
-     *
+     * @param buffer {@link ByteBuffer}
+     * @param sender {@link Sender}
      * @throws Exception Falls was schief geht.
      */
     protected void readChunk(final SelectionKey selectionKey, final ByteBuffer buffer, final Sender sender) throws Exception
@@ -520,41 +588,65 @@ public class JSyncIoHandler implements IoHandler
         long position = buffer.getLong();
         long size = buffer.getLong();
 
+        Exception exception = null;
+        ByteBuffer bufferChunk = ByteBufferPool.getInstance().get();
+
         try
         {
-            ByteBuffer bufferChunk = ByteBufferPool.getInstance().get();
+            sender.readChunk(baseDir, relativeFile, position, size, bufferChunk);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
 
             try
             {
-                sender.readChunk(baseDir, relativeFile, position, size, bufferChunk);
+                // Exception senden.
+                buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Response senden
+                buffer.clear();
+                RemoteUtils.writeResponseOK(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
 
                 bufferChunk.flip();
                 writeBuffer(selectionKey, bufferChunk);
             }
-            finally
+            catch (IOException ioex)
             {
-                ByteBufferPool.getInstance().release(bufferChunk);
+                getLogger().error(null, ioex);
             }
         }
-        catch (Exception ex)
-        {
-            getLogger().error(null, ex);
 
-            buffer.clear();
-            Serializers.writeTo(buffer, ex.getMessage());
-            buffer.flip();
-
-            writeBuffer(selectionKey, buffer);
-        }
+        ByteBufferPool.getInstance().release(bufferChunk);
     }
 
     /**
      * Update Directory or File.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     * @param receiver     {@link Receiver}
-     *
+     * @param buffer {@link ByteBuffer}
+     * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
     protected void update(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
@@ -562,16 +654,60 @@ public class JSyncIoHandler implements IoHandler
         String baseDir = Serializers.readFrom(buffer, String.class);
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
 
-        receiver.update(baseDir, syncItem);
+        Exception exception = null;
+
+        try
+        {
+            receiver.update(baseDir, syncItem);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
+            {
+                // Exception senden.
+                buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Response senden.
+                buffer.clear();
+                RemoteUtils.writeResponseOK(buffer);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
     }
 
     /**
      * Validate Directory or File.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     * @param receiver     {@link Receiver}
-     *
+     * @param buffer {@link ByteBuffer}
+     * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
     protected void validate(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
@@ -580,19 +716,51 @@ public class JSyncIoHandler implements IoHandler
         SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
         boolean withChecksum = Serializers.readFrom(buffer, Boolean.class);
 
+        Exception exception = null;
+
         try
         {
             receiver.validateFile(baseDir, syncItem, withChecksum);
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            exception = ex;
+        }
 
-            buffer.clear();
-            Serializers.writeTo(buffer, ex.getMessage());
-            buffer.flip();
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
 
-            writeBuffer(selectionKey, buffer);
+            try
+            {
+                // Exception senden.
+                buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Response senden.
+                buffer.clear();
+                RemoteUtils.writeResponseOK(buffer);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
         }
     }
 
@@ -624,9 +792,8 @@ public class JSyncIoHandler implements IoHandler
      * Write File-Chunk to Receiver.
      *
      * @param selectionKey {@link SelectionKey}
-     * @param buffer       {@link ByteBuffer}
-     * @param receiver     {@link Receiver}
-     *
+     * @param buffer {@link ByteBuffer}
+     * @param receiver {@link Receiver}
      * @throws Exception Falls was schief geht.
      */
     protected void writeChunk(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
@@ -636,11 +803,13 @@ public class JSyncIoHandler implements IoHandler
         long position = buffer.getLong();
         long size = buffer.getLong();
 
-        ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
+        Exception exception = null;
+        ByteBuffer bufferData = ByteBufferPool.getInstance().get();
 
         try
         {
-            ByteBuffer bufferData = ByteBufferPool.getInstance().get();
+            ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
+
             bufferData.clear();
 
             while (bufferData.position() < size)
@@ -652,24 +821,47 @@ public class JSyncIoHandler implements IoHandler
                 buffer.flip();
             }
 
-            try
-            {
-                receiver.writeChunk(baseDir, relativeFile, position, size, bufferData);
-            }
-            finally
-            {
-                ByteBufferPool.getInstance().release(bufferData);
-            }
+            receiver.writeChunk(baseDir, relativeFile, position, size, bufferData);
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            exception = ex;
+        }
 
-            buffer.clear();
-            Serializers.writeTo(buffer, ex.getMessage());
-            buffer.flip();
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
 
-            writeBuffer(selectionKey, buffer);
+            try
+            {
+                // Exception senden.
+                buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Response senden.
+                buffer.clear();
+                RemoteUtils.writeResponseOK(buffer);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
         }
     }
 }

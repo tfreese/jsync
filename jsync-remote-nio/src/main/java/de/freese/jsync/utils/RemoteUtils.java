@@ -1,7 +1,14 @@
 // Created: 04.09.20
 package de.freese.jsync.utils;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * @author Thomas Freese
@@ -12,9 +19,9 @@ public final class RemoteUtils
      *
      */
     private static final byte[] EOL = new byte[]
-            {
-                    0x45, 0x4F, 0x4C
-            };
+    {
+            0x45, 0x4F, 0x4C
+    };
 
     /**
      * @return int
@@ -26,7 +33,6 @@ public final class RemoteUtils
 
     /**
      * @param buffer {@link ByteBuffer}
-     *
      * @return boolean
      */
     public static boolean isEOL(final ByteBuffer buffer)
@@ -48,7 +54,6 @@ public final class RemoteUtils
 
     /**
      * @param buffer {@link ByteBuffer}
-     *
      * @return boolean
      */
     public static boolean isResponseOK(final ByteBuffer buffer)
@@ -60,6 +65,102 @@ public final class RemoteUtils
         }
 
         return buffer.getInt() == 200;
+    }
+
+    /**
+     * Wegen Chunked-Data den Response erst mal sammeln.
+     *
+     * @param channel {@link AsynchronousSocketChannel}
+     * @return {@link ByteBuffer}
+     * @throws IOException Falls was schief geht.
+     * @throws ExecutionException Falls was schief geht.
+     * @throws InterruptedException Falls was schief geht.
+     */
+    public static ByteBuffer readUntilEOL(final AsynchronousSocketChannel channel) throws IOException, InterruptedException, ExecutionException
+    {
+        SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
+
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        buffer.clear();
+
+        Future<Integer> futureResponse = channel.read(buffer);
+
+        try
+        {
+            while (futureResponse.get() > 0)
+            {
+                buffer.flip();
+
+                while (buffer.remaining() > RemoteUtils.getLengthOfEOL())
+                {
+                    sbaos.write(buffer, buffer.remaining() - RemoteUtils.getLengthOfEOL());
+                }
+
+                if (RemoteUtils.isEOL(buffer))
+                {
+                    buffer.clear();
+                    break;
+                }
+
+                sbaos.write(buffer, buffer.remaining());
+
+                buffer.clear();
+                futureResponse = channel.read(buffer);
+            }
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+
+        ByteBuffer bufferData = sbaos.toByteBuffer();
+
+        return bufferData;
+    }
+
+    /**
+     * Wegen Chunked-Data den Response erst mal sammeln.
+     *
+     * @param channel {@link SocketChannel}
+     * @return {@link ByteBuffer}
+     * @throws IOException Falls was schief geht.
+     */
+    public static ByteBuffer readUntilEOL(final SocketChannel channel) throws IOException
+    {
+        SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
+
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        buffer.clear();
+
+        try
+        {
+            while (channel.read(buffer) > 0)
+            {
+                buffer.flip();
+
+                while (buffer.remaining() > RemoteUtils.getLengthOfEOL())
+                {
+                    sbaos.write(buffer, buffer.remaining() - RemoteUtils.getLengthOfEOL());
+                }
+
+                if (RemoteUtils.isEOL(buffer))
+                {
+                    break;
+                }
+
+                sbaos.write(buffer, buffer.remaining());
+
+                buffer.clear();
+            }
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+
+        ByteBuffer bufferData = sbaos.toByteBuffer();
+
+        return bufferData;
     }
 
     /**

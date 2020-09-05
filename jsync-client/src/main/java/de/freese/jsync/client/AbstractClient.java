@@ -98,6 +98,7 @@ public abstract class AbstractClient implements Client
         if ((receiverUri.getScheme() != null) && receiverUri.getScheme().startsWith("jsync"))
         {
             this.receiver = new RemoteReceiverBlocking();
+            // this.receiver = new RemoteReceiverAsync();
         }
         else
         {

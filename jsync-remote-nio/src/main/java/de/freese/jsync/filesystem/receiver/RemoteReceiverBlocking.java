@@ -11,13 +11,11 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
 import de.freese.jsync.utils.RemoteUtils;
-import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 import de.freese.jsync.utils.pool.SocketChannelPool;
 
@@ -74,7 +72,15 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         @Override
         public int write(final ByteBuffer src) throws IOException
         {
-            return this.delegate.write(src);
+            int totalWritten = 0;
+
+            while (src.hasRemaining())
+            {
+                totalWritten += this.delegate.write(src);
+            }
+
+            // return this.delegate.write(src);
+            return totalWritten;
         }
     }
 
@@ -82,6 +88,7 @@ public class RemoteReceiverBlocking extends AbstractReceiver
      *
      */
     private final ByteBufferPool byteBufferPool = ByteBufferPool.getInstance();
+
     /**
      *
      */
@@ -106,14 +113,40 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         SocketChannel channel = this.channelPool.get();
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.CONNECT);
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.CONNECT);
 
-        buffer.flip();
-        write(channel, buffer);
+            buffer.flip();
+            write(channel, buffer);
 
-        this.byteBufferPool.release(buffer);
-        this.channelPool.release(channel);
+            ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(channel);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(buffer);
+            this.channelPool.release(channel);
+        }
     }
 
     /**
@@ -125,16 +158,42 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         SocketChannel channel = this.channelPool.get();
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
-        Serializers.writeTo(buffer, baseDir);
-        Serializers.writeTo(buffer, relativePath);
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativePath);
 
-        buffer.flip();
-        write(channel, buffer);
+            buffer.flip();
+            write(channel, buffer);
 
-        this.byteBufferPool.release(buffer);
-        this.channelPool.release(channel);
+            ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(channel);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(buffer);
+            this.channelPool.release(channel);
+        }
     }
 
     /**
@@ -146,17 +205,43 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         SocketChannel channel = this.channelPool.get();
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.TARGET_DELETE);
-        Serializers.writeTo(buffer, baseDir);
-        Serializers.writeTo(buffer, relativePath);
-        Serializers.writeTo(buffer, followSymLinks);
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_DELETE);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativePath);
+            Serializers.writeTo(buffer, followSymLinks);
 
-        buffer.flip();
-        write(channel, buffer);
+            buffer.flip();
+            write(channel, buffer);
 
-        this.byteBufferPool.release(buffer);
-        this.channelPool.release(channel);
+            ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(channel);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(buffer);
+            this.channelPool.release(channel);
+        }
     }
 
     /**
@@ -167,8 +252,7 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     {
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        Consumer<SocketChannel> disconnector = channel ->
-        {
+        Consumer<SocketChannel> disconnector = channel -> {
             buffer.clear();
             Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
 
@@ -201,47 +285,21 @@ public class RemoteReceiverBlocking extends AbstractReceiver
             buffer.flip();
             write(channel, buffer);
 
-            buffer.clear();
+            ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(channel);
 
-            // Wegen Chunked-Data den Response erst mal sammeln.
-            SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
-
-            while (channel.read(buffer) > 0)
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                buffer.flip();
-
-                while (buffer.remaining() > RemoteUtils.getLengthOfEOL())
-                {
-                    sbaos.write(buffer, buffer.remaining() - RemoteUtils.getLengthOfEOL());
-                }
-
-                if (RemoteUtils.isEOL(buffer))
-                {
-                    break;
-                }
-
-                sbaos.write(buffer, buffer.remaining());
-
-                buffer.clear();
-            }
-
-            ByteBuffer bufferData = sbaos.toByteBuffer();
-
-            if (!RemoteUtils.isResponseOK(buffer))
-            {
-                Exception exception = Serializers.readFrom(buffer, Exception.class);
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
-            else
-            {
-                int itemCount = bufferData.getInt();
 
-                while (bufferData.hasRemaining())
-                {
-                    SyncItem syncItem = Serializers.readFrom(bufferData, SyncItem.class);
-                    consumerSyncItem.accept(syncItem);
-                }
+            int itemCount = byteBufferResponse.getInt();
+
+            while (byteBufferResponse.hasRemaining())
+            {
+                SyncItem syncItem = Serializers.readFrom(byteBufferResponse, SyncItem.class);
+                consumerSyncItem.accept(syncItem);
             }
         }
         catch (RuntimeException rex)
@@ -312,43 +370,130 @@ public class RemoteReceiverBlocking extends AbstractReceiver
             buffer.flip();
             write(channel, buffer);
 
-            buffer.clear();
+            ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(channel);
 
-            // Wegen Chunked-Data den Response erst mal sammeln.
-            SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
-
-            while (channel.read(buffer) > 0)
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                buffer.flip();
-
-                while (buffer.remaining() > RemoteUtils.getLengthOfEOL())
-                {
-                    sbaos.write(buffer, buffer.remaining() - RemoteUtils.getLengthOfEOL());
-                }
-
-                if (RemoteUtils.isEOL(buffer))
-                {
-                    break;
-                }
-
-                sbaos.write(buffer, buffer.remaining());
-
-                buffer.clear();
-            }
-
-            ByteBuffer bufferData = sbaos.toByteBuffer();
-
-            if (!RemoteUtils.isResponseOK(buffer))
-            {
-                Exception exception = Serializers.readFrom(buffer, Exception.class);
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
-            else
-            {
-                String checksum = Serializers.readFrom(buffer, String.class);
 
-                return checksum;
+            String checksum = Serializers.readFrom(byteBufferResponse, String.class);
+
+            return checksum;
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(buffer);
+            this.channelPool.release(channel);
+        }
+    }
+
+    /**
+     * @param channel {@link SocketChannel}
+     * @param buffer {@link ByteBuffer}
+     */
+    protected void read(final SocketChannel channel, final ByteBuffer buffer)
+    {
+        try
+        {
+            channel.read(buffer);
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
+     */
+    @Override
+    public void update(final String baseDir, final SyncItem syncItem)
+    {
+        SocketChannel channel = this.channelPool.get();
+        ByteBuffer buffer = this.byteBufferPool.get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_UPDATE);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, syncItem);
+
+            buffer.flip();
+            write(channel, buffer);
+
+            // Response auslesen.
+            ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(channel);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(buffer);
+            this.channelPool.release(channel);
+        }
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean)
+     */
+    @Override
+    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
+    {
+        SocketChannel channel = this.channelPool.get();
+        ByteBuffer buffer = this.byteBufferPool.get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_VALIDATE_FILE);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, syncItem);
+            Serializers.writeTo(buffer, withChecksum);
+
+            buffer.flip();
+            write(channel, buffer);
+
+            // Response auslesen.
+            ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(channel);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
             }
         }
         catch (RuntimeException rex)
@@ -372,66 +517,7 @@ public class RemoteReceiverBlocking extends AbstractReceiver
 
     /**
      * @param channel {@link SocketChannel}
-     * @param buffer  {@link ByteBuffer}
-     */
-    protected void read(final SocketChannel channel, final ByteBuffer buffer)
-    {
-        try
-        {
-            channel.read(buffer);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void update(final String baseDir, final SyncItem syncItem)
-    {
-        SocketChannel channel = this.channelPool.get();
-        ByteBuffer buffer = this.byteBufferPool.get();
-
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.TARGET_UPDATE);
-        Serializers.writeTo(buffer, baseDir);
-        Serializers.writeTo(buffer, syncItem);
-
-        buffer.flip();
-        write(channel, buffer);
-
-        this.byteBufferPool.release(buffer);
-        this.channelPool.release(channel);
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean)
-     */
-    @Override
-    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
-    {
-        SocketChannel channel = this.channelPool.get();
-        ByteBuffer buffer = this.byteBufferPool.get();
-
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.TARGET_VALIDATE_FILE);
-        Serializers.writeTo(buffer, baseDir);
-        Serializers.writeTo(buffer, syncItem);
-        Serializers.writeTo(buffer, withChecksum);
-
-        buffer.flip();
-        write(channel, buffer);
-
-        this.byteBufferPool.release(buffer);
-        this.channelPool.release(channel);
-    }
-
-    /**
-     * @param channel {@link SocketChannel}
-     * @param buffer  {@link ByteBuffer}
+     * @param buffer {@link ByteBuffer}
      */
     protected void write(final SocketChannel channel, final ByteBuffer buffer)
     {
@@ -457,20 +543,47 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         SocketChannel channel = this.channelPool.get();
         ByteBuffer bufferCmd = this.byteBufferPool.get();
 
-        bufferCmd.clear();
-        Serializers.writeTo(bufferCmd, JSyncCommand.WRITE_CHUNK);
-        Serializers.writeTo(bufferCmd, baseDir);
-        Serializers.writeTo(bufferCmd, relativeFile);
-        bufferCmd.putLong(position);
-        bufferCmd.putLong(size);
+        try
+        {
+            bufferCmd.clear();
+            Serializers.writeTo(bufferCmd, JSyncCommand.WRITE_CHUNK);
+            Serializers.writeTo(bufferCmd, baseDir);
+            Serializers.writeTo(bufferCmd, relativeFile);
+            bufferCmd.putLong(position);
+            bufferCmd.putLong(size);
 
-        bufferCmd.flip();
-        write(channel, bufferCmd);
+            bufferCmd.flip();
+            write(channel, bufferCmd);
 
-        buffer.flip();
-        write(channel, buffer);
+            buffer.flip();
+            write(channel, buffer);
 
-        this.byteBufferPool.release(bufferCmd);
-        this.channelPool.release(channel);
+            // Response auslesen.
+            ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(channel);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(bufferCmd);
+            this.channelPool.release(channel);
+        }
     }
 }
