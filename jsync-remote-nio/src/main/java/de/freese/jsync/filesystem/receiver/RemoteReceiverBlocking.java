@@ -294,6 +294,7 @@ public class RemoteReceiverBlocking extends AbstractReceiver
                 throw exception;
             }
 
+            @SuppressWarnings("unused")
             int itemCount = byteBufferResponse.getInt();
 
             while (byteBufferResponse.hasRemaining())

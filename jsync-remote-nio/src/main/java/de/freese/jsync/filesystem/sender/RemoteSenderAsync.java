@@ -208,6 +208,7 @@ public class RemoteSenderAsync extends AbstractSender
                 throw exception;
             }
 
+            @SuppressWarnings("unused")
             int itemCount = byteBufferResponse.getInt();
 
             while (byteBufferResponse.hasRemaining())

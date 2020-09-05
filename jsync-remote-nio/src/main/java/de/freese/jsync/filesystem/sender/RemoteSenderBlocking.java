@@ -191,6 +191,7 @@ public class RemoteSenderBlocking extends AbstractSender
                 throw exception;
             }
 
+            @SuppressWarnings("unused")
             int itemCount = byteBufferResponse.getInt();
 
             while (byteBufferResponse.hasRemaining())

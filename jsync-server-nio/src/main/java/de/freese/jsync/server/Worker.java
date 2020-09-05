@@ -17,18 +17,22 @@ import de.freese.jsync.server.handler.IoHandler;
 
 /**
  * Übernimmt das Connection-Handling.<br>
- * Ein Processor kann für mehrere Connections zuständig sein.
+ * Ein Worker kann für mehrere Connections zuständig sein.
  *
  * @author Thomas Freese
  */
 @SuppressWarnings("resource")
-class Processor implements Runnable
+class Worker implements Runnable
 {
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Worker.class);
 
+    /**
+    *
+    */
+    private final boolean directRegistration = true;
     /**
      *
      */
@@ -45,18 +49,19 @@ class Processor implements Runnable
      *
      */
     private final Selector selector;
+
     /**
      *
      */
     private final Semaphore stopLock = new Semaphore(1, true);
 
     /**
-     * Erstellt ein neues {@link Processor} Object.
+     * Erstellt ein neues {@link Worker} Object.
      *
      * @param ioHandler {@link IoHandler}
      * @throws IOException Falls was schief geht.
      */
-    public Processor(final IoHandler ioHandler) throws IOException
+    public Worker(final IoHandler ioHandler) throws IOException
     {
         super();
 
@@ -70,16 +75,20 @@ class Processor implements Runnable
      * @param socketChannel {@link SocketChannel}
      * @throws IOException Falls was schief geht.
      */
-    public void addSession(final SocketChannel socketChannel) throws IOException
+    void addSession(final SocketChannel socketChannel) throws IOException
     {
         Objects.requireNonNull(socketChannel, "socketChannel required");
 
-        // this.newSessions.add(socketChannel);
-
-        // Den neuen Socket direkt registrieren geht auch.
-        socketChannel.configureBlocking(false);
-        getLogger().debug("{}: attach new session", socketChannel.getRemoteAddress());
-        socketChannel.register(this.selector, SelectionKey.OP_READ);
+        if (this.directRegistration)
+        {
+            socketChannel.configureBlocking(false);
+            getLogger().debug("{}: attach new session", socketChannel.getRemoteAddress());
+            socketChannel.register(this.selector, SelectionKey.OP_READ);
+        }
+        else
+        {
+            this.newSessions.add(socketChannel);
+        }
 
         this.selector.wakeup();
     }
@@ -87,7 +96,7 @@ class Processor implements Runnable
     /**
      * @return {@link Logger}
      */
-    protected Logger getLogger()
+    private Logger getLogger()
     {
         return LOGGER;
     }
@@ -97,7 +106,7 @@ class Processor implements Runnable
      *
      * @throws IOException Falls was schief geht.
      */
-    protected void processNewSessions() throws IOException
+    void processNewSessions() throws IOException
     {
         // for (SocketChannel socketChannel = this.newSessions.poll(); socketChannel != null; socketChannel =
         // this.newSessions.poll())
@@ -114,6 +123,7 @@ class Processor implements Runnable
 
             getLogger().debug("{}: attach new session", socketChannel.getRemoteAddress());
 
+            @SuppressWarnings("unused")
             SelectionKey selectionKey = socketChannel.register(this.selector, SelectionKey.OP_READ);
             // selectionKey.attach(obj)
         }
@@ -184,6 +194,8 @@ class Processor implements Runnable
         {
             this.stopLock.release();
         }
+
+        getLogger().debug("worker stopped");
     }
 
     /**
@@ -191,7 +203,7 @@ class Processor implements Runnable
      */
     void stop()
     {
-        getLogger().debug("stopping Processor");
+        getLogger().debug("stopping worker");
 
         this.isShutdown = true;
         this.selector.wakeup();
