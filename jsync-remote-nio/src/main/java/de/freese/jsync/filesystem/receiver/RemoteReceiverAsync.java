@@ -10,7 +10,6 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import de.freese.jsync.Options;
@@ -57,7 +56,37 @@ public class RemoteReceiverAsync extends AbstractReceiver
         @Override
         public void close() throws IOException
         {
-            RemoteReceiverAsync.this.channelPool.release(this.delegate);
+            ByteBuffer buffer = RemoteReceiverAsync.this.byteBufferPool.get();
+            buffer.clear();
+
+            try
+            {
+                // Response auslesen.
+                ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(this.delegate);
+
+                if (!RemoteUtils.isResponseOK(byteBufferResponse))
+                {
+                    Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                    throw exception;
+                }
+            }
+            catch (IOException ex)
+            {
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                IOException ioex = new IOException(ex.getMessage(), ex);
+                ioex.setStackTrace(ex.getStackTrace());
+
+                throw ioex;
+            }
+            finally
+            {
+                RemoteReceiverAsync.this.byteBufferPool.release(buffer);
+                RemoteReceiverAsync.this.channelPool.release(this.delegate);
+            }
         }
 
         /**
@@ -81,8 +110,7 @@ public class RemoteReceiverAsync extends AbstractReceiver
             {
                 while (src.hasRemaining())
                 {
-                    Future<Integer> future = this.delegate.write(src);
-                    totalWritten += future.get();
+                    totalWritten += this.delegate.write(src).get();
                 }
 
                 return totalWritten;
@@ -338,23 +366,44 @@ public class RemoteReceiverAsync extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String,long)
      */
     @Override
-    public WritableByteChannel getChannel(final String baseDir, final String relativeFile)
+    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
     {
         AsynchronousSocketChannel channel = this.channelPool.get();
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
-        Serializers.writeTo(buffer, baseDir);
-        Serializers.writeTo(buffer, relativeFile);
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativeFile);
+            buffer.putLong(size);
 
-        buffer.flip();
-        write(channel, buffer);
+            buffer.flip();
+            write(channel, buffer);
 
-        return new NoCloseWritableByteChannel(channel);
+            // Response auslesen erfolgt in NoCloseWritableByteChannel#close.
+            return new NoCloseWritableByteChannel(channel);
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        // catch (IOException ex)
+        // {
+        // throw new UncheckedIOException(ex);
+        // }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(buffer);
+        }
     }
 
     /**
@@ -523,8 +572,7 @@ public class RemoteReceiverAsync extends AbstractReceiver
         {
             while (buffer.hasRemaining())
             {
-                Future<Integer> future = channel.write(buffer);
-                future.get();
+                channel.write(buffer).get();
             }
         }
         catch (RuntimeException rex)

@@ -34,14 +34,14 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         /**
          *
          */
-        private final WritableByteChannel delegate;
+        private final SocketChannel delegate;
 
         /**
          * Erstellt ein neues {@link NoCloseWritableByteChannel} Object.
          *
          * @param delegate {@link WritableByteChannel}
          */
-        public NoCloseWritableByteChannel(final WritableByteChannel delegate)
+        public NoCloseWritableByteChannel(final SocketChannel delegate)
         {
             super();
 
@@ -54,7 +54,37 @@ public class RemoteReceiverBlocking extends AbstractReceiver
         @Override
         public void close() throws IOException
         {
-            RemoteReceiverBlocking.this.channelPool.release((SocketChannel) this.delegate);
+            ByteBuffer buffer = RemoteReceiverBlocking.this.byteBufferPool.get();
+            buffer.clear();
+
+            try
+            {
+                // Response auslesen.
+                ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(this.delegate);
+
+                if (!RemoteUtils.isResponseOK(byteBufferResponse))
+                {
+                    Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                    throw exception;
+                }
+            }
+            catch (IOException ex)
+            {
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                IOException ioex = new IOException(ex.getMessage(), ex);
+                ioex.setStackTrace(ex.getStackTrace());
+
+                throw ioex;
+            }
+            finally
+            {
+                RemoteReceiverBlocking.this.byteBufferPool.release(buffer);
+                RemoteReceiverBlocking.this.channelPool.release(this.delegate);
+            }
         }
 
         /**
@@ -79,7 +109,6 @@ public class RemoteReceiverBlocking extends AbstractReceiver
                 totalWritten += this.delegate.write(src);
             }
 
-            // return this.delegate.write(src);
             return totalWritten;
         }
     }
@@ -323,25 +352,44 @@ public class RemoteReceiverBlocking extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String,long)
      */
     @Override
-    public WritableByteChannel getChannel(final String baseDir, final String relativeFile)
+    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
     {
         SocketChannel channel = this.channelPool.get();
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
-        Serializers.writeTo(buffer, baseDir);
-        Serializers.writeTo(buffer, relativeFile);
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativeFile);
+            buffer.putLong(size);
 
-        buffer.flip();
-        write(channel, buffer);
+            buffer.flip();
+            write(channel, buffer);
 
-        this.byteBufferPool.release(buffer);
-
-        return new NoCloseWritableByteChannel(channel);
+            // Response auslesen erfolgt in NoCloseWritableByteChannel#close.
+            return new NoCloseWritableByteChannel(channel);
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        // catch (IOException ex)
+        // {
+        // throw new UncheckedIOException(ex);
+        // }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(buffer);
+        }
     }
 
     /**

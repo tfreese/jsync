@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.freese.jsync.server.handler.IoHandler;
@@ -40,12 +41,22 @@ public class JSyncServer implements Runnable
     /**
      *
      */
+    private static final AtomicInteger SERVER_NUMBER = new AtomicInteger(1);
+
+    /**
+     *
+     */
     private IoHandler ioHandler;
 
     /**
      *
      */
     private boolean isShutdown;
+
+    /**
+     *
+     */
+    private String name = getClass().getSimpleName() + "-" + SERVER_NUMBER.getAndIncrement();
 
     /**
     *
@@ -71,6 +82,11 @@ public class JSyncServer implements Runnable
      *
      */
     private ServerSocketChannel serverSocketChannel;
+
+    /**
+    *
+    */
+    private final Semaphore startLock = new Semaphore(1, true);
 
     /**
      *
@@ -129,6 +145,7 @@ public class JSyncServer implements Runnable
     {
         getLogger().info("server listening on port: {}", this.serverSocketChannel.socket().getLocalPort());
 
+        this.startLock.release();
         this.stopLock.acquireUninterruptibly();
 
         try
@@ -243,7 +260,7 @@ public class JSyncServer implements Runnable
 
                 this.workers.add(worker);
 
-                String threadName = "Worker-" + this.workers.size();
+                String threadName = this.name + "-worker-" + this.workers.size();
 
                 getLogger().info("start worker: {}", threadName);
 
@@ -274,12 +291,19 @@ public class JSyncServer implements Runnable
     }
 
     /**
+     * @param name String
+     */
+    public void setName(final String name)
+    {
+        this.name = Objects.requireNonNull(name, "name required");
+    }
+
+    /**
      * @param threadFactory {@link ThreadFactory}
      */
     public void setThreadFactory(final ThreadFactory threadFactory)
     {
         this.threadFactory = Objects.requireNonNull(threadFactory, "threadFactory required");
-        ;
     }
 
     /**
@@ -289,10 +313,15 @@ public class JSyncServer implements Runnable
      */
     public void start() throws IOException
     {
+        this.startLock.acquireUninterruptibly();
+
         Thread thread = this.threadFactory.newThread(this::run);
-        thread.setName(getClass().getSimpleName());
+        thread.setName(this.name);
         thread.setDaemon(false);
         thread.start();
+
+        // Warten bis die Initialisierung fertig ist.
+        this.startLock.acquireUninterruptibly();
     }
 
     /**

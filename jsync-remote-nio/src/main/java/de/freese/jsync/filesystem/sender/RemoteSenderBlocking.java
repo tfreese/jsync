@@ -220,25 +220,57 @@ public class RemoteSenderBlocking extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String,long)
      */
     @Override
-    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
+    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
     {
         SocketChannel channel = this.channelPool.get();
         ByteBuffer buffer = this.byteBufferPool.get();
 
-        buffer.clear();
-        Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
-        Serializers.writeTo(buffer, baseDir);
-        Serializers.writeTo(buffer, relativeFile);
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativeFile);
+            buffer.putLong(size);
 
-        buffer.flip();
-        write(channel, buffer);
+            buffer.flip();
+            write(channel, buffer);
+            buffer.clear();
 
-        this.byteBufferPool.release(buffer);
+            // Nur den Status auslesen.
+            ByteBuffer byteBufferStatus = ByteBuffer.allocate(4);
+            channel.read(byteBufferStatus);
+            byteBufferStatus.flip();
 
-        return new NoCloseReadableByteChannel(channel);
+            if (!RemoteUtils.isResponseOK(byteBufferStatus))
+            {
+                read(channel, buffer);
+                Exception exception = Serializers.readFrom(buffer, Exception.class);
+
+                throw exception;
+            }
+
+            return new NoCloseReadableByteChannel(channel);
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            this.byteBufferPool.release(buffer);
+        }
     }
 
     /**

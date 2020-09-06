@@ -31,10 +31,10 @@ public interface Receiver extends FileSystem
     public void delete(String baseDir, String relativePath, boolean followSymLinks);
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public WritableByteChannel getChannel(String baseDir, String relativeFile);
+    public WritableByteChannel getChannel(String baseDir, String relativeFile, long size);
 
     /**
      * Aktualisiert ein {@link SyncItem}.

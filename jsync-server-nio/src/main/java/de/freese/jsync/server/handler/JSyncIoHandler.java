@@ -356,42 +356,81 @@ public class JSyncIoHandler implements IoHandler
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativeFile = Serializers.readFrom(buffer, String.class);
+        long size = buffer.getLong();
 
-        ReadableByteChannel inChannel = (ReadableByteChannel) selectionKey.channel();
+        Exception exception = null;
+        WritableByteChannel outChannel = null;
+        ReadableByteChannel inChannel = null;
 
-        long bytesRead = 0;
-        long bytesWrote = 0;
-
-        try (WritableByteChannel outChannel = receiver.getChannel(baseDir, relativeFile))
+        try
         {
-            // Beim Empfang sind weitere Daten im Buffer enthalten.
-            do
+            inChannel = (ReadableByteChannel) selectionKey.channel();
+            outChannel = receiver.getChannel(baseDir, relativeFile, size);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
             {
-                while (buffer.hasRemaining())
+                // Exception senden.
+                buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                @SuppressWarnings("unused")
+                long totalRead = 0;
+                long totalWritten = 0;
+
+                while (totalWritten < size)
                 {
-                    bytesWrote += outChannel.write(buffer);
+                    buffer.clear();
+
+                    totalRead += inChannel.read(buffer);
+                    buffer.flip();
+
+                    while (buffer.hasRemaining())
+                    {
+                        totalWritten += outChannel.write(buffer);
+                    }
                 }
 
-                buffer.clear();
-                bytesRead = inChannel.read(buffer);
-                buffer.flip();
-            }
-            while (bytesRead > 0);
-            // while (inChannel.read(buffer) > 0)
-            // {
-            // buffer.flip();
-            //
-            // while (buffer.hasRemaining())
-            // {
-            // bytesWrote += outChannel.write(buffer);
-            // }
-            //
-            // buffer.clear();
-            // }
+                if (outChannel instanceof FileChannel)
+                {
+                    ((FileChannel) outChannel).force(false);
+                }
 
-            if (outChannel instanceof FileChannel)
+                // Response senden, kann hier erst erfolgen, wenn alle Daten empfangen wurden.
+                buffer.clear();
+                RemoteUtils.writeResponseOK(buffer);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
             {
-                ((FileChannel) outChannel).force(true);
+                getLogger().error(null, ioex);
+            }
+            finally
+            {
+                outChannel.close();
             }
         }
     }
@@ -408,25 +447,75 @@ public class JSyncIoHandler implements IoHandler
     {
         String baseDir = Serializers.readFrom(buffer, String.class);
         String relativeFile = Serializers.readFrom(buffer, String.class);
+        long size = buffer.getLong();
 
-        WritableByteChannel outChannel = (WritableByteChannel) selectionKey.channel();
+        Exception exception = null;
+        WritableByteChannel outChannel = null;
+        ReadableByteChannel inChannel = null;
 
-        long bytesWrote = 0;
-
-        buffer.clear();
-
-        try (ReadableByteChannel inChannel = sender.getChannel(baseDir, relativeFile))
+        try
         {
-            while (inChannel.read(buffer) > 0)
+            outChannel = (WritableByteChannel) selectionKey.channel();
+            inChannel = sender.getChannel(baseDir, relativeFile, size);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
             {
-                buffer.flip();
-
-                while (buffer.hasRemaining())
-                {
-                    bytesWrote += outChannel.write(buffer);
-                }
-
+                // Exception senden.
                 buffer.clear();
+                RemoteUtils.writeResponseERROR(buffer);
+                Serializers.writeTo(buffer, exception, Exception.class);
+                RemoteUtils.writeEOL(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Response senden
+                buffer.clear();
+                RemoteUtils.writeResponseOK(buffer);
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+
+                @SuppressWarnings("unused")
+                long totalWritten = 0;
+                long totalRead = 0;
+
+                while (totalRead < size)
+                {
+                    buffer.clear();
+
+                    totalRead += inChannel.read(buffer);
+                    buffer.flip();
+
+                    while (buffer.hasRemaining())
+                    {
+                        totalWritten += outChannel.write(buffer);
+                    }
+                }
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+            finally
+            {
+                inChannel.close();
             }
         }
     }

@@ -70,12 +70,12 @@ public class LocalhostSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile)
+    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
     {
-        getLogger().debug("get channel: {}/{}", baseDir, relativeFile);
+        getLogger().debug("get readable channel: {}/{}, size = {}", baseDir, relativeFile, size);
 
         Path path = Paths.get(baseDir, relativeFile);
 
@@ -83,7 +83,6 @@ public class LocalhostSender extends AbstractSender
         {
             String message = String.format("file doesn't exist anymore: %s", path);
             getLogger().warn(message);
-            // getOptions().getPrintWriter().print(message);
             return null;
         }
 

@@ -137,23 +137,25 @@ public abstract class AbstractClient implements Client
         // FileChannel.transferFrom(ReadableByteChannel, position, count);
         // FileChannel.transferTo(position, count, WritableByteChannel);
 
-        // long bytesRead = 0;
-        long bytesWrote = 0;
-
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
         buffer.clear();
 
-        try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderPath(), syncItem.getRelativePath());
-             WritableByteChannel writableByteChannel = getReceiver().getChannel(getReceiverPath(), syncItem.getRelativePath()))
+        long size = syncItem.getSize();
+        long totalRead = 0;
+        long totalWritten = 0;
+
+        try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderPath(), syncItem.getRelativePath(), size);
+             WritableByteChannel writableByteChannel = getReceiver().getChannel(getReceiverPath(), syncItem.getRelativePath(), size))
         {
-            while (readableByteChannel.read(buffer) > 0)
+            while (totalRead < size)
             {
+                totalRead += readableByteChannel.read(buffer);
                 buffer.flip();
 
                 while (buffer.hasRemaining())
                 {
-                    bytesWrote += writableByteChannel.write(buffer);
-                    clientListener.copyProgress(getOptions(), syncItem, bytesWrote);
+                    totalWritten += writableByteChannel.write(buffer);
+                    clientListener.copyProgress(getOptions(), syncItem, totalWritten);
                 }
 
                 buffer.clear();
@@ -200,12 +202,12 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            long totalSize = syncItem.getSize();
+            long size = syncItem.getSize();
             long position = 0;
 
-            while (position < totalSize)
+            while (position < size)
             {
-                long sizeOfChunk = Math.min(totalSize - position, Options.BUFFER_SIZE);
+                long sizeOfChunk = Math.min(size - position, Options.BUFFER_SIZE);
 
                 ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
@@ -294,7 +296,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFileByChunk(pair.getSenderItem(), clientListener));
+                .forEach(pair -> copyFileByChannel(pair.getSenderItem(), clientListener));
         //@formatter:on
     }
 

@@ -13,10 +13,10 @@ import de.freese.jsync.filesystem.FileSystem;
 public interface Sender extends FileSystem
 {
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public ReadableByteChannel getChannel(String baseDir, String relativeFile);
+    public ReadableByteChannel getChannel(String baseDir, String relativeFile, long size);
 
     /**
      * Liest nur einen bestimmten Bereich aus einer Datei.

@@ -5,7 +5,7 @@
     <!--Levels are ordered: TRACE < DEBUG < INFO < WARN < ERROR -->
     <!--property name="pattern" value="%date{yyyy-MM-dd HH:mm:ss.SSS} - %-5level[%thread] - %logger{0}[%method] - %message%n" /-->
     <!--property name="pattern" value="%date{HH:mm:ss.SSS} - %5level - [%12.-12thread] - %replace(%-22.-22logger{0}){' ', '.'} - %message%n" /-->
-    <property name="pattern" value="%date{HH:mm:ss.SSS} - %5level - [%12.-12thread] - %-16logger{0} - %message%n" />
+    <property name="pattern" value="%date{HH:mm:ss.SSS} - %5level - [%20.-20thread] - %-20logger{0} - %message%n" />
 
     <property name="log.dir" value="${user.dir}/logs" />
     <!--property name="log.dir" value="${user.home}/.jsync/logs" /-->
@@ -61,12 +61,6 @@
             <pattern>${pattern}</pattern>
             <outputPatternAsHeader>false</outputPatternAsHeader>
         </encoder>
-
-        <!--filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-            <onMatch>DENY</onMatch>
-            <onMismatch>ACCEPT</onMismatch>
-        </filter-->
     </appender>
 
     <appender name="FILE_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
@@ -74,7 +68,6 @@
     </appender>
 
     <logger name="de.freese.jsync" level="INFO" />
-    <logger name="de.freese.jsync.server.handler" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

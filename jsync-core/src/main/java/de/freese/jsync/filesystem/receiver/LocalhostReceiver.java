@@ -67,7 +67,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
-        getLogger().debug("create: {}/{}", baseDir, relativePath);
+        getLogger().info("create: {}/{}", baseDir, relativePath);
 
         Path path = Paths.get(baseDir, relativePath);
 
@@ -90,7 +90,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        getLogger().debug("delete: {}/{}", baseDir, relativePath);
+        getLogger().info("delete: {}/{}", baseDir, relativePath);
 
         Path path = Paths.get(baseDir, relativePath);
 
@@ -125,12 +125,12 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public WritableByteChannel getChannel(final String baseDir, final String relativeFile)
+    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
     {
-        getLogger().debug("get channel: {}/{}", baseDir, relativeFile);
+        getLogger().info("get writable channel: {}/{}, size = {}", baseDir, relativeFile, size);
 
         Path path = Paths.get(baseDir, relativeFile);
         Path parentPath = path.getParent();
@@ -172,7 +172,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        getLogger().debug("update: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().info("update: {}/{}", baseDir, syncItem.getRelativePath());
 
         Path path = Paths.get(baseDir, syncItem.getRelativePath());
 
@@ -259,7 +259,7 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
     {
-        getLogger().debug("write chunk: {}/{}, position={}, size={}", baseDir, relativeFile, position, size);
+        getLogger().info("write chunk: {}/{}, position={}, size={}", baseDir, relativeFile, position, size);
 
         Path path = Paths.get(baseDir, relativeFile);
 

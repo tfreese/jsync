@@ -7,7 +7,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-
 import de.freese.jsync.model.SyncItem;
 
 /**
@@ -30,8 +29,8 @@ public interface FileSystem
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses<br>
      *
-     * @param baseDir          String
-     * @param followSymLinks   boolean
+     * @param baseDir String
+     * @param followSymLinks boolean
      * @param consumerSyncItem {@link Consumer}
      */
     public void generateSyncItems(String baseDir, boolean followSymLinks, Consumer<SyncItem> consumerSyncItem);
@@ -39,23 +38,21 @@ public interface FileSystem
     /**
      * Liefert den Channel zur Datei.
      *
-     * @param baseDir      String
+     * @param baseDir String
      * @param relativeFile String
-     *
+     * @param size long
      * @return {@link Channel}
-     *
      * @see ReadableByteChannel
      * @see WritableByteChannel
      */
-    public Channel getChannel(String baseDir, final String relativeFile);
+    public Channel getChannel(String baseDir, final String relativeFile, long size);
 
     /**
      * Liefert die Prüfsumme einer Datei.<br>
      *
-     * @param baseDir           String
-     * @param relativeFile      String
+     * @param baseDir String
+     * @param relativeFile String
      * @param consumerBytesRead {@link LongConsumer}; optional
-     *
      * @return String
      */
     public String getChecksum(String baseDir, String relativeFile, LongConsumer consumerBytesRead);

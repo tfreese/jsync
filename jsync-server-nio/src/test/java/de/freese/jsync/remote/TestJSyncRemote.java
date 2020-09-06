@@ -121,6 +121,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
 
         JSyncServer serverSender = new JSyncServer(8001, 3);
+        serverSender.setName("sender");
         serverSender.setIoHandler(new JSyncIoHandler());
         serverSender.start();
 
@@ -143,6 +144,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
 
         JSyncServer serverReceiver = new JSyncServer(8002, 3);
+        serverReceiver.setName("receiver");
         serverReceiver.setIoHandler(new JSyncIoHandler());
         serverReceiver.start();
 
@@ -165,10 +167,12 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
 
         JSyncServer serverSender = new JSyncServer(8001, 3);
+        serverSender.setName("sender");
         serverSender.setIoHandler(new JSyncIoHandler());
         serverSender.start();
 
         JSyncServer serverReceiver = new JSyncServer(8002, 3);
+        serverReceiver.setName("receiver");
         serverReceiver.setIoHandler(new JSyncIoHandler());
         serverReceiver.start();
 
