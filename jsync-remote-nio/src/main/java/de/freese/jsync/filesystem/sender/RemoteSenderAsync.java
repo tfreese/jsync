@@ -7,14 +7,13 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-import de.freese.jsync.Options;
+import de.freese.jsync.filesystem.RemoteSupport;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
@@ -27,7 +26,7 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
  *
  * @author Thomas Freese
  */
-public class RemoteSenderAsync extends AbstractSender
+public class RemoteSenderAsync extends AbstractSender implements RemoteSupport
 {
     /**
      * @author Thomas Freese
@@ -120,40 +119,13 @@ public class RemoteSenderAsync extends AbstractSender
         this.channelPool = new AsynchronousSocketChannelPool(uri, Executors.newCachedThreadPool());
 
         AsynchronousSocketChannel channel = this.channelPool.get();
-        ByteBuffer buffer = this.byteBufferPool.get();
 
         try
         {
-            buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.CONNECT);
-
-            buffer.flip();
-            write(channel, buffer);
-
-            ByteBuffer byteBufferResponse = RemoteUtils.readUntilEOL(channel);
-
-            if (!RemoteUtils.isResponseOK(byteBufferResponse))
-            {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
-
-                throw exception;
-            }
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
+            connect(buffer -> write(channel, buffer), buffer -> channel.read(buffer).get());
         }
         finally
         {
-            this.byteBufferPool.release(buffer);
             this.channelPool.release(channel);
         }
     }
@@ -169,9 +141,16 @@ public class RemoteSenderAsync extends AbstractSender
         Consumer<AsynchronousSocketChannel> disconnector = channel -> {
             buffer.clear();
             Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
-
             buffer.flip();
-            write(channel, buffer);
+
+            try
+            {
+                write(channel, buffer);
+            }
+            catch (Exception ex)
+            {
+                getLogger().error(null, ex);
+            }
         };
 
         this.channelPool.destroy(disconnector);
@@ -287,14 +266,6 @@ public class RemoteSenderAsync extends AbstractSender
     }
 
     /**
-     * @return {@link Charset}
-     */
-    protected Charset getCharset()
-    {
-        return Options.CHARSET;
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
@@ -399,29 +370,6 @@ public class RemoteSenderAsync extends AbstractSender
         finally
         {
             this.channelPool.release(channel);
-        }
-    }
-
-    /**
-     * @param channel {@link AsynchronousSocketChannel}
-     * @param buffer {@link ByteBuffer}
-     */
-    protected void write(final AsynchronousSocketChannel channel, final ByteBuffer buffer)
-    {
-        try
-        {
-            while (buffer.hasRemaining())
-            {
-                channel.write(buffer).get();
-            }
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
         }
     }
 }

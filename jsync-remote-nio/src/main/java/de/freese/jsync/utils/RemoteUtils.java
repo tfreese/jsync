@@ -2,11 +2,12 @@
 package de.freese.jsync.utils;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.NetworkChannel;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
@@ -72,22 +73,19 @@ public final class RemoteUtils
      *
      * @param channel {@link AsynchronousSocketChannel}
      * @return {@link ByteBuffer}
-     * @throws IOException Falls was schief geht.
      * @throws ExecutionException Falls was schief geht.
      * @throws InterruptedException Falls was schief geht.
      */
-    public static ByteBuffer readUntilEOL(final AsynchronousSocketChannel channel) throws IOException, InterruptedException, ExecutionException
+    public static ByteBuffer readUntilEOL(final AsynchronousSocketChannel channel) throws InterruptedException, ExecutionException
     {
         SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
 
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
         buffer.clear();
 
-        Future<Integer> futureResponse = channel.read(buffer);
-
         try
         {
-            while (futureResponse.get() > 0)
+            while (channel.read(buffer).get() > 0)
             {
                 buffer.flip();
 
@@ -105,7 +103,6 @@ public final class RemoteUtils
                 sbaos.write(buffer, buffer.remaining());
 
                 buffer.clear();
-                futureResponse = channel.read(buffer);
             }
         }
         finally
