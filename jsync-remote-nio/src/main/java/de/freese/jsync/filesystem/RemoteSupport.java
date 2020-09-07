@@ -5,8 +5,16 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.NetworkChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.function.Consumer;
+import java.util.function.LongConsumer;
+import java.util.function.Supplier;
+import org.slf4j.Logger;
 import de.freese.jsync.model.JSyncCommand;
+import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
 import de.freese.jsync.utils.RemoteUtils;
 import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
@@ -61,6 +69,412 @@ public interface RemoteSupport
     }
 
     /**
+     * @param baseDir String
+     * @param relativePath String
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     */
+    public default void createDirectory(final String baseDir, final String relativePath, final ChannelWriter channelWriter, final ChannelReader channelReader)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativePath);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+
+            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param relativePath String
+     * @param followSymLinks boolean
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     */
+    public default void delete(final String baseDir, final String relativePath, final boolean followSymLinks, final ChannelWriter channelWriter,
+                               final ChannelReader channelReader)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_DELETE);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativePath);
+            Serializers.writeTo(buffer, followSymLinks);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+
+            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param channelWriter {@link ChannelWriter}
+     * @param logger {@link Logger}
+     */
+    public default void disconnect(final ChannelWriter channelWriter, final Logger logger)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
+            buffer.flip();
+
+            channelWriter.write(buffer);
+        }
+        catch (Exception ex)
+        {
+            logger.error(null, ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param followSymLinks boolean
+     * @param consumerSyncItem {@link Consumer}
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     */
+    public default void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem,
+                                          final ChannelWriter channelWriter, final ChannelReader channelReader)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, followSymLinks);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+
+            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+
+            @SuppressWarnings("unused")
+            int itemCount = byteBufferResponse.getInt();
+
+            while (byteBufferResponse.hasRemaining())
+            {
+                SyncItem syncItem = Serializers.readFrom(byteBufferResponse, SyncItem.class);
+                consumerSyncItem.accept(syncItem);
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param relativeFile String
+     * @param consumerBytesRead {@link LongConsumer}
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     * @return String
+     */
+    public default String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead, final ChannelWriter channelWriter,
+                                      final ChannelReader channelReader)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativeFile);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+
+            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+
+            String checksum = Serializers.readFrom(byteBufferResponse, String.class);
+
+            return checksum;
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param <C> Type
+     * @param baseDir String
+     * @param relativeFile String
+     * @param size long
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     * @param channelSupplier {@link Supplier}
+     * @param channelReleaser {@link Consumer}
+     * @return {@link ReadableByteChannel}
+     */
+    public default <C extends NetworkChannel> ReadableByteChannel getReadableChannel(final String baseDir, final String relativeFile, final long size,
+                                                                                     final ChannelWriter channelWriter, final ChannelReader channelReader,
+                                                                                     final Supplier<C> channelSupplier, final Consumer<C> channelReleaser)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativeFile);
+            buffer.putLong(size);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+            buffer.clear();
+
+            // Nur den Status auslesen.
+            ByteBuffer byteBufferStatus = ByteBuffer.allocate(4);
+            channelReader.read(byteBufferStatus);
+            byteBufferStatus.flip();
+
+            if (!RemoteUtils.isResponseOK(byteBufferStatus))
+            {
+                channelReader.read(buffer);
+                Exception exception = Serializers.readFrom(buffer, Exception.class);
+
+                throw exception;
+            }
+
+            return new NoCloseReadableByteChannel<>(channelSupplier.get(), channelReader, channelReleaser);
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param relativeFile String
+     * @param size long
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     * @param channelSupplier {@link Supplier}
+     * @param channelReleaser {@link Consumer}
+     * @return {@link WritableByteChannel}
+     */
+    public default <C extends NetworkChannel> WritableByteChannel getWritableChannel(final String baseDir, final String relativeFile, final long size,
+                                                                                     final ChannelWriter channelWriter, final ChannelReader channelReader,
+                                                                                     final Supplier<C> channelSupplier, final Consumer<C> channelReleaser)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativeFile);
+            buffer.putLong(size);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+
+            // Response auslesen erfolgt in NoCloseWritableByteChannel#close.
+            return new NoCloseWritableByteChannel<>(channelSupplier.get(), channelWriter, channelReader, channelReleaser);
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param relativeFile String
+     * @param position long
+     * @param size long
+     * @param buffer {@link ByteBuffer}
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     */
+    public default void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer,
+                                  final ChannelWriter channelWriter, final ChannelReader channelReader)
+    {
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.READ_CHUNK);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, relativeFile);
+            buffer.putLong(position);
+            buffer.putLong(size);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+            buffer.clear();
+
+            // Nur den Status auslesen.
+            ByteBuffer byteBufferStatus = ByteBuffer.allocate(4);
+            channelReader.read(byteBufferStatus);
+            byteBufferStatus.flip();
+
+            if (!RemoteUtils.isResponseOK(byteBufferStatus))
+            {
+                channelReader.read(buffer);
+                Exception exception = Serializers.readFrom(buffer, Exception.class);
+
+                throw exception;
+            }
+
+            while (buffer.position() < size)
+            {
+                channelReader.read(buffer);
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            // Empty
+        }
+    }
+
+    /**
      * @param buffer {@link ByteBuffer}
      * @param channelReader {@link ChannelReader}
      * @return {@link ByteBuffer}
@@ -98,6 +512,105 @@ public interface RemoteSupport
     }
 
     /**
+     * @param baseDir String
+     * @param syncItem {@link SyncItem}
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     */
+    public default void update(final String baseDir, final SyncItem syncItem, final ChannelWriter channelWriter, final ChannelReader channelReader)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_UPDATE);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, syncItem);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+
+            // Response auslesen.
+            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param syncItem {@link SyncItem}
+     * @param withChecksum boolean
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     */
+    public default void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final ChannelWriter channelWriter,
+                                     final ChannelReader channelReader)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            Serializers.writeTo(buffer, JSyncCommand.TARGET_VALIDATE_FILE);
+            Serializers.writeTo(buffer, baseDir);
+            Serializers.writeTo(buffer, syncItem);
+            Serializers.writeTo(buffer, withChecksum);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+
+            // Response auslesen.
+            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
      * @param channel {@link AsynchronousSocketChannel}
      * @param buffer {@link ByteBuffer}
      * @return int, Bytes written
@@ -131,5 +644,62 @@ public interface RemoteSupport
         }
 
         return totalWritten;
+    }
+
+    /**
+     * @param baseDir String
+     * @param relativeFile String
+     * @param position long
+     * @param size long
+     * @param buffer {@link ByteBuffer}
+     * @param channelWriter {@link ChannelWriter}
+     * @param channelReader {@link ChannelReader}
+     */
+    public default void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer,
+                                   final ChannelWriter channelWriter, final ChannelReader channelReader)
+    {
+        ByteBuffer bufferCmd = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            bufferCmd.clear();
+            Serializers.writeTo(bufferCmd, JSyncCommand.WRITE_CHUNK);
+            Serializers.writeTo(bufferCmd, baseDir);
+            Serializers.writeTo(bufferCmd, relativeFile);
+            bufferCmd.putLong(position);
+            bufferCmd.putLong(size);
+
+            bufferCmd.flip();
+            channelWriter.write(bufferCmd);
+
+            buffer.flip();
+            channelWriter.write(buffer);
+
+            // Response auslesen.
+            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
+
+            if (!RemoteUtils.isResponseOK(byteBufferResponse))
+            {
+                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+
+                throw exception;
+            }
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(bufferCmd);
+        }
     }
 }

@@ -16,8 +16,10 @@ import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
+import de.freese.jsync.filesystem.receiver.RemoteReceiverAsync;
 import de.freese.jsync.filesystem.receiver.RemoteReceiverBlocking;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
+import de.freese.jsync.filesystem.sender.RemoteSenderAsync;
 import de.freese.jsync.filesystem.sender.RemoteSenderBlocking;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
@@ -33,6 +35,11 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
  */
 public abstract class AbstractClient implements Client
 {
+    /**
+     *
+     */
+    private static final boolean USER_ASYNC = false;
+
     /**
      *
      */
@@ -87,8 +94,7 @@ public abstract class AbstractClient implements Client
 
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
-            this.sender = new RemoteSenderBlocking();
-            // this.sender = new RemoteSenderAsync();
+            this.sender = USER_ASYNC ? new RemoteSenderAsync() : new RemoteSenderBlocking();
         }
         else
         {
@@ -97,8 +103,7 @@ public abstract class AbstractClient implements Client
 
         if ((receiverUri.getScheme() != null) && receiverUri.getScheme().startsWith("jsync"))
         {
-            this.receiver = new RemoteReceiverBlocking();
-            // this.receiver = new RemoteReceiverAsync();
+            this.receiver = USER_ASYNC ? new RemoteReceiverAsync() : new RemoteReceiverBlocking();
         }
         else
         {
