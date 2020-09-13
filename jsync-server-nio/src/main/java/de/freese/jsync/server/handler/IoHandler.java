@@ -1,7 +1,6 @@
 // Created: 04.11.2018
 package de.freese.jsync.server.handler;
 
-import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -9,8 +8,9 @@ import java.nio.charset.StandardCharsets;
  * Verarbeitet den Request und Response.
  *
  * @author Thomas Freese
+ * @param <T> <T> Type
  */
-public interface IoHandler
+public interface IoHandler<T>
 {
     /**
      *
@@ -28,14 +28,14 @@ public interface IoHandler
     /**
      * Verarbeitet den Request.
      *
-     * @param selectionKey {@link SelectionKey}
+     * @param input Object
      */
-    public void read(final SelectionKey selectionKey);
+    public void read(final T input);
 
     /**
      * Verarbeitet den Response.
      *
-     * @param selectionKey {@link SelectionKey}
+     * @param outpuT Object
      */
-    public void write(final SelectionKey selectionKey);
+    public void write(final T outpuT);
 }

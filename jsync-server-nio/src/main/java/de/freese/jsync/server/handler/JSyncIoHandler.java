@@ -30,7 +30,7 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
  * @author Thomas Freese
  * @see IoHandler
  */
-public class JSyncIoHandler implements IoHandler
+public class JSyncIoHandler implements IoHandler<SelectionKey>
 {
     /**
      *
@@ -545,7 +545,7 @@ public class JSyncIoHandler implements IoHandler
     }
 
     /**
-     * @see IoHandler#read(SelectionKey)
+     * @see de.freese.jsync.server.handler.IoHandler#read(java.lang.Object)
      */
     @Override
     public void read(final SelectionKey selectionKey)
@@ -649,8 +649,10 @@ public class JSyncIoHandler implements IoHandler
                     break;
             }
 
-            // selectionKey.interestOps(SelectionKey.OP_READ);
-            // selectionKey.interestOps(SelectionKey.OP_WRITE);
+            if (selectionKey.isValid())
+            {
+                selectionKey.interestOps(SelectionKey.OP_READ);
+            }
         }
         catch (Exception ex)
         {
@@ -854,7 +856,7 @@ public class JSyncIoHandler implements IoHandler
     }
 
     /**
-     * @see IoHandler#write(SelectionKey)
+     * @see de.freese.jsync.server.handler.IoHandler#write(java.lang.Object)
      */
     @Override
     public void write(final SelectionKey selectionKey)
@@ -866,6 +868,8 @@ public class JSyncIoHandler implements IoHandler
             if (selectionKey.attachment() instanceof Runnable)
             {
                 Runnable task = (Runnable) selectionKey.attachment();
+                selectionKey.attach(null);
+
                 task.run();
             }
 

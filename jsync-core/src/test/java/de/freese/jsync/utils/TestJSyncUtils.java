@@ -10,8 +10,6 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import de.freese.jsync.utils.DigestUtils;
-import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese

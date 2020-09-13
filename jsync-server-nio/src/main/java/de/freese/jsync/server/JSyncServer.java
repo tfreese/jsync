@@ -1,133 +1,106 @@
-// Created: 31.10.2016
+/**
+ * Created: 31.10.2016
+ */
+
 package de.freese.jsync.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
+import java.net.StandardSocketOptions;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import de.freese.jsync.server.dispatcher.Dispatcher;
+import de.freese.jsync.server.dispatcher.DispatcherPool;
 import de.freese.jsync.server.handler.IoHandler;
 
 /**
- * Der Server nimmt nur die neuen Client-Verbindungen entgegen und übergibt sie einem {@link Worker}.<br>
- * Der {@link Worker} kümmert dann sich um das Connection-Handling.<br>
- * Der {@link IoHandler} übernimmt das Lesen und Schreiben von Request und Response.<br>
- * Zur Performance-Optimierung können mehrere {@link Worker} gestartet werden,<br>
- * die im Wechsel (RoundRobin) mit neuen Verbindungen versorgt werden.
+ * Dieser Server arbeitet nach dem Acceptor-Reactor Pattern.<br>
+ * Der {@link Acceptor} nimmt die neuen Client-Verbindungen entgegen und übergibt sie einem {@link Dispatcher}.<br>
+ * Der {@link Dispatcher} kümmert sich um das Connection-Handling der Clients nach dem 'accept'.<br>
+ * Der {@link IoHandler} übernimmt das Lesen und Schreiben von Request und Response in einem separatem Thread.<br>
  *
  * @author Thomas Freese
  */
-@SuppressWarnings("resource")
 public class JSyncServer implements Runnable
 {
     /**
      *
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncServer.class);
-
     /**
      *
      */
-    private static final AtomicInteger SERVER_NUMBER = new AtomicInteger(1);
-
+    private Acceptor acceptor;
     /**
      *
      */
-    private IoHandler ioHandler;
-
+    private final DispatcherPool dispatcherPool;
     /**
      *
      */
-    private boolean isShutdown;
-
-    /**
-     *
-     */
-    private String name = getClass().getSimpleName() + "-" + SERVER_NUMBER.getAndIncrement();
-
+    private IoHandler<SelectionKey> ioHandler;
     /**
     *
     */
-    private final int numOfWorkers;
-
+    private String name = getClass().getSimpleName();
     /**
      *
      */
     private final int port;
-
-    /**
-     *
-     */
-    private Selector selector;
-
     /**
      *
      */
     private final SelectorProvider selectorProvider;
-
     /**
      *
      */
     private ServerSocketChannel serverSocketChannel;
-
     /**
-    *
-    */
+     * ReentrantLock nicht möglich, da dort die Locks auf Thread-Ebene verwaltet werden.
+     */
     private final Semaphore startLock = new Semaphore(1, true);
-
-    /**
-     *
-     */
-    private final Semaphore stopLock = new Semaphore(1, true);
-
-    /**
-     *
-     */
-    private ThreadFactory threadFactory = Executors.defaultThreadFactory();
-
-    /**
-     * Queue für die {@link Worker}.
-     */
-    private final LinkedList<Worker> workers = new LinkedList<>();
 
     /**
      * Erstellt ein neues {@link JSyncServer} Object.
      *
      * @param port int
-     * @param numOfWorkers int
+     * @param numOfDispatcher int
+     * @param numOfWorker int
+     * @throws IOException Falls was schief geht.
      */
-    public JSyncServer(final int port, final int numOfWorkers)
+    public JSyncServer(final int port, final int numOfDispatcher, final int numOfWorker) throws IOException
     {
-        this(port, numOfWorkers, SelectorProvider.provider());
+        this(port, numOfDispatcher, numOfWorker, SelectorProvider.provider());
     }
 
     /**
      * Erstellt ein neues {@link JSyncServer} Object.
      *
      * @param port int
-     * @param numOfWorkers int
+     * @param numOfDispatcher int
+     * @param numOfWorker int
      * @param selectorProvider {@link SelectorProvider}
+     * @throws IOException Falls was schief geht.
      */
-    public JSyncServer(final int port, final int numOfWorkers, final SelectorProvider selectorProvider)
+    public JSyncServer(final int port, final int numOfDispatcher, final int numOfWorker, final SelectorProvider selectorProvider) throws IOException
     {
         super();
 
+        if (port <= 0)
+        {
+            throw new IllegalArgumentException("port <= 0: " + port);
+        }
+
         this.port = port;
-        this.numOfWorkers = numOfWorkers;
+        this.dispatcherPool = new DispatcherPool(numOfDispatcher, numOfWorker);
         this.selectorProvider = Objects.requireNonNull(selectorProvider, "selectorProvider required");
+
+        this.startLock.acquireUninterruptibly();
     }
 
     /**
@@ -139,93 +112,11 @@ public class JSyncServer implements Runnable
     }
 
     /**
-     * Reagieren auf Requests.
+     * @return boolean
      */
-    private void listen()
+    public boolean isStarted()
     {
-        getLogger().info("server listening on port: {}", this.serverSocketChannel.socket().getLocalPort());
-
-        this.startLock.release();
-        this.stopLock.acquireUninterruptibly();
-
-        try
-        {
-            while (!Thread.interrupted())
-            {
-                int readyChannels = this.selector.select();
-
-                if (this.isShutdown || !this.selector.isOpen())
-                {
-                    break;
-                }
-
-                if (readyChannels > 0)
-                {
-                    Set<SelectionKey> selected = this.selector.selectedKeys();
-                    Iterator<SelectionKey> iterator = selected.iterator();
-
-                    while (iterator.hasNext())
-                    {
-                        SelectionKey selectionKey = iterator.next();
-                        iterator.remove();
-
-                        if (!selectionKey.isValid())
-                        {
-                            getLogger().debug("{}: SelectionKey not valid", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
-                        }
-
-                        if (selectionKey.isAcceptable())
-                        {
-                            // Verbindung mit Client herstellen.
-                            SocketChannel socketChannel = this.serverSocketChannel.accept();
-
-                            getLogger().debug("{}: Connection Accepted", socketChannel.getRemoteAddress());
-
-                            // Socket dem Worker übergeben.
-                            nextWorker().addSession(socketChannel);
-                        }
-                        else if (selectionKey.isConnectable())
-                        {
-                            getLogger().debug("{}: Client Connected", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
-                        }
-                    }
-
-                    selected.clear();
-                }
-            }
-        }
-        catch (IOException ex)
-        {
-            getLogger().error(null, ex);
-        }
-        finally
-        {
-            this.stopLock.release();
-        }
-
-        getLogger().info("server stopped on port: {}", this.port);
-    }
-
-    /**
-     * Liefert den nächsten {@link Worker} im RoundRobin-Verfahren.<br>
-     *
-     * @return {@link Worker}
-     * @throws IOException Falls was schief geht.
-     */
-    private synchronized Worker nextWorker() throws IOException
-    {
-        if (this.isShutdown)
-        {
-            return null;
-        }
-
-        // Ersten Worker entnehmen.
-        Worker worker = this.workers.poll();
-
-        // Worker wieder hinten dran hängen.
-        this.workers.add(worker);
-
-        return worker;
+        return this.startLock.availablePermits() > 0;
     }
 
     /**
@@ -234,47 +125,35 @@ public class JSyncServer implements Runnable
     @Override
     public void run()
     {
-        getLogger().info("starting server on port: {}", this.port);
+        getLogger().info("starting '{}' on port: {}", this.name, this.port);
 
         Objects.requireNonNull(this.ioHandler, "ioHandler requried");
 
         try
         {
-            this.selector = this.selectorProvider.openSelector();
-
+            // this.serverSocketChannel = ServerSocketChannel.open();
             this.serverSocketChannel = this.selectorProvider.openServerSocketChannel();
             this.serverSocketChannel.configureBlocking(false);
+            this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+            // this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, true); // Wird nicht von jedem OS unterstützt.
+            this.serverSocketChannel.bind(new InetSocketAddress(this.port), 50);
 
-            ServerSocket socket = this.serverSocketChannel.socket();
-            socket.setReuseAddress(true);
-            socket.bind(new InetSocketAddress(this.port), 50);
+            // ServerSocket socket = this.serverSocketChannel.socket();
+            // socket.setReuseAddress(true);
+            // socket.bind(new InetSocketAddress(this.port), 50);
 
-            // SelectionKey selectionKey =
-            // this.serverSocketChannel.register(this.selector, SelectionKey.OP_ACCEPT);
-            // selectionKey.attach(this);
+            // Erzeugen der Dispatcher.
+            this.dispatcherPool.start(this.ioHandler, this.selectorProvider, this.name + "-" + this.port);
 
-            // Erzeugen der Worker.
-            while (this.workers.size() < this.numOfWorkers)
-            {
-                Worker worker = new Worker(this.ioHandler);
+            // Erzeugen des Acceptors
+            this.acceptor = new Acceptor(this.selectorProvider.openSelector(), this.serverSocketChannel, this.dispatcherPool);
 
-                this.workers.add(worker);
+            Thread thread = new ServerThreadFactory(this.name + "-" + this.port + "-acceptor-").newThread(this.acceptor);
+            getLogger().debug("start {}", thread.getName());
+            thread.start();
 
-                String threadName = this.name + "-worker-" + this.workers.size();
-
-                getLogger().info("start worker: {}", threadName);
-
-                Thread thread = this.threadFactory.newThread(worker);
-                thread.setName(threadName);
-                thread.setDaemon(true);
-                thread.start();
-            }
-
-            @SuppressWarnings("unused")
-            SelectionKey selectionKey = this.serverSocketChannel.register(this.selector, SelectionKey.OP_ACCEPT);
-            // selectionKey.attach(this);
-
-            listen();
+            getLogger().info("'{}' listening on port: {}", this.name, this.port);
+            this.startLock.release();
         }
         catch (Exception ex)
         {
@@ -285,9 +164,9 @@ public class JSyncServer implements Runnable
     /**
      * @param ioHandler {@link IoHandler}
      */
-    public void setIoHandler(final IoHandler ioHandler)
+    public void setIoHandler(final IoHandler<SelectionKey> ioHandler)
     {
-        this.ioHandler = ioHandler;
+        this.ioHandler = Objects.requireNonNull(ioHandler, "ioHandler requried");
     }
 
     /**
@@ -299,29 +178,15 @@ public class JSyncServer implements Runnable
     }
 
     /**
-     * @param threadFactory {@link ThreadFactory}
-     */
-    public void setThreadFactory(final ThreadFactory threadFactory)
-    {
-        this.threadFactory = Objects.requireNonNull(threadFactory, "threadFactory required");
-    }
-
-    /**
      * Starten des Servers.
-     *
-     * @throws IOException Falls was schief geht.
      */
-    public void start() throws IOException
+    public void start()
     {
-        this.startLock.acquireUninterruptibly();
+        run();
 
-        Thread thread = this.threadFactory.newThread(this::run);
-        thread.setName(this.name);
-        thread.setDaemon(false);
-        thread.start();
-
-        // Warten bis die Initialisierung fertig ist.
-        this.startLock.acquireUninterruptibly();
+        // Warten bis fertich.
+        // this.startLock.acquireUninterruptibly();
+        // this.startLock.release();
     }
 
     /**
@@ -329,39 +194,27 @@ public class JSyncServer implements Runnable
      */
     public void stop()
     {
-        getLogger().info("stopping server on port: {}", this.port);
+        getLogger().info("stopping '{}' on port: {}", this.name, this.port);
 
-        this.isShutdown = true;
-
-        this.workers.forEach(Worker::stop);
-
-        this.selector.wakeup();
-
-        this.stopLock.acquireUninterruptibly();
+        this.acceptor.stop();
+        this.dispatcherPool.stop();
 
         try
         {
-            SelectionKey selectionKey = this.serverSocketChannel.keyFor(this.selector);
-
-            if (selectionKey != null)
-            {
-                selectionKey.cancel();
-            }
+            // SelectionKey selectionKey = this.serverSocketChannel.keyFor(this.selector);
+            //
+            // if (selectionKey != null)
+            // {
+            // selectionKey.cancel();
+            // }
 
             this.serverSocketChannel.close();
-
-            if (this.selector.isOpen())
-            {
-                this.selector.close();
-            }
         }
         catch (IOException ex)
         {
             getLogger().error(null, ex);
         }
-        finally
-        {
-            this.stopLock.release();
-        }
+
+        getLogger().info("'{}' stopped on port: {}", this.name, this.port);
     }
 }

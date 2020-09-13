@@ -17,8 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import de.freese.jsync.AbstractJSyncTest;
 import de.freese.jsync.Options;
-import de.freese.jsync.generator.DefaultGenerator;
-import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
