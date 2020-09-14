@@ -51,17 +51,6 @@ public class AsynchronousSocketChannelPool extends AbstractPool<AsynchronousSock
     }
 
     /**
-     * @see de.freese.jsync.utils.pool.AbstractPool#destroy(java.util.function.Consumer)
-     */
-    @Override
-    public void destroy(final Consumer<AsynchronousSocketChannel> cleaner)
-    {
-        super.destroy(cleaner);
-
-        JSyncUtils.shutdown(this.channelGroup, getLogger());
-    }
-
-    /**
      * @see de.freese.jsync.utils.pool.AbstractPool#createObject()
      */
     @Override
@@ -74,6 +63,7 @@ public class AsynchronousSocketChannelPool extends AbstractPool<AsynchronousSock
             AsynchronousSocketChannel channel = AsynchronousSocketChannel.open(this.channelGroup);
 
             Future<Void> futureConnect = channel.connect(serverAddress);
+
             futureConnect.get();
 
             return channel;
@@ -90,6 +80,17 @@ public class AsynchronousSocketChannelPool extends AbstractPool<AsynchronousSock
         {
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * @see de.freese.jsync.utils.pool.AbstractPool#destroy(java.util.function.Consumer)
+     */
+    @Override
+    public void destroy(final Consumer<AsynchronousSocketChannel> cleaner)
+    {
+        super.destroy(cleaner);
+
+        JSyncUtils.shutdown(this.channelGroup, getLogger());
     }
 
     /**

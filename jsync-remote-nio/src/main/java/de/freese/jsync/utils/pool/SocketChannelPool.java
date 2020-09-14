@@ -40,6 +40,12 @@ public class SocketChannelPool extends AbstractPool<SocketChannel>
             InetSocketAddress serverAddress = new InetSocketAddress(this.uri.getHost(), this.uri.getPort());
 
             SocketChannel channel = SocketChannel.open(serverAddress);
+
+            while (!channel.finishConnect())
+            {
+                // can do something here...
+            }
+
             channel.configureBlocking(true);
 
             return channel;
