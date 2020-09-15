@@ -9,11 +9,11 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jsync-remote-nio</artifactId>
+    <artifactId>jsync-remote-spring</artifactId>
     <packaging>jar</packaging>
 
     <name>${project.groupId} - ${project.artifactId}</name>
-    <description>A Java rsync clone: NIO-Remote Module</description>
+    <description>A Java rsync clone: Spring-Remote Module</description>
 
     <dependencies>
         <!-- compile scope -->

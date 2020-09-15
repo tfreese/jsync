@@ -13,7 +13,7 @@
     <packaging>jar</packaging>
 
     <name>${project.groupId} - ${project.artifactId}</name>
-    <description>A Java rsync clone: Server-NIO Module</description>
+    <description>A Java rsync clone: NIO-Server Module</description>
 
     <properties>
         <skipTest>false</skipTest>

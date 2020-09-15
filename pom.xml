@@ -28,6 +28,8 @@
         <module>jsync-core</module>
         <module>jsync-remote-nio</module>
         <module>jsync-server-nio</module>
+        <module>jsync-remote-spring</module>
+        <module>jsync-server-spring</module>        
         <module>jsync-client</module>
         <module>jsync-console</module>
         <module>jsync-swing</module>

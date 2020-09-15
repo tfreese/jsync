@@ -13,7 +13,7 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
 import de.freese.jsync.utils.pool.SocketChannelPool;
 
 /**
- * {@link Receiver} für Remote-Filesysteme.
+ * {@link Receiver} für NIO Remote-Filesysteme.
  *
  * @author Thomas Freese
  */
