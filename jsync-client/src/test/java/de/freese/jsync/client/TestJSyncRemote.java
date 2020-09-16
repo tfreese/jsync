@@ -30,6 +30,7 @@ import de.freese.jsync.spring.server.JsyncServerApplication;
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
+@Disabled
 class TestJSyncRemote extends AbstractJSyncTest
 {
     /**

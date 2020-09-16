@@ -136,6 +136,6 @@ public class DispatcherPool implements Dispatcher
     public void stop()
     {
         this.dispatchers.forEach(DefaultDispatcher::stop);
-        this.executorServiceWorker.isShutdown();
+        this.executorServiceWorker.shutdown();
     }
 }
