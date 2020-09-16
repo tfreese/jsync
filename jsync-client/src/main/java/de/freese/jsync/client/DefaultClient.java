@@ -35,6 +35,19 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
+     * Erzeugt eine neue Instanz von {@link DefaultClient}.
+     *
+     * @param options {@link Options}
+     * @param senderUri {@link URI}
+     * @param receiverUri {@link URI}
+     * @param remoteMode {@link de.freese.jsync.client.AbstractClient.RemoteMode}
+     */
+    public DefaultClient(final Options options, final URI senderUri, final URI receiverUri, final RemoteMode remoteMode)
+    {
+        super(options, senderUri, receiverUri, remoteMode);
+    }
+
+    /**
      * @see de.freese.jsync.client.Client#mergeSyncItems(java.util.List, java.util.List)
      */
     @Override

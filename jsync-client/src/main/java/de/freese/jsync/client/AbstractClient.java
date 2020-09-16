@@ -16,15 +16,17 @@ import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
-import de.freese.jsync.filesystem.receiver.RemoteReceiverAsync;
-import de.freese.jsync.filesystem.receiver.RemoteReceiverBlocking;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.filesystem.sender.RemoteSenderAsync;
-import de.freese.jsync.filesystem.sender.RemoteSenderBlocking;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
+import de.freese.jsync.nio.filesystem.receiver.RemoteReceiverAsync;
+import de.freese.jsync.nio.filesystem.receiver.RemoteReceiverBlocking;
+import de.freese.jsync.nio.filesystem.sender.RemoteSenderAsync;
+import de.freese.jsync.nio.filesystem.sender.RemoteSenderBlocking;
+import de.freese.jsync.spring.filesystem.receiver.RemoteReceiverRestTemplate;
+import de.freese.jsync.spring.filesystem.sender.RemoteSenderRestTemplate;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
@@ -36,9 +38,27 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
 public abstract class AbstractClient implements Client
 {
     /**
-     *
+     * @author Thomas Freese
      */
-    private static final boolean USER_ASYNC = false;
+    public enum RemoteMode
+    {
+        /**
+         *
+         */
+        NIO_ASYNC,
+        /**
+         *
+         */
+        NIO_BLOCKING,
+        /**
+         *
+         */
+        SPRING_REST_TEMPLATE,
+        /**
+         *
+         */
+        SPRING_WEBCLIENT;
+    }
 
     /**
      *
@@ -63,6 +83,11 @@ public abstract class AbstractClient implements Client
     /**
      *
      */
+    private final RemoteMode remoteMode;
+
+    /**
+     *
+     */
     private final Sender sender;
 
     /**
@@ -82,19 +107,38 @@ public abstract class AbstractClient implements Client
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
      */
-    public AbstractClient(final Options options, final URI senderUri, final URI receiverUri)
+    protected AbstractClient(final Options options, final URI senderUri, final URI receiverUri)
     {
-        super();
+        this(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
+    }
 
+    /**
+     * Erzeugt eine neue Instanz von {@link AbstractClient}.
+     *
+     * @param options {@link Options}
+     * @param senderUri {@link URI}
+     * @param receiverUri {@link URI}
+     * @param remoteMode {@link RemoteMode}
+     */
+    protected AbstractClient(final Options options, final URI senderUri, final URI receiverUri, final RemoteMode remoteMode)
+    {
         this.options = Objects.requireNonNull(options, "options required");
         this.senderUri = Objects.requireNonNull(senderUri, "senderUri required");
         this.receiverUri = Objects.requireNonNull(receiverUri, "receiverUri required");
+        this.remoteMode = remoteMode;
+
         this.senderPath = JSyncUtils.normalizePath(senderUri);
         this.receiverPath = JSyncUtils.normalizePath(receiverUri);
 
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
-            this.sender = USER_ASYNC ? new RemoteSenderAsync() : new RemoteSenderBlocking();
+            switch (this.remoteMode)
+            {
+                case NIO_ASYNC -> this.sender = new RemoteSenderAsync();
+                case NIO_BLOCKING -> this.sender = new RemoteSenderBlocking();
+                case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestTemplate();
+                default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
+            }
         }
         else
         {
@@ -103,7 +147,13 @@ public abstract class AbstractClient implements Client
 
         if ((receiverUri.getScheme() != null) && receiverUri.getScheme().startsWith("jsync"))
         {
-            this.receiver = USER_ASYNC ? new RemoteReceiverAsync() : new RemoteReceiverBlocking();
+            switch (this.remoteMode)
+            {
+                case NIO_ASYNC -> this.receiver = new RemoteReceiverAsync();
+                case NIO_BLOCKING -> this.receiver = new RemoteReceiverBlocking();
+                case SPRING_REST_TEMPLATE -> this.receiver = new RemoteReceiverRestTemplate();
+                default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
+            }
         }
         else
         {
