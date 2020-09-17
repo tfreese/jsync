@@ -15,10 +15,12 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -32,6 +34,7 @@ import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
 import de.freese.jsync.spring.HttpHeaderInterceptor;
+import de.freese.jsync.spring.utils.ByteBufferHttpMessageConverter;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -50,6 +53,11 @@ public class RemoteSenderRestTemplate extends AbstractSender
      *
      */
     private RestTemplate restTemplate;
+
+    /**
+    *
+    */
+    private RestTemplateBuilder restTemplateBuilder;
 
     /**
      * Erstellt ein neues {@link RemoteSenderRestTemplate} Object.
@@ -75,12 +83,13 @@ public class RemoteSenderRestTemplate extends AbstractSender
 
         this.poolingConnectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
         this.poolingConnectionManager.setMaxTotal(30);
+        this.poolingConnectionManager.setDefaultSocketConfig(SocketConfig.custom().setSoTimeout(120000).build());
 
         // @formatter:off
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(3000)
-                .setConnectTimeout(3000)
-                .setSocketTimeout(3000).build()
+                .setConnectionRequestTimeout(120000)
+                .setConnectTimeout(120000)
+                .setSocketTimeout(120000).build()
                 ;
 
         HttpClient httpClient = HttpClients.custom()
@@ -93,20 +102,22 @@ public class RemoteSenderRestTemplate extends AbstractSender
 
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
 
-//        // @formatter:off
-//        this.restTemplateBuilder = this.restTemplateBuilder
-//                .rootUri(rootUri)
-//                .errorHandler(new NoOpResponseErrorHandler())
-//                .requestFactory(() -> httpRequestFactory);
-//        // @formatter:on
-
         String rootUri = String.format("http://%s:%d/jsync/sender", uri.getHost(), uri.getPort());
+
+        // @formatter:off
+        this.restTemplateBuilder = new RestTemplateBuilder()
+                .rootUri(rootUri)
+                .requestFactory(() -> httpRequestFactory)
+                .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE),new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE))
+                .additionalMessageConverters(new ByteBufferHttpMessageConverter())
+                ;
+        // @formatter:on
 
         this.restTemplate = new RestTemplate();
         this.restTemplate.setRequestFactory(httpRequestFactory);
         this.restTemplate.setUriTemplateHandler(new RootUriTemplateHandler(rootUri, this.restTemplate.getUriTemplateHandler()));
-        this.restTemplate.setInterceptors(List.of(new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE),
-                new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE)));
+        this.restTemplate.setInterceptors(List.of(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE),
+                new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE)));
 
         // HttpHeaders headers = new HttpHeaders();
         // headers.setContentType(MediaType.APPLICATION_JSON);
@@ -262,31 +273,61 @@ public class RemoteSenderRestTemplate extends AbstractSender
                 .build();
         // @formatter:on
 
-        ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), Resource.class);
-        Resource resource = responseEntity.getBody();
+        // @formatter:off
+        RestTemplate rt = this.restTemplateBuilder
+            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE),new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_OCTET_STREAM_VALUE))
+            .build()
+            ;
+        // @formatter:on
+
+        // ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), Resource.class);
+        // Resource resource = responseEntity.getBody();
+
+        ResponseEntity<ByteBuffer> responseEntity = rt.getForEntity(builder.toUriString(), ByteBuffer.class);
+        ByteBuffer byteBufferResponse = responseEntity.getBody();
 
         try
         {
-            InputStream inputStream = resource.getInputStream();
             buffer.clear();
-
-            while (inputStream.available() > 0)
-            {
-                buffer.put((byte) inputStream.read());
-            }
+            buffer.put(byteBufferResponse);
+            // InputStream inputStream = resource.getInputStream();
+            // buffer.clear();
+            //
+            // while (inputStream.available() > 0)
+            // {
+            // buffer.put((byte) inputStream.read());
+            // }
         }
         catch (RuntimeException rex)
         {
             throw rex;
         }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
+        // catch (IOException ex)
+        // {
+        // throw new UncheckedIOException(ex);
+        // }
         catch (Exception ex)
         {
             throw new RuntimeException(ex);
         }
+
+        // final ResponseExtractor responseExtractor =
+        // (ClientHttpResponse clientHttpResponse) -> {
+        // streamConsumer.accept(clientHttpResponse.getBody());
+        // return null;
+        // };
+        // restTemplate.execute(url, HttpMethod.GET, null, responseExtractor);
+
+        // byte data[] = restTemplate.execute(link, HttpMethod.GET, null, new BinaryFileExtractor());
+        // return new ByteArrayInputStream(data);
+        //
+        // public class BinaryFileExtractor implements ResponseExtractor<byte[]> {
+        //
+        // @Override
+        // public byte[] extractData(ClientHttpResponse response) throws IOException {
+        // return ByteStreams.toByteArray(response.getBody());
+        // }
+        // }
     }
 
     // /**

@@ -351,7 +351,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFileByChannel(pair.getSenderItem(), clientListener));
+                .forEach(pair -> copyFileByChunk(pair.getSenderItem(), clientListener));
         //@formatter:on
     }
 

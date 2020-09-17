@@ -229,9 +229,9 @@ public class SenderRestService
     // @GetMapping("/chunk/{baseDir}/{relativeFile}/{position}/{size}")
     // public ResponseEntity<Resource> readChunk(@PathVariable("baseDir") final String baseDir, @PathVariable("relativeFile") final String relativeFile,
     // @PathVariable("position") final long position, @PathVariable("size") final long size)
-    @GetMapping("/chunk")
-    public ResponseEntity<Resource> readChunk(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                              @RequestParam("position") final long position, @RequestParam("size") final long size)
+    @GetMapping(path = "/chunk", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<ByteBuffer> readChunk(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                @RequestParam("position") final long position, @RequestParam("size") final long size)
     {
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
@@ -243,13 +243,17 @@ public class SenderRestService
 
             // byte[] data = new byte[buffer.limit()];
             // buffer.get(data);
-            Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
+            // Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
 
             // response.getOutputStream().write(data);
 
+            // HttpHeaders headers = new HttpHeaders();
+            // headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+            // ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
+
             HttpHeaders headers = new HttpHeaders();
             headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-            ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
+            ResponseEntity<ByteBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
 
             return responseEntity;
         }

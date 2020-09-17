@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -197,13 +199,13 @@ public class ReceiverRestService
 
     /**
      * @param baseDir String
-     * @param syncItemData byte[]
+     * @param syncItemData {@link ByteBuffer}
      * @return {@link ResponseEntity}
      */
-    @GetMapping("/update")
-    public ResponseEntity<String> update(@RequestParam("baseDir") final String baseDir, @RequestParam final byte[] syncItemData)
+    @PostMapping("/update")
+    public ResponseEntity<String> update(@RequestParam("baseDir") final String baseDir, @RequestBody final ByteBuffer syncItemData)
     {
-        SyncItem syncItem = Serializers.readFrom(ByteBuffer.wrap(syncItemData), SyncItem.class);
+        SyncItem syncItem = Serializers.readFrom(syncItemData, SyncItem.class);
 
         this.receiver.update(baseDir, syncItem);
 
@@ -213,14 +215,14 @@ public class ReceiverRestService
     /**
      * @param baseDir String
      * @param withChecksum boolean
-     * @param syncItemData byte[]
+     * @param syncItemData {@link ByteBuffer}
      * @return {@link ResponseEntity}
      */
-    @GetMapping("/validate")
+    @PostMapping("/validate")
     public ResponseEntity<String> validate(@RequestParam("baseDir") final String baseDir, @RequestParam("withChecksum") final boolean withChecksum,
-                                           @RequestParam final byte[] syncItemData)
+                                           @RequestBody final ByteBuffer syncItemData)
     {
-        SyncItem syncItem = Serializers.readFrom(ByteBuffer.wrap(syncItemData), SyncItem.class);
+        SyncItem syncItem = Serializers.readFrom(syncItemData, SyncItem.class);
 
         this.receiver.validateFile(baseDir, syncItem, withChecksum);
 
@@ -232,37 +234,16 @@ public class ReceiverRestService
      * @param relativeFile String
      * @param position long
      * @param size long
+     * @param chunk {@link ByteBuffer}
      * @return {@link ResponseEntity}
      */
-    @GetMapping("/chunk")
-    public ResponseEntity<Resource> writeChunk(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                               @RequestParam("position") final long position, @RequestParam("size") final long size)
+    @PostMapping("/chunk")
+    public ResponseEntity<String> writeChunk(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                             @RequestParam("position") final long position, @RequestParam("size") final long size,
+                                             @RequestBody final ByteBuffer chunk)
     {
-        // ByteBuffer buffer = ByteBufferPool.getInstance().get();
-        //
-        // try
-        // {
-        // buffer.clear();
-        // this.receiver.writeChunk(baseDir, relativeFile, position, size, buffer);
-        // buffer.flip();
-        //
-        // // byte[] data = new byte[buffer.limit()];
-        // // buffer.get(data);
-        // Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
-        //
-        // // response.getOutputStream().write(data);
-        //
-        // HttpHeaders headers = new HttpHeaders();
-        // headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-        // ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
-        //
-        // return responseEntity;
-        // }
-        // finally
-        // {
-        // ByteBufferPool.getInstance().release(buffer);
-        // }
+        this.receiver.writeChunk(baseDir, relativeFile, position, size, chunk);
 
-        return null;
+        return ResponseEntity.ok("OK");
     }
 }

@@ -1,18 +1,29 @@
 // Created: 15.09.2020
 package de.freese.jsync.spring.server;
 
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
+import de.freese.jsync.spring.utils.ByteBufferHttpMessageConverter;
 
 /**
  * @author Thomas Freese
  */
 @Configuration
-public class Config
+public class Config implements WebMvcConfigurer// , WebServerFactoryCustomizer<TomcatServletWebServerFactory>
 {
+    /**
+     *
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(Config.class);
+
     /**
      * Erstellt ein neues {@link Config} Object.
      */
@@ -20,6 +31,68 @@ public class Config
     {
         super();
     }
+
+    /**
+     * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurer#configureMessageConverters(java.util.List)
+     */
+    @Override
+    public void configureMessageConverters(final List<HttpMessageConverter<?>> converters)
+    {
+        converters.add(new ByteBufferHttpMessageConverter());
+    }
+
+    // /**
+    // * @see org.springframework.boot.web.server.WebServerFactoryCustomizer#customize(org.springframework.boot.web.server.WebServerFactory)
+    // */
+    // @Override
+    // public void customize(final TomcatServletWebServerFactory factory)
+    // {
+    // factory.addConnectorCustomizers(connector -> {
+    // AbstractHttp11Protocol<?> protocol = (AbstractHttp11Protocol<?>) connector.getProtocolHandler();
+    //
+    // // protocol.setConnectionTimeout(120000);
+    // getLogger().info("####################################################################################");
+    // getLogger().info("#");
+    // getLogger().info("# TomcatCustomizer");
+    // getLogger().info("#");
+    // getLogger().info("# custom maxKeepAliveRequests {}", protocol.getMaxKeepAliveRequests());
+    // getLogger().info("# origin keepalive timeout: {} ms", protocol.getKeepAliveTimeout());
+    // getLogger().info("# keepalive timeout: {} ms", protocol.getKeepAliveTimeout());
+    // getLogger().info("# connection timeout: {} ms", protocol.getConnectionTimeout());
+    // getLogger().info("# connection upload timeout: {} ms", protocol.getConnectionUploadTimeout());
+    // getLogger().info("# max connections: {}", protocol.getMaxConnections());
+    // getLogger().info("# session timeout: {}", protocol.getSessionTimeout());
+    // getLogger().info("#");
+    // getLogger().info("####################################################################################");
+    // });
+    // }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return LOGGER;
+    }
+
+    // /**
+    // * @return EmbeddedServletContainerFactory
+    // */
+    // @Bean
+    // public EmbeddedServletContainerFactory getEmbeddedServletContainerFactory()
+    // {
+    // TomcatEmbeddedServletContainerFactory containerFactory = new TomcatEmbeddedServletContainerFactory();
+    // containerFactory.addConnectorCustomizers(new TomcatConnectorCustomizer()
+    // {
+    // @Override
+    // public void customize(final Connector connector)
+    // {
+    // ((AbstractProtocol) connector.getProtocolHandler()).setKeepAliveTimeout(30000);
+    // }
+    // });
+    //
+    // return containerFactory;
+    // }
 
     /**
      * @return {@link LocalhostReceiver}

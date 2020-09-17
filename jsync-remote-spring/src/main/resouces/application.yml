@@ -23,9 +23,12 @@ management:
     
 server:
     port: 8003
+    http2:
+        enabled: true
     servlet:
         context-path: /jsync
     tomcat:
+        connection-timeout: 120000
         threads:
             min-spare: 2
             max: 4
@@ -48,6 +51,8 @@ spring:
             WRITE_DATES_WITH_ZONE_ID: false
         time-zone: Europe/Berlin   
     mvc:
+        async:
+            request-timeout: 120000
         locale: de_DE
         throw-exception-if-no-handler-found: true
     output:
