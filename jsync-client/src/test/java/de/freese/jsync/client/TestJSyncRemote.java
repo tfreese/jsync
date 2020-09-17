@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
@@ -51,15 +53,62 @@ class TestJSyncRemote extends AbstractJSyncTest
     /**
      *
      */
-    private static Options options = null;
+    private static final List<AutoCloseable> CLOSEABLES = new ArrayList<>();
 
     /**
      *
      */
+    private static Options options = null;
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @AfterAll
+    static void afterAll() throws Exception
+    {
+        for (AutoCloseable closeable : CLOSEABLES)
+        {
+            closeable.close();
+        }
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
     @BeforeAll
-    static void beforeAll()
+    static void beforeAll() throws Exception
     {
         options = new Builder().delete(true).dryRun(false).followSymLinks(false).checksum(true).build();
+
+        // NIO-Server Sender
+        JSyncServer serverNioSender = new JSyncServer(8001, 2, 4);
+        serverNioSender.setName("sender");
+        serverNioSender.setIoHandler(new JSyncIoHandler());
+        serverNioSender.start();
+        CLOSEABLES.add(() -> serverNioSender.stop());
+
+        // NIO-Server Receiver
+        JSyncServer serverNioReceiver = new JSyncServer(8002, 2, 4);
+        serverNioReceiver.setName("receiver");
+        serverNioReceiver.setIoHandler(new JSyncIoHandler());
+        serverNioReceiver.start();
+        CLOSEABLES.add(() -> serverNioReceiver.stop());
+
+        // Spring-Server Sender
+        JsyncServerApplication serverSpringSender = new JsyncServerApplication();
+        serverSpringSender.start(new String[]
+        {
+                "--server.port=8003"
+        });
+        CLOSEABLES.add(() -> serverSpringSender.stop());
+
+        // Spring-Server Receiver
+        JsyncServerApplication serverSpringReceiver = new JsyncServerApplication();
+        serverSpringReceiver.start(new String[]
+        {
+                "--server.port=8004"
+        });
+        CLOSEABLES.add(() -> serverSpringReceiver.stop());
     }
 
     /**
@@ -120,18 +169,19 @@ class TestJSyncRemote extends AbstractJSyncTest
     void testNioAsyncLocalToRemote() throws Exception
     {
         System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
 
-        JSyncServer serverReceiver = new JSyncServer(8002, 2, 4);
-        serverReceiver.setName("receiver");
-        serverReceiver.setIoHandler(new JSyncIoHandler());
-        serverReceiver.start();
+        // JSyncServer serverReceiver = new JSyncServer(8002, 2, 4);
+        // serverReceiver.setName("receiver");
+        // serverReceiver.setIoHandler(new JSyncIoHandler());
+        // serverReceiver.start();
 
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
         syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_ASYNC);
 
-        serverReceiver.stop();
+        // serverReceiver.stop();
 
         assertTrue(true);
     }
@@ -143,18 +193,19 @@ class TestJSyncRemote extends AbstractJSyncTest
     void testNioAsyncRemoteToLocal() throws Exception
     {
         System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
 
-        JSyncServer serverSender = new JSyncServer(8001, 2, 4);
-        serverSender.setName("sender");
-        serverSender.setIoHandler(new JSyncIoHandler());
-        serverSender.start();
+        // JSyncServer serverSender = new JSyncServer(8001, 2, 4);
+        // serverSender.setName("sender");
+        // serverSender.setIoHandler(new JSyncIoHandler());
+        // serverSender.start();
 
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
 
         syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_ASYNC);
 
-        serverSender.stop();
+        // serverSender.stop();
 
         assertTrue(true);
     }
@@ -166,16 +217,17 @@ class TestJSyncRemote extends AbstractJSyncTest
     void testNioAsyncRemoteToRemote() throws Exception
     {
         System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
 
-        JSyncServer serverSender = new JSyncServer(8001, 2, 4);
-        serverSender.setName("sender");
-        serverSender.setIoHandler(new JSyncIoHandler());
-        serverSender.start();
-
-        JSyncServer serverReceiver = new JSyncServer(8002, 2, 4);
-        serverReceiver.setName("receiver");
-        serverReceiver.setIoHandler(new JSyncIoHandler());
-        serverReceiver.start();
+        // JSyncServer serverSender = new JSyncServer(8001, 2, 4);
+        // serverSender.setName("sender");
+        // serverSender.setIoHandler(new JSyncIoHandler());
+        // serverSender.start();
+        //
+        // JSyncServer serverReceiver = new JSyncServer(8002, 2, 4);
+        // serverReceiver.setName("receiver");
+        // serverReceiver.setIoHandler(new JSyncIoHandler());
+        // serverReceiver.start();
 
         // URI sender = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
         // URI receiver = new URI("jsync", null, "localhost", 8002, "/" + PATH_ZIEL.toString(), null, null);
@@ -184,8 +236,8 @@ class TestJSyncRemote extends AbstractJSyncTest
 
         syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_ASYNC);
 
-        serverSender.stop();
-        serverReceiver.stop();
+        // serverSender.stop();
+        // serverReceiver.stop();
 
         assertTrue(true);
     }
@@ -197,18 +249,19 @@ class TestJSyncRemote extends AbstractJSyncTest
     void testNioBlockingLocalToRemote() throws Exception
     {
         System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
 
-        JSyncServer serverReceiver = new JSyncServer(8002, 2, 4);
-        serverReceiver.setName("receiver");
-        serverReceiver.setIoHandler(new JSyncIoHandler());
-        serverReceiver.start();
+        // JSyncServer serverReceiver = new JSyncServer(8002, 2, 4);
+        // serverReceiver.setName("receiver");
+        // serverReceiver.setIoHandler(new JSyncIoHandler());
+        // serverReceiver.start();
 
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
         syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
 
-        serverReceiver.stop();
+        // serverReceiver.stop();
 
         assertTrue(true);
     }
@@ -220,18 +273,19 @@ class TestJSyncRemote extends AbstractJSyncTest
     void testNioBlockingRemoteToLocal() throws Exception
     {
         System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
 
-        JSyncServer serverSender = new JSyncServer(8001, 2, 4);
-        serverSender.setName("sender");
-        serverSender.setIoHandler(new JSyncIoHandler());
-        serverSender.start();
+        // JSyncServer serverSender = new JSyncServer(8001, 2, 4);
+        // serverSender.setName("sender");
+        // serverSender.setIoHandler(new JSyncIoHandler());
+        // serverSender.start();
 
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
 
         syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
 
-        serverSender.stop();
+        // serverSender.stop();
 
         assertTrue(true);
     }
@@ -243,16 +297,17 @@ class TestJSyncRemote extends AbstractJSyncTest
     void testNioBlockingRemoteToRemote() throws Exception
     {
         System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
 
-        JSyncServer serverSender = new JSyncServer(8001, 2, 4);
-        serverSender.setName("sender");
-        serverSender.setIoHandler(new JSyncIoHandler());
-        serverSender.start();
-
-        JSyncServer serverReceiver = new JSyncServer(8002, 2, 4);
-        serverReceiver.setName("receiver");
-        serverReceiver.setIoHandler(new JSyncIoHandler());
-        serverReceiver.start();
+        // JSyncServer serverSender = new JSyncServer(8001, 2, 4);
+        // serverSender.setName("sender");
+        // serverSender.setIoHandler(new JSyncIoHandler());
+        // serverSender.start();
+        //
+        // JSyncServer serverReceiver = new JSyncServer(8002, 2, 4);
+        // serverReceiver.setName("receiver");
+        // serverReceiver.setIoHandler(new JSyncIoHandler());
+        // serverReceiver.start();
 
         // URI sender = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
         // URI receiver = new URI("jsync", null, "localhost", 8002, "/" + PATH_ZIEL.toString(), null, null);
@@ -261,8 +316,8 @@ class TestJSyncRemote extends AbstractJSyncTest
 
         syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
 
-        serverSender.stop();
-        serverReceiver.stop();
+        // serverSender.stop();
+        // serverReceiver.stop();
 
         assertTrue(true);
     }
@@ -275,19 +330,20 @@ class TestJSyncRemote extends AbstractJSyncTest
     void testSpringRestTemplateLocalToRemote() throws Exception
     {
         System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
 
-        JsyncServerApplication serverReceiver = new JsyncServerApplication();
-        serverReceiver.start(new String[]
-        {
-                "--server.port=8002"
-        });
+        // JsyncServerApplication serverReceiver = new JsyncServerApplication();
+        // serverReceiver.start(new String[]
+        // {
+        // "--server.port=8002"
+        // });
 
         URI senderUri = PATH_QUELLE.toUri();
-        URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
+        URI receiverUri = new URI("jsync://localhost:8004/" + PATH_ZIEL.toString());
 
         syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
 
-        serverReceiver.stop();
+        // serverReceiver.stop();
 
         assertTrue(true);
     }
@@ -299,6 +355,7 @@ class TestJSyncRemote extends AbstractJSyncTest
     void testSpringRestTemplateRemoteToLocal() throws Exception
     {
         System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
 
 //        // @formatter:off
 //        new SpringApplicationBuilder(JsyncServerApplication.class)
@@ -307,18 +364,36 @@ class TestJSyncRemote extends AbstractJSyncTest
 //                .run(new String[]{"--server.port=8001"});
 //        // @formatter:on
 
-        JsyncServerApplication serverSender = new JsyncServerApplication();
-        serverSender.start(new String[]
-        {
-                "--server.port=8001"
-        });
+        // JsyncServerApplication serverSender = new JsyncServerApplication();
+        // serverSender.start(new String[]
+        // {
+        // "--server.port=8001"
+        // });
 
-        URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
+        URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
 
         syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
 
-        serverSender.stop();
+        // serverSender.stop();
+
+        assertTrue(true);
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    @Disabled
+    void testSpringRestTemplateRemoteToRemote() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+        URI receiverUri = new URI("jsync://localhost:8004/" + PATH_ZIEL.toString());
+
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
 
         assertTrue(true);
     }
