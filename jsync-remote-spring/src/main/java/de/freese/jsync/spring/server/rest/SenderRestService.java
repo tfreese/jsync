@@ -229,9 +229,9 @@ public class SenderRestService
     // @GetMapping("/chunk/{baseDir}/{relativeFile}/{position}/{size}")
     // public ResponseEntity<Resource> readChunk(@PathVariable("baseDir") final String baseDir, @PathVariable("relativeFile") final String relativeFile,
     // @PathVariable("position") final long position, @PathVariable("size") final long size)
-    @GetMapping(path = "/chunk", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<ByteBuffer> readChunk(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                @RequestParam("position") final long position, @RequestParam("size") final long size)
+    @GetMapping(path = "/chunkBuffer", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<ByteBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                      @RequestParam("position") final long position, @RequestParam("size") final long size)
     {
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
@@ -241,19 +241,42 @@ public class SenderRestService
             this.sender.readChunk(baseDir, relativeFile, position, size, buffer);
             buffer.flip();
 
-            // byte[] data = new byte[buffer.limit()];
-            // buffer.get(data);
-            // Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
-
-            // response.getOutputStream().write(data);
-
-            // HttpHeaders headers = new HttpHeaders();
-            // headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-            // ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
-
             HttpHeaders headers = new HttpHeaders();
             headers.setCacheControl(CacheControl.noCache().getHeaderValue());
             ResponseEntity<ByteBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
+
+            return responseEntity;
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param relativeFile String
+     * @param position long
+     * @param size long
+     * @return {@link ResponseEntity}
+     */
+    @GetMapping(path = "/chunkStream", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<Resource> readChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                    @RequestParam("position") final long position, @RequestParam("size") final long size)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            this.sender.readChunk(baseDir, relativeFile, position, size, buffer);
+            buffer.flip();
+
+            Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+            ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
 
             return responseEntity;
         }

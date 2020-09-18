@@ -4,6 +4,7 @@ package de.freese.jsync.utils.pool;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -39,6 +40,11 @@ public abstract class AbstractPool<T>
     }
 
     /**
+     * @return Object
+     */
+    protected abstract T createObject();
+
+    /**
      * @param cleaner {@link Consumer}
      */
     public void destroy(final Consumer<T> cleaner)
@@ -64,11 +70,6 @@ public abstract class AbstractPool<T>
             getLock().unlock();
         }
     }
-
-    /**
-     * @return Object
-     */
-    protected abstract T createObject();
 
     /**
      * @param object Object
@@ -125,6 +126,8 @@ public abstract class AbstractPool<T>
      */
     public void release(final T object)
     {
+        Objects.requireNonNull(object, "object required");
+
         getLock().lock();
 
         try

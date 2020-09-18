@@ -8,11 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -53,8 +54,7 @@ class TestJSyncRemote extends AbstractJSyncTest
     /**
      *
      */
-    private static final List<AutoCloseable> CLOSEABLES = new ArrayList<>();
-
+    private static final Map<String, AutoCloseable> CLOSEABLES = new HashMap<>();
     /**
      *
      */
@@ -66,7 +66,7 @@ class TestJSyncRemote extends AbstractJSyncTest
     @AfterAll
     static void afterAll() throws Exception
     {
-        for (AutoCloseable closeable : CLOSEABLES)
+        for (AutoCloseable closeable : CLOSEABLES.values())
         {
             closeable.close();
         }
@@ -79,36 +79,75 @@ class TestJSyncRemote extends AbstractJSyncTest
     static void beforeAll() throws Exception
     {
         options = new Builder().delete(true).dryRun(false).followSymLinks(false).checksum(true).build();
+    }
 
-        // NIO-Server Sender
-        JSyncServer serverNioSender = new JSyncServer(8001, 2, 4);
-        serverNioSender.setName("sender");
-        serverNioSender.setIoHandler(new JSyncIoHandler());
-        serverNioSender.start();
-        CLOSEABLES.add(() -> serverNioSender.stop());
-
-        // NIO-Server Receiver
-        JSyncServer serverNioReceiver = new JSyncServer(8002, 2, 4);
-        serverNioReceiver.setName("receiver");
-        serverNioReceiver.setIoHandler(new JSyncIoHandler());
-        serverNioReceiver.start();
-        CLOSEABLES.add(() -> serverNioReceiver.stop());
-
-        // Spring-Server Sender
-        JsyncServerApplication serverSpringSender = new JsyncServerApplication();
-        serverSpringSender.start(new String[]
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    private void startNioServerReceiver() throws Exception
+    {
+        if (!CLOSEABLES.containsKey("nio-receiver"))
         {
-                "--server.port=8003"
-        });
-        CLOSEABLES.add(() -> serverSpringSender.stop());
+            JSyncServer serverNioReceiver = new JSyncServer(8002, 2, 4);
+            serverNioReceiver.setName("receiver");
+            serverNioReceiver.setIoHandler(new JSyncIoHandler());
+            serverNioReceiver.start();
+            CLOSEABLES.put("nio-receiver", () -> serverNioReceiver.stop());
+        }
+    }
 
-        // Spring-Server Receiver
-        JsyncServerApplication serverSpringReceiver = new JsyncServerApplication();
-        serverSpringReceiver.start(new String[]
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    private void startNioServerSender() throws Exception
+    {
+        if (!CLOSEABLES.containsKey("nio-sender"))
         {
-                "--server.port=8004"
-        });
-        CLOSEABLES.add(() -> serverSpringReceiver.stop());
+            JSyncServer serverNioSender = new JSyncServer(8001, 2, 4);
+            serverNioSender.setName("sender");
+            serverNioSender.setIoHandler(new JSyncIoHandler());
+            serverNioSender.start();
+            CLOSEABLES.put("nio-sender", () -> serverNioSender.stop());
+        }
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    private void startSpringServerReceiver() throws Exception
+    {
+        if (!CLOSEABLES.containsKey("spring-receiver"))
+        {
+            JsyncServerApplication serverSpringReceiver = new JsyncServerApplication();
+            serverSpringReceiver.start(new String[]
+            {
+                    "--server.port=8004"
+            });
+            CLOSEABLES.put("spring-receiver", () -> serverSpringReceiver.stop());
+        }
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    private void startSpringServerSender() throws Exception
+    {
+//      // @formatter:off
+//      new SpringApplicationBuilder(JsyncServerApplication.class)
+//              //.properties("server.port=8081") // Funktioniert nicht, wenn server.port in application.yml enthalten ist.
+//              //.run(args);
+//              .run(new String[]{"--server.port=8001"});
+//      // @formatter:on
+
+        if (!CLOSEABLES.containsKey("spring-sender"))
+        {
+            JsyncServerApplication serverSpringSender = new JsyncServerApplication();
+            serverSpringSender.start(new String[]
+            {
+                    "--server.port=8003"
+            });
+            CLOSEABLES.put("spring-sender", () -> serverSpringSender.stop());
+        }
     }
 
     /**
@@ -171,6 +210,8 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
+        startNioServerReceiver();
+
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
@@ -188,6 +229,8 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
+        startNioServerSender();
+
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
 
@@ -204,6 +247,9 @@ class TestJSyncRemote extends AbstractJSyncTest
     {
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
+
+        startNioServerSender();
+        startNioServerReceiver();
 
         // URI sender = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
         // URI receiver = new URI("jsync", null, "localhost", 8002, "/" + PATH_ZIEL.toString(), null, null);
@@ -224,6 +270,8 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
+        startNioServerReceiver();
+
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
@@ -240,6 +288,8 @@ class TestJSyncRemote extends AbstractJSyncTest
     {
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
+
+        startNioServerSender();
 
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
@@ -258,6 +308,9 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
+        startNioServerSender();
+        startNioServerReceiver();
+
         // URI sender = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
         // URI receiver = new URI("jsync", null, "localhost", 8002, "/" + PATH_ZIEL.toString(), null, null);
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
@@ -272,11 +325,12 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    // @Disabled
     void testSpringRestTemplateLocalToRemote() throws Exception
     {
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
+
+        startSpringServerReceiver();
 
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = new URI("jsync://localhost:8004/" + PATH_ZIEL.toString());
@@ -295,12 +349,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
-//        // @formatter:off
-//        new SpringApplicationBuilder(JsyncServerApplication.class)
-//                //.properties("server.port=8081") // Funktioniert nicht, wenn server.port in application.yml enthalten ist.
-//                //.run(args);
-//                .run(new String[]{"--server.port=8001"});
-//        // @formatter:on
+        startSpringServerSender();
 
         URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
@@ -314,11 +363,13 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    @Disabled
     void testSpringRestTemplateRemoteToRemote() throws Exception
     {
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
+
+        startSpringServerSender();
+        startSpringServerReceiver();
 
         URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
         URI receiverUri = new URI("jsync://localhost:8004/" + PATH_ZIEL.toString());

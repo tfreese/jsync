@@ -8,7 +8,6 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.apache.http.client.HttpClient;
@@ -21,14 +20,17 @@ import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.boot.web.client.RootUriTemplateHandler;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
@@ -108,19 +110,26 @@ public class RemoteSenderRestTemplate extends AbstractSender
         this.restTemplateBuilder = new RestTemplateBuilder()
                 .rootUri(rootUri)
                 .requestFactory(() -> httpRequestFactory)
-                .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE),new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE))
-                .additionalMessageConverters(new ByteBufferHttpMessageConverter())
+                .additionalMessageConverters(new ByteArrayHttpMessageConverter()
+                        , new StringHttpMessageConverter()
+                        //, new MappingJackson2HttpMessageConverter()
+                        , new ResourceHttpMessageConverter(false)
+                        //, new ByteBufferHttpMessageConverter(8192, () -> ByteBufferPool.getInstance().get())
+                        , new ByteBufferHttpMessageConverter(8192, () -> ByteBuffer.allocateDirect(Options.BUFFER_SIZE))
+                        )
                 ;
         // @formatter:on
 
-        this.restTemplate = new RestTemplate();
-        this.restTemplate.setRequestFactory(httpRequestFactory);
-        this.restTemplate.setUriTemplateHandler(new RootUriTemplateHandler(rootUri, this.restTemplate.getUriTemplateHandler()));
-        this.restTemplate.setInterceptors(List.of(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE),
-                new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE)));
+        // @formatter:off
+        this.restTemplate = this.restTemplateBuilder
+                .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE),new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE))
+                .build()
+                ;
+        // @formatter:on
 
         // HttpHeaders headers = new HttpHeaders();
         // headers.setContentType(MediaType.APPLICATION_JSON);
+        // this.restTemplate.setUriTemplateHandler(new RootUriTemplateHandler(rootUri, this.restTemplate.getUriTemplateHandler()));
 
         ResponseEntity<String> responseEntity = this.restTemplate.getForEntity("/connect", String.class);
         responseEntity.getBody();
@@ -265,7 +274,7 @@ public class RemoteSenderRestTemplate extends AbstractSender
     public void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
     {
         // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/chunk")
+        UriComponents builder = UriComponentsBuilder.fromPath("/chunkBuffer")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
                 .queryParam("position", position)
@@ -275,21 +284,34 @@ public class RemoteSenderRestTemplate extends AbstractSender
 
         // @formatter:off
         RestTemplate rt = this.restTemplateBuilder
-            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE),new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_OCTET_STREAM_VALUE))
+            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE), new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_OCTET_STREAM_VALUE))
             .build()
             ;
         // @formatter:on
 
-        // ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), Resource.class);
-        // Resource resource = responseEntity.getBody();
-
-        ResponseEntity<ByteBuffer> responseEntity = rt.getForEntity(builder.toUriString(), ByteBuffer.class);
-        ByteBuffer byteBufferResponse = responseEntity.getBody();
+        ByteBuffer byteBufferResponse = null;
+        buffer.clear();
 
         try
         {
-            buffer.clear();
+            ResponseEntity<ByteBuffer> responseEntity = rt.getForEntity(builder.toUriString(), ByteBuffer.class);
+            byteBufferResponse = responseEntity.getBody();
+
+            byteBufferResponse.flip();
             buffer.put(byteBufferResponse);
+
+            // ResponseEntity<Resource> responseEntity = rt.getForEntity(builder.toUriString(), Resource.class);
+            // Resource resource = responseEntity.getBody();
+            //
+            // InputStream inputStream = resource.getInputStream();
+            // byte[] bytes = new byte[8192];
+            // int bytesRead = 0;
+            //
+            // while ((bytesRead = inputStream.read(bytes)) != -1)
+            // {
+            // buffer.put(bytes, 0, bytesRead);
+            // }
+
             // InputStream inputStream = resource.getInputStream();
             // buffer.clear();
             //
@@ -309,6 +331,13 @@ public class RemoteSenderRestTemplate extends AbstractSender
         catch (Exception ex)
         {
             throw new RuntimeException(ex);
+        }
+        finally
+        {
+            if (byteBufferResponse != null)
+            {
+                ByteBufferPool.getInstance().release(byteBufferResponse);
+            }
         }
 
         // final ResponseExtractor responseExtractor =

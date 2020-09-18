@@ -1,6 +1,7 @@
 // Created: 15.09.2020
 package de.freese.jsync.spring.server;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.spring.utils.ByteBufferHttpMessageConverter;
@@ -38,7 +40,8 @@ public class Config implements WebMvcConfigurer// , WebServerFactoryCustomizer<T
     @Override
     public void configureMessageConverters(final List<HttpMessageConverter<?>> converters)
     {
-        converters.add(new ByteBufferHttpMessageConverter());
+        // converters.add(new ByteBufferHttpMessageConverter(8192, () -> ByteBufferPool.getInstance().get()));
+        converters.add(new ByteBufferHttpMessageConverter(8192, () -> ByteBuffer.allocateDirect(Options.BUFFER_SIZE)));
     }
 
     // /**

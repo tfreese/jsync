@@ -1,8 +1,12 @@
 // Created: 15.09.2020
 package de.freese.jsync.spring.server.rest;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletRequest;
@@ -154,21 +158,43 @@ public class ReceiverRestService
      * @param baseDir String
      * @param relativeFile String
      * @param size long
+     * @param resource {@link Resource}
      * @return {@link ResponseEntity}
      */
-    // @GetMapping("/channel")
-    public ResponseEntity<Resource> getChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                               @RequestParam("size") final long size)
+    @PostMapping(path = "/channel", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> getChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                             @RequestParam("size") final long size, @RequestBody final Resource resource)
     {
-        // WritableByteChannel channel = this.receiver.getChannel(baseDir, relativeFile, size);
+        WritableByteChannel channel = this.receiver.getChannel(baseDir, relativeFile, size);
 
-        // Resource resource = new InputStreamResource(Channels.newInputStream(channel));
-        //
-        // HttpHeaders headers = new HttpHeaders();
-        // headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-        // ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
-        return null;
+        try
+        {
+            InputStream inputStream = resource.getInputStream();
+
+            byte[] bytes = new byte[8192];
+            int bytesRead = 0;
+
+            while ((bytesRead = inputStream.read(bytes)) != -1)
+            {
+                buffer.clear();
+                buffer.put(bytes, 0, bytesRead);
+                buffer.flip();
+
+                channel.write(buffer);
+            }
+
+            return ResponseEntity.ok("OK");
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
     }
 
     /**
@@ -202,9 +228,11 @@ public class ReceiverRestService
      * @param syncItemData {@link ByteBuffer}
      * @return {@link ResponseEntity}
      */
-    @PostMapping("/update")
+    @PostMapping(path = "/update", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<String> update(@RequestParam("baseDir") final String baseDir, @RequestBody final ByteBuffer syncItemData)
     {
+        syncItemData.flip();
+
         SyncItem syncItem = Serializers.readFrom(syncItemData, SyncItem.class);
 
         this.receiver.update(baseDir, syncItem);
@@ -218,10 +246,12 @@ public class ReceiverRestService
      * @param syncItemData {@link ByteBuffer}
      * @return {@link ResponseEntity}
      */
-    @PostMapping("/validate")
+    @PostMapping(path = "/validate", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<String> validate(@RequestParam("baseDir") final String baseDir, @RequestParam("withChecksum") final boolean withChecksum,
                                            @RequestBody final ByteBuffer syncItemData)
     {
+        syncItemData.flip();
+
         SyncItem syncItem = Serializers.readFrom(syncItemData, SyncItem.class);
 
         this.receiver.validateFile(baseDir, syncItem, withChecksum);
@@ -237,13 +267,61 @@ public class ReceiverRestService
      * @param chunk {@link ByteBuffer}
      * @return {@link ResponseEntity}
      */
-    @PostMapping("/chunk")
-    public ResponseEntity<String> writeChunk(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                             @RequestParam("position") final long position, @RequestParam("size") final long size,
-                                             @RequestBody final ByteBuffer chunk)
+    @PostMapping(path = "/chunkBuffer", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> writeChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                   @RequestParam("position") final long position, @RequestParam("size") final long size,
+                                                   @RequestBody final ByteBuffer chunk)
     {
-        this.receiver.writeChunk(baseDir, relativeFile, position, size, chunk);
+        try
+        {
+            this.receiver.writeChunk(baseDir, relativeFile, position, size, chunk);
 
-        return ResponseEntity.ok("OK");
+            return ResponseEntity.ok("OK");
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(chunk);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param relativeFile String
+     * @param position long
+     * @param size long
+     * @param resource {@link Resource}
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping(path = "/chunkStream", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> writeChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                   @RequestParam("position") final long position, @RequestParam("size") final long size,
+                                                   @RequestBody final Resource resource)
+    {
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        buffer.clear();
+
+        try
+        {
+            InputStream inputStream = resource.getInputStream();
+            byte[] bytes = new byte[8192];
+            int bytesRead = 0;
+
+            while ((bytesRead = inputStream.read(bytes)) != -1)
+            {
+                buffer.put(bytes, 0, bytesRead);
+            }
+
+            this.receiver.writeChunk(baseDir, relativeFile, position, size, buffer);
+
+            return ResponseEntity.ok("OK");
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
     }
 }
