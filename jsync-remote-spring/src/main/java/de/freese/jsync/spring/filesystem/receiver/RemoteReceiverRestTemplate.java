@@ -292,7 +292,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
                 /**
                  *
                  */
-                private final byte[] bytes = new byte[8192];
+                private final byte[] bytes = new byte[Options.BUFFER_SIZE];
 
                 /**
                  * @see java.nio.channels.Channel#close()

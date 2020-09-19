@@ -12,6 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.function.LongConsumer;
+import de.freese.jsync.Options;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -19,11 +20,6 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
  */
 public final class DigestUtils
 {
-    /**
-     *
-     */
-    public static final int BUFFER_SIZE = 8 * 1024;
-
     /**
      * Erzeugt den {@link MessageDigest} für die Generierung der Prüfsumme.<br>
      * <br>
@@ -107,7 +103,7 @@ public final class DigestUtils
     public static byte[] sha256Digest(final InputStream inputStream) throws IOException
     {
         final MessageDigest messageDigest = createSha256Digest();
-        final byte[] buffer = new byte[BUFFER_SIZE];
+        final byte[] buffer = new byte[Options.BUFFER_SIZE];
 
         int bytesRead = -1;
 
