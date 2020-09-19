@@ -70,14 +70,6 @@ public class Config implements WebMvcConfigurer// , WebServerFactoryCustomizer<T
     // });
     // }
 
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return LOGGER;
-    }
-
     // /**
     // * @return EmbeddedServletContainerFactory
     // */
@@ -96,6 +88,14 @@ public class Config implements WebMvcConfigurer// , WebServerFactoryCustomizer<T
     //
     // return containerFactory;
     // }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return LOGGER;
+    }
 
     /**
      * @return {@link LocalhostReceiver}
