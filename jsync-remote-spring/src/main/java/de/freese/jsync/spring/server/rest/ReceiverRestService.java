@@ -157,49 +157,6 @@ public class ReceiverRestService
     /**
      * @param baseDir String
      * @param relativeFile String
-     * @param size long
-     * @param resource {@link Resource}
-     * @return {@link ResponseEntity}
-     */
-    @PostMapping(path = "/channel", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<String> getChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                             @RequestParam("size") final long size, @RequestBody final Resource resource)
-    {
-        WritableByteChannel channel = this.receiver.getChannel(baseDir, relativeFile, size);
-
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
-
-        try
-        {
-            InputStream inputStream = resource.getInputStream();
-
-            byte[] bytes = new byte[8192];
-            int bytesRead = 0;
-
-            while ((bytesRead = inputStream.read(bytes)) != -1)
-            {
-                buffer.clear();
-                buffer.put(bytes, 0, bytesRead);
-                buffer.flip();
-
-                channel.write(buffer);
-            }
-
-            return ResponseEntity.ok("OK");
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        finally
-        {
-            ByteBufferPool.getInstance().release(buffer);
-        }
-    }
-
-    /**
-     * @param baseDir String
-     * @param relativeFile String
      * @return {@link ResponseEntity}
      */
     @GetMapping("/checksum")
@@ -262,12 +219,55 @@ public class ReceiverRestService
     /**
      * @param baseDir String
      * @param relativeFile String
+     * @param size long
+     * @param resource {@link Resource}
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping(path = "/writeChannel", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> writeChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                               @RequestParam("size") final long size, @RequestBody final Resource resource)
+    {
+        WritableByteChannel channel = this.receiver.getChannel(baseDir, relativeFile, size);
+
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            InputStream inputStream = resource.getInputStream();
+
+            byte[] bytes = new byte[8192];
+            int bytesRead = 0;
+
+            while ((bytesRead = inputStream.read(bytes)) != -1)
+            {
+                buffer.clear();
+                buffer.put(bytes, 0, bytesRead);
+                buffer.flip();
+
+                channel.write(buffer);
+            }
+
+            return ResponseEntity.ok("OK");
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param relativeFile String
      * @param position long
      * @param size long
      * @param chunk {@link ByteBuffer}
      * @return {@link ResponseEntity}
      */
-    @PostMapping(path = "/chunkBuffer", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PostMapping(path = "/writeChunkBuffer", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<String> writeChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
                                                    @RequestParam("position") final long position, @RequestParam("size") final long size,
                                                    @RequestBody final ByteBuffer chunk)
@@ -292,7 +292,7 @@ public class ReceiverRestService
      * @param resource {@link Resource}
      * @return {@link ResponseEntity}
      */
-    @PostMapping(path = "/chunkStream", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PostMapping(path = "/writeChunkStream", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<String> writeChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
                                                    @RequestParam("position") final long position, @RequestParam("size") final long size,
                                                    @RequestBody final Resource resource)

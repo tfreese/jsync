@@ -156,28 +156,6 @@ public class SenderRestService
     /**
      * @param baseDir String
      * @param relativeFile String
-     * @param size long
-     * @return {@link ResponseEntity}
-     */
-    // @GetMapping("/channel/{baseDir}/{relativeFile}/{position}/{size}")
-    @GetMapping("/channel")
-    public ResponseEntity<Resource> getChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                               @RequestParam("size") final long size)
-    {
-        ReadableByteChannel channel = this.sender.getChannel(baseDir, relativeFile, size);
-
-        Resource resource = new InputStreamResource(Channels.newInputStream(channel));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-        ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
-
-        return responseEntity;
-    }
-
-    /**
-     * @param baseDir String
-     * @param relativeFile String
      * @return {@link ResponseEntity}
      */
     // @GetMapping("/checksum/{baseDir}/{relativeFile}")
@@ -193,6 +171,14 @@ public class SenderRestService
         ResponseEntity<String> responseEntity = new ResponseEntity<>(checksum, headers, HttpStatus.OK);
 
         return responseEntity;
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    private Logger getLogger()
+    {
+        return LOGGER;
     }
 
     // @RequestMapping(value = "/submissions/signature/{type}/{id}",
@@ -212,11 +198,25 @@ public class SenderRestService
     // }
 
     /**
-     * @return {@link Logger}
+     * @param baseDir String
+     * @param relativeFile String
+     * @param size long
+     * @return {@link ResponseEntity}
      */
-    private Logger getLogger()
+    // @GetMapping("/channel/{baseDir}/{relativeFile}/{position}/{size}")
+    @GetMapping("/readChannel")
+    public ResponseEntity<Resource> readChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                @RequestParam("size") final long size)
     {
-        return LOGGER;
+        ReadableByteChannel channel = this.sender.getChannel(baseDir, relativeFile, size);
+
+        Resource resource = new InputStreamResource(Channels.newInputStream(channel));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+        ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
+
+        return responseEntity;
     }
 
     /**
@@ -229,7 +229,7 @@ public class SenderRestService
     // @GetMapping("/chunk/{baseDir}/{relativeFile}/{position}/{size}")
     // public ResponseEntity<Resource> readChunk(@PathVariable("baseDir") final String baseDir, @PathVariable("relativeFile") final String relativeFile,
     // @PathVariable("position") final long position, @PathVariable("size") final long size)
-    @GetMapping(path = "/chunkBuffer", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(path = "/readChunkBuffer", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ByteBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
                                                       @RequestParam("position") final long position, @RequestParam("size") final long size)
     {
@@ -260,7 +260,7 @@ public class SenderRestService
      * @param size long
      * @return {@link ResponseEntity}
      */
-    @GetMapping(path = "/chunkStream", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(path = "/readChunkStream", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<Resource> readChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
                                                     @RequestParam("position") final long position, @RequestParam("size") final long size)
     {

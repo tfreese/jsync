@@ -40,6 +40,22 @@ public abstract class AbstractClient implements Client
     /**
      * @author Thomas Freese
      */
+    private enum CopyMode
+    {
+        /**
+         *
+         */
+        CHANNEL,
+
+        /**
+         *
+         */
+        CHUNK;
+    }
+
+    /**
+     * @author Thomas Freese
+     */
     public enum RemoteMode
     {
         /**
@@ -59,6 +75,11 @@ public abstract class AbstractClient implements Client
          */
         SPRING_WEBCLIENT;
     }
+
+    /**
+     *
+     */
+    private final CopyMode copyMode;
 
     /**
      *
@@ -130,6 +151,8 @@ public abstract class AbstractClient implements Client
         this.senderPath = JSyncUtils.normalizePath(senderUri);
         this.receiverPath = JSyncUtils.normalizePath(receiverUri);
 
+        this.copyMode = CopyMode.CHANNEL;
+
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
             switch (this.remoteMode)
@@ -169,6 +192,24 @@ public abstract class AbstractClient implements Client
     {
         getSender().connect(getSenderUri());
         getReceiver().connect(getReceiverUri());
+    }
+
+    /**
+     * Kopieren der Dateien von der Quelle in die Senke<br>
+     *
+     * @param syncItem {@link SyncItem}
+     * @param clientListener {@link ClientListener}
+     */
+    protected void copyFile(final SyncItem syncItem, final ClientListener clientListener)
+    {
+        if (CopyMode.CHUNK.equals(this.copyMode))
+        {
+            copyFileByChunk(syncItem, clientListener);
+        }
+        else
+        {
+            copyFileByChannel(syncItem, clientListener);
+        }
     }
 
     /**
@@ -262,7 +303,7 @@ public abstract class AbstractClient implements Client
 
             while (position < size)
             {
-                long sizeOfChunk = Math.min(size - position, Options.BUFFER_SIZE);
+                long sizeOfChunk = Math.min(size - position, Options.BYTEBUFFER_SIZE);
 
                 ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
@@ -351,7 +392,7 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFileByChunk(pair.getSenderItem(), clientListener));
+                .forEach(pair -> copyFile(pair.getSenderItem(), clientListener));
         //@formatter:on
     }
 

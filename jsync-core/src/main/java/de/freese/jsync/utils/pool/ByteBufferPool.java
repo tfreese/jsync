@@ -61,7 +61,7 @@ public class ByteBufferPool extends AbstractPool<ByteBuffer>
     @Override
     protected ByteBuffer createObject()
     {
-        return ByteBuffer.allocateDirect(Options.BUFFER_SIZE);
+        return ByteBuffer.allocateDirect(Options.BYTEBUFFER_SIZE);
     }
 
     /**

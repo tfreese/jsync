@@ -33,7 +33,7 @@ import de.freese.jsync.spring.server.JsyncServerApplication;
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
-// @Disabled
+// @Disabled("Tests sind alleine lauffähig, aber im Verbund mit anderen nicht")
 class TestJSyncRemote extends AbstractJSyncTest
 {
     /**
@@ -78,7 +78,7 @@ class TestJSyncRemote extends AbstractJSyncTest
     @BeforeAll
     static void beforeAll() throws Exception
     {
-        options = new Builder().delete(true).dryRun(false).followSymLinks(false).checksum(true).build();
+        options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
     }
 
     /**

@@ -114,8 +114,8 @@ public class RemoteSenderRestTemplate extends AbstractSender
                         , new StringHttpMessageConverter()
                         //, new MappingJackson2HttpMessageConverter()
                         , new ResourceHttpMessageConverter(false)
-                        //, new ByteBufferHttpMessageConverter(8192, () -> ByteBufferPool.getInstance().get())
-                        , new ByteBufferHttpMessageConverter(8192, () -> ByteBuffer.allocateDirect(Options.BUFFER_SIZE))
+                        //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get())
+                        , new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.BYTEBUFFER_SIZE))
                         )
                 ;
         // @formatter:on
@@ -220,7 +220,7 @@ public class RemoteSenderRestTemplate extends AbstractSender
     public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
     {
         // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/channel")
+        UriComponents builder = UriComponentsBuilder.fromPath("/readChannel")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
                 .queryParam("size", size)
@@ -274,7 +274,7 @@ public class RemoteSenderRestTemplate extends AbstractSender
     public void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
     {
         // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/chunkBuffer")
+        UriComponents builder = UriComponentsBuilder.fromPath("/readChunkBuffer")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
                 .queryParam("position", position)

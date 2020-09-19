@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -39,11 +40,11 @@ public class AsynchronousSocketChannelPool extends AbstractPool<AsynchronousSock
     {
         super();
 
-        this.uri = uri;
+        this.uri = Objects.requireNonNull(uri, "uri required");
 
         try
         {
-            this.channelGroup = AsynchronousChannelGroup.withCachedThreadPool(executorService, 2);
+            this.channelGroup = AsynchronousChannelGroup.withCachedThreadPool(Objects.requireNonNull(executorService, "executorService required"), 2);
         }
         catch (IOException ex)
         {

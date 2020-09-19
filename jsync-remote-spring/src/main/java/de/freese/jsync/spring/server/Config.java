@@ -40,8 +40,8 @@ public class Config implements WebMvcConfigurer// , WebServerFactoryCustomizer<T
     @Override
     public void configureMessageConverters(final List<HttpMessageConverter<?>> converters)
     {
-        // converters.add(new ByteBufferHttpMessageConverter(8192, () -> ByteBufferPool.getInstance().get()));
-        converters.add(new ByteBufferHttpMessageConverter(8192, () -> ByteBuffer.allocateDirect(Options.BUFFER_SIZE)));
+        // converters.add(new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get()));
+        converters.add(new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.BYTEBUFFER_SIZE)));
     }
 
     // /**

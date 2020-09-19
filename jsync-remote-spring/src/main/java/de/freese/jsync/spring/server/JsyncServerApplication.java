@@ -58,6 +58,14 @@ public class JsyncServerApplication extends SpringBootServletInitializer
     private ConfigurableApplicationContext context;
 
     /**
+     * Erstellt ein neues {@link JsyncServerApplication} Object.
+     */
+    public JsyncServerApplication()
+    {
+        super();
+    }
+
+    /**
      * POM:<br>
      * &lt;packaging>&gt;war&lt;/packaging&gt;<<br>
      * Tomcat aus spring-boot-starter-web excludieren und explizit auf provided setzen.<br>
@@ -83,6 +91,7 @@ public class JsyncServerApplication extends SpringBootServletInitializer
             this.context = SpringApplication.run(JsyncServerApplication.class, args.getSourceArgs());
         });
 
+        thread.setPriority(Thread.NORM_PRIORITY);
         thread.setDaemon(false);
         thread.start();
     }

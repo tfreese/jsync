@@ -6,6 +6,7 @@ import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.channels.SocketChannel;
+import java.util.Objects;
 import de.freese.jsync.utils.pool.AbstractPool;
 
 /**
@@ -27,7 +28,7 @@ public class SocketChannelPool extends AbstractPool<SocketChannel>
     {
         super();
 
-        this.uri = uri;
+        this.uri = Objects.requireNonNull(uri, "uri required");
     }
 
     /**

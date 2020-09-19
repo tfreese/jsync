@@ -9,7 +9,11 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.apache.http.client.HttpClient;
@@ -40,6 +44,8 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializers;
 import de.freese.jsync.spring.HttpHeaderInterceptor;
 import de.freese.jsync.spring.utils.ByteBufferHttpMessageConverter;
+import de.freese.jsync.utils.JSyncUtils;
+import de.freese.jsync.utils.JsyncThreadFactory;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -49,6 +55,11 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
  */
 public class RemoteReceiverRestTemplate extends AbstractReceiver
 {
+    /**
+     *
+     */
+    private final ExecutorService executorService;
+
     /**
     *
     */
@@ -70,6 +81,8 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
     public RemoteReceiverRestTemplate()
     {
         super();
+
+        this.executorService = Executors.newSingleThreadExecutor(new JsyncThreadFactory("pipe-"));
     }
 
     /**
@@ -117,8 +130,8 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
                         , new StringHttpMessageConverter()
                         //, new MappingJackson2HttpMessageConverter()
                         , new ResourceHttpMessageConverter(false)
-                        //, new ByteBufferHttpMessageConverter(8192, () -> ByteBufferPool.getInstance().get())
-                        , new ByteBufferHttpMessageConverter(8192, () -> ByteBuffer.allocateDirect(Options.BUFFER_SIZE))
+                        //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get())
+                        , new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.BYTEBUFFER_SIZE))
                         )
                 ;
         // @formatter:on
@@ -179,6 +192,8 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
         responseEntity.getBody();
 
         this.poolingConnectionManager.close();
+
+        JSyncUtils.shutdown(this.executorService, getLogger());
     }
 
     /**
@@ -245,7 +260,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
     public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
     {
         // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/channel")
+        UriComponents builder = UriComponentsBuilder.fromPath("/writeChannel")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
                 .queryParam("size", size)
@@ -262,25 +277,42 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
         try
         {
             PipedOutputStream pipeOut = new PipedOutputStream();
-            PipedInputStream pipeIn = new PipedInputStream(pipeOut);
+            PipedInputStream pipeIn = new PipedInputStream(pipeOut, 8192);
 
-            Runnable runnable = () -> {
+            Callable<String> callable = () -> {
                 Resource resource = new InputStreamResource(pipeIn);
                 ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), resource, String.class);
-                responseEntity.getBody();
+                return responseEntity.getBody();
             };
 
-            ForkJoinPool.commonPool().execute(runnable);
+            final Future<String> future = this.executorService.submit(callable);
 
             WritableByteChannel channel = new WritableByteChannel()
             {
+                /**
+                 *
+                 */
+                private final byte[] bytes = new byte[8192];
+
                 /**
                  * @see java.nio.channels.Channel#close()
                  */
                 @Override
                 public void close() throws IOException
                 {
+                    pipeOut.flush();
                     pipeOut.close();
+
+                    try
+                    {
+                        future.get();
+                    }
+                    catch (InterruptedException | ExecutionException ex)
+                    {
+                        getLogger().error(null, ex);
+                    }
+
+                    pipeIn.close();
                 }
 
                 /**
@@ -298,12 +330,11 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
                 @Override
                 public int write(final ByteBuffer src) throws IOException
                 {
-                    byte[] bytes = new byte[8192];
-                    int length = Math.min(src.remaining(), bytes.length);
+                    int length = Math.min(src.remaining(), this.bytes.length);
 
-                    src.get(bytes, 0, length);
+                    src.get(this.bytes, 0, length);
 
-                    pipeOut.write(bytes, 0, length);
+                    pipeOut.write(this.bytes, 0, length);
 
                     return length;
                 }
@@ -432,7 +463,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
     public void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
     {
         // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/chunkBuffer")
+        UriComponents builder = UriComponentsBuilder.fromPath("/writeChunkBuffer")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
                 .queryParam("position", position)
