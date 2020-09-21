@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.junit.jupiter.api.AfterAll;
@@ -23,6 +24,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.stream.ChunkedWriteHandler;
 
 /**
  * @author Thomas Freese
@@ -79,22 +81,42 @@ class TestNettyServer
                     {
                         ChannelPipeline p = ch.pipeline();
 
-//                        p.addLast(new LoggingHandler(LogLevel.DEBUG));
+                        //p.addLast(new LoggingHandler(LogLevel.INFO));
+                        p.addLast(new ChunkedWriteHandler());
                         p.addLast(new ClientHandler());
                     }
                 });
         // @formatter:on
 
+        CountDownLatch latch = new CountDownLatch(1);
+
         ChannelFuture connectFuture = bootstrap.connect("localhost", 8005).sync();
+        connectFuture.addListener(future -> {
+            if (future.isSuccess())
+            {
+                System.out.println("client connected");
+                latch.countDown();
+            }
+            else
+            {
+                System.out.println("client NOT connected");
+                System.err.println(future.cause());
+            }
+        });
+
+        latch.await();
+
         Channel channel = connectFuture.channel();
         ChannelFuture closeFuture = channel.closeFuture();
 
-        System.out.println("connected");
-        Thread.sleep(100); // Etwas Zeit braucht der Client.
+        // Thread.sleep(100); // Etwas Zeit braucht der Client.
 
         ClientHandler clientHandler = (ClientHandler) channel.pipeline().last();
 
         Future<String> response = clientHandler.sendMessage("Hello World!");
+        System.out.println("Client receive: " + response.get());
+
+        response = clientHandler.sendMessage("Byebye World!");
         System.out.println("Client receive: " + response.get());
 
         // Warten bis Verbindung beendet.

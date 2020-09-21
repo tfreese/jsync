@@ -6,12 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
  * @author Thomas Freese
  */
-public class JsyncHandler extends ChannelInboundHandlerAdapter
+public class JsyncHandler extends SimpleChannelInboundHandler<ByteBuf> // ChannelInboundHandlerAdapter
 {
     /**
      *
@@ -32,20 +32,50 @@ public class JsyncHandler extends ChannelInboundHandlerAdapter
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception
     {
-        getLogger().info("{}: channelActive", ctx.channel().remoteAddress());
+        getLogger().debug("{}: channelActive", ctx.channel().remoteAddress());
     }
 
+    // /**
+    // * @see io.netty.channel.ChannelInboundHandlerAdapter#channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object)
+    // */
+    // @Override
+    // public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception
+    // {
+    // ByteBuf byteBuf = (ByteBuf) msg;
+    // String text = byteBuf.toString(StandardCharsets.UTF_8);
+    //
+    // getLogger().info("{}: channelRead: {}", ctx.channel().remoteAddress(), text);
+    //
+    // byteBuf.clear();
+    // byteBuf.writeCharSequence(text + ", from Server", StandardCharsets.UTF_8);
+    // ctx.write(msg);
+    // }
+
     /**
-     * @see io.netty.channel.ChannelInboundHandlerAdapter#channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object)
+     * @see io.netty.channel.SimpleChannelInboundHandler#channelRead0(io.netty.channel.ChannelHandlerContext, java.lang.Object)
      */
     @Override
-    public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception
+    protected void channelRead0(final ChannelHandlerContext ctx, final ByteBuf buf) throws Exception
     {
-        ByteBuf byteBuf = (ByteBuf) msg;
+        getLogger().info("{}: channelRead0: {}/{}", ctx.channel().remoteAddress(), buf, buf.hashCode());
 
-        getLogger().info("{}: channelRead: {}", ctx.channel().remoteAddress(), byteBuf.toString(StandardCharsets.UTF_8));
+        int requestIdLength = buf.readInt();
 
-        ctx.write(msg);
+        getLogger().info("{}: channelRead0: {}", ctx.channel().remoteAddress(), buf.toString(StandardCharsets.UTF_8));
+
+        CharSequence requestId = buf.readCharSequence(requestIdLength, StandardCharsets.UTF_8);
+        String message = buf.toString(StandardCharsets.UTF_8);
+
+        buf.clear();
+        buf.writeInt(requestId.length());
+        buf.writeCharSequence(requestId, StandardCharsets.UTF_8);
+        buf.writeCharSequence(message + ", from Server", StandardCharsets.UTF_8);
+
+        ctx.write(buf);
+
+        // Damit der Buffer wieder in den Pool kommt ohne IllegalReferenceCountException.
+        buf.retain();
+        // buf.release();
     }
 
     /**
@@ -54,7 +84,7 @@ public class JsyncHandler extends ChannelInboundHandlerAdapter
     @Override
     public void channelReadComplete(final ChannelHandlerContext ctx) throws Exception
     {
-        getLogger().info("{}: channelReadComplete", ctx.channel().remoteAddress());
+        getLogger().debug("{}: channelReadComplete", ctx.channel().remoteAddress());
 
         ctx.flush();
     }

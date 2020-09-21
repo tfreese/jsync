@@ -4,6 +4,7 @@ package de.freese.jsync.netty.server;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.stream.ChunkedWriteHandler;
 
 /**
  * @author Thomas Freese
@@ -26,7 +27,7 @@ public class JsyncServerInitializer extends ChannelInitializer<SocketChannel>
     {
         ChannelPipeline pipeline = ch.pipeline();
 
-        // pipeline.addLast(new ChunkedWriteHandler());
+        pipeline.addLast(new ChunkedWriteHandler());
         pipeline.addLast(new JsyncHandler());
     }
 }

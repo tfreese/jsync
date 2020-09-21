@@ -10,8 +10,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 
 /**
  * @author Thomas Freese
@@ -77,20 +75,27 @@ public class JsyncServer
         ServerBootstrap bootstrap =  new ServerBootstrap()
                 .group(this.acceptorGroup, this.workerGroup)
                 .channel(NioServerSocketChannel.class)
-                .handler(new LoggingHandler(LogLevel.DEBUG))
+                //.handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(new JsyncServerInitializer());
         // @formatter:on
 
         try
         {
             ChannelFuture bindFuture = bootstrap.bind(port);
+            bindFuture.addListener(future -> {
+                if (future.isSuccess())
+                {
+                    getLogger().info("JsyncServer started");
+                }
+                else
+                {
+                    getLogger().error("JsyncServer NOT started", future.cause());
+                    return;
+                }
+            });
+
             this.channel = bindFuture.channel();
             ChannelFuture closeFuture = this.channel.closeFuture();
-
-            // if (bindFuture.isSuccess())
-            {
-                getLogger().info("JsyncServer started");
-            }
 
             // Warten bis Verbindung beendet.
             // closeFuture.sync();
