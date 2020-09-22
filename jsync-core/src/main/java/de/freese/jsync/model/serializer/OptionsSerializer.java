@@ -2,7 +2,6 @@
 package de.freese.jsync.model.serializer;
 
 import java.nio.ByteBuffer;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
 
@@ -12,16 +11,32 @@ import de.freese.jsync.Options.Builder;
 class OptionsSerializer implements Serializer<Options>
 {
     /**
+     * ThreadSafe Singleton-Pattern.
      *
+     * @author Thomas Freese
      */
-    private static final Serializer<Options> INSTANCE = new OptionsSerializer();
+    private static final class OptionsSerializerHolder
+    {
+        /**
+         *
+         */
+        private static final OptionsSerializer INSTANCE = new OptionsSerializer();
+
+        /**
+         * Erstellt ein neues {@link OptionsSerializerHolder} Object.
+         */
+        private OptionsSerializerHolder()
+        {
+            super();
+        }
+    }
 
     /**
-     * @return Serializer<Options>
+     * @return {@link OptionsSerializer}
      */
-    static Serializer<Options> getInstance()
+    static OptionsSerializer getInstance()
     {
-        return INSTANCE;
+        return OptionsSerializerHolder.INSTANCE;
     }
 
     /**
