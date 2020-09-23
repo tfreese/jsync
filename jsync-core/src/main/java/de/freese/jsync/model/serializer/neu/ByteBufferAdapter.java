@@ -42,7 +42,18 @@ public class ByteBufferAdapter implements DataAdapter
     @Override
     public String readString(final Charset charset)
     {
-        byte[] bytes = new byte[this.buffer.getInt()];
+        int length = this.buffer.getInt();
+
+        if (length == -1)
+        {
+            return null;
+        }
+        else if (length == 0)
+        {
+            return "";
+        }
+
+        byte[] bytes = new byte[length];
         this.buffer.get(bytes);
         String text = new String(bytes, charset);
 
@@ -64,6 +75,17 @@ public class ByteBufferAdapter implements DataAdapter
     @Override
     public void writeString(final CharSequence value, final Charset charset)
     {
+        if (value == null)
+        {
+            this.buffer.putInt(-1);
+            return;
+        }
+        else if (value.length() == 0)
+        {
+            this.buffer.putInt(0);
+            return;
+        }
+
         byte[] bytes = value.toString().getBytes(charset);
         this.buffer.putInt(bytes.length);
         this.buffer.put(bytes);
