@@ -1,19 +1,20 @@
 package de.freese.jsync.model.serializer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.nio.ByteBuffer;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
-
-import de.freese.jsync.model.DefaultSyncItem;
-import de.freese.jsync.model.Group;
-import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import de.freese.jsync.model.DefaultSyncItem;
+import de.freese.jsync.model.Group;
+import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.model.User;
+import de.freese.jsync.model.serializer.neu.DefaultSerializer;
+import de.freese.jsync.model.serializer.neu.Serializer;
+import de.freese.jsync.model.serializer.neu.adapter.ByteBufferAdapter;
 
 /**
  * @author Thomas Freese
@@ -25,6 +26,11 @@ class TestSerializers
      * 8 kb
      */
     private static final ByteBuffer BUFFER = ByteBuffer.allocate(1024 * 8);
+
+    /**
+     *
+     */
+    private static final Serializer<ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      *
@@ -43,9 +49,9 @@ class TestSerializers
     {
         ByteBuffer buffer = BUFFER;
 
-        Serializers.writeTo(buffer, "A");
-        Serializers.writeTo(buffer, "BB");
-        Serializers.writeTo(buffer, "CCC");
+        SERIALIZER.writeTo(buffer, "A");
+        SERIALIZER.writeTo(buffer, "BB");
+        SERIALIZER.writeTo(buffer, "CCC");
 
         buffer.flip();
         byte[] bytes = new byte[buffer.remaining()];
@@ -53,9 +59,9 @@ class TestSerializers
 
         buffer = ByteBuffer.wrap(bytes);
 
-        assertEquals("A", Serializers.readFrom(buffer, String.class));
-        assertEquals("BB", Serializers.readFrom(buffer, String.class));
-        assertEquals("CCC", Serializers.readFrom(buffer, String.class));
+        assertEquals("A", SERIALIZER.readFrom(buffer, String.class));
+        assertEquals("BB", SERIALIZER.readFrom(buffer, String.class));
+        assertEquals("CCC", SERIALIZER.readFrom(buffer, String.class));
     }
 
     /**
@@ -69,8 +75,8 @@ class TestSerializers
         Group group1 = new Group("TestGroupA", 41);
         Group group2 = new Group("TestGroupB", 42);
 
-        Serializers.writeTo(buffer, group1);
-        Serializers.writeTo(buffer, group2);
+        SERIALIZER.writeTo(buffer, group1);
+        SERIALIZER.writeTo(buffer, group2);
 
         buffer.flip();
         byte[] bytes = new byte[buffer.remaining()];
@@ -78,11 +84,11 @@ class TestSerializers
 
         buffer = ByteBuffer.wrap(bytes);
 
-        group1 = Serializers.readFrom(buffer, Group.class);
+        group1 = SERIALIZER.readFrom(buffer, Group.class);
         assertEquals("TestGroupA", group1.getName());
         assertEquals(41, group1.getGid());
 
-        group2 = Serializers.readFrom(buffer, Group.class);
+        group2 = SERIALIZER.readFrom(buffer, Group.class);
         assertEquals("TestGroupB", group2.getName());
         assertEquals(42, group2.getGid());
     }
@@ -98,8 +104,8 @@ class TestSerializers
         User user1 = new User("TestUserA", 41);
         User user2 = new User("TestUserB", 42);
 
-        Serializers.writeTo(buffer, user1);
-        Serializers.writeTo(buffer, user2);
+        SERIALIZER.writeTo(buffer, user1);
+        SERIALIZER.writeTo(buffer, user2);
 
         buffer.flip();
         byte[] bytes = new byte[buffer.remaining()];
@@ -107,11 +113,11 @@ class TestSerializers
 
         buffer = ByteBuffer.wrap(bytes);
 
-        user1 = Serializers.readFrom(buffer, User.class);
+        user1 = SERIALIZER.readFrom(buffer, User.class);
         assertEquals("TestUserA", user1.getName());
         assertEquals(41, user1.getUid());
 
-        user2 = Serializers.readFrom(buffer, User.class);
+        user2 = SERIALIZER.readFrom(buffer, User.class);
         assertEquals("TestUserB", user2.getName());
         assertEquals(42, user2.getUid());
     }
@@ -120,7 +126,7 @@ class TestSerializers
      *
      */
     @Test
-    void test040User()
+    void test040SyncItem()
     {
         ByteBuffer buffer = BUFFER;
 
@@ -142,8 +148,8 @@ class TestSerializers
         syncItem2.setSize(987654321);
         syncItem2.setUser(new User("TestUserB", 42));
 
-        Serializers.writeTo(buffer, syncItem1);
-        Serializers.writeTo(buffer, syncItem2);
+        SERIALIZER.writeTo(buffer, syncItem1);
+        SERIALIZER.writeTo(buffer, syncItem2);
 
         buffer.flip();
         byte[] bytes = new byte[buffer.remaining()];
@@ -151,7 +157,7 @@ class TestSerializers
 
         buffer = ByteBuffer.wrap(bytes);
 
-        syncItem1 = Serializers.readFrom(buffer, SyncItem.class);
+        syncItem1 = SERIALIZER.readFrom(buffer, SyncItem.class);
         assertEquals("/", syncItem1.getRelativePath());
         assertEquals("ABC", syncItem1.getChecksum());
         assertEquals(false, syncItem1.isFile());
@@ -164,7 +170,7 @@ class TestSerializers
         assertEquals("TestUserA", syncItem1.getUser().getName());
         assertEquals(41, syncItem1.getUser().getUid());
 
-        syncItem2 = Serializers.readFrom(buffer, SyncItem.class);
+        syncItem2 = SERIALIZER.readFrom(buffer, SyncItem.class);
         assertEquals("/script.sh", syncItem2.getRelativePath());
         assertEquals("XYZ", syncItem2.getChecksum());
         assertEquals(true, syncItem2.isFile());
@@ -187,10 +193,10 @@ class TestSerializers
         ByteBuffer buffer = BUFFER;
 
         Exception exception1 = new UnsupportedOperationException("Test Fail");
-        Serializers.writeTo(buffer, exception1, Exception.class);
+        SERIALIZER.writeTo(buffer, exception1, Exception.class);
 
         buffer.flip();
-        Exception exception2 = Serializers.readFrom(buffer, Exception.class);
+        Exception exception2 = SERIALIZER.readFrom(buffer, Exception.class);
 
         assertEquals(UnsupportedOperationException.class, exception2.getClass());
         assertEquals("Test Fail", exception2.getMessage());

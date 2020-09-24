@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.model.serializer.neu.Serializer;
 import de.freese.jsync.nio.utils.RemoteUtils;
 import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
 import de.freese.jsync.utils.pool.ByteBufferPool;
@@ -36,7 +36,7 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.CONNECT);
+            getSerializer().writeTo(buffer, JSyncCommand.CONNECT);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -45,7 +45,7 @@ public interface RemoteSupport
 
             if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
@@ -81,9 +81,9 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
-            Serializers.writeTo(buffer, baseDir);
-            Serializers.writeTo(buffer, relativePath);
+            getSerializer().writeTo(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
+            getSerializer().writeTo(buffer, baseDir);
+            getSerializer().writeTo(buffer, relativePath);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -92,7 +92,7 @@ public interface RemoteSupport
 
             if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
@@ -130,10 +130,10 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.TARGET_DELETE);
-            Serializers.writeTo(buffer, baseDir);
-            Serializers.writeTo(buffer, relativePath);
-            Serializers.writeTo(buffer, followSymLinks);
+            getSerializer().writeTo(buffer, JSyncCommand.TARGET_DELETE);
+            getSerializer().writeTo(buffer, baseDir);
+            getSerializer().writeTo(buffer, relativePath);
+            getSerializer().writeTo(buffer, followSymLinks);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -142,7 +142,7 @@ public interface RemoteSupport
 
             if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
@@ -176,7 +176,7 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.DISCONNECT);
+            getSerializer().writeTo(buffer, JSyncCommand.DISCONNECT);
             buffer.flip();
 
             channelWriter.write(buffer);
@@ -206,9 +206,9 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
-            Serializers.writeTo(buffer, baseDir);
-            Serializers.writeTo(buffer, followSymLinks);
+            getSerializer().writeTo(buffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+            getSerializer().writeTo(buffer, baseDir);
+            getSerializer().writeTo(buffer, followSymLinks);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -217,7 +217,7 @@ public interface RemoteSupport
 
             if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
@@ -227,7 +227,7 @@ public interface RemoteSupport
 
             while (byteBufferResponse.hasRemaining())
             {
-                SyncItem syncItem = Serializers.readFrom(byteBufferResponse, SyncItem.class);
+                SyncItem syncItem = getSerializer().readFrom(byteBufferResponse, SyncItem.class);
                 consumerSyncItem.accept(syncItem);
             }
         }
@@ -265,9 +265,9 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
-            Serializers.writeTo(buffer, baseDir);
-            Serializers.writeTo(buffer, relativeFile);
+            getSerializer().writeTo(buffer, JSyncCommand.SOURCE_CHECKSUM);
+            getSerializer().writeTo(buffer, baseDir);
+            getSerializer().writeTo(buffer, relativeFile);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -276,12 +276,12 @@ public interface RemoteSupport
 
             if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
 
-            String checksum = Serializers.readFrom(byteBufferResponse, String.class);
+            String checksum = getSerializer().readFrom(byteBufferResponse, String.class);
 
             return checksum;
         }
@@ -323,9 +323,9 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
-            Serializers.writeTo(buffer, baseDir);
-            Serializers.writeTo(buffer, relativeFile);
+            getSerializer().writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
+            getSerializer().writeTo(buffer, baseDir);
+            getSerializer().writeTo(buffer, relativeFile);
             buffer.putLong(size);
 
             buffer.flip();
@@ -340,7 +340,7 @@ public interface RemoteSupport
             if (!RemoteUtils.isResponseOK(byteBufferStatus))
             {
                 channelReader.read(buffer);
-                Exception exception = Serializers.readFrom(buffer, Exception.class);
+                Exception exception = getSerializer().readFrom(buffer, Exception.class);
 
                 throw exception;
             }
@@ -366,6 +366,11 @@ public interface RemoteSupport
     }
 
     /**
+     * @return {@link Serializer}
+     */
+    public Serializer<ByteBuffer> getSerializer();
+
+    /**
      * @param baseDir String
      * @param relativeFile String
      * @param size long
@@ -384,9 +389,9 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
-            Serializers.writeTo(buffer, baseDir);
-            Serializers.writeTo(buffer, relativeFile);
+            getSerializer().writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
+            getSerializer().writeTo(buffer, baseDir);
+            getSerializer().writeTo(buffer, relativeFile);
             buffer.putLong(size);
 
             buffer.flip();
@@ -428,9 +433,9 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.READ_CHUNK);
-            Serializers.writeTo(buffer, baseDir);
-            Serializers.writeTo(buffer, relativeFile);
+            getSerializer().writeTo(buffer, JSyncCommand.READ_CHUNK);
+            getSerializer().writeTo(buffer, baseDir);
+            getSerializer().writeTo(buffer, relativeFile);
             buffer.putLong(position);
             buffer.putLong(size);
 
@@ -446,7 +451,7 @@ public interface RemoteSupport
             if (!RemoteUtils.isResponseOK(byteBufferStatus))
             {
                 channelReader.read(buffer);
-                Exception exception = Serializers.readFrom(buffer, Exception.class);
+                Exception exception = getSerializer().readFrom(buffer, Exception.class);
 
                 throw exception;
             }
@@ -524,9 +529,9 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.TARGET_UPDATE);
-            Serializers.writeTo(buffer, baseDir);
-            Serializers.writeTo(buffer, syncItem);
+            getSerializer().writeTo(buffer, JSyncCommand.TARGET_UPDATE);
+            getSerializer().writeTo(buffer, baseDir);
+            getSerializer().writeTo(buffer, syncItem);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -536,7 +541,7 @@ public interface RemoteSupport
 
             if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
@@ -574,10 +579,10 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, JSyncCommand.TARGET_VALIDATE_FILE);
-            Serializers.writeTo(buffer, baseDir);
-            Serializers.writeTo(buffer, syncItem);
-            Serializers.writeTo(buffer, withChecksum);
+            getSerializer().writeTo(buffer, JSyncCommand.TARGET_VALIDATE_FILE);
+            getSerializer().writeTo(buffer, baseDir);
+            getSerializer().writeTo(buffer, syncItem);
+            getSerializer().writeTo(buffer, withChecksum);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -587,7 +592,7 @@ public interface RemoteSupport
 
             if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
@@ -663,9 +668,9 @@ public interface RemoteSupport
         try
         {
             bufferCmd.clear();
-            Serializers.writeTo(bufferCmd, JSyncCommand.WRITE_CHUNK);
-            Serializers.writeTo(bufferCmd, baseDir);
-            Serializers.writeTo(bufferCmd, relativeFile);
+            getSerializer().writeTo(bufferCmd, JSyncCommand.WRITE_CHUNK);
+            getSerializer().writeTo(bufferCmd, baseDir);
+            getSerializer().writeTo(bufferCmd, relativeFile);
             bufferCmd.putLong(position);
             bufferCmd.putLong(size);
 
@@ -680,7 +685,7 @@ public interface RemoteSupport
 
             if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }

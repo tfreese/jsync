@@ -10,6 +10,9 @@ import java.util.function.LongConsumer;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.model.serializer.neu.DefaultSerializer;
+import de.freese.jsync.model.serializer.neu.Serializer;
+import de.freese.jsync.model.serializer.neu.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.filesystem.RemoteSupport;
 import de.freese.jsync.nio.utils.pool.SocketChannelPool;
 import de.freese.jsync.utils.pool.ByteBufferPool;
@@ -30,6 +33,11 @@ public class RemoteSenderBlocking extends AbstractSender implements RemoteSuppor
      *
      */
     private SocketChannelPool channelPool;
+
+    /**
+     *
+     */
+    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * Erstellt ein neues {@link RemoteSenderBlocking} Object.
@@ -115,6 +123,15 @@ public class RemoteSenderBlocking extends AbstractSender implements RemoteSuppor
         {
             this.channelPool.release(channel);
         }
+    }
+
+    /**
+     * @see de.freese.jsync.nio.filesystem.RemoteSupport#getSerializer()
+     */
+    @Override
+    public Serializer<ByteBuffer> getSerializer()
+    {
+        return this.serializer;
     }
 
     /**

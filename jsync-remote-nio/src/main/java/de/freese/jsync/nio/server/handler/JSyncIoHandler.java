@@ -19,7 +19,9 @@ import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.model.serializer.neu.DefaultSerializer;
+import de.freese.jsync.model.serializer.neu.Serializer;
+import de.freese.jsync.model.serializer.neu.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.utils.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
@@ -73,6 +75,11 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     }
 
     /**
+    *
+    */
+    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+
+    /**
      * Erstellt ein neues {@link JSyncIoHandler} Object.
      */
     public JSyncIoHandler()
@@ -90,8 +97,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        String relativeFile = Serializers.readFrom(buffer, String.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        String relativeFile = getSerializer().readFrom(buffer, String.class);
 
         Exception exception = null;
         String checksum = null;
@@ -115,7 +122,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -132,7 +139,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Response senden.
                 buffer.clear();
                 RemoteUtils.writeResponseOK(buffer);
-                Serializers.writeTo(buffer, checksum);
+                getSerializer().writeTo(buffer, checksum);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -153,8 +160,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void createDirectory(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver)
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        String relativePath = Serializers.readFrom(buffer, String.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        String relativePath = getSerializer().readFrom(buffer, String.class);
 
         Exception exception = null;
 
@@ -176,7 +183,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -213,8 +220,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void createSyncItems(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem)
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        boolean followSymLinks = getSerializer().readFrom(buffer, Boolean.class);
 
         Exception exception = null;
         List<SyncItem> syncItems = new ArrayList<>(128);
@@ -241,7 +248,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -266,7 +273,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 for (SyncItem syncItem : syncItems)
                 {
                     buffer.clear();
-                    Serializers.writeTo(buffer, syncItem);
+                    getSerializer().writeTo(buffer, syncItem);
                     buffer.flip();
                     writeBuffer(selectionKey, buffer);
                 }
@@ -294,9 +301,9 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void delete(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        String relativePath = Serializers.readFrom(buffer, String.class);
-        boolean followSymLinks = Serializers.readFrom(buffer, Boolean.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        String relativePath = getSerializer().readFrom(buffer, String.class);
+        boolean followSymLinks = getSerializer().readFrom(buffer, Boolean.class);
 
         Exception exception = null;
 
@@ -318,7 +325,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -354,8 +361,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void fileChannel(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        String relativeFile = Serializers.readFrom(buffer, String.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        String relativeFile = getSerializer().readFrom(buffer, String.class);
         long size = buffer.getLong();
 
         Exception exception = null;
@@ -381,7 +388,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -445,8 +452,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void fileChannel(final SelectionKey selectionKey, final ByteBuffer buffer, final Sender sender) throws Exception
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        String relativeFile = Serializers.readFrom(buffer, String.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        String relativeFile = getSerializer().readFrom(buffer, String.class);
         long size = buffer.getLong();
 
         Exception exception = null;
@@ -472,7 +479,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -545,6 +552,14 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     }
 
     /**
+     * @return {@link Serializer}<ByteBuffer>
+     */
+    private Serializer<ByteBuffer> getSerializer()
+    {
+        return this.serializer;
+    }
+
+    /**
      * @see de.freese.jsync.nio.server.handler.IoHandler#read(java.lang.Object)
      */
     @Override
@@ -569,7 +584,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
             buffer.flip();
 
-            JSyncCommand command = Serializers.readFrom(buffer, JSyncCommand.class);
+            JSyncCommand command = getSerializer().readFrom(buffer, JSyncCommand.class);
             getLogger().debug("{}: read command: {}", getRemoteAddress(selectionKey), command);
 
             if (command == null)
@@ -674,8 +689,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void readChunk(final SelectionKey selectionKey, final ByteBuffer buffer, final Sender sender) throws Exception
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        String relativeFile = Serializers.readFrom(buffer, String.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        String relativeFile = getSerializer().readFrom(buffer, String.class);
         long position = buffer.getLong();
         long size = buffer.getLong();
 
@@ -700,7 +715,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -742,8 +757,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void update(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
 
         Exception exception = null;
 
@@ -765,7 +780,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -803,9 +818,9 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void validate(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
-        boolean withChecksum = Serializers.readFrom(buffer, Boolean.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
+        boolean withChecksum = getSerializer().readFrom(buffer, Boolean.class);
 
         Exception exception = null;
 
@@ -827,7 +842,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -891,8 +906,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void writeChunk(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
     {
-        String baseDir = Serializers.readFrom(buffer, String.class);
-        String relativeFile = Serializers.readFrom(buffer, String.class);
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        String relativeFile = getSerializer().readFrom(buffer, String.class);
         long position = buffer.getLong();
         long size = buffer.getLong();
 
@@ -930,7 +945,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Exception senden.
                 buffer.clear();
                 RemoteUtils.writeResponseERROR(buffer);
-                Serializers.writeTo(buffer, exception, Exception.class);
+                getSerializer().writeTo(buffer, exception, Exception.class);
                 RemoteUtils.writeEOL(buffer);
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);

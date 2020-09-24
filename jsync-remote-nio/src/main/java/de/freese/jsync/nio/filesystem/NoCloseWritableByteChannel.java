@@ -7,7 +7,9 @@ import java.nio.channels.NetworkChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
-import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.model.serializer.neu.DefaultSerializer;
+import de.freese.jsync.model.serializer.neu.Serializer;
+import de.freese.jsync.model.serializer.neu.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.utils.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
@@ -36,6 +38,11 @@ public class NoCloseWritableByteChannel<T extends NetworkChannel> implements Wri
     *
     */
     private final T delegate;
+
+    /**
+    *
+    */
+    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * Erstellt ein neues {@link NoCloseWritableByteChannel} Object.
@@ -71,7 +78,7 @@ public class NoCloseWritableByteChannel<T extends NetworkChannel> implements Wri
 
             if (!RemoteUtils.isResponseOK(byteBufferResponse))
             {
-                Exception exception = Serializers.readFrom(byteBufferResponse, Exception.class);
+                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
 
                 throw exception;
             }
@@ -92,6 +99,15 @@ public class NoCloseWritableByteChannel<T extends NetworkChannel> implements Wri
             ByteBufferPool.getInstance().release(buffer);
             this.channelReleaser.accept(this.delegate);
         }
+    }
+
+    /**
+     * @see de.freese.jsync.nio.filesystem.RemoteSupport#getSerializer()
+     */
+    @Override
+    public Serializer<ByteBuffer> getSerializer()
+    {
+        return this.serializer;
     }
 
     /**

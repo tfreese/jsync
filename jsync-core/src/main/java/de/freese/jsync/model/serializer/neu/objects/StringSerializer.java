@@ -1,0 +1,73 @@
+// Created: 24.09.2020
+package de.freese.jsync.model.serializer.neu.objects;
+
+import de.freese.jsync.model.serializer.neu.adapter.DataAdapter;
+
+/**
+ * @author Thomas Freese
+ */
+public final class StringSerializer implements ObjectSerializer<String>
+{
+    /**
+     * ThreadSafe Singleton-Pattern.
+     *
+     * @author Thomas Freese
+     */
+    private static final class StringSerializerHolder
+    {
+        /**
+         *
+         */
+        private static final StringSerializer INSTANCE = new StringSerializer();
+
+        /**
+         * Erstellt ein neues {@link StringSerializerHolder} Object.
+         */
+        private StringSerializerHolder()
+        {
+            super();
+        }
+    }
+
+    /**
+     * @return {@link StringSerializer}
+     */
+    public static StringSerializer getInstance()
+    {
+        return StringSerializerHolder.INSTANCE;
+    }
+
+    /**
+     * Erstellt ein neues {@link StringSerializer} Object.
+     */
+    private StringSerializer()
+    {
+        super();
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.neu.objects.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.neu.adapter.DataAdapter, java.lang.Object)
+     */
+    @Override
+    public <D> String readFrom(final DataAdapter<D> adapter, final D source)
+    {
+        CharSequence cs = CharSequenceSerializer.getInstance().readFrom(adapter, source);
+
+        if (cs == null)
+        {
+            return null;
+        }
+
+        return cs.toString();
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.neu.objects.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.neu.adapter.DataAdapter, java.lang.Object,
+     *      java.lang.Object)
+     */
+    @Override
+    public <D> void writeTo(final DataAdapter<D> adapter, final D sink, final String value)
+    {
+        CharSequenceSerializer.getInstance().writeTo(adapter, sink, value);
+    }
+}
