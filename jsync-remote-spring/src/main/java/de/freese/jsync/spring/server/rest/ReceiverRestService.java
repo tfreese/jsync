@@ -28,7 +28,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.model.serializer.DefaultSerializer;
+import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.utils.ByteBufferInputStream;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
@@ -49,6 +51,11 @@ public class ReceiverRestService
     */
     @javax.annotation.Resource
     private Receiver receiver;
+
+    /**
+    *
+    */
+    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * Erstellt ein neues {@link ReceiverRestService} Object.
@@ -135,7 +142,7 @@ public class ReceiverRestService
 
             for (SyncItem syncItem : syncItems)
             {
-                Serializers.writeTo(buffer, syncItem);
+                getSerializer().writeTo(buffer, syncItem);
             }
 
             buffer.flip();
@@ -181,6 +188,14 @@ public class ReceiverRestService
     }
 
     /**
+     * @return {@link Serializer}<ByteBuffer>
+     */
+    private Serializer<ByteBuffer> getSerializer()
+    {
+        return this.serializer;
+    }
+
+    /**
      * @param baseDir String
      * @param syncItemData {@link ByteBuffer}
      * @return {@link ResponseEntity}
@@ -190,7 +205,7 @@ public class ReceiverRestService
     {
         syncItemData.flip();
 
-        SyncItem syncItem = Serializers.readFrom(syncItemData, SyncItem.class);
+        SyncItem syncItem = getSerializer().readFrom(syncItemData, SyncItem.class);
 
         this.receiver.update(baseDir, syncItem);
 
@@ -209,7 +224,7 @@ public class ReceiverRestService
     {
         syncItemData.flip();
 
-        SyncItem syncItem = Serializers.readFrom(syncItemData, SyncItem.class);
+        SyncItem syncItem = getSerializer().readFrom(syncItemData, SyncItem.class);
 
         this.receiver.validateFile(baseDir, syncItem, withChecksum);
 

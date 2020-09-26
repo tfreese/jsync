@@ -12,9 +12,7 @@ import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
-import de.freese.jsync.model.serializer.neu.DefaultSerializer;
-import de.freese.jsync.model.serializer.neu.Serializer;
-import de.freese.jsync.model.serializer.neu.adapter.ByteBufferAdapter;
+import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 
 /**
  * @author Thomas Freese

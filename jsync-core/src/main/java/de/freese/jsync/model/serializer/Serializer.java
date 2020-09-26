@@ -1,38 +1,45 @@
-// Created: 28.04.2020
+// Created: 24.09.2020
 package de.freese.jsync.model.serializer;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-
-import de.freese.jsync.Options;
+import de.freese.jsync.model.serializer.objects.ObjectSerializer;
 
 /**
- * Interface zur Serialisierung.
- *
- * @param <T> Type
+ * Interface für die API.
  *
  * @author Thomas Freese
+ * @param <D> Type of Source/Sink
  */
-public interface Serializer<T>
+public interface Serializer<D>
 {
     /**
-     * @return {@link Charset}
+     * @param source Object
+     * @param type Class
+     * @return Object
      */
-    public default Charset getCharset()
+    public <T> T readFrom(final D source, final Class<T> type);
+
+    /**
+     * @param type Class
+     * @param serializer {@link ObjectSerializer}
+     */
+    public <T> void register(final Class<T> type, final ObjectSerializer<? super T> serializer);
+
+    /**
+     * @param <T> Type
+     * @param sink Object
+     * @param value Object
+     */
+    @SuppressWarnings("unchecked")
+    public default <T> void writeTo(final D sink, final T value)
     {
-        return Options.CHARSET;
+        writeTo(sink, value, (Class<T>) value.getClass());
     }
 
     /**
-     * @param buffer {@link ByteBuffer}
-     *
-     * @return T
+     * @param <T> Type
+     * @param sink Object
+     * @param value Object
+     * @param type Class
      */
-    public T readFrom(final ByteBuffer buffer);
-
-    /**
-     * @param buffer {@link ByteBuffer}
-     * @param obj    T
-     */
-    public void writeTo(final ByteBuffer buffer, final T obj);
+    public <T> void writeTo(final D sink, final T value, final Class<T> type);
 }

@@ -1,9 +1,9 @@
 // Created: 28.04.2020
-package de.freese.jsync.model.serializer.neu.objects;
+package de.freese.jsync.model.serializer.objects;
 
 import java.nio.charset.Charset;
 import de.freese.jsync.Options;
-import de.freese.jsync.model.serializer.neu.adapter.DataAdapter;
+import de.freese.jsync.model.serializer.adapter.DataAdapter;
 
 /**
  * Interface zur Serialisierung eines Objektes.

@@ -41,7 +41,9 @@ import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.model.serializer.DefaultSerializer;
+import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.spring.HttpHeaderInterceptor;
 import de.freese.jsync.spring.utils.ByteBufferHttpMessageConverter;
 import de.freese.jsync.utils.JSyncUtils;
@@ -74,6 +76,11 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
     *
     */
     private RestTemplateBuilder restTemplateBuilder;
+
+    /**
+     *
+     */
+    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * Erstellt ein neues {@link RemoteReceiverRestTemplate} Object.
@@ -119,6 +126,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
         // @formatter:on
 
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+        httpRequestFactory.setBufferRequestBody(false); // Streaming
 
         String rootUri = String.format("http://%s:%d/jsync/receiver", uri.getHost(), uri.getPort());
 
@@ -128,8 +136,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
                 .requestFactory(() -> httpRequestFactory)
                 .additionalMessageConverters(new ByteArrayHttpMessageConverter()
                         , new StringHttpMessageConverter()
-                        //, new MappingJackson2HttpMessageConverter()
-                        , new ResourceHttpMessageConverter(false)
+                        , new ResourceHttpMessageConverter(true)
                         //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get())
                         , new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.BYTEBUFFER_SIZE))
                         )
@@ -231,7 +238,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
 
             while (buffer.hasRemaining())
             {
-                SyncItem syncItem = Serializers.readFrom(buffer, SyncItem.class);
+                SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
                 consumerSyncItem.accept(syncItem);
             }
         }
@@ -368,6 +375,14 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
     }
 
     /**
+     * @return {@link Serializer}<ByteBuffer>
+     */
+    private Serializer<ByteBuffer> getSerializer()
+    {
+        return this.serializer;
+    }
+
+    /**
      * @see de.freese.jsync.filesystem.receiver.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
      */
     @Override
@@ -378,7 +393,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, syncItem);
+            getSerializer().writeTo(buffer, syncItem);
             buffer.flip();
 
             // @formatter:off
@@ -422,7 +437,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
         try
         {
             buffer.clear();
-            Serializers.writeTo(buffer, syncItem);
+            getSerializer().writeTo(buffer, syncItem);
             buffer.flip();
 
             // @formatter:off

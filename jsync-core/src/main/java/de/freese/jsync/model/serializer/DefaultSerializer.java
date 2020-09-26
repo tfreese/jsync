@@ -1,5 +1,5 @@
 // Created: 24.09.2020
-package de.freese.jsync.model.serializer.neu;
+package de.freese.jsync.model.serializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,18 +10,18 @@ import de.freese.jsync.model.Group;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
-import de.freese.jsync.model.serializer.neu.adapter.DataAdapter;
-import de.freese.jsync.model.serializer.neu.objects.BooleanSerializer;
-import de.freese.jsync.model.serializer.neu.objects.CharSequenceSerializer;
-import de.freese.jsync.model.serializer.neu.objects.ExceptionSerializer;
-import de.freese.jsync.model.serializer.neu.objects.GroupSerializer;
-import de.freese.jsync.model.serializer.neu.objects.JSyncCommandSerializer;
-import de.freese.jsync.model.serializer.neu.objects.ObjectSerializer;
-import de.freese.jsync.model.serializer.neu.objects.OptionsSerializer;
-import de.freese.jsync.model.serializer.neu.objects.StackTraceElementSerializer;
-import de.freese.jsync.model.serializer.neu.objects.StringSerializer;
-import de.freese.jsync.model.serializer.neu.objects.SyncItemSerializer;
-import de.freese.jsync.model.serializer.neu.objects.UserSerializer;
+import de.freese.jsync.model.serializer.adapter.DataAdapter;
+import de.freese.jsync.model.serializer.objects.BooleanSerializer;
+import de.freese.jsync.model.serializer.objects.CharSequenceSerializer;
+import de.freese.jsync.model.serializer.objects.ExceptionSerializer;
+import de.freese.jsync.model.serializer.objects.GroupSerializer;
+import de.freese.jsync.model.serializer.objects.JSyncCommandSerializer;
+import de.freese.jsync.model.serializer.objects.ObjectSerializer;
+import de.freese.jsync.model.serializer.objects.OptionsSerializer;
+import de.freese.jsync.model.serializer.objects.StackTraceElementSerializer;
+import de.freese.jsync.model.serializer.objects.StringSerializer;
+import de.freese.jsync.model.serializer.objects.SyncItemSerializer;
+import de.freese.jsync.model.serializer.objects.UserSerializer;
 
 /**
  * @author Thomas Freese
@@ -89,7 +89,7 @@ public final class DefaultSerializer<D> implements Serializer<D>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.Serializer#readFrom(java.lang.Object, java.lang.Class)
+     * @see de.freese.jsync.model.serializer.Serializer#readFrom(java.lang.Object, java.lang.Class)
      */
     @Override
     public <T> T readFrom(final D source, final Class<T> type)
@@ -102,7 +102,7 @@ public final class DefaultSerializer<D> implements Serializer<D>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.Serializer#register(java.lang.Class, de.freese.jsync.model.serializer.neu.objects.ObjectSerializer)
+     * @see de.freese.jsync.model.serializer.Serializer#register(java.lang.Class, de.freese.jsync.model.serializer.objects.ObjectSerializer)
      */
     @Override
     public <T> void register(final Class<T> type, final ObjectSerializer<? super T> serializer)
@@ -111,7 +111,7 @@ public final class DefaultSerializer<D> implements Serializer<D>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.Serializer#writeTo(java.lang.Object, java.lang.Object, java.lang.Class)
+     * @see de.freese.jsync.model.serializer.Serializer#writeTo(java.lang.Object, java.lang.Object, java.lang.Class)
      */
     @Override
     public <T> void writeTo(final D sink, final T value, final Class<T> type)

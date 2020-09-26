@@ -1,7 +1,7 @@
 // Created: 24.09.2020
-package de.freese.jsync.model.serializer.neu.objects;
+package de.freese.jsync.model.serializer.objects;
 
-import de.freese.jsync.model.serializer.neu.adapter.DataAdapter;
+import de.freese.jsync.model.serializer.adapter.DataAdapter;
 
 /**
  * @author Thomas Freese
@@ -46,7 +46,7 @@ public final class CharSequenceSerializer implements ObjectSerializer<CharSequen
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.objects.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.neu.adapter.DataAdapter, java.lang.Object)
+     * @see de.freese.jsync.model.serializer.objects.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
     public <D> CharSequence readFrom(final DataAdapter<D> adapter, final D source)
@@ -70,7 +70,7 @@ public final class CharSequenceSerializer implements ObjectSerializer<CharSequen
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.objects.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.neu.adapter.DataAdapter, java.lang.Object,
+     * @see de.freese.jsync.model.serializer.objects.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object,
      *      java.lang.Object)
      */
     @Override

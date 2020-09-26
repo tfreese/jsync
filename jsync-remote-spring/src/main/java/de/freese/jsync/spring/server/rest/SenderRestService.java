@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.model.serializer.DefaultSerializer;
+import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.utils.ByteBufferInputStream;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
@@ -45,6 +47,11 @@ public class SenderRestService
      */
     @javax.annotation.Resource
     private Sender sender;
+
+    /**
+    *
+    */
+    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * Erstellt ein neues {@link SenderRestService} Object.
@@ -76,6 +83,62 @@ public class SenderRestService
         // return ResponseEntity.ok().build();
     }
 
+    /**
+     * @param baseDir String
+     * @param followSymLinks boolean
+     * @param request {@link ServletRequest}
+     * @param response {@link ServletResponse}
+     * @return {@link ResponseEntity}
+     */
+    // @GetMapping("/syncItems/{baseDir}/{followSymLinks}")
+    // public ResponseEntity<Resource> generateSyncItems(@PathVariable("baseDir") final String baseDir,
+    // @PathVariable("followSymLinks") final boolean followSymLinks, final HttpServletRequest request,
+    // final HttpServletResponse response)
+    @GetMapping(path = "/syncItems", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<ByteBuffer> generateSyncItems(@RequestParam("baseDir") final String baseDir,
+                                                        @RequestParam("followSymLinks") final boolean followSymLinks, final ServletRequest request,
+                                                        final ServletResponse response)
+    {
+        List<SyncItem> syncItems = new ArrayList<>(128);
+
+        this.sender.generateSyncItems(baseDir, followSymLinks, syncItem -> {
+            getLogger().debug("{}/{}: SyncItem generated: {}", request.getRemoteAddr(), request.getRemotePort(), syncItem);
+
+            syncItems.add(syncItem);
+        });
+
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+
+        try
+        {
+            buffer.clear();
+            buffer.putInt(syncItems.size());
+
+            for (SyncItem syncItem : syncItems)
+            {
+                getSerializer().writeTo(buffer, syncItem);
+            }
+
+            buffer.flip();
+
+            // byte[] data = new byte[buffer.limit()];
+            // buffer.get(data);
+            // Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
+
+            // response.getOutputStream().write(data);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+            ResponseEntity<ByteBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
+
+            return responseEntity;
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+    }
+
     // @RequestMapping(value = "/image-byte-array", method = RequestMethod.GET)
     // public @ResponseBody byte[] getImageAsByteArray() throws IOException {
     // InputStream in = servletContext.getResourceAsStream("/WEB-INF/images/image-example.jpg");
@@ -96,62 +159,6 @@ public class SenderRestService
     // new ServletContextResource(servletContext, "/WEB-INF/images/image-example.jpg");
     // return new ResponseEntity<>(resource, headers, HttpStatus.OK);
     // }
-
-    /**
-     * @param baseDir String
-     * @param followSymLinks boolean
-     * @param request {@link ServletRequest}
-     * @param response {@link ServletResponse}
-     * @return {@link ResponseEntity}
-     */
-    // @GetMapping("/syncItems/{baseDir}/{followSymLinks}")
-    // public ResponseEntity<Resource> generateSyncItems(@PathVariable("baseDir") final String baseDir,
-    // @PathVariable("followSymLinks") final boolean followSymLinks, final HttpServletRequest request,
-    // final HttpServletResponse response)
-    @GetMapping("/syncItems")
-    public ResponseEntity<Resource> generateSyncItems(@RequestParam("baseDir") final String baseDir,
-                                                      @RequestParam("followSymLinks") final boolean followSymLinks, final ServletRequest request,
-                                                      final ServletResponse response)
-    {
-        List<SyncItem> syncItems = new ArrayList<>(128);
-
-        this.sender.generateSyncItems(baseDir, followSymLinks, syncItem -> {
-            getLogger().debug("{}/{}: SyncItem generated: {}", request.getRemoteAddr(), request.getRemotePort(), syncItem);
-
-            syncItems.add(syncItem);
-        });
-
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
-
-        try
-        {
-            buffer.clear();
-            buffer.putInt(syncItems.size());
-
-            for (SyncItem syncItem : syncItems)
-            {
-                Serializers.writeTo(buffer, syncItem);
-            }
-
-            buffer.flip();
-
-            // byte[] data = new byte[buffer.limit()];
-            // buffer.get(data);
-            Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
-
-            // response.getOutputStream().write(data);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-            ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
-
-            return responseEntity;
-        }
-        finally
-        {
-            ByteBufferPool.getInstance().release(buffer);
-        }
-    }
 
     /**
      * @param baseDir String
@@ -179,6 +186,14 @@ public class SenderRestService
     private Logger getLogger()
     {
         return LOGGER;
+    }
+
+    /**
+     * @return Serializer<ByteBuffer>
+     */
+    private Serializer<ByteBuffer> getSerializer()
+    {
+        return this.serializer;
     }
 
     // @RequestMapping(value = "/submissions/signature/{type}/{id}",

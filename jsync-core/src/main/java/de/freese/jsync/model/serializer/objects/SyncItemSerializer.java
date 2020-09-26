@@ -1,10 +1,10 @@
 // Created: 24.09.2020
-package de.freese.jsync.model.serializer.neu.objects;
+package de.freese.jsync.model.serializer.objects;
 
 import java.nio.file.attribute.PosixFilePermissions;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.neu.adapter.DataAdapter;
+import de.freese.jsync.model.serializer.adapter.DataAdapter;
 
 /**
  * @author Thomas Freese
@@ -49,7 +49,7 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.objects.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.neu.adapter.DataAdapter, java.lang.Object)
+     * @see de.freese.jsync.model.serializer.objects.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
     public <D> SyncItem readFrom(final DataAdapter<D> adapter, final D source)
@@ -89,7 +89,7 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.objects.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.neu.adapter.DataAdapter, java.lang.Object,
+     * @see de.freese.jsync.model.serializer.objects.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object,
      *      java.lang.Object)
      */
     @Override

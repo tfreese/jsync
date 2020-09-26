@@ -1,5 +1,5 @@
 // Created: 22.09.2020
-package de.freese.jsync.model.serializer.neu.adapter;
+package de.freese.jsync.model.serializer.adapter;
 
 import java.nio.ByteBuffer;
 
@@ -17,7 +17,7 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.adapter.DataAdapter#readByte(java.lang.Object)
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readByte(java.lang.Object)
      */
     @Override
     public byte readByte(final ByteBuffer source)
@@ -26,7 +26,7 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.adapter.DataAdapter#readBytes(java.lang.Object, int)
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readBytes(java.lang.Object, int)
      */
     @Override
     public byte[] readBytes(final ByteBuffer source, final int length)
@@ -38,7 +38,7 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.adapter.DataAdapter#readInt(java.lang.Object)
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readInt(java.lang.Object)
      */
     @Override
     public int readInt(final ByteBuffer source)
@@ -47,7 +47,7 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.adapter.DataAdapter#readLong(java.lang.Object)
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readLong(java.lang.Object)
      */
     @Override
     public long readLong(final ByteBuffer source)
@@ -56,7 +56,7 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.adapter.DataAdapter#writeByte(java.lang.Object, byte)
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#writeByte(java.lang.Object, byte)
      */
     @Override
     public void writeByte(final ByteBuffer sink, final byte value)
@@ -65,7 +65,7 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.adapter.DataAdapter#writeBytes(java.lang.Object, byte[])
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#writeBytes(java.lang.Object, byte[])
      */
     @Override
     public void writeBytes(final ByteBuffer sink, final byte[] bytes)
@@ -74,7 +74,7 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.adapter.DataAdapter#writeInt(java.lang.Object, int)
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#writeInt(java.lang.Object, int)
      */
     @Override
     public void writeInt(final ByteBuffer sink, final int value)
@@ -83,7 +83,7 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.neu.adapter.DataAdapter#writeLong(java.lang.Object, long)
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#writeLong(java.lang.Object, long)
      */
     @Override
     public void writeLong(final ByteBuffer sink, final long value)

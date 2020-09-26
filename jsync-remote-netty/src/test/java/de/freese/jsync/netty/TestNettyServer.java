@@ -13,7 +13,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import de.freese.jsync.model.serializer.Serializers;
+import de.freese.jsync.model.serializer.DefaultSerializer;
+import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.netty.server.JsyncServer;
 import de.freese.jsync.utils.JsyncThreadFactory;
 import io.netty.bootstrap.Bootstrap;
@@ -134,13 +136,14 @@ class TestNettyServer
     void testEchoNIO() throws Exception
     {
         // Thread.sleep(5000);
+        Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
         InetSocketAddress serverAddress = new InetSocketAddress("localhost", 8005);
         SocketChannel channel = SocketChannel.open(serverAddress);
         channel.configureBlocking(true);
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(128);
-        Serializers.writeTo(byteBuffer, "Hello World!");
+        serializer.writeTo(byteBuffer, "Hello World!");
         byteBuffer.flip();
 
         channel.write(byteBuffer);
@@ -149,7 +152,7 @@ class TestNettyServer
         channel.read(byteBuffer);
         byteBuffer.flip();
 
-        System.out.println("Client receive: " + Serializers.readFrom(byteBuffer, String.class));
+        System.out.println("Client receive: " + serializer.readFrom(byteBuffer, String.class));
 
         channel.shutdownInput();
         channel.shutdownOutput();

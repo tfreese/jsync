@@ -19,9 +19,9 @@ import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.neu.DefaultSerializer;
-import de.freese.jsync.model.serializer.neu.Serializer;
-import de.freese.jsync.model.serializer.neu.adapter.ByteBufferAdapter;
+import de.freese.jsync.model.serializer.DefaultSerializer;
+import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.utils.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
