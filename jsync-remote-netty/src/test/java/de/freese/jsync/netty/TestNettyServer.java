@@ -1,10 +1,11 @@
 // Created: 20.09.2020
 package de.freese.jsync.netty;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -16,7 +17,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
-import de.freese.jsync.netty.server.JsyncServer;
+import de.freese.jsync.netty.server.JsyncNettyServer;
 import de.freese.jsync.utils.JsyncThreadFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -37,7 +38,7 @@ class TestNettyServer
     /**
      *
      */
-    private static JsyncServer server;
+    private static JsyncNettyServer server;
 
     /**
      * @throws Exception Falls was schief geht.
@@ -54,7 +55,7 @@ class TestNettyServer
     @BeforeAll
     static void beforeAll() throws Exception
     {
-        server = new JsyncServer();
+        server = new JsyncNettyServer();
         server.start(8005, 2, Executors.newCachedThreadPool(new JsyncThreadFactory("acceptor-")), 4,
                 Executors.newCachedThreadPool(new JsyncThreadFactory("worker-")));
     }
@@ -115,25 +116,27 @@ class TestNettyServer
 
         ClientHandler clientHandler = (ClientHandler) channel.pipeline().last();
 
-        Future<String> response = clientHandler.sendMessage("Hello World!");
-        System.out.println("Client receive: " + response.get());
+        Future<String> responseFuture = clientHandler.sendMessage("Hello World!");
+        String response = responseFuture.get();
+        System.out.println("Client receive: " + response);
+        assertEquals("Hello World!, from Server", response);
 
-        response = clientHandler.sendMessage("Byebye World!");
-        System.out.println("Client receive: " + response.get());
+        responseFuture = clientHandler.sendMessage("Byebye World!");
+        response = responseFuture.get();
+        System.out.println("Client receive: " + response);
+        assertEquals("Byebye World!, from Server", response);
 
         // Warten bis Verbindung beendet.
         // closeFuture.sync();
 
         clientLoopGroup.shutdownGracefully();
-
-        assertTrue(true, "OK");
     }
 
     /**
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void testEchoNIO() throws Exception
+    void testEchoNio() throws Exception
     {
         // Thread.sleep(5000);
         Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
@@ -142,7 +145,11 @@ class TestNettyServer
         SocketChannel channel = SocketChannel.open(serverAddress);
         channel.configureBlocking(true);
 
+        UUID uuid = UUID.randomUUID();
+        String requestId = uuid.toString();
+
         ByteBuffer byteBuffer = ByteBuffer.allocate(128);
+        serializer.writeTo(byteBuffer, requestId);
         serializer.writeTo(byteBuffer, "Hello World!");
         byteBuffer.flip();
 
@@ -152,12 +159,13 @@ class TestNettyServer
         channel.read(byteBuffer);
         byteBuffer.flip();
 
-        System.out.println("Client receive: " + serializer.readFrom(byteBuffer, String.class));
+        requestId = serializer.readFrom(byteBuffer, String.class);
+        String response = serializer.readFrom(byteBuffer, String.class);
+        System.out.println("Client receive: " + response);
+        assertEquals("Hello World!, from Server", response);
 
         channel.shutdownInput();
         channel.shutdownOutput();
         channel.close();
-
-        assertTrue(true, "OK");
     }
 }

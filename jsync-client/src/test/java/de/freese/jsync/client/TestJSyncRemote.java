@@ -25,7 +25,7 @@ import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.nio.server.JSyncServer;
+import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.spring.server.JsyncServerApplication;
 
@@ -88,7 +88,7 @@ class TestJSyncRemote extends AbstractJSyncTest
     {
         if (!CLOSEABLES.containsKey("nio-receiver"))
         {
-            JSyncServer serverNioReceiver = new JSyncServer(8002, 2, 4);
+            JSyncNioServer serverNioReceiver = new JSyncNioServer(8002, 2, 4);
             serverNioReceiver.setName("receiver");
             serverNioReceiver.setIoHandler(new JSyncIoHandler());
             serverNioReceiver.start();
@@ -103,7 +103,7 @@ class TestJSyncRemote extends AbstractJSyncTest
     {
         if (!CLOSEABLES.containsKey("nio-sender"))
         {
-            JSyncServer serverNioSender = new JSyncServer(8001, 2, 4);
+            JSyncNioServer serverNioSender = new JSyncNioServer(8001, 2, 4);
             serverNioSender.setName("sender");
             serverNioSender.setIoHandler(new JSyncIoHandler());
             serverNioSender.start();

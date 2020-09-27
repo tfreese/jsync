@@ -119,14 +119,15 @@ public class ClientHandler extends SimpleChannelInboundHandler<ByteBuf> // Chann
     protected void channelRead0(final ChannelHandlerContext ctx, final ByteBuf buf) throws Exception
     {
         int requestIdLength = buf.readInt();
-
-        getLogger().info("{}: channelRead0; {}", ctx.channel().localAddress(), buf.toString(StandardCharsets.UTF_8));
-
         CharSequence requestId = buf.readCharSequence(requestIdLength, StandardCharsets.UTF_8);
-        String message = buf.toString(StandardCharsets.UTF_8);
+
+        int messageLength = buf.readInt();
+        CharSequence message = buf.readCharSequence(messageLength, StandardCharsets.UTF_8);
+
+        getLogger().info("{}: channelRead0; {}/{}", ctx.channel().localAddress(), requestId, message);
 
         Promise<String> promise = this.requests.remove(requestId);
-        promise.setSuccess(message);
+        promise.setSuccess(message.toString());
 
         // synchronized (this)
         // {
@@ -198,6 +199,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<ByteBuf> // Chann
         buf.clear();
         buf.writeInt(requestId.length());
         buf.writeCharSequence(requestId, StandardCharsets.UTF_8);
+        buf.writeInt(message.length());
         buf.writeCharSequence(message, StandardCharsets.UTF_8);
 
         this.requests.put(requestId, promise);

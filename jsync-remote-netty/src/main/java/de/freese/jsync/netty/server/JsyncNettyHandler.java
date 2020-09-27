@@ -11,7 +11,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 /**
  * @author Thomas Freese
  */
-public class JsyncHandler extends SimpleChannelInboundHandler<ByteBuf> // ChannelInboundHandlerAdapter
+public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // ChannelInboundHandlerAdapter
 {
     /**
      *
@@ -19,9 +19,9 @@ public class JsyncHandler extends SimpleChannelInboundHandler<ByteBuf> // Channe
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Erstellt ein neues {@link JsyncHandler} Object.
+     * Erstellt ein neues {@link JsyncNettyHandler} Object.
      */
-    public JsyncHandler()
+    public JsyncNettyHandler()
     {
         super();
     }
@@ -60,16 +60,20 @@ public class JsyncHandler extends SimpleChannelInboundHandler<ByteBuf> // Channe
         getLogger().info("{}: channelRead0: {}/{}", ctx.channel().remoteAddress(), buf, buf.hashCode());
 
         int requestIdLength = buf.readInt();
-
-        getLogger().info("{}: channelRead0: {}", ctx.channel().remoteAddress(), buf.toString(StandardCharsets.UTF_8));
-
         CharSequence requestId = buf.readCharSequence(requestIdLength, StandardCharsets.UTF_8);
-        String message = buf.toString(StandardCharsets.UTF_8);
+
+        int messageLength = buf.readInt();
+        CharSequence message = buf.readCharSequence(messageLength, StandardCharsets.UTF_8);
+
+        getLogger().info("{}: channelRead0: {}/{}", ctx.channel().remoteAddress(), requestId, message);
+
+        String response = message + ", from Server";
 
         buf.clear();
         buf.writeInt(requestId.length());
         buf.writeCharSequence(requestId, StandardCharsets.UTF_8);
-        buf.writeCharSequence(message + ", from Server", StandardCharsets.UTF_8);
+        buf.writeInt(response.length());
+        buf.writeCharSequence(response, StandardCharsets.UTF_8);
 
         ctx.write(buf);
 

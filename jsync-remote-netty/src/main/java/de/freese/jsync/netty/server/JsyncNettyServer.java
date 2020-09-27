@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -14,17 +15,22 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 /**
  * @author Thomas Freese
  */
-public class JsyncServer
+public class JsyncNettyServer
 {
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsyncServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsyncNettyServer.class);
 
     /**
     *
     */
     private EventLoopGroup acceptorGroup;
+
+    /**
+     *
+     */
+    private Channel channel;
 
     // /**
     // *
@@ -32,9 +38,9 @@ public class JsyncServer
     // private ServerBootstrap bootstrap;
 
     /**
-     *
-     */
-    private Channel channel;
+    *
+    */
+    private String name = getClass().getSimpleName();
 
     /**
     *
@@ -42,9 +48,9 @@ public class JsyncServer
     private EventLoopGroup workerGroup;
 
     /**
-     * Erstellt ein neues {@link JsyncServer} Object.
+     * Erstellt ein neues {@link JsyncNettyServer} Object.
      */
-    public JsyncServer()
+    public JsyncNettyServer()
     {
         super();
     }
@@ -66,7 +72,7 @@ public class JsyncServer
      */
     public void start(final int port, final int acceptorThreads, final Executor acceptorExecutor, final int workerThreads, final Executor workerExecutor)
     {
-        getLogger().info("starting JsyncServer");
+        getLogger().info("starting {}", this.name);
 
         this.acceptorGroup = new NioEventLoopGroup(acceptorThreads, acceptorExecutor);
         this.workerGroup = new NioEventLoopGroup(workerThreads, workerExecutor);
@@ -74,9 +80,11 @@ public class JsyncServer
         // @formatter:off
         ServerBootstrap bootstrap =  new ServerBootstrap()
                 .group(this.acceptorGroup, this.workerGroup)
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .option(ChannelOption.TCP_NODELAY, true)
                 .channel(NioServerSocketChannel.class)
                 //.handler(new LoggingHandler(LogLevel.INFO))
-                .childHandler(new JsyncServerInitializer());
+                .childHandler(new JsyncNettyServerInitializer());
         // @formatter:on
 
         try
@@ -85,11 +93,11 @@ public class JsyncServer
             bindFuture.addListener(future -> {
                 if (future.isSuccess())
                 {
-                    getLogger().info("JsyncServer started");
+                    getLogger().info("{} started", this.name);
                 }
                 else
                 {
-                    getLogger().error("JsyncServer NOT started", future.cause());
+                    getLogger().error(this.name + " NOT started", future.cause());
                     return;
                 }
             });
@@ -111,7 +119,7 @@ public class JsyncServer
      */
     public void stop()
     {
-        getLogger().info("stopping JsyncServer");
+        getLogger().info("stopping {}", this.name);
 
         if (this.acceptorGroup != null)
         {
@@ -123,6 +131,6 @@ public class JsyncServer
             this.workerGroup.shutdownGracefully();
         }
 
-        getLogger().info("JsyncServer stopped");
+        getLogger().info("{} stopped", this.name);
     }
 }

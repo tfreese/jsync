@@ -9,12 +9,12 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 /**
  * @author Thomas Freese
  */
-public class JsyncServerInitializer extends ChannelInitializer<SocketChannel>
+public class JsyncNettyServerInitializer extends ChannelInitializer<SocketChannel>
 {
     /**
-     * Erstellt ein neues {@link JsyncServerInitializer} Object.
+     * Erstellt ein neues {@link JsyncNettyServerInitializer} Object.
      */
-    public JsyncServerInitializer()
+    public JsyncNettyServerInitializer()
     {
         super();
     }
@@ -28,6 +28,6 @@ public class JsyncServerInitializer extends ChannelInitializer<SocketChannel>
         ChannelPipeline pipeline = ch.pipeline();
 
         pipeline.addLast(new ChunkedWriteHandler());
-        pipeline.addLast(new JsyncHandler());
+        pipeline.addLast(new JsyncNettyHandler());
     }
 }

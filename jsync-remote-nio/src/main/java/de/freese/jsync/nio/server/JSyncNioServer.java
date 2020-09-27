@@ -26,12 +26,12 @@ import de.freese.jsync.nio.server.handler.IoHandler;
  *
  * @author Thomas Freese
  */
-public class JSyncServer implements Runnable
+public class JSyncNioServer implements Runnable
 {
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncNioServer.class);
     /**
      *
      */
@@ -66,20 +66,20 @@ public class JSyncServer implements Runnable
     private final Semaphore startLock = new Semaphore(1, true);
 
     /**
-     * Erstellt ein neues {@link JSyncServer} Object.
+     * Erstellt ein neues {@link JSyncNioServer} Object.
      *
      * @param port int
      * @param numOfDispatcher int
      * @param numOfWorker int
      * @throws IOException Falls was schief geht.
      */
-    public JSyncServer(final int port, final int numOfDispatcher, final int numOfWorker) throws IOException
+    public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker) throws IOException
     {
         this(port, numOfDispatcher, numOfWorker, SelectorProvider.provider());
     }
 
     /**
-     * Erstellt ein neues {@link JSyncServer} Object.
+     * Erstellt ein neues {@link JSyncNioServer} Object.
      *
      * @param port int
      * @param numOfDispatcher int
@@ -87,7 +87,7 @@ public class JSyncServer implements Runnable
      * @param selectorProvider {@link SelectorProvider}
      * @throws IOException Falls was schief geht.
      */
-    public JSyncServer(final int port, final int numOfDispatcher, final int numOfWorker, final SelectorProvider selectorProvider) throws IOException
+    public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker, final SelectorProvider selectorProvider) throws IOException
     {
         super();
 
