@@ -1,10 +1,10 @@
 // Created: 31.08.2020
 package de.freese.jsync.utils.pool;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public abstract class AbstractPool<T>
     /**
     *
     */
-    private final List<T> pool = new ArrayList<>();
+    private final Queue<T> pool = new ConcurrentLinkedQueue<>();
 
     /**
      * Erstellt ein neues {@link AbstractPool} Object.
@@ -52,7 +52,6 @@ public abstract class AbstractPool<T>
         getLock().lock();
 
         try
-        // synchronized (this)
         {
             for (Iterator<T> iterator = this.pool.iterator(); iterator.hasNext();)
             {
@@ -84,17 +83,12 @@ public abstract class AbstractPool<T>
         getLock().lock();
 
         try
-        // synchronized (this)
         {
-            T object = null;
+            T object = this.pool.poll();
 
-            if (this.pool.isEmpty())
+            if (object == null)
             {
                 object = createObject();
-            }
-            else
-            {
-                object = this.pool.remove(0);
             }
 
             return object;
@@ -131,7 +125,6 @@ public abstract class AbstractPool<T>
         getLock().lock();
 
         try
-        // synchronized (this)
         {
             this.pool.add(object);
         }
