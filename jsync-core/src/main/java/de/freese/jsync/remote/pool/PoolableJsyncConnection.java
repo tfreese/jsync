@@ -37,4 +37,12 @@ public class PoolableJsyncConnection extends JsyncConnectionMapper
     {
         this.pool.accept(this);
     }
+
+    /**
+     * @return {@link JsyncConnection}
+     */
+    JsyncConnection getRawConnection()
+    {
+        return getConnection();
+    }
 }

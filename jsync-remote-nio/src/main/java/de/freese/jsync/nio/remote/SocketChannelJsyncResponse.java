@@ -3,6 +3,7 @@ package de.freese.jsync.nio.remote;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import de.freese.jsync.model.serializer.Serializer;
@@ -13,7 +14,7 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
 /**
  * @author Thomas Freese
  */
-public class SocketChannelJsyncResponse implements JsyncResponse<Object>, RemoteSupport
+public class SocketChannelJsyncResponse implements JsyncResponse, RemoteSupport
 {
     /**
     *
@@ -56,6 +57,16 @@ public class SocketChannelJsyncResponse implements JsyncResponse<Object>, Remote
     }
 
     /**
+     * @see de.freese.jsync.remote.api.JsyncResponse#getContentLength()
+     */
+    @Override
+    public int getContentLength()
+    {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    /**
      * @see de.freese.jsync.remote.api.JsyncResponse#getException()
      */
     @Override
@@ -66,10 +77,10 @@ public class SocketChannelJsyncResponse implements JsyncResponse<Object>, Remote
     }
 
     /**
-     * @see de.freese.jsync.remote.api.JsyncResponse#getResult()
+     * @see de.freese.jsync.remote.api.JsyncResponse#getReadableByteChannel()
      */
     @Override
-    public Object getResult()
+    public ReadableByteChannel getReadableByteChannel()
     {
         // TODO Auto-generated method stub
         return null;
@@ -82,5 +93,15 @@ public class SocketChannelJsyncResponse implements JsyncResponse<Object>, Remote
     public Serializer<ByteBuffer> getSerializer()
     {
         return this.serializer;
+    }
+
+    /**
+     * @see de.freese.jsync.remote.api.JsyncResponse#getStatus()
+     */
+    @Override
+    public int getStatus()
+    {
+        // TODO Auto-generated method stub
+        return 0;
     }
 }

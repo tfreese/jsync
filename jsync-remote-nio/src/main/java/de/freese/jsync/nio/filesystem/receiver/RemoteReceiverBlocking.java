@@ -109,7 +109,7 @@ public class RemoteReceiverBlocking extends AbstractReceiver implements RemoteSu
     @Override
     public void disconnect()
     {
-        this.channelPool.destroy(channel -> disconnect(buffer -> write(channel, buffer), getLogger()));
+        this.channelPool.destroy(channel -> disconnect(buffer -> write(channel, buffer), channel::read, getLogger()));
 
         this.byteBufferPool.clear();
     }

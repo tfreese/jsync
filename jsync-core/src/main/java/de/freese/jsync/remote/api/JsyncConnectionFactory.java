@@ -1,14 +1,18 @@
 // Created: 29.09.2020
 package de.freese.jsync.remote.api;
 
-import java.io.Closeable;
 import java.net.URI;
 
 /**
  * @author Thomas Freese
  */
-public interface JsyncConnectionFactory extends Closeable
+public interface JsyncConnectionFactory
 {
+    /**
+    *
+    */
+    public void close();
+
     /**
      * @param uri {@link URI}
      */

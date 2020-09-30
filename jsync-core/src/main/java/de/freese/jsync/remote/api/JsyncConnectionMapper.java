@@ -31,7 +31,7 @@ public class JsyncConnectionMapper implements JsyncConnection
     @Override
     public void close()
     {
-        getRawConnection().close();
+        getConnection().close();
     }
 
     /**
@@ -40,13 +40,13 @@ public class JsyncConnectionMapper implements JsyncConnection
     @Override
     public JsyncRequest createRequest()
     {
-        return getRawConnection().createRequest();
+        return getConnection().createRequest();
     }
 
     /**
      * @return {@link JsyncConnection}
      */
-    public JsyncConnection getRawConnection()
+    public JsyncConnection getConnection()
     {
         return this.connection;
     }

@@ -17,6 +17,16 @@ public final class RemoteUtils
     };
 
     /**
+     *
+     */
+    public static final int STATUS_ERROR = 500;
+
+    /**
+     *
+     */
+    public static final int STATUS_OK = 200;
+
+    /**
      * @return int
      */
     public static int getLengthOfEOL()
@@ -73,7 +83,7 @@ public final class RemoteUtils
      */
     public static void writeResponseERROR(final ByteBuffer buffer)
     {
-        buffer.putInt(500);
+        buffer.putInt(STATUS_ERROR);
     }
 
     /**
@@ -81,7 +91,7 @@ public final class RemoteUtils
      */
     public static void writeResponseOK(final ByteBuffer buffer)
     {
-        buffer.putInt(200);
+        buffer.putInt(STATUS_OK);
     }
 
     /**

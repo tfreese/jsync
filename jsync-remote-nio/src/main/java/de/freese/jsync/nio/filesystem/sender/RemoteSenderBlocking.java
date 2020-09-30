@@ -73,7 +73,7 @@ public class RemoteSenderBlocking extends AbstractSender implements RemoteSuppor
     @Override
     public void disconnect()
     {
-        this.channelPool.destroy(channel -> disconnect(buffer -> write(channel, buffer), getLogger()));
+        this.channelPool.destroy(channel -> disconnect(buffer -> write(channel, buffer), channel::read, getLogger()));
 
         this.byteBufferPool.clear();
     }

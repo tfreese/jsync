@@ -74,7 +74,7 @@ public class RemoteSenderAsync extends AbstractSender implements RemoteSupport
     @Override
     public void disconnect()
     {
-        this.channelPool.destroy(channel -> disconnect(buffer -> write(channel, buffer), getLogger()));
+        this.channelPool.destroy(channel -> disconnect(buffer -> write(channel, buffer), buffer -> channel.read(buffer).get(), getLogger()));
 
         this.byteBufferPool.clear();
     }

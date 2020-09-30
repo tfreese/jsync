@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -75,7 +76,7 @@ public class SocketChannelJsyncRequest implements JsyncRequest, RemoteSupport
             "unchecked", "rawtypes"
     })
     @Override
-    public JsyncResponse<?> execute()
+    public JsyncResponse execute()
     {
         this.buffer.clear();
         getSerializer().writeTo(this.buffer, this.command);
@@ -118,11 +119,20 @@ public class SocketChannelJsyncRequest implements JsyncRequest, RemoteSupport
     }
 
     /**
-     * @param type {@link Class}
-     * @param value Object
-     * @return {@link SocketChannelJsyncRequest}
+     * @see de.freese.jsync.remote.api.JsyncRequest#getWritableByteChannel()
      */
-    public SocketChannelJsyncRequest param(final Class<?> type, final Object value)
+    @Override
+    public WritableByteChannel getWritableByteChannel()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * @see de.freese.jsync.remote.api.JsyncRequest#param(java.lang.Object, java.lang.Class)
+     */
+    @Override
+    public SocketChannelJsyncRequest param(final Object value, final Class<?> type)
     {
         this.parameter.put(type, value);
 

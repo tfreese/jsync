@@ -32,7 +32,7 @@ public class JsyncConnectionFactoryMapper implements JsyncConnectionFactory
     @Override
     public void close()
     {
-        getRawConnectionFactory().close();
+        getConnectionFactory().close();
     }
 
     /**
@@ -41,7 +41,7 @@ public class JsyncConnectionFactoryMapper implements JsyncConnectionFactory
     @Override
     public void connect(final URI uri)
     {
-        getRawConnectionFactory().connect(uri);
+        getConnectionFactory().connect(uri);
     }
 
     /**
@@ -50,13 +50,13 @@ public class JsyncConnectionFactoryMapper implements JsyncConnectionFactory
     @Override
     public JsyncConnection getConnection()
     {
-        return getRawConnectionFactory().getConnection();
+        return getConnectionFactory().getConnection();
     }
 
     /**
      * @return {@link JsyncConnectionFactory}
      */
-    protected JsyncConnectionFactory getRawConnectionFactory()
+    protected JsyncConnectionFactory getConnectionFactory()
     {
         return this.connectionFactory;
     }
