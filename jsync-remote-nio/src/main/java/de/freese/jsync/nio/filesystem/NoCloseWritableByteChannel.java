@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
-import de.freese.jsync.nio.utils.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -74,14 +73,7 @@ public class NoCloseWritableByteChannel<T extends NetworkChannel> implements Wri
         try
         {
             // Response auslesen.
-            ByteBuffer byteBufferResponse = readUntilEOL(buffer, this.channelReader);
-
-            if (!RemoteUtils.isResponseOK(byteBufferResponse))
-            {
-                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, this.channelReader);
         }
         catch (IOException ex)
         {

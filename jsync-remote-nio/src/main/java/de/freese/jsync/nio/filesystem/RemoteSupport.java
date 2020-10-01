@@ -41,14 +41,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            int status = readResponse(buffer, channelReader);
-
-            if (RemoteUtils.STATUS_ERROR == status)
-            {
-                Exception exception = getSerializer().readFrom(buffer, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, channelReader);
 
             // String message = getSerializer().readFrom(buffer, String.class);
             // System.out.println(message);
@@ -91,14 +84,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
-
-            if (!RemoteUtils.isResponseOK(byteBufferResponse))
-            {
-                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, channelReader);
         }
         catch (RuntimeException rex)
         {
@@ -141,14 +127,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
-
-            if (!RemoteUtils.isResponseOK(byteBufferResponse))
-            {
-                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, channelReader);
         }
         catch (RuntimeException rex)
         {
@@ -185,14 +164,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            int status = readResponse(buffer, channelReader);
-
-            if (RemoteUtils.STATUS_ERROR == status)
-            {
-                Exception exception = getSerializer().readFrom(buffer, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, channelReader);
 
             // String message = getSerializer().readFrom(buffer, String.class);
             // System.out.println(message);
@@ -229,14 +201,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            int status = readResponse(buffer, channelReader);
-
-            if (RemoteUtils.STATUS_ERROR == status)
-            {
-                Exception exception = getSerializer().readFrom(buffer, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, channelReader);
 
             @SuppressWarnings("unused")
             int itemCount = buffer.getInt();
@@ -288,14 +253,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            int status = readResponse(buffer, channelReader);
-
-            if (RemoteUtils.STATUS_ERROR == status)
-            {
-                Exception exception = getSerializer().readFrom(buffer, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, channelReader);
 
             String checksum = getSerializer().readFrom(buffer, String.class);
 
@@ -348,18 +306,12 @@ public interface RemoteSupport
             channelWriter.write(buffer);
             buffer.clear();
 
-            // Nur den Status auslesen.
-            ByteBuffer byteBufferStatus = ByteBuffer.allocate(4);
-            channelReader.read(byteBufferStatus);
-            byteBufferStatus.flip();
+            readResponse(buffer, channelReader);
 
-            if (!RemoteUtils.isResponseOK(byteBufferStatus))
-            {
-                channelReader.read(buffer);
-                Exception exception = getSerializer().readFrom(buffer, Exception.class);
-
-                throw exception;
-            }
+            // // Nur den Status auslesen.
+            // ByteBuffer byteBufferStatus = ByteBuffer.allocate(4);
+            // channelReader.read(byteBufferStatus);
+            // byteBufferStatus.flip();
 
             return new NoCloseReadableByteChannel<>(channelSupplier.get(), channelReader, channelReleaser);
         }
@@ -460,17 +412,7 @@ public interface RemoteSupport
             buffer.clear();
 
             // Nur den Status auslesen.
-            ByteBuffer byteBufferStatus = ByteBuffer.allocate(4);
-            channelReader.read(byteBufferStatus);
-            byteBufferStatus.flip();
-
-            if (!RemoteUtils.isResponseOK(byteBufferStatus))
-            {
-                channelReader.read(buffer);
-                Exception exception = getSerializer().readFrom(buffer, Exception.class);
-
-                throw exception;
-            }
+            readResponse(ByteBuffer.allocate(12), channelReader);
 
             while (buffer.position() < size)
             {
@@ -498,19 +440,18 @@ public interface RemoteSupport
     /**
      * @param buffer {@link ByteBuffer}
      * @param channelReader {@link ChannelReader}
-     * @return {@link ByteBuffer}
      * @throws Exception Falls was schief geht.
      */
-    public default int readResponse(final ByteBuffer buffer, final ChannelReader channelReader) throws Exception
+    public default void readResponse(final ByteBuffer buffer, final ChannelReader channelReader) throws Exception
     {
         buffer.clear();
 
         int totalRead = channelReader.read(buffer);
-        int bodyRead = totalRead - 8; // Status und Content-Length haben 8 Byte.
+        int bodyRead = totalRead - 12; // Status und Content-Length haben 12 Byte.
 
         buffer.flip();
         int status = buffer.getInt();
-        int contentLength = buffer.getInt();
+        long contentLength = buffer.getLong();
         int headerPosition = buffer.position();
 
         buffer.position(totalRead);
@@ -522,44 +463,12 @@ public interface RemoteSupport
 
         buffer.position(headerPosition);
 
-        return status;
-    }
-
-    /**
-     * @param buffer {@link ByteBuffer}
-     * @param channelReader {@link ChannelReader}
-     * @return {@link ByteBuffer}
-     * @throws Exception Falls was schief geht.
-     */
-    public default ByteBuffer readUntilEOL(final ByteBuffer buffer, final ChannelReader channelReader) throws Exception
-    {
-        SharedByteArrayOutputStream sbaos = new SharedByteArrayOutputStream(1024);
-
-        buffer.clear();
-
-        while (channelReader.read(buffer) > 0)
+        if (RemoteUtils.STATUS_ERROR == status)
         {
-            buffer.flip();
+            Exception exception = getSerializer().readFrom(buffer, Exception.class);
 
-            while (buffer.remaining() > RemoteUtils.getLengthOfEOL())
-            {
-                sbaos.write(buffer, buffer.remaining() - RemoteUtils.getLengthOfEOL());
-            }
-
-            if (RemoteUtils.isEOL(buffer))
-            {
-                buffer.clear();
-                break;
-            }
-
-            sbaos.write(buffer, buffer.remaining());
-
-            buffer.clear();
+            throw exception;
         }
-
-        ByteBuffer bufferData = sbaos.toByteBuffer();
-
-        return bufferData;
     }
 
     /**
@@ -582,15 +491,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            // Response auslesen.
-            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
-
-            if (!RemoteUtils.isResponseOK(byteBufferResponse))
-            {
-                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, channelReader);
         }
         catch (RuntimeException rex)
         {
@@ -633,15 +534,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            // Response auslesen.
-            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
-
-            if (!RemoteUtils.isResponseOK(byteBufferResponse))
-            {
-                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, channelReader);
         }
         catch (RuntimeException rex)
         {
@@ -726,15 +619,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            // Response auslesen.
-            ByteBuffer byteBufferResponse = readUntilEOL(buffer, channelReader);
-
-            if (!RemoteUtils.isResponseOK(byteBufferResponse))
-            {
-                Exception exception = getSerializer().readFrom(byteBufferResponse, Exception.class);
-
-                throw exception;
-            }
+            readResponse(buffer, channelReader);
         }
         catch (RuntimeException rex)
         {

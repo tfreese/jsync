@@ -8,7 +8,6 @@ import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
 import de.freese.jsync.nio.utils.RemoteUtils;
-import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * @author Thomas Freese
@@ -36,11 +35,6 @@ public class JsyncServerResponse
     /**
      *
      */
-    private final ByteBuffer buffer;
-
-    /**
-     *
-     */
     private final ByteBuffer bufferBody;
 
     /**
@@ -59,9 +53,23 @@ public class JsyncServerResponse
         super();
 
         this.status = status;
-        this.buffer = ByteBufferPool.getInstance().get();
-        // this.buffer = ByteBuffer.allocate(Options.BYTEBUFFER_SIZE);
         this.bufferBody = Objects.requireNonNull(bufferBody, "bufferBody required");
+    }
+
+    /**
+     * @param selectionKey {@link SelectionKey}
+     * @throws IOException Falls was schief geht.
+     */
+    public void write(final SelectionKey selectionKey) throws IOException
+    {
+        this.bufferBody.clear();
+
+        this.bufferBody.putInt(this.status); // Status
+        this.bufferBody.putLong(0); // Content-Length
+
+        this.bufferBody.flip();
+
+        write(selectionKey, this.bufferBody);
     }
 
     /**
@@ -69,7 +77,7 @@ public class JsyncServerResponse
      * @param buffer {@link ByteBuffer}
      * @throws IOException @throws Exception Falls was schief geht
      */
-    private void write(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
+    void write(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
     {
         SocketChannel channel = (SocketChannel) selectionKey.channel();
 
@@ -83,26 +91,22 @@ public class JsyncServerResponse
      */
     public void write(final SelectionKey selectionKey, final Consumer<ByteBuffer> consumer) throws IOException
     {
-        this.buffer.clear();
         this.bufferBody.clear();
 
-        try
+        consumer.accept(this.bufferBody);
+
+        ByteBuffer bufferHeader = ByteBuffer.allocate(12);
+        bufferHeader.putInt(this.status); // Status
+        bufferHeader.putLong(this.bufferBody.position()); // Content-Length
+
+        bufferHeader.flip();
+        this.bufferBody.flip();
+
+        SocketChannel channel = (SocketChannel) selectionKey.channel();
+        channel.write(new ByteBuffer[]
         {
-            consumer.accept(this.bufferBody);
-
-            this.buffer.putInt(this.status); // Status
-            this.buffer.putInt(this.bufferBody.position()); // Content-Length
-
-            this.bufferBody.flip();
-            this.buffer.put(this.bufferBody);
-
-            this.buffer.flip();
-            write(selectionKey, this.buffer);
-        }
-        finally
-        {
-            ByteBufferPool.getInstance().release(this.buffer);
-        }
+                bufferHeader, this.bufferBody
+        });
     }
 
     /**
@@ -110,7 +114,7 @@ public class JsyncServerResponse
      * @param buffer {@link ByteBuffer}
      * @throws IOException @throws Exception Falls was schief geht
      */
-    private void write(final SocketChannel channel, final ByteBuffer buffer) throws IOException
+    void write(final SocketChannel channel, final ByteBuffer buffer) throws IOException
     {
         while (buffer.hasRemaining())
         {

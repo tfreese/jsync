@@ -23,7 +23,6 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.server.JsyncServerResponse;
-import de.freese.jsync.nio.utils.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -174,12 +173,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Exception senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                getSerializer().writeTo(buffer, exception, Exception.class);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
             {
@@ -191,11 +186,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Response senden.
-                buffer.clear();
-                RemoteUtils.writeResponseOK(buffer);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
@@ -300,12 +291,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Exception senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                getSerializer().writeTo(buffer, exception, Exception.class);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
             {
@@ -317,11 +304,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Response senden.
-                buffer.clear();
-                RemoteUtils.writeResponseOK(buffer);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
@@ -363,12 +346,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Exception senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                getSerializer().writeTo(buffer, exception, Exception.class);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
             {
@@ -401,12 +380,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     ((FileChannel) outChannel).force(false);
                 }
 
-                // Response senden, kann hier erst erfolgen, wenn alle Daten empfangen wurden.
-                buffer.clear();
-                RemoteUtils.writeResponseOK(buffer);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
@@ -454,12 +428,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Exception senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                getSerializer().writeTo(buffer, exception, Exception.class);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
             {
@@ -471,10 +441,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Response senden
-                buffer.clear();
-                RemoteUtils.writeResponseOK(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                JsyncServerResponse.ok(buffer).write(selectionKey);
 
                 @SuppressWarnings("unused")
                 long totalWritten = 0;
@@ -687,12 +654,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Exception senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                getSerializer().writeTo(buffer, exception, Exception.class);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
             {
@@ -704,10 +667,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Response senden
-                buffer.clear();
-                RemoteUtils.writeResponseOK(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                JsyncServerResponse.ok(buffer).write(selectionKey);
 
                 bufferChunk.flip();
                 writeBuffer(selectionKey, bufferChunk);
@@ -752,12 +712,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Exception senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                getSerializer().writeTo(buffer, exception, Exception.class);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
             {
@@ -769,11 +725,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Response senden.
-                buffer.clear();
-                RemoteUtils.writeResponseOK(buffer);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
@@ -814,12 +766,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Exception senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                getSerializer().writeTo(buffer, exception, Exception.class);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
             {
@@ -831,11 +779,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Response senden.
-                buffer.clear();
-                RemoteUtils.writeResponseOK(buffer);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
@@ -917,12 +861,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Exception senden.
-                buffer.clear();
-                RemoteUtils.writeResponseERROR(buffer);
-                getSerializer().writeTo(buffer, exception, Exception.class);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
             {
@@ -934,11 +874,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Response senden.
-                buffer.clear();
-                RemoteUtils.writeResponseOK(buffer);
-                RemoteUtils.writeEOL(buffer);
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
+                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
