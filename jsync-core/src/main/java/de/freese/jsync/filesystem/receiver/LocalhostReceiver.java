@@ -259,7 +259,12 @@ public class LocalhostReceiver extends AbstractReceiver
     @Override
     public void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
     {
-        getLogger().info("write chunk: {}/{}, position={}, size={}", baseDir, relativeFile, position, size);
+        getLogger().debug("write chunk: {}/{}, position={}, size={}", baseDir, relativeFile, position, size);
+
+        if (size > buffer.capacity())
+        {
+            throw new IllegalArgumentException("size > buffer.capacity()");
+        }
 
         Path path = Paths.get(baseDir, relativeFile);
 
@@ -272,7 +277,10 @@ public class LocalhostReceiver extends AbstractReceiver
                 Files.createDirectories(parentPath);
             }
 
-            buffer.flip();
+            if (buffer.position() != 0)
+            {
+                buffer.flip();
+            }
 
             try (FileChannel fileChannel =
                     (FileChannel) Files.newByteChannel(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))

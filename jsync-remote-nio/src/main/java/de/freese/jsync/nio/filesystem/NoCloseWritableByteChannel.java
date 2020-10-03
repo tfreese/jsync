@@ -73,7 +73,7 @@ public class NoCloseWritableByteChannel<T extends NetworkChannel> implements Wri
         try
         {
             // Response auslesen.
-            readResponse(buffer, this.channelReader);
+            readResponseHeader(this.channelReader);
         }
         catch (IOException ex)
         {

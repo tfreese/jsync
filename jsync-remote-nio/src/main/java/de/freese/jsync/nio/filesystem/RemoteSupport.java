@@ -17,7 +17,6 @@ import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.nio.utils.RemoteUtils;
-import de.freese.jsync.utils.io.SharedByteArrayOutputStream;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -41,7 +40,8 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            readResponse(buffer, channelReader);
+            long contentLength = readResponseHeader(channelReader);
+            readResponseBody(buffer, channelReader, contentLength);
 
             // String message = getSerializer().readFrom(buffer, String.class);
             // System.out.println(message);
@@ -84,7 +84,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            readResponse(buffer, channelReader);
+            readResponseHeader(channelReader);
         }
         catch (RuntimeException rex)
         {
@@ -127,7 +127,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            readResponse(buffer, channelReader);
+            readResponseHeader(channelReader);
         }
         catch (RuntimeException rex)
         {
@@ -164,7 +164,8 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            readResponse(buffer, channelReader);
+            long contentLength = readResponseHeader(channelReader);
+            readResponseBody(buffer, channelReader, contentLength);
 
             // String message = getSerializer().readFrom(buffer, String.class);
             // System.out.println(message);
@@ -201,7 +202,8 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            readResponse(buffer, channelReader);
+            long contentLength = readResponseHeader(channelReader);
+            readResponseBody(buffer, channelReader, contentLength);
 
             @SuppressWarnings("unused")
             int itemCount = buffer.getInt();
@@ -253,7 +255,8 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            readResponse(buffer, channelReader);
+            long contentLength = readResponseHeader(channelReader);
+            readResponseBody(buffer, channelReader, contentLength);
 
             String checksum = getSerializer().readFrom(buffer, String.class);
 
@@ -306,12 +309,7 @@ public interface RemoteSupport
             channelWriter.write(buffer);
             buffer.clear();
 
-            readResponse(buffer, channelReader);
-
-            // // Nur den Status auslesen.
-            // ByteBuffer byteBufferStatus = ByteBuffer.allocate(4);
-            // channelReader.read(byteBufferStatus);
-            // byteBufferStatus.flip();
+            readResponseHeader(channelReader);
 
             return new NoCloseReadableByteChannel<>(channelSupplier.get(), channelReader, channelReleaser);
         }
@@ -398,6 +396,8 @@ public interface RemoteSupport
     public default void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer,
                                   final ChannelWriter channelWriter, final ChannelReader channelReader)
     {
+        ByteBuffer bufferResponse = ByteBufferPool.getInstance().get();
+
         try
         {
             buffer.clear();
@@ -412,12 +412,14 @@ public interface RemoteSupport
             buffer.clear();
 
             // Nur den Status auslesen.
-            readResponse(ByteBuffer.allocate(12), channelReader);
+            long contentLength = readResponseHeader(channelReader);
+            readResponseBody(buffer, channelReader, contentLength);
 
-            while (buffer.position() < size)
-            {
-                channelReader.read(buffer);
-            }
+            // Fertig lesen des Bodys.
+            // while (buffer.position() < size)
+            // {
+            // channelReader.read(buffer);
+            // }
         }
         catch (RuntimeException rex)
         {
@@ -433,42 +435,79 @@ public interface RemoteSupport
         }
         finally
         {
-            // Empty
+            ByteBufferPool.getInstance().release(bufferResponse);
         }
     }
 
     /**
+     * Fertig lesen des Bodys.
+     *
      * @param buffer {@link ByteBuffer}
      * @param channelReader {@link ChannelReader}
+     * @param contentLength long
      * @throws Exception Falls was schief geht.
      */
-    public default void readResponse(final ByteBuffer buffer, final ChannelReader channelReader) throws Exception
+    public default void readResponseBody(final ByteBuffer buffer, final ChannelReader channelReader, final long contentLength) throws Exception
     {
         buffer.clear();
 
         int totalRead = channelReader.read(buffer);
-        int bodyRead = totalRead - 12; // Status und Content-Length haben 12 Byte.
 
-        buffer.flip();
-        int status = buffer.getInt();
-        long contentLength = buffer.getLong();
-        int headerPosition = buffer.position();
-
-        buffer.position(totalRead);
-
-        while (bodyRead < contentLength)
+        while (totalRead < contentLength)
         {
-            bodyRead += channelReader.read(buffer);
+            totalRead += channelReader.read(buffer);
         }
 
-        buffer.position(headerPosition);
+        buffer.flip();
+    }
+
+    /**
+     * Einlesen des Headers und ggf. der Exception.
+     *
+     * @param channelReader {@link ChannelReader}
+     * @return long
+     * @throws Exception Falls was schief geht.
+     */
+    public default long readResponseHeader(final ChannelReader channelReader) throws Exception
+    {
+        // Auf keinen Fall mehr lesen als den Header.
+        ByteBuffer bufferHeader = ByteBuffer.allocate(12);
+
+        channelReader.read(bufferHeader);
+        bufferHeader.flip();
+
+        int status = bufferHeader.getInt();
+        long contentLength = bufferHeader.getLong();
 
         if (RemoteUtils.STATUS_ERROR == status)
         {
-            Exception exception = getSerializer().readFrom(buffer, Exception.class);
+            ByteBuffer bufferException = ByteBufferPool.getInstance().get();
 
-            throw exception;
+            try
+            {
+                bufferException.clear();
+
+                // Exception einlesen.
+                int totalRead = channelReader.read(bufferException);
+
+                while (totalRead < contentLength)
+                {
+                    totalRead += channelReader.read(bufferException);
+                }
+
+                bufferException.flip();
+
+                Exception exception = getSerializer().readFrom(bufferException, Exception.class);
+
+                throw exception;
+            }
+            finally
+            {
+                ByteBufferPool.getInstance().release(bufferException);
+            }
         }
+
+        return contentLength;
     }
 
     /**
@@ -491,7 +530,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            readResponse(buffer, channelReader);
+            readResponseHeader(channelReader);
         }
         catch (RuntimeException rex)
         {
@@ -534,7 +573,7 @@ public interface RemoteSupport
             buffer.flip();
             channelWriter.write(buffer);
 
-            readResponse(buffer, channelReader);
+            readResponseHeader(channelReader);
         }
         catch (RuntimeException rex)
         {
@@ -614,12 +653,17 @@ public interface RemoteSupport
             bufferCmd.putLong(size);
 
             bufferCmd.flip();
-            channelWriter.write(bufferCmd);
 
-            buffer.flip();
+            if (buffer.position() > 0)
+            {
+                buffer.flip();
+            }
+
+            // channelWriter.write(bufferCmd, buffer);
+            channelWriter.write(bufferCmd);
             channelWriter.write(buffer);
 
-            readResponse(buffer, channelReader);
+            readResponseHeader(channelReader);
         }
         catch (RuntimeException rex)
         {

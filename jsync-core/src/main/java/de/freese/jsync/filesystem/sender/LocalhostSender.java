@@ -119,6 +119,11 @@ public class LocalhostSender extends AbstractSender
     {
         getLogger().debug("read chunk: {}/{}, position={}, size={}", baseDir, relativeFile, position, size);
 
+        if (size > buffer.capacity())
+        {
+            throw new IllegalArgumentException("size > buffer.capacity()");
+        }
+
         Path path = Paths.get(baseDir, relativeFile);
 
         buffer.clear();

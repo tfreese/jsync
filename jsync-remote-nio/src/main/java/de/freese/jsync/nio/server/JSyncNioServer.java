@@ -134,8 +134,31 @@ public class JSyncNioServer implements Runnable
             // this.serverSocketChannel = ServerSocketChannel.open();
             this.serverSocketChannel = this.selectorProvider.openServerSocketChannel();
             this.serverSocketChannel.configureBlocking(false);
-            this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-            // this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, true); // Wird nicht von jedem OS unterstützt.
+
+            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEADDR))
+            {
+                // this.serverSocketChannel.getOption(StandardSocketOptions.SO_REUSEADDR);
+                this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+            }
+
+            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEPORT))
+            {
+                // this.serverSocketChannel.getOption(StandardSocketOptions.SO_REUSEPORT);
+                this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, true);
+            }
+
+            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_RCVBUF))
+            {
+                // this.serverSocketChannel.getOption(StandardSocketOptions.SO_RCVBUF);
+                this.serverSocketChannel.setOption(StandardSocketOptions.SO_RCVBUF, 64 * 1024);
+            }
+
+            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_SNDBUF))
+            {
+                // this.serverSocketChannel.getOption(StandardSocketOptions.SO_SNDBUF);
+                this.serverSocketChannel.setOption(StandardSocketOptions.SO_SNDBUF, 64 * 1024);
+            }
+
             this.serverSocketChannel.bind(new InetSocketAddress(this.port), 50);
 
             // ServerSocket socket = this.serverSocketChannel.socket();

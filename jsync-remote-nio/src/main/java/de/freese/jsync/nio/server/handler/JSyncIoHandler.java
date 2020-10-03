@@ -23,6 +23,7 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.server.JsyncServerResponse;
+import de.freese.jsync.nio.utils.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -372,6 +373,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     while (buffer.hasRemaining())
                     {
                         totalWritten += outChannel.write(buffer);
+
+                        getLogger().debug("WritableByteChannel: size={}, totalWritten={}", size, totalWritten);
                     }
                 }
 
@@ -380,7 +383,13 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     ((FileChannel) outChannel).force(false);
                 }
 
-                JsyncServerResponse.ok(buffer).write(selectionKey);
+                // JsyncServerResponse.ok(buffer).write(selectionKey);
+                buffer.clear();
+                buffer.putInt(RemoteUtils.STATUS_OK); // Status
+                buffer.putLong(size); // Content-Length
+
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
             }
             catch (IOException ioex)
             {
@@ -441,7 +450,9 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Response senden
-                JsyncServerResponse.ok(buffer).write(selectionKey);
+                buffer.clear();
+                buffer.putInt(RemoteUtils.STATUS_OK); // Status
+                buffer.putLong(size); // Content-Length
 
                 @SuppressWarnings("unused")
                 long totalWritten = 0;
@@ -449,15 +460,17 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
                 while (totalRead < size)
                 {
-                    buffer.clear();
-
                     totalRead += inChannel.read(buffer);
                     buffer.flip();
 
                     while (buffer.hasRemaining())
                     {
                         totalWritten += outChannel.write(buffer);
+
+                        getLogger().debug("ReadableByteChannel: size={}, totalRead={}", size, totalRead);
                     }
+
+                    buffer.clear();
                 }
             }
             catch (IOException ioex)
@@ -667,10 +680,20 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             try
             {
                 // Response senden
-                JsyncServerResponse.ok(buffer).write(selectionKey);
+                // JsyncServerResponse.ok(buffer).write(selectionKey);
+                buffer.clear();
+                buffer.putInt(RemoteUtils.STATUS_OK); // Status
+                buffer.putLong(size); // Content-Length
+                buffer.flip();
 
                 bufferChunk.flip();
-                writeBuffer(selectionKey, bufferChunk);
+
+                SocketChannel channel = (SocketChannel) selectionKey.channel();
+                channel.write(new ByteBuffer[]
+                {
+                        buffer, bufferChunk
+                });
+                // writeBuffer(selectionKey, bufferChunk);
             }
             catch (IOException ioex)
             {
@@ -837,14 +860,15 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
 
             bufferData.clear();
+            bufferData.put(buffer);
 
             while (bufferData.position() < size)
             {
-                bufferData.put(buffer);
-
                 buffer.clear();
                 channel.read(buffer);
                 buffer.flip();
+
+                bufferData.put(buffer);
             }
 
             receiver.writeChunk(baseDir, relativeFile, position, size, bufferData);

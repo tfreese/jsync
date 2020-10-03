@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -80,6 +82,11 @@ public abstract class AbstractClient implements Client
      *
      */
     private final CopyMode copyMode;
+
+    /**
+     *
+     */
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      *
@@ -245,6 +252,9 @@ public abstract class AbstractClient implements Client
         {
             while (totalRead < size)
             {
+                // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
+                Thread.sleep(1);
+
                 totalRead += readableByteChannel.read(buffer);
                 buffer.flip();
 
@@ -255,6 +265,8 @@ public abstract class AbstractClient implements Client
                 }
 
                 buffer.clear();
+
+                getLogger().debug("copyFile: totalRead={}, totalWritten={}", totalRead, totalWritten);
             }
         }
         catch (Exception ex)
@@ -310,6 +322,7 @@ public abstract class AbstractClient implements Client
                 try
                 {
                     getSender().readChunk(getSenderPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
+
                     getReceiver().writeChunk(getReceiverPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
 
                     position += sizeOfChunk;
@@ -566,6 +579,14 @@ public abstract class AbstractClient implements Client
         }
 
         fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), consumerSyncItem);
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
     }
 
     /**
