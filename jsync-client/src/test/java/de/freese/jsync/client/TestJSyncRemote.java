@@ -251,6 +251,25 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
+    void testNettyLocalToRemote() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        startNettyServerReceiver();
+
+        URI senderUri = PATH_QUELLE.toUri();
+        URI receiverUri = new URI("jsync://localhost:8006/" + PATH_ZIEL.toString());
+
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
+
+        assertTrue(true);
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
     void testNioAsyncLocalToRemote() throws Exception
     {
         System.out.println();

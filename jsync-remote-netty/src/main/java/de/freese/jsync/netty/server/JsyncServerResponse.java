@@ -66,7 +66,7 @@ public class JsyncServerResponse
         this.bufferBody.writeInt(this.status); // Status
         this.bufferBody.writeLong(0); // Content-Length
 
-        ctx.writeAndFlush(this.bufferBody);
+        ctx.writeAndFlush(this.bufferBody.retain());
     }
 
     /**
@@ -90,5 +90,6 @@ public class JsyncServerResponse
         // Damit der Buffer wieder in den Pool kommt ohne IllegalReferenceCountException.
         // bufferHeader.retain();
         // bufferHeader.release();
+        // ReferenceCountUtil.release(msg);
     }
 }

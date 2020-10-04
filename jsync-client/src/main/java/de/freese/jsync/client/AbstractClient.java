@@ -158,7 +158,7 @@ public abstract class AbstractClient implements Client
         this.senderPath = JSyncUtils.normalizePath(senderUri);
         this.receiverPath = JSyncUtils.normalizePath(receiverUri);
 
-        this.copyMode = CopyMode.CHUNK;
+        this.copyMode = CopyMode.CHANNEL;
 
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
@@ -253,7 +253,7 @@ public abstract class AbstractClient implements Client
             while (totalRead < sizeOfFile)
             {
                 // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
-                Thread.sleep(1);
+                // Thread.sleep(1);
 
                 totalRead += readableByteChannel.read(buffer);
                 buffer.flip();

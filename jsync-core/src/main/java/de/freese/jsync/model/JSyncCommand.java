@@ -19,11 +19,6 @@ public enum JSyncCommand
     DISCONNECT,
 
     /**
-    *
-    */
-    READ_CHUNK,
-
-    /**
      *
      */
     SOURCE_CHECKSUM,
@@ -32,6 +27,11 @@ public enum JSyncCommand
      *
      */
     SOURCE_CREATE_SYNC_ITEMS,
+
+    /**
+    *
+    */
+    SOURCE_READ_CHUNK,
 
     /**
      *
@@ -61,11 +61,6 @@ public enum JSyncCommand
     /**
      *
      */
-    TARGET_EXIST,
-
-    /**
-     *
-     */
     TARGET_UPDATE,
 
     /**
@@ -74,12 +69,12 @@ public enum JSyncCommand
     TARGET_VALIDATE_FILE,
 
     /**
-     *
-     */
-    TARGET_WRITEABLE_FILE_CHANNEL,
-
-    /**
     *
     */
-    WRITE_CHUNK
+    TARGET_WRITE_CHUNK,
+
+    /**
+     *
+     */
+    TARGET_WRITEABLE_FILE_CHANNEL
 }

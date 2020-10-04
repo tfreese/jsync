@@ -144,7 +144,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     }
 
     /**
-     * Create the Sync-Items.
+     * Create the Directory.
      *
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
@@ -313,6 +313,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     }
 
     /**
+     * Die Daten werden zum Server gesendet.
+     *
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param receiver {@link Receiver}
@@ -564,8 +566,20 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     JsyncServerResponse.ok(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, "CONNECTED"));
                     break;
 
-                case READ_CHUNK:
+                case SOURCE_CHECKSUM:
+                    createChecksum(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    break;
+
+                case SOURCE_CREATE_SYNC_ITEMS:
+                    createSyncItems(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    break;
+
+                case SOURCE_READ_CHUNK:
                     readChunk(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    break;
+
+                case SOURCE_READABLE_FILE_CHANNEL:
+                    fileChannel(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
                     break;
 
                 case TARGET_CHECKSUM:
@@ -584,32 +598,20 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     delete(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
-                case TARGET_WRITEABLE_FILE_CHANNEL:
-                    fileChannel(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
-                    break;
-
-                case TARGET_VALIDATE_FILE:
-                    validate(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                case TARGET_WRITE_CHUNK:
+                    writeChunk(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_UPDATE:
                     update(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
-                case SOURCE_CHECKSUM:
-                    createChecksum(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                case TARGET_VALIDATE_FILE:
+                    validate(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
-                case SOURCE_CREATE_SYNC_ITEMS:
-                    createSyncItems(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
-                    break;
-
-                case SOURCE_READABLE_FILE_CHANNEL:
-                    fileChannel(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
-                    break;
-
-                case WRITE_CHUNK:
-                    writeChunk(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                case TARGET_WRITEABLE_FILE_CHANNEL:
+                    fileChannel(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 default:
@@ -847,25 +849,25 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         long sizeOfChunk = buffer.getLong();
 
         Exception exception = null;
-        ByteBuffer bufferData = ByteBufferPool.getInstance().get();
+        ByteBuffer bufferChunk = ByteBufferPool.getInstance().get();
 
         try
         {
             ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
 
-            bufferData.clear();
-            bufferData.put(buffer);
+            bufferChunk.clear();
+            bufferChunk.put(buffer);
 
-            while (bufferData.position() < sizeOfChunk)
+            while (bufferChunk.position() < sizeOfChunk)
             {
                 buffer.clear();
                 channel.read(buffer);
                 buffer.flip();
 
-                bufferData.put(buffer);
+                bufferChunk.put(buffer);
             }
 
-            receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, bufferData);
+            receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, bufferChunk);
         }
         catch (Exception ex)
         {
@@ -899,5 +901,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 getLogger().error(null, ioex);
             }
         }
+
+        ByteBufferPool.getInstance().release(bufferChunk);
     }
 }

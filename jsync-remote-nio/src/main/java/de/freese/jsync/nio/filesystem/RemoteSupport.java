@@ -401,7 +401,7 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            getSerializer().writeTo(buffer, JSyncCommand.READ_CHUNK);
+            getSerializer().writeTo(buffer, JSyncCommand.SOURCE_READ_CHUNK);
             getSerializer().writeTo(buffer, baseDir);
             getSerializer().writeTo(buffer, relativeFile);
             buffer.putLong(position);
@@ -646,7 +646,7 @@ public interface RemoteSupport
         try
         {
             bufferCmd.clear();
-            getSerializer().writeTo(bufferCmd, JSyncCommand.WRITE_CHUNK);
+            getSerializer().writeTo(bufferCmd, JSyncCommand.TARGET_WRITE_CHUNK);
             getSerializer().writeTo(bufferCmd, baseDir);
             getSerializer().writeTo(bufferCmd, relativeFile);
             bufferCmd.putLong(position);
