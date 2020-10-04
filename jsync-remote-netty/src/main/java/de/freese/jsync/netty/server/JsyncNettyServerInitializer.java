@@ -29,5 +29,7 @@ public class JsyncNettyServerInitializer extends ChannelInitializer<SocketChanne
 
         pipeline.addLast(new ChunkedWriteHandler());
         pipeline.addLast(new JsyncNettyHandler());
+
+        // ch.config().setAllocator(allocator)
     }
 }

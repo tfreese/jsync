@@ -56,8 +56,7 @@ class TestNettyServer
     static void beforeAll() throws Exception
     {
         server = new JsyncNettyServer();
-        server.start(8005, 2, Executors.newCachedThreadPool(new JsyncThreadFactory("acceptor-")), 4,
-                Executors.newCachedThreadPool(new JsyncThreadFactory("worker-")));
+        server.start(8005, 2, 4);
     }
 
     /**

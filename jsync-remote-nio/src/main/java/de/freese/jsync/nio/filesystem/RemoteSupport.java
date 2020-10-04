@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.nio.utils.RemoteUtils;
+import de.freese.jsync.remote.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**

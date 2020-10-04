@@ -23,7 +23,7 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.server.JsyncServerResponse;
-import de.freese.jsync.nio.utils.RemoteUtils;
+import de.freese.jsync.remote.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -76,8 +76,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     }
 
     /**
-    *
-    */
+     *
+     */
     private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
@@ -94,9 +94,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param fileSystem {@link FileSystem}
-     * @throws Exception Falls was schief geht.
      */
-    protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem) throws Exception
+    protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem)
     {
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativeFile = getSerializer().readFrom(buffer, String.class);
@@ -266,9 +265,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param receiver {@link Receiver}
-     * @throws Exception Falls was schief geht.
      */
-    protected void delete(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
+    protected void delete(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver)
     {
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativePath = getSerializer().readFrom(buffer, String.class);
@@ -639,9 +637,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param sender {@link Sender}
-     * @throws Exception Falls was schief geht.
      */
-    protected void readChunk(final SelectionKey selectionKey, final ByteBuffer buffer, final Sender sender) throws Exception
+    protected void readChunk(final SelectionKey selectionKey, final ByteBuffer buffer, final Sender sender)
     {
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativeFile = getSerializer().readFrom(buffer, String.class);
@@ -710,9 +707,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param receiver {@link Receiver}
-     * @throws Exception Falls was schief geht.
      */
-    protected void update(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
+    protected void update(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver)
     {
         String baseDir = getSerializer().readFrom(buffer, String.class);
         SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
@@ -763,9 +759,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param receiver {@link Receiver}
-     * @throws Exception Falls was schief geht.
      */
-    protected void validate(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
+    protected void validate(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver)
     {
         String baseDir = getSerializer().readFrom(buffer, String.class);
         SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
@@ -843,9 +838,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param receiver {@link Receiver}
-     * @throws Exception Falls was schief geht.
      */
-    protected void writeChunk(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
+    protected void writeChunk(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver)
     {
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativeFile = getSerializer().readFrom(buffer, String.class);

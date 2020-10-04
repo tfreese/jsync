@@ -2,9 +2,12 @@
 package de.freese.jsync.netty.server;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import de.freese.jsync.utils.JsyncThreadFactory;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -80,8 +83,11 @@ public class JsyncNettyServer
         // @formatter:off
         ServerBootstrap bootstrap =  new ServerBootstrap()
                 .group(this.acceptorGroup, this.workerGroup)
-                .option(ChannelOption.SO_REUSEADDR, true)
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .option(ChannelOption.SO_RCVBUF, 64 * 1024)
+                .option(ChannelOption.SO_SNDBUF, 64 * 1024)
                 .channel(NioServerSocketChannel.class)
                 //.handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(new JsyncNettyServerInitializer());
@@ -103,6 +109,8 @@ public class JsyncNettyServer
             });
 
             this.channel = bindFuture.channel();
+
+            @SuppressWarnings("unused")
             ChannelFuture closeFuture = this.channel.closeFuture();
 
             // Warten bis Verbindung beendet.
@@ -112,6 +120,19 @@ public class JsyncNettyServer
         {
             getLogger().error(null, ex);
         }
+    }
+
+    /**
+     * @param port int
+     * @param acceptorThreads int
+     * @param workerThreads int
+     */
+    public void start(final int port, final int acceptorThreads, final int workerThreads)
+    {
+        Executor acceptorExecutor = Executors.newCachedThreadPool(new JsyncThreadFactory("acceptor-"));
+        Executor workerExecutor = Executors.newCachedThreadPool(new JsyncThreadFactory("worker-"));
+
+        start(port, acceptorThreads, acceptorExecutor, workerThreads, workerExecutor);
     }
 
     /**

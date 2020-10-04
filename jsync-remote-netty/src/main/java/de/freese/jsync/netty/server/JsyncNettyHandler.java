@@ -1,9 +1,21 @@
 // Created: 20.09.2020
 package de.freese.jsync.netty.server;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import de.freese.jsync.filesystem.FileSystem;
+import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
+import de.freese.jsync.filesystem.receiver.Receiver;
+import de.freese.jsync.filesystem.sender.LocalhostSender;
+import de.freese.jsync.filesystem.sender.Sender;
+import de.freese.jsync.model.JSyncCommand;
+import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.model.serializer.DefaultSerializer;
+import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.netty.model.adapter.ByteBufAdapter;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -16,7 +28,22 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
     /**
      *
      */
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsyncNettyHandler.class);
+
+    /**
+     *
+     */
+    private static final ThreadLocal<Receiver> THREAD_LOCAL_RECEIVER = ThreadLocal.withInitial(LocalhostReceiver::new);
+
+    /**
+    *
+    */
+    private static final ThreadLocal<Sender> THREAD_LOCAL_SENDER = ThreadLocal.withInitial(LocalhostSender::new);
+
+    /**
+     *
+     */
+    private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
 
     /**
      * Erstellt ein neues {@link JsyncNettyHandler} Object.
@@ -59,26 +86,39 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
     {
         getLogger().info("{}: channelRead0: {}/{}", ctx.channel().remoteAddress(), buf, buf.hashCode());
 
-        int requestIdLength = buf.readInt();
-        CharSequence requestId = buf.readCharSequence(requestIdLength, StandardCharsets.UTF_8);
+        JSyncCommand command = getSerializer().readFrom(buf, JSyncCommand.class);
+        getLogger().debug("{}: read command: {}", ctx.channel().remoteAddress(), command);
 
-        int messageLength = buf.readInt();
-        CharSequence message = buf.readCharSequence(messageLength, StandardCharsets.UTF_8);
+        if (command == null)
+        {
+            getLogger().error("unknown JSyncCommand");
+            return;
+        }
 
-        getLogger().info("{}: channelRead0: {}/{}", ctx.channel().remoteAddress(), requestId, message);
+        switch (command)
+        {
+            case DISCONNECT:
+                JsyncServerResponse.ok(buf).write(ctx, buffer -> getSerializer().writeTo(buffer, "DISCONNECTED"));
 
-        String response = message + ", from Server";
+                ctx.disconnect();
+                ctx.close();
+                break;
 
-        buf.clear();
-        buf.writeInt(requestId.length());
-        buf.writeCharSequence(requestId, StandardCharsets.UTF_8);
-        buf.writeInt(response.length());
-        buf.writeCharSequence(response, StandardCharsets.UTF_8);
+            case CONNECT:
+                JsyncServerResponse.ok(buf).write(ctx, buffer -> getSerializer().writeTo(buffer, "CONNECTED"));
+                break;
 
-        ctx.write(buf);
+            case SOURCE_CHECKSUM:
+                createChecksum(ctx, buf, THREAD_LOCAL_SENDER.get());
+                break;
+
+            case SOURCE_CREATE_SYNC_ITEMS:
+                createSyncItems(ctx, buf, THREAD_LOCAL_SENDER.get());
+                break;
+        }
 
         // Damit der Buffer wieder in den Pool kommt ohne IllegalReferenceCountException.
-        buf.retain();
+        // buf.retain();
         // buf.release();
     }
 
@@ -91,6 +131,125 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
         getLogger().debug("{}: channelReadComplete", ctx.channel().remoteAddress());
 
         ctx.flush();
+    }
+
+    /**
+     * Create the checksum.
+     *
+     * @param ctx {@link ChannelHandlerContext}
+     * @param buf {@link ByteBuf}
+     * @param fileSystem {@link FileSystem}
+     */
+    protected void createChecksum(final ChannelHandlerContext ctx, final ByteBuf buf, final FileSystem fileSystem)
+    {
+        String baseDir = getSerializer().readFrom(buf, String.class);
+        String relativeFile = getSerializer().readFrom(buf, String.class);
+
+        Exception exception = null;
+        String checksum = null;
+
+        try
+        {
+            checksum = fileSystem.getChecksum(baseDir, relativeFile, i -> {
+            });
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
+            {
+                // Exception senden.
+                Exception ex = exception;
+                JsyncServerResponse.error(buf).write(ctx, buffer -> getSerializer().writeTo(buffer, ex, Exception.class));
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Response senden.
+                String chksm = checksum;
+                JsyncServerResponse.ok(buf).write(ctx, buffer -> getSerializer().writeTo(buffer, chksm));
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+    }
+
+    /**
+     * Create the Sync-Items.
+     *
+     * @param ctx {@link ChannelHandlerContext}
+     * @param buf {@link ByteBuf}
+     * @param fileSystem {@link FileSystem}
+     */
+    protected void createSyncItems(final ChannelHandlerContext ctx, final ByteBuf buf, final FileSystem fileSystem)
+    {
+        String baseDir = getSerializer().readFrom(buf, String.class);
+        boolean followSymLinks = getSerializer().readFrom(buf, Boolean.class);
+
+        Exception exception = null;
+        List<SyncItem> syncItems = new ArrayList<>(128);
+
+        try
+        {
+            fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
+                getLogger().debug("{}: SyncItem generated: {}", ctx.channel().remoteAddress(), syncItem);
+
+                syncItems.add(syncItem);
+            });
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
+            {
+                // Exception senden.
+                Exception ex = exception;
+                JsyncServerResponse.error(buf).write(ctx, buffer -> getSerializer().writeTo(buffer, ex, Exception.class));
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try
+            {
+                // Response senden.
+                JsyncServerResponse.ok(buf).write(ctx, buffer -> {
+                    buffer.writeInt(syncItems.size());
+
+                    for (SyncItem syncItem : syncItems)
+                    {
+                        getSerializer().writeTo(buf, syncItem);
+                    }
+                });
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
     }
 
     /**
@@ -109,6 +268,14 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
      */
     protected Logger getLogger()
     {
-        return this.logger;
+        return LOGGER;
+    }
+
+    /**
+     * @return {@link Serializer}<ByteBuf>
+     */
+    private Serializer<ByteBuf> getSerializer()
+    {
+        return this.serializer;
     }
 }

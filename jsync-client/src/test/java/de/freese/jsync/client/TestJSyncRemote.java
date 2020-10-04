@@ -25,6 +25,7 @@ import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import de.freese.jsync.netty.server.JsyncNettyServer;
 import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.spring.server.JsyncServerApplication;
@@ -79,6 +80,32 @@ class TestJSyncRemote extends AbstractJSyncTest
     static void beforeAll() throws Exception
     {
         options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    private void startNettyServerReceiver() throws Exception
+    {
+        if (!CLOSEABLES.containsKey("netty-receiver"))
+        {
+            JsyncNettyServer serverNettyReceiver = new JsyncNettyServer();
+            serverNettyReceiver.start(8006, 2, 4);
+            CLOSEABLES.put("netty-receiver", () -> serverNettyReceiver.stop());
+        }
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    private void startNettyServerSender() throws Exception
+    {
+        if (!CLOSEABLES.containsKey("netty-sender"))
+        {
+            JsyncNettyServer serverNettySender = new JsyncNettyServer();
+            serverNettySender.start(8005, 2, 4);
+            CLOSEABLES.put("netty-sender", () -> serverNettySender.stop());
+        }
     }
 
     /**
@@ -180,7 +207,7 @@ class TestJSyncRemote extends AbstractJSyncTest
 
         syncList.stream().forEach(SyncPair::validateStatus);
 
-        client.syncReceiver(syncList, new TestClientListener());
+        // client.syncReceiver(syncList, new TestClientListener());
 
         client.disconnectFileSystems();
     }
@@ -197,6 +224,25 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI receiverUri = PATH_ZIEL.toUri();
 
         syncDirectories(options, senderUri, receiverUri, null);
+
+        assertTrue(true);
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    void testNettyBlockingRemoteToLocal() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        startNettyServerSender();
+
+        URI senderUri = new URI("jsync://localhost:8005/" + PATH_QUELLE.toString());
+        URI receiverUri = PATH_ZIEL.toUri();
+
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
 
         assertTrue(true);
     }
