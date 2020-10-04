@@ -101,11 +101,11 @@ public class RemoteSenderAsync extends AbstractSender implements RemoteSupport
      * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String,long)
      */
     @Override
-    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
+    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         AsynchronousSocketChannel channel = this.channelPool.get();
 
-        return getReadableChannel(baseDir, relativeFile, size, buffer -> write(channel, buffer), buffer -> channel.read(buffer).get(), () -> channel,
+        return getReadableChannel(baseDir, relativeFile, sizeOfFile, buffer -> write(channel, buffer), buffer -> channel.read(buffer).get(), () -> channel,
                 this.channelPool::release);
     }
 
@@ -140,13 +140,13 @@ public class RemoteSenderAsync extends AbstractSender implements RemoteSupport
      * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
+    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
     {
         AsynchronousSocketChannel channel = this.channelPool.get();
 
         try
         {
-            readChunk(baseDir, relativeFile, position, size, buffer, buf -> write(channel, buf), buf -> channel.read(buf).get());
+            readChunk(baseDir, relativeFile, position, sizeOfChunk, buffer, buf -> write(channel, buf), buf -> channel.read(buf).get());
         }
         finally
         {

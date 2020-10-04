@@ -33,6 +33,7 @@
 
     <logger name="de.freese.jsync" level="DEBUG" />
     <logger name="de.freese.jsync.nio" level="INFO" />
+    <logger name="de.freese.jsync.netty" level="INFO" />
     
     <logger name="org.apache.http" level="INFO" />
     <logger name="org.springframework" level="INFO" />

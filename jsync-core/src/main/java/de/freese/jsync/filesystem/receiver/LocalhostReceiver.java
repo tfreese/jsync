@@ -128,9 +128,9 @@ public class LocalhostReceiver extends AbstractReceiver
      * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
+    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        getLogger().info("get writable channel: {}/{}, size = {}", baseDir, relativeFile, size);
+        getLogger().info("get writable channel: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
         Path path = Paths.get(baseDir, relativeFile);
         Path parentPath = path.getParent();
@@ -257,11 +257,11 @@ public class LocalhostReceiver extends AbstractReceiver
      * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
+    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
     {
-        getLogger().debug("write chunk: {}/{}, position={}, size={}", baseDir, relativeFile, position, size);
+        getLogger().debug("write chunk: {}/{}, position={}, sizeOfChunk={}", baseDir, relativeFile, position, sizeOfChunk);
 
-        if (size > buffer.capacity())
+        if (sizeOfChunk > buffer.capacity())
         {
             throw new IllegalArgumentException("size > buffer.capacity()");
         }

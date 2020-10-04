@@ -234,15 +234,15 @@ public class ReceiverRestService
     /**
      * @param baseDir String
      * @param relativeFile String
-     * @param size long
+     * @param sizeOfFile long
      * @param resource {@link Resource}
      * @return {@link ResponseEntity}
      */
     @PostMapping(path = "/writeChannel", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<String> writeChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                               @RequestParam("size") final long size, @RequestBody final Resource resource)
+                                               @RequestParam("sizeOfFile") final long sizeOfFile, @RequestBody final Resource resource)
     {
-        WritableByteChannel channel = this.receiver.getChannel(baseDir, relativeFile, size);
+        WritableByteChannel channel = this.receiver.getChannel(baseDir, relativeFile, sizeOfFile);
 
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
@@ -278,18 +278,18 @@ public class ReceiverRestService
      * @param baseDir String
      * @param relativeFile String
      * @param position long
-     * @param size long
+     * @param sizeOfChunk long
      * @param chunk {@link ByteBuffer}
      * @return {@link ResponseEntity}
      */
     @PostMapping(path = "/writeChunkBuffer", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<String> writeChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                   @RequestParam("position") final long position, @RequestParam("size") final long size,
+                                                   @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk,
                                                    @RequestBody final ByteBuffer chunk)
     {
         try
         {
-            this.receiver.writeChunk(baseDir, relativeFile, position, size, chunk);
+            this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, chunk);
 
             return ResponseEntity.ok("OK");
         }
@@ -303,13 +303,13 @@ public class ReceiverRestService
      * @param baseDir String
      * @param relativeFile String
      * @param position long
-     * @param size long
+     * @param sizeOfChunk long
      * @param resource {@link Resource}
      * @return {@link ResponseEntity}
      */
     @PostMapping(path = "/writeChunkStream", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<String> writeChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                   @RequestParam("position") final long position, @RequestParam("size") final long size,
+                                                   @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk,
                                                    @RequestBody final Resource resource)
     {
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
@@ -326,7 +326,7 @@ public class ReceiverRestService
                 buffer.put(bytes, 0, bytesRead);
             }
 
-            this.receiver.writeChunk(baseDir, relativeFile, position, size, buffer);
+            this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, buffer);
 
             return ResponseEntity.ok("OK");
         }

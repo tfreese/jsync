@@ -40,12 +40,12 @@ public interface FileSystem
      *
      * @param baseDir String
      * @param relativeFile String
-     * @param size long
+     * @param sizeOfFile long
      * @return {@link Channel}
      * @see ReadableByteChannel
      * @see WritableByteChannel
      */
-    public Channel getChannel(String baseDir, final String relativeFile, long size);
+    public Channel getChannel(String baseDir, final String relativeFile, long sizeOfFile);
 
     /**
      * Liefert die Prüfsumme einer Datei.<br>

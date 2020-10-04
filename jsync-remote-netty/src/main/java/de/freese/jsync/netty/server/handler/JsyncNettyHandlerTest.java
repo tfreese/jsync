@@ -1,5 +1,5 @@
 // Created: 20.09.2020
-package de.freese.jsync.netty.server;
+package de.freese.jsync.netty.server.handler;
 
 import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
@@ -75,11 +75,7 @@ public class JsyncNettyHandlerTest extends SimpleChannelInboundHandler<ByteBuf> 
         buf.writeInt(response.length());
         buf.writeCharSequence(response, StandardCharsets.UTF_8);
 
-        ctx.write(buf);
-
-        // Damit der Buffer wieder in den Pool kommt ohne IllegalReferenceCountException.
-        buf.retain();
-        // buf.release();
+        ctx.write(buf.retain());
     }
 
     /**

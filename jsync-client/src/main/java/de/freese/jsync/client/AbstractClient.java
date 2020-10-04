@@ -158,7 +158,7 @@ public abstract class AbstractClient implements Client
         this.senderPath = JSyncUtils.normalizePath(senderUri);
         this.receiverPath = JSyncUtils.normalizePath(receiverUri);
 
-        this.copyMode = CopyMode.CHANNEL;
+        this.copyMode = CopyMode.CHUNK;
 
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
@@ -243,14 +243,14 @@ public abstract class AbstractClient implements Client
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
         buffer.clear();
 
-        long size = syncItem.getSize();
+        long sizeOfFile = syncItem.getSize();
         long totalRead = 0;
         long totalWritten = 0;
 
-        try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderPath(), syncItem.getRelativePath(), size);
-             WritableByteChannel writableByteChannel = getReceiver().getChannel(getReceiverPath(), syncItem.getRelativePath(), size))
+        try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
+             WritableByteChannel writableByteChannel = getReceiver().getChannel(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile))
         {
-            while (totalRead < size)
+            while (totalRead < sizeOfFile)
             {
                 // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
                 Thread.sleep(1);
@@ -310,12 +310,12 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            long size = syncItem.getSize();
+            long sizeOfFile = syncItem.getSize();
             long position = 0;
 
-            while (position < size)
+            while (position < sizeOfFile)
             {
-                long sizeOfChunk = Math.min(size - position, Options.BYTEBUFFER_SIZE);
+                long sizeOfChunk = Math.min(sizeOfFile - position, Options.BYTEBUFFER_SIZE);
 
                 ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
@@ -333,8 +333,8 @@ public abstract class AbstractClient implements Client
                 }
             }
 
-            // long sizeOfChunk = Math.min(syncItem.getSize(), Options.BUFFER_SIZE);
-            // int numOfChunks = (int) Math.ceil((double) syncItem.getSize() / sizeOfChunk);
+            // long sizeOfChunk = Math.min(sizeOfFile, Options.BUFFER_SIZE);
+            // int numOfChunks = (int) Math.ceil((double) sizeOfFile / sizeOfChunk);
             //
             // for (int chunk = 0; chunk < numOfChunks; chunk++)
             // {

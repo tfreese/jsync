@@ -136,11 +136,11 @@ public class RemoteReceiverBlocking extends AbstractReceiver implements RemoteSu
      * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String,long)
      */
     @Override
-    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
+    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         SocketChannel channel = this.channelPool.get();
 
-        return getWritableChannel(baseDir, relativeFile, size, buffer -> write(channel, buffer), channel::read, () -> channel, this.channelPool::release);
+        return getWritableChannel(baseDir, relativeFile, sizeOfFile, buffer -> write(channel, buffer), channel::read, () -> channel, this.channelPool::release);
     }
 
     /**
@@ -210,13 +210,13 @@ public class RemoteReceiverBlocking extends AbstractReceiver implements RemoteSu
      * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
+    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
     {
         SocketChannel channel = this.channelPool.get();
 
         try
         {
-            writeChunk(baseDir, relativeFile, position, size, buffer, buf -> write(channel, buf), channel::read);
+            writeChunk(baseDir, relativeFile, position, sizeOfChunk, buffer, buf -> write(channel, buf), channel::read);
         }
         finally
         {

@@ -66,7 +66,7 @@ public class RemoteSender extends AbstractSender
      * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
+    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         // TODO Auto-generated method stub
         return null;
@@ -86,7 +86,7 @@ public class RemoteSender extends AbstractSender
      * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
+    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
     {
         // TODO Auto-generated method stub
 

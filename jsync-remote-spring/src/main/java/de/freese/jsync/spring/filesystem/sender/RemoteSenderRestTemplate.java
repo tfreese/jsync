@@ -227,13 +227,13 @@ public class RemoteSenderRestTemplate extends AbstractSender
      * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String,long)
      */
     @Override
-    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
+    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         // @formatter:off
         UriComponents builder = UriComponentsBuilder.fromPath("/readChannel")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
-                .queryParam("size", size)
+                .queryParam("sizeOfFile", sizeOfFile)
                 .build();
         // @formatter:on
 
@@ -289,14 +289,14 @@ public class RemoteSenderRestTemplate extends AbstractSender
      * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
+    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
     {
         // @formatter:off
         UriComponents builder = UriComponentsBuilder.fromPath("/readChunkBuffer")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
                 .queryParam("position", position)
-                .queryParam("size", size)
+                .queryParam("sizeOfChunk", sizeOfChunk)
                 .build();
         // @formatter:on
 

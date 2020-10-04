@@ -1,6 +1,7 @@
 // Created: 20.09.2020
 package de.freese.jsync.netty.server;
 
+import de.freese.jsync.netty.server.handler.JsyncNettyHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;

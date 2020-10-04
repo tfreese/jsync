@@ -284,14 +284,14 @@ public interface RemoteSupport
      * @param <C> Type
      * @param baseDir String
      * @param relativeFile String
-     * @param size long
+     * @param sizeOfFile long
      * @param channelWriter {@link ChannelWriter}
      * @param channelReader {@link ChannelReader}
      * @param channelSupplier {@link Supplier}
      * @param channelReleaser {@link Consumer}
      * @return {@link ReadableByteChannel}
      */
-    public default <C extends NetworkChannel> ReadableByteChannel getReadableChannel(final String baseDir, final String relativeFile, final long size,
+    public default <C extends NetworkChannel> ReadableByteChannel getReadableChannel(final String baseDir, final String relativeFile, final long sizeOfFile,
                                                                                      final ChannelWriter channelWriter, final ChannelReader channelReader,
                                                                                      final Supplier<C> channelSupplier, final Consumer<C> channelReleaser)
     {
@@ -303,7 +303,7 @@ public interface RemoteSupport
             getSerializer().writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
             getSerializer().writeTo(buffer, baseDir);
             getSerializer().writeTo(buffer, relativeFile);
-            buffer.putLong(size);
+            buffer.putLong(sizeOfFile);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -339,14 +339,14 @@ public interface RemoteSupport
     /**
      * @param baseDir String
      * @param relativeFile String
-     * @param size long
+     * @param sizeOfFile long
      * @param channelWriter {@link ChannelWriter}
      * @param channelReader {@link ChannelReader}
      * @param channelSupplier {@link Supplier}
      * @param channelReleaser {@link Consumer}
      * @return {@link WritableByteChannel}
      */
-    public default <C extends NetworkChannel> WritableByteChannel getWritableChannel(final String baseDir, final String relativeFile, final long size,
+    public default <C extends NetworkChannel> WritableByteChannel getWritableChannel(final String baseDir, final String relativeFile, final long sizeOfFile,
                                                                                      final ChannelWriter channelWriter, final ChannelReader channelReader,
                                                                                      final Supplier<C> channelSupplier, final Consumer<C> channelReleaser)
     {
@@ -358,7 +358,7 @@ public interface RemoteSupport
             getSerializer().writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
             getSerializer().writeTo(buffer, baseDir);
             getSerializer().writeTo(buffer, relativeFile);
-            buffer.putLong(size);
+            buffer.putLong(sizeOfFile);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -388,12 +388,12 @@ public interface RemoteSupport
      * @param baseDir String
      * @param relativeFile String
      * @param position long
-     * @param size long
+     * @param sizeOfChunk long
      * @param buffer {@link ByteBuffer}
      * @param channelWriter {@link ChannelWriter}
      * @param channelReader {@link ChannelReader}
      */
-    public default void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer,
+    public default void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer,
                                   final ChannelWriter channelWriter, final ChannelReader channelReader)
     {
         ByteBuffer bufferResponse = ByteBufferPool.getInstance().get();
@@ -405,7 +405,7 @@ public interface RemoteSupport
             getSerializer().writeTo(buffer, baseDir);
             getSerializer().writeTo(buffer, relativeFile);
             buffer.putLong(position);
-            buffer.putLong(size);
+            buffer.putLong(sizeOfChunk);
 
             buffer.flip();
             channelWriter.write(buffer);
@@ -633,12 +633,12 @@ public interface RemoteSupport
      * @param baseDir String
      * @param relativeFile String
      * @param position long
-     * @param size long
+     * @param sizeOfChunk long
      * @param buffer {@link ByteBuffer}
      * @param channelWriter {@link ChannelWriter}
      * @param channelReader {@link ChannelReader}
      */
-    public default void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer,
+    public default void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer,
                                    final ChannelWriter channelWriter, final ChannelReader channelReader)
     {
         ByteBuffer bufferCmd = ByteBufferPool.getInstance().get();
@@ -650,7 +650,7 @@ public interface RemoteSupport
             getSerializer().writeTo(bufferCmd, baseDir);
             getSerializer().writeTo(bufferCmd, relativeFile);
             bufferCmd.putLong(position);
-            bufferCmd.putLong(size);
+            bufferCmd.putLong(sizeOfChunk);
 
             bufferCmd.flip();
 

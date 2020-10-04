@@ -34,7 +34,7 @@ public interface Receiver extends FileSystem
      * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public WritableByteChannel getChannel(String baseDir, String relativeFile, long size);
+    public WritableByteChannel getChannel(String baseDir, String relativeFile, long sizeOfFile);
 
     /**
      * Aktualisiert ein {@link SyncItem}.
@@ -59,8 +59,8 @@ public interface Receiver extends FileSystem
      * @param baseDir String
      * @param relativeFile String
      * @param position long
-     * @param size long
+     * @param sizeOfChunk long
      * @param buffer {@link ByteBuffer}
      */
-    public void writeChunk(String baseDir, String relativeFile, long position, final long size, ByteBuffer buffer);
+    public void writeChunk(String baseDir, String relativeFile, long position, final long sizeOfChunk, ByteBuffer buffer);
 }

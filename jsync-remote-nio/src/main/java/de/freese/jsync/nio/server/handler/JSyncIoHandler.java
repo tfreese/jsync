@@ -55,7 +55,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param buffer {@link ByteBuffer}
      * @throws IOException @throws Exception Falls was schief geht
      */
-    private static void writeBuffer(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
+    protected static void writeBuffer(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
     {
         SocketChannel channel = (SocketChannel) selectionKey.channel();
 
@@ -67,7 +67,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param buffer {@link ByteBuffer}
      * @throws IOException @throws Exception Falls was schief geht
      */
-    private static void writeBuffer(final SocketChannel channel, final ByteBuffer buffer) throws IOException
+    protected static void writeBuffer(final SocketChannel channel, final ByteBuffer buffer) throws IOException
     {
         while (buffer.hasRemaining())
         {
@@ -322,7 +322,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     {
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativeFile = getSerializer().readFrom(buffer, String.class);
-        long size = buffer.getLong();
+        long sizeOfFile = buffer.getLong();
 
         Exception exception = null;
         WritableByteChannel outChannel = null;
@@ -331,7 +331,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         try
         {
             inChannel = (ReadableByteChannel) selectionKey.channel();
-            outChannel = receiver.getChannel(baseDir, relativeFile, size);
+            outChannel = receiver.getChannel(baseDir, relativeFile, sizeOfFile);
         }
         catch (Exception ex)
         {
@@ -361,7 +361,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 long totalRead = 0;
                 long totalWritten = 0;
 
-                while (totalWritten < size)
+                while (totalWritten < sizeOfFile)
                 {
                     buffer.clear();
 
@@ -372,7 +372,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     {
                         totalWritten += outChannel.write(buffer);
 
-                        getLogger().debug("WritableByteChannel: size={}, totalWritten={}", size, totalWritten);
+                        getLogger().debug("WritableByteChannel: sizeOfFile={}, totalWritten={}", sizeOfFile, totalWritten);
                     }
                 }
 
@@ -384,7 +384,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // JsyncServerResponse.ok(buffer).write(selectionKey);
                 buffer.clear();
                 buffer.putInt(RemoteUtils.STATUS_OK); // Status
-                buffer.putLong(size); // Content-Length
+                buffer.putLong(sizeOfFile); // Content-Length
 
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
@@ -412,7 +412,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     {
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativeFile = getSerializer().readFrom(buffer, String.class);
-        long size = buffer.getLong();
+        long sizeOfFile = buffer.getLong();
 
         Exception exception = null;
         WritableByteChannel outChannel = null;
@@ -421,7 +421,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         try
         {
             outChannel = (WritableByteChannel) selectionKey.channel();
-            inChannel = sender.getChannel(baseDir, relativeFile, size);
+            inChannel = sender.getChannel(baseDir, relativeFile, sizeOfFile);
         }
         catch (Exception ex)
         {
@@ -450,13 +450,13 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // Response senden
                 buffer.clear();
                 buffer.putInt(RemoteUtils.STATUS_OK); // Status
-                buffer.putLong(size); // Content-Length
+                buffer.putLong(sizeOfFile); // Content-Length
 
                 @SuppressWarnings("unused")
                 long totalWritten = 0;
                 long totalRead = 0;
 
-                while (totalRead < size)
+                while (totalRead < sizeOfFile)
                 {
                     totalRead += inChannel.read(buffer);
                     buffer.flip();
@@ -465,7 +465,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     {
                         totalWritten += outChannel.write(buffer);
 
-                        getLogger().debug("ReadableByteChannel: size={}, totalRead={}", size, totalRead);
+                        getLogger().debug("ReadableByteChannel: sizeOfFile={}, totalRead={}", sizeOfFile, totalRead);
                     }
 
                     buffer.clear();
@@ -485,7 +485,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
      * @return {@link Logger}
      */
-    private Logger getLogger()
+    protected Logger getLogger()
     {
         return LOGGER;
     }
@@ -494,7 +494,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param selectionKey SelectionKey
      * @return String
      */
-    private String getRemoteAddress(final SelectionKey selectionKey)
+    protected String getRemoteAddress(final SelectionKey selectionKey)
     {
         try
         {
@@ -509,7 +509,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
      * @return {@link Serializer}<ByteBuffer>
      */
-    private Serializer<ByteBuffer> getSerializer()
+    protected Serializer<ByteBuffer> getSerializer()
     {
         return this.serializer;
     }
@@ -643,14 +643,14 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativeFile = getSerializer().readFrom(buffer, String.class);
         long position = buffer.getLong();
-        long size = buffer.getLong();
+        long sizeOfChunk = buffer.getLong();
 
         Exception exception = null;
         ByteBuffer bufferChunk = ByteBufferPool.getInstance().get();
 
         try
         {
-            sender.readChunk(baseDir, relativeFile, position, size, bufferChunk);
+            sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, bufferChunk);
         }
         catch (Exception ex)
         {
@@ -680,7 +680,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 // JsyncServerResponse.ok(buffer).write(selectionKey);
                 buffer.clear();
                 buffer.putInt(RemoteUtils.STATUS_OK); // Status
-                buffer.putLong(size); // Content-Length
+                buffer.putLong(sizeOfChunk); // Content-Length
                 buffer.flip();
 
                 bufferChunk.flip();
@@ -844,7 +844,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativeFile = getSerializer().readFrom(buffer, String.class);
         long position = buffer.getLong();
-        long size = buffer.getLong();
+        long sizeOfChunk = buffer.getLong();
 
         Exception exception = null;
         ByteBuffer bufferData = ByteBufferPool.getInstance().get();
@@ -856,7 +856,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             bufferData.clear();
             bufferData.put(buffer);
 
-            while (bufferData.position() < size)
+            while (bufferData.position() < sizeOfChunk)
             {
                 buffer.clear();
                 channel.read(buffer);
@@ -865,7 +865,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 bufferData.put(buffer);
             }
 
-            receiver.writeChunk(baseDir, relativeFile, position, size, bufferData);
+            receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, bufferData);
         }
         catch (Exception ex)
         {

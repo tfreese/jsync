@@ -207,7 +207,7 @@ class TestJSyncRemote extends AbstractJSyncTest
 
         syncList.stream().forEach(SyncPair::validateStatus);
 
-        // client.syncReceiver(syncList, new TestClientListener());
+        client.syncReceiver(syncList, new TestClientListener());
 
         client.disconnectFileSystems();
     }

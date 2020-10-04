@@ -16,7 +16,7 @@ public interface Sender extends FileSystem
      * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public ReadableByteChannel getChannel(String baseDir, String relativeFile, long size);
+    public ReadableByteChannel getChannel(String baseDir, String relativeFile, long sizeOfFile);
 
     /**
      * Liest nur einen bestimmten Bereich aus einer Datei.
@@ -24,8 +24,8 @@ public interface Sender extends FileSystem
      * @param baseDir String
      * @param relativeFile String
      * @param position long
-     * @param size long
+     * @param sizeOfChunk long
      * @param buffer {@link ByteBuffer}
      */
-    public void readChunk(String baseDir, String relativeFile, long position, long size, ByteBuffer buffer);
+    public void readChunk(String baseDir, String relativeFile, long position, long sizeOfChunk, ByteBuffer buffer);
 }

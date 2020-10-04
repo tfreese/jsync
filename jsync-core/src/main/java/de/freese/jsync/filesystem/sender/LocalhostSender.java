@@ -73,9 +73,9 @@ public class LocalhostSender extends AbstractSender
      * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
+    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        getLogger().debug("get readable channel: {}/{}, size = {}", baseDir, relativeFile, size);
+        getLogger().debug("get readable channel: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
         Path path = Paths.get(baseDir, relativeFile);
 
@@ -115,11 +115,11 @@ public class LocalhostSender extends AbstractSender
      * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void readChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
+    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
     {
-        getLogger().debug("read chunk: {}/{}, position={}, size={}", baseDir, relativeFile, position, size);
+        getLogger().debug("read chunk: {}/{}, position={}, sizeOfChunk={}", baseDir, relativeFile, position, sizeOfChunk);
 
-        if (size > buffer.capacity())
+        if (sizeOfChunk > buffer.capacity())
         {
             throw new IllegalArgumentException("size > buffer.capacity()");
         }
@@ -135,7 +135,7 @@ public class LocalhostSender extends AbstractSender
             // FileChannel fileChannel = randomAccessFile.getChannel();
             try (FileChannel fileChannel = (FileChannel) Files.newByteChannel(path, StandardOpenOption.READ))
             {
-                MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, size);
+                MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, sizeOfChunk);
 
                 buffer.clear();
                 buffer.put(mappedByteBuffer);

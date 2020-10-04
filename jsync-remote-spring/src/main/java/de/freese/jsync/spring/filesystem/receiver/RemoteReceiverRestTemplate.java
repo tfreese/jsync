@@ -264,13 +264,13 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
      * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String, long)
      */
     @Override
-    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long size)
+    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         // @formatter:off
         UriComponents builder = UriComponentsBuilder.fromPath("/writeChannel")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
-                .queryParam("size", size)
+                .queryParam("sizeOfFile", sizeOfFile)
                 .build();
          // @formatter:on
 
@@ -475,14 +475,14 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
      * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long size, final ByteBuffer buffer)
+    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
     {
         // @formatter:off
         UriComponents builder = UriComponentsBuilder.fromPath("/writeChunkBuffer")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
                 .queryParam("position", position)
-                .queryParam("size", size)
+                .queryParam("sizeOfChunk", sizeOfChunk)
                 .build();
         // @formatter:on
 

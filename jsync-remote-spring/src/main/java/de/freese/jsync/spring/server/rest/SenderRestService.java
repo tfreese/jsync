@@ -215,15 +215,15 @@ public class SenderRestService
     /**
      * @param baseDir String
      * @param relativeFile String
-     * @param size long
+     * @param sizeOfFile long
      * @return {@link ResponseEntity}
      */
     // @GetMapping("/channel/{baseDir}/{relativeFile}/{position}/{size}")
     @GetMapping("/readChannel")
     public ResponseEntity<Resource> readChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                @RequestParam("size") final long size)
+                                                @RequestParam("sizeOfFile") final long sizeOfFile)
     {
-        ReadableByteChannel channel = this.sender.getChannel(baseDir, relativeFile, size);
+        ReadableByteChannel channel = this.sender.getChannel(baseDir, relativeFile, sizeOfFile);
 
         Resource resource = new InputStreamResource(Channels.newInputStream(channel));
 
@@ -238,7 +238,7 @@ public class SenderRestService
      * @param baseDir String
      * @param relativeFile String
      * @param position long
-     * @param size long
+     * @param sizeOfChunk long
      * @return {@link ResponseEntity}
      */
     // @GetMapping("/chunk/{baseDir}/{relativeFile}/{position}/{size}")
@@ -246,14 +246,14 @@ public class SenderRestService
     // @PathVariable("position") final long position, @PathVariable("size") final long size)
     @GetMapping(path = "/readChunkBuffer", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ByteBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                      @RequestParam("position") final long position, @RequestParam("size") final long size)
+                                                      @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
     {
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
         try
         {
             buffer.clear();
-            this.sender.readChunk(baseDir, relativeFile, position, size, buffer);
+            this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, buffer);
             buffer.flip();
 
             HttpHeaders headers = new HttpHeaders();
@@ -272,19 +272,19 @@ public class SenderRestService
      * @param baseDir String
      * @param relativeFile String
      * @param position long
-     * @param size long
+     * @param sizeOfChunk long
      * @return {@link ResponseEntity}
      */
     @GetMapping(path = "/readChunkStream", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<Resource> readChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                    @RequestParam("position") final long position, @RequestParam("size") final long size)
+                                                    @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
     {
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
         try
         {
             buffer.clear();
-            this.sender.readChunk(baseDir, relativeFile, position, size, buffer);
+            this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, buffer);
             buffer.flip();
 
             Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
