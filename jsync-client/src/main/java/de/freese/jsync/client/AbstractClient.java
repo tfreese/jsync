@@ -250,11 +250,11 @@ public abstract class AbstractClient implements Client
         try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
              WritableByteChannel writableByteChannel = getReceiver().getChannel(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile))
         {
+            // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
+            Thread.sleep(1);
+
             while (totalRead < sizeOfFile)
             {
-                // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
-                // Thread.sleep(1);
-
                 totalRead += readableByteChannel.read(buffer);
                 buffer.flip();
 
