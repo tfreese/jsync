@@ -23,10 +23,8 @@ import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
-import de.freese.jsync.nio.filesystem.receiver.RemoteReceiverAsync;
-import de.freese.jsync.nio.filesystem.receiver.RemoteReceiverBlocking;
-import de.freese.jsync.nio.filesystem.sender.RemoteSenderAsync;
-import de.freese.jsync.nio.filesystem.sender.RemoteSenderBlocking;
+import de.freese.jsync.nio.filesystem.receiver.RemoteReceiverNio;
+import de.freese.jsync.nio.filesystem.sender.RemoteSenderNio;
 import de.freese.jsync.spring.filesystem.receiver.RemoteReceiverRestTemplate;
 import de.freese.jsync.spring.filesystem.sender.RemoteSenderRestTemplate;
 import de.freese.jsync.utils.JSyncUtils;
@@ -63,19 +61,11 @@ public abstract class AbstractClient implements Client
         /**
          *
          */
-        NIO_ASYNC,
-        /**
-         *
-         */
-        NIO_BLOCKING,
+        NIO,
         /**
          *
          */
         SPRING_REST_TEMPLATE,
-        /**
-         *
-         */
-        SPRING_WEBCLIENT;
     }
 
     /**
@@ -137,7 +127,7 @@ public abstract class AbstractClient implements Client
      */
     protected AbstractClient(final Options options, final URI senderUri, final URI receiverUri)
     {
-        this(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
+        this(options, senderUri, receiverUri, RemoteMode.NIO);
     }
 
     /**
@@ -164,8 +154,7 @@ public abstract class AbstractClient implements Client
         {
             switch (this.remoteMode)
             {
-                case NIO_ASYNC -> this.sender = new RemoteSenderAsync();
-                case NIO_BLOCKING -> this.sender = new RemoteSenderBlocking();
+                case NIO -> this.sender = new RemoteSenderNio();
                 case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestTemplate();
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
             }
@@ -179,8 +168,7 @@ public abstract class AbstractClient implements Client
         {
             switch (this.remoteMode)
             {
-                case NIO_ASYNC -> this.receiver = new RemoteReceiverAsync();
-                case NIO_BLOCKING -> this.receiver = new RemoteReceiverBlocking();
+                case NIO -> this.receiver = new RemoteReceiverNio();
                 case SPRING_REST_TEMPLATE -> this.receiver = new RemoteReceiverRestTemplate();
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
             }

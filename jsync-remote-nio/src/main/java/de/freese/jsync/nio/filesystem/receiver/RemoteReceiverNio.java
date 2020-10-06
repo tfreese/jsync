@@ -3,9 +3,8 @@ package de.freese.jsync.nio.filesystem.receiver;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
@@ -15,7 +14,7 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.filesystem.RemoteSupport;
-import de.freese.jsync.nio.utils.pool.AsynchronousSocketChannelPool;
+import de.freese.jsync.nio.utils.pool.SocketChannelPool;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -23,17 +22,17 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
  *
  * @author Thomas Freese
  */
-public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSupport
+public class RemoteReceiverNio extends AbstractReceiver implements RemoteSupport
 {
     /**
-    *
-    */
+     *
+     */
     private final ByteBufferPool byteBufferPool = ByteBufferPool.getInstance();
 
     /**
-    *
-    */
-    private AsynchronousSocketChannelPool channelPool;
+     *
+     */
+    private SocketChannelPool channelPool;
 
     /**
      *
@@ -41,9 +40,9 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
-     * Erzeugt eine neue Instanz von {@link RemoteReceiverAsync}.
+     * Erzeugt eine neue Instanz von {@link RemoteReceiverNio}.
      */
-    public RemoteReceiverAsync()
+    public RemoteReceiverNio()
     {
         super();
     }
@@ -54,13 +53,13 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     @Override
     public void connect(final URI uri)
     {
-        this.channelPool = new AsynchronousSocketChannelPool(uri, Executors.newCachedThreadPool());
+        this.channelPool = new SocketChannelPool(uri);
 
-        AsynchronousSocketChannel channel = this.channelPool.get();
+        SocketChannel channel = this.channelPool.get();
 
         try
         {
-            connect(buffer -> write(channel, buffer), buffer -> channel.read(buffer).get());
+            connect(channel);
         }
         finally
         {
@@ -74,11 +73,11 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
-        AsynchronousSocketChannel channel = this.channelPool.get();
+        SocketChannel channel = this.channelPool.get();
 
         try
         {
-            createDirectory(baseDir, relativePath, buffer -> write(channel, buffer), buffer -> channel.read(buffer).get());
+            createDirectory(baseDir, relativePath, buffer -> write(channel, buffer), channel::read);
         }
         finally
         {
@@ -92,11 +91,11 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        AsynchronousSocketChannel channel = this.channelPool.get();
+        SocketChannel channel = this.channelPool.get();
 
         try
         {
-            delete(baseDir, relativePath, followSymLinks, buffer -> write(channel, buffer), buffer -> channel.read(buffer).get());
+            delete(baseDir, relativePath, followSymLinks, buffer -> write(channel, buffer), channel::read);
         }
         finally
         {
@@ -105,12 +104,12 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#disconnect()
+     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
      */
     @Override
     public void disconnect()
     {
-        this.channelPool.destroy(channel -> disconnect(buffer -> write(channel, buffer), buffer -> channel.read(buffer).get(), getLogger()));
+        this.channelPool.destroy(channel -> disconnect(channel, getLogger()));
 
         this.byteBufferPool.clear();
     }
@@ -121,11 +120,11 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
-        AsynchronousSocketChannel channel = this.channelPool.get();
+        SocketChannel channel = this.channelPool.get();
 
         try
         {
-            generateSyncItems(baseDir, followSymLinks, consumerSyncItem, buffer -> write(channel, buffer), buffer -> channel.read(buffer).get());
+            generateSyncItems(baseDir, followSymLinks, consumerSyncItem, buffer -> write(channel, buffer), channel::read);
         }
         finally
         {
@@ -139,10 +138,9 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     @Override
     public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        AsynchronousSocketChannel channel = this.channelPool.get();
+        SocketChannel channel = this.channelPool.get();
 
-        return getWritableChannel(baseDir, relativeFile, sizeOfFile, buffer -> write(channel, buffer), buffer -> channel.read(buffer).get(), () -> channel,
-                this.channelPool::release);
+        return getWritableChannel(baseDir, relativeFile, sizeOfFile, buffer -> write(channel, buffer), channel::read, () -> channel, this.channelPool::release);
     }
 
     /**
@@ -151,11 +149,11 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     @Override
     public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        AsynchronousSocketChannel channel = this.channelPool.get();
+        SocketChannel channel = this.channelPool.get();
 
         try
         {
-            return getChecksum(baseDir, relativeFile, consumerBytesRead, buffer -> write(channel, buffer), buffer -> channel.read(buffer).get());
+            return getChecksum(baseDir, relativeFile, consumerBytesRead, buffer -> write(channel, buffer), channel::read);
         }
         finally
         {
@@ -178,11 +176,11 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        AsynchronousSocketChannel channel = this.channelPool.get();
+        SocketChannel channel = this.channelPool.get();
 
         try
         {
-            update(baseDir, syncItem, buffer -> write(channel, buffer), buffer -> channel.read(buffer).get());
+            update(baseDir, syncItem, buffer -> write(channel, buffer), channel::read);
         }
         finally
         {
@@ -196,11 +194,11 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
     {
-        AsynchronousSocketChannel channel = this.channelPool.get();
+        SocketChannel channel = this.channelPool.get();
 
         try
         {
-            validateFile(baseDir, syncItem, withChecksum, buffer -> write(channel, buffer), buffer -> channel.read(buffer).get());
+            validateFile(baseDir, syncItem, withChecksum, buffer -> write(channel, buffer), channel::read);
         }
         finally
         {
@@ -214,11 +212,11 @@ public class RemoteReceiverAsync extends AbstractReceiver implements RemoteSuppo
     @Override
     public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
     {
-        AsynchronousSocketChannel channel = this.channelPool.get();
+        SocketChannel channel = this.channelPool.get();
 
         try
         {
-            writeChunk(baseDir, relativeFile, position, sizeOfChunk, buffer, buf -> write(channel, buf), buf -> channel.read(buf).get());
+            writeChunk(baseDir, relativeFile, position, sizeOfChunk, buffer, buf -> write(channel, buf), channel::read);
         }
         finally
         {

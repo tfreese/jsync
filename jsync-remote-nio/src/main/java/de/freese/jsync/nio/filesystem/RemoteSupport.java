@@ -25,10 +25,10 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
 public interface RemoteSupport
 {
     /**
-     * @param channelWriter {@link ChannelWriter}
-     * @param channelReader {@link ChannelReader}
+     * @param channel {@link SocketChannel}
+     * @Entfäkk
      */
-    public default void connect(final ChannelWriter channelWriter, final ChannelReader channelReader)
+    public default void connect(final SocketChannel channel)
     {
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
@@ -38,10 +38,10 @@ public interface RemoteSupport
             getSerializer().writeTo(buffer, JSyncCommand.CONNECT);
 
             buffer.flip();
-            channelWriter.write(buffer);
+            write(channel, buffer);
 
-            long contentLength = readResponseHeader(channelReader);
-            readResponseBody(buffer, channelReader, contentLength);
+            long contentLength = readResponseHeader(channel);
+            readResponseBody(buffer, channel, contentLength);
 
             // String message = getSerializer().readFrom(buffer, String.class);
             // System.out.println(message);
@@ -148,11 +148,10 @@ public interface RemoteSupport
     }
 
     /**
-     * @param channelWriter {@link ChannelWriter}
-     * @param channelReader {@link ChannelReader}
+     * @param channel {@link SocketChannel}
      * @param logger {@link Logger}
      */
-    public default void disconnect(final ChannelWriter channelWriter, final ChannelReader channelReader, final Logger logger)
+    public default void disconnect(final SocketChannel channel, final Logger logger)
     {
         ByteBuffer buffer = ByteBufferPool.getInstance().get();
 
@@ -162,10 +161,10 @@ public interface RemoteSupport
             getSerializer().writeTo(buffer, JSyncCommand.DISCONNECT);
 
             buffer.flip();
-            channelWriter.write(buffer);
+            write(channel, buffer);
 
-            long contentLength = readResponseHeader(channelReader);
-            readResponseBody(buffer, channelReader, contentLength);
+            long contentLength = readResponseHeader(channel);
+            readResponseBody(buffer, channel, contentLength);
 
             // String message = getSerializer().readFrom(buffer, String.class);
             // System.out.println(message);
@@ -446,7 +445,9 @@ public interface RemoteSupport
      * @param channelReader {@link ChannelReader}
      * @param contentLength long
      * @throws Exception Falls was schief geht.
+     * @deprecated Entfallt
      */
+    @Deprecated
     public default void readResponseBody(final ByteBuffer buffer, final ChannelReader channelReader, final long contentLength) throws Exception
     {
         buffer.clear();
@@ -462,12 +463,36 @@ public interface RemoteSupport
     }
 
     /**
+     * Fertig lesen des Bodys.
+     *
+     * @param buffer {@link ByteBuffer}
+     * @param channel {@link ChannelReader}
+     * @param contentLength long
+     * @throws Exception Falls was schief geht.
+     */
+    public default void readResponseBody(final ByteBuffer buffer, final SocketChannel channel, final long contentLength) throws Exception
+    {
+        buffer.clear();
+
+        int totalRead = channel.read(buffer);
+
+        while (totalRead < contentLength)
+        {
+            totalRead += channel.read(buffer);
+        }
+
+        buffer.flip();
+    }
+
+    /**
      * Einlesen des Headers und ggf. der Exception.
      *
      * @param channelReader {@link ChannelReader}
      * @return long
      * @throws Exception Falls was schief geht.
+     * @deprecated Entfällt
      */
+    @Deprecated
     public default long readResponseHeader(final ChannelReader channelReader) throws Exception
     {
         // Auf keinen Fall mehr lesen als den Header.
@@ -493,6 +518,55 @@ public interface RemoteSupport
                 while (totalRead < contentLength)
                 {
                     totalRead += channelReader.read(bufferException);
+                }
+
+                bufferException.flip();
+
+                Exception exception = getSerializer().readFrom(bufferException, Exception.class);
+
+                throw exception;
+            }
+            finally
+            {
+                ByteBufferPool.getInstance().release(bufferException);
+            }
+        }
+
+        return contentLength;
+    }
+
+    /**
+     * Einlesen des Headers und ggf. der Exception.
+     *
+     * @param channel {@link SocketChannel}
+     * @return long
+     * @throws Exception Falls was schief geht.
+     */
+    public default long readResponseHeader(final SocketChannel channel) throws Exception
+    {
+        // Auf keinen Fall mehr lesen als den Header.
+        ByteBuffer bufferHeader = ByteBuffer.allocate(12);
+
+        channel.read(bufferHeader);
+        bufferHeader.flip();
+
+        int status = bufferHeader.getInt();
+        long contentLength = bufferHeader.getLong();
+
+        if (RemoteUtils.STATUS_ERROR == status)
+        {
+            ByteBuffer bufferException = ByteBufferPool.getInstance().get();
+
+            try
+            {
+                bufferException.clear();
+
+                // Exception einlesen.
+                int totalRead = channel.read(bufferException);
+
+                while (totalRead < contentLength)
+                {
+                    totalRead += channel.read(bufferException);
                 }
 
                 bufferException.flip();
@@ -599,7 +673,7 @@ public interface RemoteSupport
      * @return int, Bytes written
      * @throws Exception Falls was schief geht.
      */
-    public default int write(final AsynchronousSocketChannel channel, final ByteBuffer buffer) throws Exception
+    default int write(final AsynchronousSocketChannel channel, final ByteBuffer buffer) throws Exception
     {
         int totalWritten = 0;
 

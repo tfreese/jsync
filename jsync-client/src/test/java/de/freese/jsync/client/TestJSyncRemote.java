@@ -233,25 +233,6 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void testNettyBlockingRemoteToLocal() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startNettyServerSender();
-
-        URI senderUri = new URI("jsync://localhost:8005/" + PATH_QUELLE.toString());
-        URI receiverUri = PATH_ZIEL.toUri();
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
-
-        assertTrue(true);
-    }
-
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
     void testNettyLocalToRemote() throws Exception
     {
         System.out.println();
@@ -262,7 +243,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = new URI("jsync://localhost:8006/" + PATH_ZIEL.toString());
 
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
 
         assertTrue(true);
     }
@@ -271,7 +252,26 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void testNioAsyncLocalToRemote() throws Exception
+    void testNettyRemoteToLocal() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        startNettyServerSender();
+
+        URI senderUri = new URI("jsync://localhost:8005/" + PATH_QUELLE.toString());
+        URI receiverUri = PATH_ZIEL.toUri();
+
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
+
+        assertTrue(true);
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    void testNioLocalToRemote() throws Exception
     {
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
@@ -281,7 +281,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_ASYNC);
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
 
         assertTrue(true);
     }
@@ -290,7 +290,7 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void testNioAsyncRemoteToLocal() throws Exception
+    void testNioRemoteToLocal() throws Exception
     {
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
@@ -300,7 +300,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
 
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_ASYNC);
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
 
         assertTrue(true);
     }
@@ -309,7 +309,7 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void testNioAsyncRemoteToRemote() throws Exception
+    void testNioRemoteToRemote() throws Exception
     {
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
@@ -322,67 +322,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_ASYNC);
-
-        assertTrue(true);
-    }
-
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testNioBlockingLocalToRemote() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startNioServerReceiver();
-
-        URI senderUri = PATH_QUELLE.toUri();
-        URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
-
-        assertTrue(true);
-    }
-
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testNioBlockingRemoteToLocal() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startNioServerSender();
-
-        URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
-        URI receiverUri = PATH_ZIEL.toUri();
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
-
-        assertTrue(true);
-    }
-
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testNioBlockingRemoteToRemote() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startNioServerSender();
-        startNioServerReceiver();
-
-        // URI sender = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
-        // URI receiver = new URI("jsync", null, "localhost", 8002, "/" + PATH_ZIEL.toString(), null, null);
-        URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
-        URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO_BLOCKING);
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
 
         assertTrue(true);
     }
