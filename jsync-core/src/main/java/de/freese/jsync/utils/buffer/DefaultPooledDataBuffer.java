@@ -8,6 +8,7 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntPredicate;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
@@ -125,6 +126,11 @@ public class DefaultPooledDataBuffer implements DataBuffer, PooledDataBuffer
     /**
      *
      */
+    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(0);
+
+    /**
+     *
+     */
     private static final int MAX_CAPACITY = Integer.MAX_VALUE;
 
     /**
@@ -141,6 +147,11 @@ public class DefaultPooledDataBuffer implements DataBuffer, PooledDataBuffer
      *
      */
     private final DefaultPooledDataBufferFactory dataBufferFactory;
+
+    /**
+     *
+     */
+    private final String id;
 
     /**
      *
@@ -170,6 +181,8 @@ public class DefaultPooledDataBuffer implements DataBuffer, PooledDataBuffer
         ByteBuffer slice = byteBuffer.slice();
         this.byteBuffer = slice;
         this.capacity = slice.remaining();
+
+        this.id = dataBufferFactory.getId() + "-buffer-" + ID_GENERATOR.incrementAndGet();
     }
 
     /**
@@ -606,9 +619,14 @@ public class DefaultPooledDataBuffer implements DataBuffer, PooledDataBuffer
     @Override
     public boolean release()
     {
+        if (this instanceof SlicedDefaultDataBuffer)
+        {
+            return true;
+        }
+
         this.dataBufferFactory.release(this);
 
-        return true;
+        return false;
     }
 
     /**
@@ -663,7 +681,7 @@ public class DefaultPooledDataBuffer implements DataBuffer, PooledDataBuffer
     @Override
     public String toString()
     {
-        return String.format("DefaultPooledDataBuffer (r: %d, w: %d, c: %d)", this.readPosition, this.writePosition, this.capacity);
+        return String.format("DefaultPooledDataBuffer (r: %d, w: %d, c: %d, id: %s)", this.readPosition, this.writePosition, this.capacity, this.id);
     }
 
     /**

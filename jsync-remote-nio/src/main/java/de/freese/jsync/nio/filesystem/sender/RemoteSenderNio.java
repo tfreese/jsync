@@ -7,6 +7,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import org.springframework.core.io.buffer.DataBuffer;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
@@ -15,6 +16,7 @@ import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.filesystem.RemoteSupport;
 import de.freese.jsync.nio.utils.pool.SocketChannelPool;
+import de.freese.jsync.utils.buffer.DataBufferAdapter;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -38,6 +40,11 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
      *
      */
     private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+
+    /**
+    *
+    */
+    private final Serializer<DataBuffer> serializerDataBuffer = DefaultSerializer.of(new DataBufferAdapter());
 
     /**
      * Erstellt ein neues {@link RemoteSenderNio} Object.
@@ -88,7 +95,7 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
 
         try
         {
-            generateSyncItems(baseDir, followSymLinks, consumerSyncItem, buffer -> write(channel, buffer), channel::read);
+            generateSyncItems(channel, baseDir, followSymLinks, consumerSyncItem);
         }
         finally
         {
@@ -104,7 +111,7 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
     {
         SocketChannel channel = this.channelPool.get();
 
-        return getReadableChannel(baseDir, relativeFile, sizeOfFile, buffer -> write(channel, buffer), channel::read, () -> channel, this.channelPool::release);
+        return getReadableChannel(channel, this.channelPool::release, baseDir, relativeFile, sizeOfFile);
     }
 
     /**
@@ -117,7 +124,7 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
 
         try
         {
-            return getChecksum(baseDir, relativeFile, consumerBytesRead, buffer -> write(channel, buffer), channel::read);
+            return getChecksum(channel, baseDir, relativeFile, consumerBytesRead);
         }
         finally
         {
@@ -134,6 +141,15 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
         return this.serializer;
     }
 
+    // /**
+    // * @see de.freese.jsync.nio.filesystem.RemoteSupport#getSerializerDataBuffer()
+    // */
+    // @Override
+    // public Serializer<DataBuffer> getSerializerDataBuffer()
+    // {
+    // return this.serializerDataBuffer;
+    // }
+
     /**
      * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
@@ -144,7 +160,7 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
 
         try
         {
-            readChunk(baseDir, relativeFile, position, sizeOfChunk, buffer, buf -> write(channel, buf), channel::read);
+            readChunk(channel, baseDir, relativeFile, position, sizeOfChunk, buffer);
         }
         finally
         {

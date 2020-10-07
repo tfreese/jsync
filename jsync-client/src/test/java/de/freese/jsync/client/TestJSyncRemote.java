@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -35,7 +34,7 @@ import de.freese.jsync.spring.server.JsyncServerApplication;
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
-@Disabled("Tests sind alleine lauffähig, aber im Verbund mit anderen manchmal nicht")
+// @Disabled("Tests sind alleine lauffähig, aber im Verbund mit anderen manchmal nicht")
 class TestJSyncRemote extends AbstractJSyncTest
 {
     /**

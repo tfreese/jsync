@@ -95,6 +95,16 @@ public class SocketChannelJsyncResponse implements JsyncResponse, RemoteSupport
         return this.serializer;
     }
 
+    // /**
+    // * @see de.freese.jsync.nio.filesystem.RemoteSupport#getSerializerDataBuffer()
+    // */
+    // @Override
+    // public Serializer<DataBuffer> getSerializerDataBuffer()
+    // {
+    // // TODO Auto-generated method stub
+    // return null;
+    // }
+
     /**
      * @see de.freese.jsync.remote.api.JsyncResponse#getStatus()
      */

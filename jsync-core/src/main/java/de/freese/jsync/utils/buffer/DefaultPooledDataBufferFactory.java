@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
@@ -19,14 +20,53 @@ import org.springframework.util.Assert;
 public class DefaultPooledDataBufferFactory implements DataBufferFactory
 {
     /**
+     * ThreadSafe Singleton-Pattern.
+     *
+     * @author Thomas Freese
+     */
+    private static final class DefaultPooledDataBufferFactoryHolder
+    {
+        /**
+         *
+         */
+        private static final DefaultPooledDataBufferFactory INSTANCE = new DefaultPooledDataBufferFactory(true);
+
+        /**
+         * Erstellt ein neues {@link DefaultPooledDataBufferFactoryHolder} Object.
+         */
+        private DefaultPooledDataBufferFactoryHolder()
+        {
+            super();
+        }
+    }
+
+    /**
      *
      */
     private static final int DEFAULT_INITIAL_CAPACITY = 1024;
 
     /**
+    *
+    */
+    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(0);
+
+    /**
+     * @return {@link DefaultPooledDataBufferFactory}
+     */
+    public static DefaultPooledDataBufferFactory getInstance()
+    {
+        return DefaultPooledDataBufferFactoryHolder.INSTANCE;
+    }
+
+    /**
      *
      */
     private final int defaultInitialCapacity;
+
+    /**
+    *
+    */
+    private final String id;
 
     /**
      *
@@ -75,6 +115,8 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
 
         this.preferDirect = preferDirect;
         this.defaultInitialCapacity = defaultInitialCapacity;
+
+        this.id = "factory-" + ID_GENERATOR.incrementAndGet();
     }
 
     /**
@@ -114,12 +156,23 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
                 dataBuffer = new DefaultPooledDataBuffer(this, byteBuffer);
             }
 
+            dataBuffer.readPosition(0);
+            dataBuffer.writePosition(0);
+
             return dataBuffer;
         }
         finally
         {
             getLock().unlock();
         }
+    }
+
+    /**
+     * @return String
+     */
+    String getId()
+    {
+        return this.id;
     }
 
     /**
@@ -186,8 +239,6 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
         ByteBuffer slice = byteBuffer.slice();
 
         DataBuffer dataBuffer = get(slice.limit());
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
 
         dataBuffer.write(slice);
         dataBuffer.writePosition(byteBuffer.remaining());

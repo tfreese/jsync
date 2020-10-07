@@ -4,6 +4,7 @@ package de.freese.jsync.nio.filesystem;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NetworkChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -14,29 +15,19 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * @author Thomas Freese
- * @param <T> Type
  */
-public class NoCloseWritableByteChannel<T extends NetworkChannel> implements WritableByteChannel, RemoteSupport
+public class NoCloseWritableByteChannel implements WritableByteChannel, RemoteSupport
 {
-    /**
-    *
-    */
-    private final ChannelReader channelReader;
 
     /**
       *
       */
-    private final Consumer<T> channelReleaser;
+    private final Consumer<SocketChannel> channelReleaser;
 
     /**
     *
     */
-    private final ChannelWriter channelWriter;
-
-    /**
-    *
-    */
-    private final T delegate;
+    private final SocketChannel delegate;
 
     /**
     *
@@ -47,17 +38,13 @@ public class NoCloseWritableByteChannel<T extends NetworkChannel> implements Wri
      * Erstellt ein neues {@link NoCloseWritableByteChannel} Object.
      *
      * @param delegate {@link NetworkChannel}
-     * @param channelWriter {@link ChannelWriter}
-     * @param channelReader {@link ChannelReader}
      * @param channelReleaser {@link Consumer}
      */
-    public NoCloseWritableByteChannel(final T delegate, final ChannelWriter channelWriter, final ChannelReader channelReader, final Consumer<T> channelReleaser)
+    public NoCloseWritableByteChannel(final SocketChannel delegate, final Consumer<SocketChannel> channelReleaser)
     {
         super();
 
         this.delegate = Objects.requireNonNull(delegate, "delegate required");
-        this.channelWriter = Objects.requireNonNull(channelWriter, "channelWriter required");
-        this.channelReader = Objects.requireNonNull(channelReader, "channelReader required");
         this.channelReleaser = Objects.requireNonNull(channelReleaser, "channelReleaser required");
     }
 
@@ -73,7 +60,7 @@ public class NoCloseWritableByteChannel<T extends NetworkChannel> implements Wri
         try
         {
             // Response auslesen.
-            readResponseHeader(this.channelReader);
+            readResponseHeader(this.delegate);
         }
         catch (IOException ex)
         {
@@ -123,7 +110,7 @@ public class NoCloseWritableByteChannel<T extends NetworkChannel> implements Wri
 
             while (src.hasRemaining())
             {
-                totalWritten += this.channelWriter.write(src);
+                totalWritten += this.delegate.write(src);
             }
 
             return totalWritten;

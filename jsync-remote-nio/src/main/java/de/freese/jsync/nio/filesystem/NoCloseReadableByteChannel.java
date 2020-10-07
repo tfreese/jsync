@@ -3,45 +3,38 @@ package de.freese.jsync.nio.filesystem;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.NetworkChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
  * @author Thomas Freese
- * @param <T> Type
  */
-public class NoCloseReadableByteChannel<T extends NetworkChannel> implements ReadableByteChannel
+public class NoCloseReadableByteChannel implements ReadableByteChannel
 {
+
     /**
      *
      */
-    private final ChannelReader channelReader;
+    private final Consumer<SocketChannel> channelReleaser;
 
     /**
     *
     */
-    private final Consumer<T> channelReleaser;
-
-    /**
-    *
-    */
-    private final T delegate;
+    private final SocketChannel delegate;
 
     /**
      * Erstellt ein neues {@link NoCloseReadableByteChannel} Object.
      *
-     * @param delegate {@link NetworkChannel}
-     * @param channelReader {@link ChannelReader}
+     * @param delegate {@link SocketChannel}
      * @param channelReleaser {@link Consumer}
      */
-    public NoCloseReadableByteChannel(final T delegate, final ChannelReader channelReader, final Consumer<T> channelReleaser)
+    public NoCloseReadableByteChannel(final SocketChannel delegate, final Consumer<SocketChannel> channelReleaser)
     {
         super();
 
         this.delegate = Objects.requireNonNull(delegate, "delegate required");
-        this.channelReader = Objects.requireNonNull(channelReader, "channelReader required");
         this.channelReleaser = Objects.requireNonNull(channelReleaser, "channelReleaser required");
     }
 
@@ -71,7 +64,7 @@ public class NoCloseReadableByteChannel<T extends NetworkChannel> implements Rea
     {
         try
         {
-            return this.channelReader.read(dst);
+            return this.delegate.read(dst);
         }
         catch (IOException ex)
         {
