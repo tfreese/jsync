@@ -7,6 +7,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import org.springframework.core.io.Resource;
 import de.freese.jsync.model.SyncItem;
 
 /**
@@ -56,4 +57,14 @@ public interface FileSystem
      * @return String
      */
     public String getChecksum(String baseDir, String relativeFile, LongConsumer consumerBytesRead);
+
+    /**
+     * Liefert die {@link Resource} zur Datei.
+     *
+     * @param baseDir String
+     * @param relativeFile String
+     * @param sizeOfFile long
+     * @return {@link Resource}
+     */
+    public Resource getResource(String baseDir, final String relativeFile, long sizeOfFile);
 }

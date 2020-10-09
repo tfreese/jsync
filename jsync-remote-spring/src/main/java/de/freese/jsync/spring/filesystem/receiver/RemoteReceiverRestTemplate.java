@@ -28,6 +28,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.WritableResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -372,6 +373,15 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
         String checksum = responseEntity.getBody();
 
         return checksum;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#getResource(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    {
+        throw new UnsupportedOperationException("not implemented");
     }
 
     /**

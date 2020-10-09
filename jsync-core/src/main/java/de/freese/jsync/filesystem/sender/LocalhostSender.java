@@ -14,6 +14,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.SyncItem;
@@ -109,6 +111,27 @@ public class LocalhostSender extends AbstractSender
         String checksum = this.generator.generateChecksum(baseDir, relativeFile, consumerBytesRead);
 
         return checksum;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    {
+        getLogger().debug("get resource: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+
+        Path path = Paths.get(baseDir, relativeFile);
+
+        if (!Files.exists(path))
+        {
+            String message = String.format("file doesn't exist anymore: %s", path);
+            getLogger().warn(message);
+            return null;
+        }
+
+        // return new PathResource(path);
+        return new FileSystemResource(path); // Liefert FileChannel
     }
 
     /**

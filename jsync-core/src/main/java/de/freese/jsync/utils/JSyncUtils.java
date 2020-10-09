@@ -58,7 +58,6 @@ public final class JSyncUtils
     {
             LinkOption.NOFOLLOW_LINKS
     };
-
     /**
      * @see Files#exists(Path, LinkOption...)
      * @see Files#notExists(Path, LinkOption...)
@@ -197,6 +196,14 @@ public final class JSyncUtils
     }
 
     /**
+     * @return String
+     */
+    public static String getOsName()
+    {
+        return System.getProperty("os.name");
+    }
+
+    /**
      * Mit 2 Nachkommastellen.
      *
      * @param value long
@@ -260,6 +267,36 @@ public final class JSyncUtils
         }
 
         return bytes;
+    }
+
+    /**
+     * @return boolean
+     */
+    public static boolean isLinux()
+    {
+        String os = getOsName().toLowerCase();
+
+        return os.contains("linux");
+    }
+
+    /**
+     * @return boolean
+     */
+    public static boolean isUnix()
+    {
+        String os = getOsName().toLowerCase();
+
+        return os.contains("nix") || os.contains("nux") || os.contains("aix");
+    }
+
+    /**
+     * @return boolean
+     */
+    public static boolean isWindows()
+    {
+        String os = getOsName().toLowerCase();
+
+        return os.startsWith("win");
     }
 
     /**

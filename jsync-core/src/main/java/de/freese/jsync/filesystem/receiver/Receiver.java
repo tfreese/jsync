@@ -3,6 +3,7 @@ package de.freese.jsync.filesystem.receiver;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import org.springframework.core.io.WritableResource;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.model.SyncItem;
 
@@ -35,6 +36,12 @@ public interface Receiver extends FileSystem
      */
     @Override
     public WritableByteChannel getChannel(String baseDir, String relativeFile, long sizeOfFile);
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public WritableResource getResource(String baseDir, String relativeFile, long sizeOfFile);
 
     /**
      * Aktualisiert ein {@link SyncItem}.

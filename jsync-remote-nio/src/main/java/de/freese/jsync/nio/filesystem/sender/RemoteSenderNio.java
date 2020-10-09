@@ -7,6 +7,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.filesystem.sender.Sender;
@@ -130,6 +131,15 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
         {
             this.channelPool.release(channel);
         }
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    {
+        throw new UnsupportedOperationException("not implemented");
     }
 
     /**

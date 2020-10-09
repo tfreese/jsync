@@ -159,6 +159,11 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
             dataBuffer.readPosition(0);
             dataBuffer.writePosition(0);
 
+            if (dataBuffer.capacity() < initialCapacity)
+            {
+                dataBuffer.ensureCapacity(initialCapacity);
+            }
+
             return dataBuffer;
         }
         finally

@@ -7,6 +7,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import org.springframework.core.io.WritableResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -166,6 +167,15 @@ public class RemoteReceiverNio extends AbstractReceiver implements RemoteSupport
         {
             this.channelPool.release(channel);
         }
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#getResource(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    {
+        throw new UnsupportedOperationException("not implemented");
     }
 
     /**

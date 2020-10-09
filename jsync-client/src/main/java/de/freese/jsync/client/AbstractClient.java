@@ -3,6 +3,7 @@ package de.freese.jsync.client;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
@@ -12,6 +13,9 @@ import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.WritableResource;
+import org.springframework.core.io.buffer.DataBufferFactory;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -28,6 +32,7 @@ import de.freese.jsync.nio.filesystem.sender.RemoteSenderNio;
 import de.freese.jsync.spring.filesystem.receiver.RemoteReceiverRestTemplate;
 import de.freese.jsync.spring.filesystem.sender.RemoteSenderRestTemplate;
 import de.freese.jsync.utils.JSyncUtils;
+import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -72,6 +77,11 @@ public abstract class AbstractClient implements Client
      *
      */
     private final CopyMode copyMode;
+
+    /**
+     *
+     */
+    private final DataBufferFactory dataBufferFactory = new DefaultPooledDataBufferFactory(true, 1024);
 
     /**
      *
@@ -200,10 +210,116 @@ public abstract class AbstractClient implements Client
         if (CopyMode.CHUNK.equals(this.copyMode))
         {
             copyFileByChunk(syncItem, clientListener);
+            return;
         }
-        else
+        else if (CopyMode.CHANNEL.equals(this.copyMode))
         {
             copyFileByChannel(syncItem, clientListener);
+            return;
+        }
+
+        clientListener.copyProgress(getOptions(), syncItem, 0);
+
+        if (getOptions().isDryRun())
+        {
+            clientListener.copyProgress(getOptions(), syncItem, syncItem.getSize());
+            return;
+        }
+
+        long sizeOfFile = syncItem.getSize();
+        long totalRead = 0;
+        long totalWritten = 0;
+
+        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        buffer.clear();
+
+        Resource resourceSender = getSender().getResource(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
+        WritableResource resourceReceiver = getReceiver().getResource(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile);
+
+        try (ReadableByteChannel readableByteChannel = resourceSender.readableChannel();
+             WritableByteChannel writableByteChannel = resourceReceiver.writableChannel())
+        {
+
+            if (resourceSender.isFile() && resourceReceiver.isFile())
+            {
+                // Lokales Kopieren
+                FileChannel fileChannelSender = (FileChannel) readableByteChannel;
+
+                // original - apparently has trouble copying large files on Windows
+                // fileChannelSender.transferTo(0, fileChannelSender.size(), resourceReceiver.writableChannel());
+
+                long count = sizeOfFile;
+
+                if (JSyncUtils.isWindows())
+                {
+                    // Magic number for Windows: (64Mb - 32Kb)
+                    // Größere Blöcke kann Windows nicht kopieren, sonst gibs Fehler.
+                    long maxWindowsBlockSize = (64 * 1024 * 1024) - (32 * 1024);
+
+                    if (count > maxWindowsBlockSize)
+                    {
+                        count = maxWindowsBlockSize;
+                    }
+                }
+
+                long position = 0;
+
+                while (position < sizeOfFile)
+                {
+                    long transfered = fileChannelSender.transferTo(position, count, writableByteChannel);
+
+                    position += transfered;
+                    count -= transfered;
+
+                    totalWritten = position;
+                    clientListener.copyProgress(getOptions(), syncItem, totalWritten);
+                    getLogger().debug("copyFile: totalWritten={}", totalWritten);
+                }
+            }
+            else
+            {
+                // Remote
+                // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
+                Thread.sleep(1);
+
+                while (totalRead < sizeOfFile)
+                {
+                    totalRead += readableByteChannel.read(buffer);
+                    buffer.flip();
+
+                    while (buffer.hasRemaining())
+                    {
+                        totalWritten += writableByteChannel.write(buffer);
+
+                        clientListener.copyProgress(getOptions(), syncItem, totalWritten);
+                    }
+
+                    buffer.clear();
+
+                    getLogger().debug("copyFile: totalRead={}, totalWritten={}", totalRead, totalWritten);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            clientListener.error(null, ex);
+
+            return;
+        }
+        finally
+        {
+            ByteBufferPool.getInstance().release(buffer);
+        }
+
+        try
+        {
+            // Datei überprüfen.
+            clientListener.validate(getOptions(), syncItem);
+            getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum());
+        }
+        catch (Exception ex)
+        {
+            clientListener.error(null, ex);
         }
     }
 
@@ -213,7 +329,7 @@ public abstract class AbstractClient implements Client
      * @param syncItem {@link SyncItem}
      * @param clientListener {@link ClientListener}
      */
-    protected void copyFileByChannel(final SyncItem syncItem, final ClientListener clientListener)
+    void copyFileByChannel(final SyncItem syncItem, final ClientListener clientListener)
     {
         clientListener.copyProgress(getOptions(), syncItem, 0);
 
@@ -286,7 +402,7 @@ public abstract class AbstractClient implements Client
      * @param syncItem {@link SyncItem}
      * @param clientListener {@link ClientListener}
      */
-    protected void copyFileByChunk(final SyncItem syncItem, final ClientListener clientListener)
+    void copyFileByChunk(final SyncItem syncItem, final ClientListener clientListener)
     {
         clientListener.copyProgress(getOptions(), syncItem, 0);
 

@@ -278,6 +278,15 @@ public class RemoteSenderRestTemplate extends AbstractSender
     }
 
     /**
+     * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    {
+        throw new UnsupportedOperationException("not implemented");
+    }
+
+    /**
      * @return {@link Serializer}<ByteBuffer>
      */
     private Serializer<ByteBuffer> getSerializer()

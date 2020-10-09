@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.WritableResource;
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
@@ -163,6 +165,38 @@ public class LocalhostReceiver extends AbstractReceiver
         String checksum = this.generator.generateChecksum(baseDir, relativeFile, consumerBytesRead);
 
         return checksum;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#getResource(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    {
+        getLogger().info("get resource: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+
+        Path path = Paths.get(baseDir, relativeFile);
+        Path parentPath = path.getParent();
+
+        try
+        {
+            if (Files.notExists(parentPath))
+            {
+                Files.createDirectories(parentPath);
+            }
+
+            if (Files.notExists(path))
+            {
+                Files.createFile(path);
+            }
+
+            // return new PathResource(path);
+            return new FileSystemResource(path); // Liefert FileChannel
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     /**
