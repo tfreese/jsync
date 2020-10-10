@@ -36,7 +36,7 @@ public enum JSyncCommand
     /**
      *
      */
-    SOURCE_READABLE_FILE_CHANNEL,
+    SOURCE_READABLE_RESOURCE,
 
     /**
      *
@@ -76,5 +76,5 @@ public enum JSyncCommand
     /**
      *
      */
-    TARGET_WRITEABLE_FILE_CHANNEL
+    TARGET_WRITEABLE_RESOURCE
 }

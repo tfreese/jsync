@@ -1,12 +1,8 @@
 // Created: 18.11.2018
 package de.freese.jsync.spring.filesystem.sender;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.apache.http.client.HttpClient;
@@ -20,6 +16,9 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -35,10 +34,11 @@ import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.spring.HttpHeaderInterceptor;
 import de.freese.jsync.spring.utils.ByteBufferHttpMessageConverter;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.spring.utils.DataBufferHttpMessageConverter;
+import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * {@link Sender} für Remote-Filesysteme für Spring-REST.
@@ -47,6 +47,11 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
  */
 public class RemoteSenderRestTemplate extends AbstractSender
 {
+    /**
+    *
+    */
+    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+
     /**
      *
      */
@@ -65,7 +70,7 @@ public class RemoteSenderRestTemplate extends AbstractSender
     /**
     *
     */
-    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
 
     /**
      * Erstellt ein neues {@link RemoteSenderRestTemplate} Object.
@@ -122,6 +127,7 @@ public class RemoteSenderRestTemplate extends AbstractSender
                         , new ResourceHttpMessageConverter(true)
                         //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get())
                         , new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.BYTEBUFFER_SIZE))
+                        , new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, this.dataBufferFactory)
                         )
                 ;
         // @formatter:on
@@ -175,78 +181,25 @@ public class RemoteSenderRestTemplate extends AbstractSender
                 .build();
         // @formatter:on
 
-        ByteBuffer byteBufferResponse = null;
+        ResponseEntity<DataBuffer> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), DataBuffer.class);
+
+        DataBuffer bufferResponse = responseEntity.getBody();
+        bufferResponse.readPosition(0);
 
         try
         {
-            ResponseEntity<ByteBuffer> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), ByteBuffer.class);
-            // Resource resource = responseEntity.getBody();
-
-            // InputStream inputStream = resource.getInputStream();
-            // buffer.clear();
-            //
-            // while (inputStream.available() > 0)
-            // {
-            // buffer.put((byte) inputStream.read());
-            // }
-
-            byteBufferResponse = responseEntity.getBody();
-            byteBufferResponse.flip();
-
             @SuppressWarnings("unused")
-            int itemCount = byteBufferResponse.getInt();
+            int itemCount = getSerializer().readFrom(bufferResponse, int.class);
 
-            while (byteBufferResponse.hasRemaining())
+            while (bufferResponse.readableByteCount() > 0)
             {
-                SyncItem syncItem = getSerializer().readFrom(byteBufferResponse, SyncItem.class);
+                SyncItem syncItem = getSerializer().readFrom(bufferResponse, SyncItem.class);
                 consumerSyncItem.accept(syncItem);
             }
         }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        // catch (IOException ex)
-        // {
-        // throw new UncheckedIOException(ex);
-        // }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
-        }
         finally
         {
-            if (byteBufferResponse != null)
-            {
-                ByteBufferPool.getInstance().release(byteBufferResponse);
-            }
-        }
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String,long)
-     */
-    @Override
-    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/readChannel")
-                .queryParam("baseDir", baseDir)
-                .queryParam("relativeFile", relativeFile)
-                .queryParam("sizeOfFile", sizeOfFile)
-                .build();
-        // @formatter:on
-
-        ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), Resource.class);
-        Resource resource = responseEntity.getBody();
-
-        try
-        {
-            return Channels.newChannel(resource.getInputStream());
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
+            DataBufferUtils.release(bufferResponse);
         }
     }
 
@@ -283,13 +236,24 @@ public class RemoteSenderRestTemplate extends AbstractSender
     @Override
     public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        throw new UnsupportedOperationException("not implemented");
+        // @formatter:off
+        UriComponents builder = UriComponentsBuilder.fromPath("/resourceReadable")
+                .queryParam("baseDir", baseDir)
+                .queryParam("relativeFile", relativeFile)
+                .queryParam("sizeOfFile", sizeOfFile)
+                .build();
+        // @formatter:on
+
+        ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), Resource.class);
+        Resource resource = responseEntity.getBody();
+
+        return resource;
     }
 
     /**
-     * @return {@link Serializer}<ByteBuffer>
+     * @return {@link Serializer}<DataBuffer>
      */
-    private Serializer<ByteBuffer> getSerializer()
+    private Serializer<DataBuffer> getSerializer()
     {
         return this.serializer;
     }
@@ -298,7 +262,7 @@ public class RemoteSenderRestTemplate extends AbstractSender
      * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
+    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
     {
         // @formatter:off
         UriComponents builder = UriComponentsBuilder.fromPath("/readChunkBuffer")
@@ -316,36 +280,16 @@ public class RemoteSenderRestTemplate extends AbstractSender
             ;
         // @formatter:on
 
-        ByteBuffer byteBufferResponse = null;
-        buffer.clear();
+        ResponseEntity<DataBuffer> responseEntity = rt.getForEntity(builder.toUriString(), DataBuffer.class);
+
+        DataBuffer bufferResponse = responseEntity.getBody();
+        bufferResponse.readPosition(0);
 
         try
         {
-            ResponseEntity<ByteBuffer> responseEntity = rt.getForEntity(builder.toUriString(), ByteBuffer.class);
-            byteBufferResponse = responseEntity.getBody();
 
-            byteBufferResponse.flip();
-            buffer.put(byteBufferResponse);
-
-            // ResponseEntity<Resource> responseEntity = rt.getForEntity(builder.toUriString(), Resource.class);
-            // Resource resource = responseEntity.getBody();
-            //
-            // InputStream inputStream = resource.getInputStream();
-            // byte[] bytes = new byte[8192];
-            // int bytesRead = 0;
-            //
-            // while ((bytesRead = inputStream.read(bytes)) != -1)
-            // {
-            // buffer.put(bytes, 0, bytesRead);
-            // }
-
-            // InputStream inputStream = resource.getInputStream();
-            // buffer.clear();
-            //
-            // while (inputStream.available() > 0)
-            // {
-            // buffer.put((byte) inputStream.read());
-            // }
+            byteBuffer.clear();
+            byteBuffer.put(bufferResponse.asByteBuffer(0, (int) sizeOfChunk));
         }
         catch (RuntimeException rex)
         {
@@ -358,13 +302,6 @@ public class RemoteSenderRestTemplate extends AbstractSender
         catch (Exception ex)
         {
             throw new RuntimeException(ex);
-        }
-        finally
-        {
-            if (byteBufferResponse != null)
-            {
-                ByteBufferPool.getInstance().release(byteBufferResponse);
-            }
         }
 
         // final ResponseExtractor responseExtractor =

@@ -151,6 +151,7 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
 
             if (dataBuffer == null)
             {
+                // System.err.println("create new buffer");
                 ByteBuffer byteBuffer = this.preferDirect ? ByteBuffer.allocateDirect(initialCapacity) : ByteBuffer.allocate(initialCapacity);
 
                 dataBuffer = new DefaultPooledDataBuffer(this, byteBuffer);

@@ -7,7 +7,6 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -72,35 +71,6 @@ public class LocalhostSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#getChannel(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public ReadableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        getLogger().debug("get readable channel: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
-
-        Path path = Paths.get(baseDir, relativeFile);
-
-        if (!Files.exists(path))
-        {
-            String message = String.format("file doesn't exist anymore: %s", path);
-            getLogger().warn(message);
-            return null;
-        }
-
-        // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-
-        try
-        {
-            return Files.newByteChannel(path, StandardOpenOption.READ);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
@@ -129,6 +99,9 @@ public class LocalhostSender extends AbstractSender
             getLogger().warn(message);
             return null;
         }
+
+        // Files.newByteChannel(path, StandardOpenOption.READ);
+        // FileChannel.open(path, , StandardOpenOption.READ);
 
         // return new PathResource(path);
         return new FileSystemResource(path); // Liefert FileChannel

@@ -2,9 +2,6 @@
 package de.freese.jsync.filesystem;
 
 import java.net.URI;
-import java.nio.channels.Channel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.Resource;
@@ -35,18 +32,6 @@ public interface FileSystem
      * @param consumerSyncItem {@link Consumer}
      */
     public void generateSyncItems(String baseDir, boolean followSymLinks, Consumer<SyncItem> consumerSyncItem);
-
-    /**
-     * Liefert den Channel zur Datei.
-     *
-     * @param baseDir String
-     * @param relativeFile String
-     * @param sizeOfFile long
-     * @return {@link Channel}
-     * @see ReadableByteChannel
-     * @see WritableByteChannel
-     */
-    public Channel getChannel(String baseDir, final String relativeFile, long sizeOfFile);
 
     /**
      * Liefert die Prüfsumme einer Datei.<br>

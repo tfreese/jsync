@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.WritableResource;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -313,178 +315,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     }
 
     /**
-     * Die Daten werden zum Server gesendet.
-     *
-     * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
-     * @param receiver {@link Receiver}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void fileChannel(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
-    {
-        String baseDir = getSerializer().readFrom(buffer, String.class);
-        String relativeFile = getSerializer().readFrom(buffer, String.class);
-        long sizeOfFile = buffer.getLong();
-
-        Exception exception = null;
-        WritableByteChannel outChannel = null;
-        ReadableByteChannel inChannel = null;
-
-        try
-        {
-            inChannel = (ReadableByteChannel) selectionKey.channel();
-            outChannel = receiver.getChannel(baseDir, relativeFile, sizeOfFile);
-        }
-        catch (Exception ex)
-        {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
-
-            try
-            {
-                // Exception senden.
-                Exception ex = exception;
-                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        }
-        else
-        {
-            try
-            {
-                @SuppressWarnings("unused")
-                long totalRead = 0;
-                long totalWritten = 0;
-
-                while (totalWritten < sizeOfFile)
-                {
-                    buffer.clear();
-
-                    totalRead += inChannel.read(buffer);
-                    buffer.flip();
-
-                    while (buffer.hasRemaining())
-                    {
-                        totalWritten += outChannel.write(buffer);
-
-                        getLogger().debug("WritableByteChannel: sizeOfFile={}, totalWritten={}", sizeOfFile, totalWritten);
-                    }
-                }
-
-                if (outChannel instanceof FileChannel)
-                {
-                    ((FileChannel) outChannel).force(false);
-                }
-
-                // JsyncServerResponse.ok(buffer).write(selectionKey);
-                buffer.clear();
-                buffer.putInt(RemoteUtils.STATUS_OK); // Status
-                buffer.putLong(sizeOfFile); // Content-Length
-
-                buffer.flip();
-                writeBuffer(selectionKey, buffer);
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-            finally
-            {
-                outChannel.close();
-            }
-        }
-    }
-
-    /**
-     * Die Daten werden zum Client gesendet.
-     *
-     * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
-     * @param sender {@link Sender}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void fileChannel(final SelectionKey selectionKey, final ByteBuffer buffer, final Sender sender) throws Exception
-    {
-        String baseDir = getSerializer().readFrom(buffer, String.class);
-        String relativeFile = getSerializer().readFrom(buffer, String.class);
-        long sizeOfFile = buffer.getLong();
-
-        Exception exception = null;
-        WritableByteChannel outChannel = null;
-        ReadableByteChannel inChannel = null;
-
-        try
-        {
-            outChannel = (WritableByteChannel) selectionKey.channel();
-            inChannel = sender.getChannel(baseDir, relativeFile, sizeOfFile);
-        }
-        catch (Exception ex)
-        {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
-
-            try
-            {
-                // Exception senden.
-                Exception ex = exception;
-                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        }
-        else
-        {
-            try
-            {
-                // Response senden
-                buffer.clear();
-                buffer.putInt(RemoteUtils.STATUS_OK); // Status
-                buffer.putLong(sizeOfFile); // Content-Length
-
-                @SuppressWarnings("unused")
-                long totalWritten = 0;
-                long totalRead = 0;
-
-                while (totalRead < sizeOfFile)
-                {
-                    totalRead += inChannel.read(buffer);
-                    buffer.flip();
-
-                    while (buffer.hasRemaining())
-                    {
-                        totalWritten += outChannel.write(buffer);
-
-                        getLogger().debug("ReadableByteChannel: sizeOfFile={}, totalRead={}", sizeOfFile, totalRead);
-                    }
-
-                    buffer.clear();
-                }
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-            finally
-            {
-                inChannel.close();
-            }
-        }
-    }
-
-    /**
      * @return {@link Logger}
      */
     protected Logger getLogger()
@@ -578,8 +408,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     readChunk(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
                     break;
 
-                case SOURCE_READABLE_FILE_CHANNEL:
-                    fileChannel(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                case SOURCE_READABLE_RESOURCE:
+                    resourceReadable(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
                     break;
 
                 case TARGET_CHECKSUM:
@@ -610,8 +440,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     validate(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
-                case TARGET_WRITEABLE_FILE_CHANNEL:
-                    fileChannel(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                case TARGET_WRITEABLE_RESOURCE:
+                    resourceWritable(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 default:
@@ -701,6 +531,170 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
 
         ByteBufferPool.getInstance().release(bufferChunk);
+    }
+
+    /**
+     * Die Daten werden zum Client gesendet.
+     *
+     * @param selectionKey {@link SelectionKey}
+     * @param buffer {@link ByteBuffer}
+     * @param sender {@link Sender}
+     * @throws Exception Falls was schief geht.
+     */
+    protected void resourceReadable(final SelectionKey selectionKey, final ByteBuffer buffer, final Sender sender) throws Exception
+    {
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        String relativeFile = getSerializer().readFrom(buffer, String.class);
+        long sizeOfFile = buffer.getLong();
+
+        Exception exception = null;
+        WritableByteChannel outChannel = null;
+        Resource resourceSender = null;
+
+        try
+        {
+            outChannel = (WritableByteChannel) selectionKey.channel();
+            resourceSender = sender.getResource(baseDir, relativeFile, sizeOfFile);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
+            {
+                // Exception senden.
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try (ReadableByteChannel inChannel = resourceSender.readableChannel())
+            {
+                // Response senden
+                buffer.clear();
+                buffer.putInt(RemoteUtils.STATUS_OK); // Status
+                buffer.putLong(sizeOfFile); // Content-Length
+
+                @SuppressWarnings("unused")
+                long totalWritten = 0;
+                long totalRead = 0;
+
+                while (totalRead < sizeOfFile)
+                {
+                    totalRead += inChannel.read(buffer);
+                    buffer.flip();
+
+                    while (buffer.hasRemaining())
+                    {
+                        totalWritten += outChannel.write(buffer);
+
+                        getLogger().debug("ReadableByteChannel: sizeOfFile={}, totalRead={}", sizeOfFile, totalRead);
+                    }
+
+                    buffer.clear();
+                }
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+    }
+
+    /**
+     * Die Daten werden zum Server gesendet.
+     *
+     * @param selectionKey {@link SelectionKey}
+     * @param buffer {@link ByteBuffer}
+     * @param receiver {@link Receiver}
+     * @throws Exception Falls was schief geht.
+     */
+    protected void resourceWritable(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception
+    {
+        String baseDir = getSerializer().readFrom(buffer, String.class);
+        String relativeFile = getSerializer().readFrom(buffer, String.class);
+        long sizeOfFile = buffer.getLong();
+
+        Exception exception = null;
+        WritableResource resourceReceiver = null;
+        ReadableByteChannel inChannel = null;
+
+        try
+        {
+            inChannel = (ReadableByteChannel) selectionKey.channel();
+            resourceReceiver = receiver.getResource(baseDir, relativeFile, sizeOfFile);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
+            {
+                // Exception senden.
+                Exception ex = exception;
+                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try (WritableByteChannel outChannel = resourceReceiver.writableChannel())
+            {
+                @SuppressWarnings("unused")
+                long totalRead = 0;
+                long totalWritten = 0;
+
+                while (totalWritten < sizeOfFile)
+                {
+                    buffer.clear();
+
+                    totalRead += inChannel.read(buffer);
+                    buffer.flip();
+
+                    while (buffer.hasRemaining())
+                    {
+                        totalWritten += outChannel.write(buffer);
+
+                        getLogger().debug("WritableByteChannel: sizeOfFile={}, totalWritten={}", sizeOfFile, totalWritten);
+                    }
+                }
+
+                if (outChannel instanceof FileChannel)
+                {
+                    ((FileChannel) outChannel).force(false);
+                }
+
+                // JsyncServerResponse.ok(buffer).write(selectionKey);
+                buffer.clear();
+                buffer.putInt(RemoteUtils.STATUS_OK); // Status
+                buffer.putLong(sizeOfFile); // Content-Length
+
+                buffer.flip();
+                writeBuffer(selectionKey, buffer);
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
     }
 
     /**

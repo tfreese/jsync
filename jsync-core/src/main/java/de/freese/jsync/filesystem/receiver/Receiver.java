@@ -2,7 +2,6 @@
 package de.freese.jsync.filesystem.receiver;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
 import org.springframework.core.io.WritableResource;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.model.SyncItem;
@@ -30,12 +29,6 @@ public interface Receiver extends FileSystem
      * @param followSymLinks boolean
      */
     public void delete(String baseDir, String relativePath, boolean followSymLinks);
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public WritableByteChannel getChannel(String baseDir, String relativeFile, long sizeOfFile);
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)

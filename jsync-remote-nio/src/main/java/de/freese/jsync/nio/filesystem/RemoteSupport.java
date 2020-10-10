@@ -104,8 +104,8 @@ public interface RemoteSupport
     // }
     // finally
     // {
-    // // DataBufferUtils.release(buffer);
-    // ((PooledDataBuffer) buffer).release();
+    // DataBufferUtils.release(buffer);
+    // //((PooledDataBuffer) buffer).release();
     // }
     // }
 
@@ -334,7 +334,7 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            getSerializer().writeTo(buffer, JSyncCommand.SOURCE_READABLE_FILE_CHANNEL);
+            getSerializer().writeTo(buffer, JSyncCommand.SOURCE_READABLE_RESOURCE);
             getSerializer().writeTo(buffer, baseDir);
             getSerializer().writeTo(buffer, relativeFile);
             buffer.putLong(sizeOfFile);
@@ -391,7 +391,7 @@ public interface RemoteSupport
         try
         {
             buffer.clear();
-            getSerializer().writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_FILE_CHANNEL);
+            getSerializer().writeTo(buffer, JSyncCommand.TARGET_WRITEABLE_RESOURCE);
             getSerializer().writeTo(buffer, baseDir);
             getSerializer().writeTo(buffer, relativeFile);
             buffer.putLong(sizeOfFile);

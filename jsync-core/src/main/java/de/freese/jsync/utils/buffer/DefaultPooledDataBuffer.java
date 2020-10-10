@@ -20,7 +20,7 @@ import org.springframework.util.ObjectUtils;
  * @author Thomas Freese
  * @see org.springframework.core.io.buffer.DefaultDataBuffer
  */
-public class DefaultPooledDataBuffer implements DataBuffer, PooledDataBuffer
+public class DefaultPooledDataBuffer implements PooledDataBuffer
 {
     /**
      * @author Thomas Freese
@@ -28,12 +28,43 @@ public class DefaultPooledDataBuffer implements DataBuffer, PooledDataBuffer
     private class DefaultDataBufferInputStream extends InputStream
     {
         /**
+         *
+         */
+        private final boolean releaseOnClose;
+
+        /**
+         * Erstellt ein neues {@link DefaultDataBufferInputStream} Object.
+         *
+         * @param releaseOnClose boolean
+         */
+        private DefaultDataBufferInputStream(final boolean releaseOnClose)
+        {
+            super();
+
+            this.releaseOnClose = releaseOnClose;
+        }
+
+        /**
          * @see java.io.InputStream#available()
          */
         @Override
         public int available()
         {
             return readableByteCount();
+        }
+
+        /**
+         * @see java.io.InputStream#close()
+         */
+        @Override
+        public void close() throws IOException
+        {
+            if (this.releaseOnClose)
+            {
+                release();
+            }
+
+            super.close();
         }
 
         /**
@@ -229,7 +260,7 @@ public class DefaultPooledDataBuffer implements DataBuffer, PooledDataBuffer
     @Override
     public InputStream asInputStream()
     {
-        return new DefaultDataBufferInputStream();
+        return asInputStream(false);
     }
 
     /**
@@ -238,7 +269,7 @@ public class DefaultPooledDataBuffer implements DataBuffer, PooledDataBuffer
     @Override
     public InputStream asInputStream(final boolean releaseOnClose)
     {
-        return new DefaultDataBufferInputStream();
+        return new DefaultDataBufferInputStream(releaseOnClose);
     }
 
     /**

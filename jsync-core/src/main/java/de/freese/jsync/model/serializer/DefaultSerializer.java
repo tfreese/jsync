@@ -15,7 +15,9 @@ import de.freese.jsync.model.serializer.objects.BooleanSerializer;
 import de.freese.jsync.model.serializer.objects.CharSequenceSerializer;
 import de.freese.jsync.model.serializer.objects.ExceptionSerializer;
 import de.freese.jsync.model.serializer.objects.GroupSerializer;
+import de.freese.jsync.model.serializer.objects.IntegerSerializer;
 import de.freese.jsync.model.serializer.objects.JSyncCommandSerializer;
+import de.freese.jsync.model.serializer.objects.LongSerializer;
 import de.freese.jsync.model.serializer.objects.ObjectSerializer;
 import de.freese.jsync.model.serializer.objects.OptionsSerializer;
 import de.freese.jsync.model.serializer.objects.StackTraceElementSerializer;
@@ -66,6 +68,12 @@ public final class DefaultSerializer<D> implements Serializer<D>
 
         register(boolean.class, BooleanSerializer.getInstance());
         register(Boolean.class, BooleanSerializer.getInstance());
+
+        register(int.class, IntegerSerializer.getInstance());
+        register(Integer.class, IntegerSerializer.getInstance());
+
+        register(long.class, LongSerializer.getInstance());
+        register(Long.class, LongSerializer.getInstance());
 
         register(JSyncCommand.class, JSyncCommandSerializer.getInstance());
         register(User.class, UserSerializer.getInstance());

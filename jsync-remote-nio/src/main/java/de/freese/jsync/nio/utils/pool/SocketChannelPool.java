@@ -66,13 +66,17 @@ public class SocketChannelPool extends AbstractPool<SocketChannel>
     {
         try
         {
+            // if(object.isOpen())
+            // {
+            //
+            // }
             object.shutdownInput();
             object.shutdownOutput();
             object.close();
         }
         catch (IOException ex)
         {
-            getLogger().error(null, ex);
+            getLogger().warn(ex.getMessage());
         }
     }
 }

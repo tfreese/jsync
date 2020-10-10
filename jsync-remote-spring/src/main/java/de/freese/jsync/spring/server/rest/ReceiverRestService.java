@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +14,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.WritableResource;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,13 +30,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
-import de.freese.jsync.utils.ByteBufferInputStream;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
@@ -49,13 +53,18 @@ public class ReceiverRestService
     /**
     *
     */
+    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+
+    /**
+    *
+    */
     @javax.annotation.Resource
     private Receiver receiver;
 
     /**
     *
     */
-    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
 
     /**
      * Erstellt ein neues {@link ReceiverRestService} Object.
@@ -120,10 +129,10 @@ public class ReceiverRestService
      * @param response {@link ServletResponse}
      * @return {@link ResponseEntity}
      */
-    @GetMapping("/syncItems")
-    public ResponseEntity<Resource> generateSyncItems(@RequestParam("baseDir") final String baseDir,
-                                                      @RequestParam("followSymLinks") final boolean followSymLinks, final ServletRequest request,
-                                                      final ServletResponse response)
+    @GetMapping(path = "/syncItems", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<DataBuffer> generateSyncItems(@RequestParam("baseDir") final String baseDir,
+                                                        @RequestParam("followSymLinks") final boolean followSymLinks, final ServletRequest request,
+                                                        final ServletResponse response)
     {
         List<SyncItem> syncItems = new ArrayList<>(128);
 
@@ -133,32 +142,22 @@ public class ReceiverRestService
             syncItems.add(syncItem);
         });
 
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        DataBuffer buffer = this.dataBufferFactory.allocateBuffer();
+        buffer.readPosition(0);
+        buffer.writePosition(0);
 
-        try
+        getSerializer().writeTo(buffer, syncItems.size());
+
+        for (SyncItem syncItem : syncItems)
         {
-            buffer.clear();
-            buffer.putInt(syncItems.size());
-
-            for (SyncItem syncItem : syncItems)
-            {
-                getSerializer().writeTo(buffer, syncItem);
-            }
-
-            buffer.flip();
-
-            Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-            ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
-
-            return responseEntity;
+            getSerializer().writeTo(buffer, syncItem);
         }
-        finally
-        {
-            ByteBufferPool.getInstance().release(buffer);
-        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
+
+        return responseEntity;
     }
 
     /**
@@ -188,47 +187,11 @@ public class ReceiverRestService
     }
 
     /**
-     * @return {@link Serializer}<ByteBuffer>
+     * @return {@link Serializer}<DataBuffer>
      */
-    private Serializer<ByteBuffer> getSerializer()
+    private Serializer<DataBuffer> getSerializer()
     {
         return this.serializer;
-    }
-
-    /**
-     * @param baseDir String
-     * @param syncItemData {@link ByteBuffer}
-     * @return {@link ResponseEntity}
-     */
-    @PostMapping(path = "/update", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<String> update(@RequestParam("baseDir") final String baseDir, @RequestBody final ByteBuffer syncItemData)
-    {
-        syncItemData.flip();
-
-        SyncItem syncItem = getSerializer().readFrom(syncItemData, SyncItem.class);
-
-        this.receiver.update(baseDir, syncItem);
-
-        return ResponseEntity.ok("OK");
-    }
-
-    /**
-     * @param baseDir String
-     * @param withChecksum boolean
-     * @param syncItemData {@link ByteBuffer}
-     * @return {@link ResponseEntity}
-     */
-    @PostMapping(path = "/validate", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<String> validate(@RequestParam("baseDir") final String baseDir, @RequestParam("withChecksum") final boolean withChecksum,
-                                           @RequestBody final ByteBuffer syncItemData)
-    {
-        syncItemData.flip();
-
-        SyncItem syncItem = getSerializer().readFrom(syncItemData, SyncItem.class);
-
-        this.receiver.validateFile(baseDir, syncItem, withChecksum);
-
-        return ResponseEntity.ok("OK");
     }
 
     /**
@@ -238,28 +201,34 @@ public class ReceiverRestService
      * @param resource {@link Resource}
      * @return {@link ResponseEntity}
      */
-    @PostMapping(path = "/writeChannel", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<String> writeChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                               @RequestParam("sizeOfFile") final long sizeOfFile, @RequestBody final Resource resource)
+    @PostMapping(path = "/resourceWritable", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> resourceWritable(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                   @RequestParam("sizeOfFile") final long sizeOfFile, @RequestBody final Resource resource)
     {
-        WritableByteChannel channel = this.receiver.getChannel(baseDir, relativeFile, sizeOfFile);
+        WritableResource writableResource = this.receiver.getResource(baseDir, relativeFile, sizeOfFile);
 
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        DataBuffer buffer = this.dataBufferFactory.allocateBuffer((int) Math.min(sizeOfFile, Options.BYTEBUFFER_SIZE));
+        buffer.readPosition(0);
+        buffer.writePosition(0);
 
-        try
+        try (ReadableByteChannel readableByteChannel = resource.readableChannel();
+             WritableByteChannel writableByteChannel = writableResource.writableChannel())
         {
-            InputStream inputStream = resource.getInputStream();
+            long totalRead = 0;
 
-            byte[] bytes = new byte[8192];
-            int bytesRead = 0;
-
-            while ((bytesRead = inputStream.read(bytes)) != -1)
+            while (totalRead < sizeOfFile)
             {
-                buffer.clear();
-                buffer.put(bytes, 0, bytesRead);
-                buffer.flip();
+                int bytesRead = readableByteChannel.read(buffer.asByteBuffer(0, buffer.capacity()));
+                totalRead += bytesRead;
 
-                channel.write(buffer);
+                buffer.readPosition(0);
+                buffer.writePosition(bytesRead);
+
+                while (buffer.readableByteCount() > 0)
+                {
+                    int bytesWritten = writableByteChannel.write(buffer.asByteBuffer());
+                    buffer.readPosition(buffer.readPosition() + bytesWritten);
+                }
             }
 
             return ResponseEntity.ok("OK");
@@ -270,7 +239,57 @@ public class ReceiverRestService
         }
         finally
         {
-            ByteBufferPool.getInstance().release(buffer);
+            DataBufferUtils.release(buffer);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param syncItemData {@link DataBuffer}
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping(path = "/update", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> update(@RequestParam("baseDir") final String baseDir, @RequestBody final DataBuffer syncItemData)
+    {
+        try
+        {
+            syncItemData.readPosition(0);
+
+            SyncItem syncItem = getSerializer().readFrom(syncItemData, SyncItem.class);
+
+            this.receiver.update(baseDir, syncItem);
+
+            return ResponseEntity.ok("OK");
+        }
+        finally
+        {
+            DataBufferUtils.release(syncItemData);
+        }
+    }
+
+    /**
+     * @param baseDir String
+     * @param withChecksum boolean
+     * @param syncItemData {@link DataBuffer}
+     * @return {@link ResponseEntity}
+     */
+    @PostMapping(path = "/validate", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> validate(@RequestParam("baseDir") final String baseDir, @RequestParam("withChecksum") final boolean withChecksum,
+                                           @RequestBody final DataBuffer syncItemData)
+    {
+        try
+        {
+            syncItemData.readPosition(0);
+
+            SyncItem syncItem = getSerializer().readFrom(syncItemData, SyncItem.class);
+
+            this.receiver.validateFile(baseDir, syncItem, withChecksum);
+
+            return ResponseEntity.ok("OK");
+        }
+        finally
+        {
+            DataBufferUtils.release(syncItemData);
         }
     }
 
@@ -279,23 +298,27 @@ public class ReceiverRestService
      * @param relativeFile String
      * @param position long
      * @param sizeOfChunk long
-     * @param chunk {@link ByteBuffer}
+     * @param chunk {@link DataBuffer}
      * @return {@link ResponseEntity}
      */
     @PostMapping(path = "/writeChunkBuffer", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<String> writeChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
                                                    @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk,
-                                                   @RequestBody final ByteBuffer chunk)
+                                                   @RequestBody final DataBuffer chunk)
     {
         try
         {
-            this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, chunk);
+            chunk.readPosition(0);
+
+            ByteBuffer byteBuffer = chunk.asByteBuffer(0, (int) sizeOfChunk);
+
+            this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
 
             return ResponseEntity.ok("OK");
         }
         finally
         {
-            ByteBufferPool.getInstance().release(chunk);
+            DataBufferUtils.release(chunk);
         }
     }
 
@@ -312,21 +335,24 @@ public class ReceiverRestService
                                                    @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk,
                                                    @RequestBody final Resource resource)
     {
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
-        buffer.clear();
+        DataBuffer buffer = this.dataBufferFactory.allocateBuffer();
+        buffer.readPosition(0);
+        buffer.writePosition(0);
 
         try
         {
             InputStream inputStream = resource.getInputStream();
-            byte[] bytes = new byte[8192];
+            byte[] bytes = new byte[Options.BUFFER_SIZE];
             int bytesRead = 0;
 
             while ((bytesRead = inputStream.read(bytes)) != -1)
             {
-                buffer.put(bytes, 0, bytesRead);
+                buffer.write(bytes, 0, bytesRead);
             }
 
-            this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, buffer);
+            ByteBuffer byteBuffer = buffer.asByteBuffer(0, (int) sizeOfChunk);
+
+            this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
 
             return ResponseEntity.ok("OK");
         }
@@ -336,7 +362,7 @@ public class ReceiverRestService
         }
         finally
         {
-            ByteBufferPool.getInstance().release(buffer);
+            DataBufferUtils.release(buffer);
         }
     }
 }

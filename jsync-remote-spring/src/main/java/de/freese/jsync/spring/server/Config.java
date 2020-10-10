@@ -14,6 +14,8 @@ import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.spring.utils.ByteBufferHttpMessageConverter;
+import de.freese.jsync.spring.utils.DataBufferHttpMessageConverter;
+import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
@@ -42,6 +44,7 @@ public class Config implements WebMvcConfigurer// , WebServerFactoryCustomizer<T
     {
         // converters.add(new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get()));
         converters.add(new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.BYTEBUFFER_SIZE)));
+        converters.add(new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, DefaultPooledDataBufferFactory.getInstance()));
     }
 
     // /**

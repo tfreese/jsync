@@ -4,11 +4,12 @@ package de.freese.jsync.netty.server.handler;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.WritableResource;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -127,8 +128,8 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
                 readChunk(ctx, buf, THREAD_LOCAL_SENDER.get());
                 break;
 
-            case SOURCE_READABLE_FILE_CHANNEL:
-                fileChannel(ctx, buf, THREAD_LOCAL_SENDER.get());
+            case SOURCE_READABLE_RESOURCE:
+                resourceReadable(ctx, buf, THREAD_LOCAL_SENDER.get());
                 break;
 
             case TARGET_CHECKSUM:
@@ -155,8 +156,8 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
                 validate(ctx, buf, THREAD_LOCAL_RECEIVER.get());
                 break;
 
-            case TARGET_WRITEABLE_FILE_CHANNEL:
-                fileChannel(ctx, buf, THREAD_LOCAL_RECEIVER.get());
+            case TARGET_WRITEABLE_RESOURCE:
+                resourceWritable(ctx, buf, THREAD_LOCAL_RECEIVER.get());
                 break;
 
             case TARGET_WRITE_CHUNK:
@@ -416,170 +417,6 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
     }
 
     /**
-     * Die Daten werden zum Server gesendet.
-     *
-     * @param ctx {@link ChannelHandlerContext}
-     * @param buf {@link ByteBuf}
-     * @param receiver {@link Receiver}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void fileChannel(final ChannelHandlerContext ctx, final ByteBuf buf, final Receiver receiver) throws Exception
-    {
-        String baseDir = getSerializer().readFrom(buf, String.class);
-        String relativeFile = getSerializer().readFrom(buf, String.class);
-        long sizeOfFile = buf.readLong();
-
-        Exception exception = null;
-        WritableByteChannel outChannel = null;
-        ReadableByteChannel inChannel = null;
-
-        // try
-        // {
-        // inChannel = (ReadableByteChannel) selectionKey.channel();
-        // outChannel = receiver.getChannel(baseDir, relativeFile, sizeOfFile);
-        // }
-        // catch (Exception ex)
-        // {
-        // exception = ex;
-        // }
-        //
-        // if (exception != null)
-        // {
-        // getLogger().error(null, exception);
-        //
-        // try
-        // {
-        // // Exception senden.
-        // Exception ex = exception;
-        // JsyncServerResponse.error(buf).write(ctx, buffer -> getSerializer().writeTo(buffer, ex, Exception.class));
-        // }
-        // catch (IOException ioex)
-        // {
-        // getLogger().error(null, ioex);
-        // }
-        // }
-        // else
-        // {
-        // try
-        // {
-        // @SuppressWarnings("unused")
-        // long totalRead = 0;
-        // long totalWritten = 0;
-        //
-        // while (totalWritten < sizeOfFile)
-        // {
-        // buffer.clear();
-        //
-        // totalRead += inChannel.read(buffer);
-        // buffer.flip();
-        //
-        // while (buffer.hasRemaining())
-        // {
-        // totalWritten += outChannel.write(buffer);
-        //
-        // getLogger().debug("WritableByteChannel: sizeOfFile={}, totalWritten={}", sizeOfFile, totalWritten);
-        // }
-        // }
-        //
-        // if (outChannel instanceof FileChannel)
-        // {
-        // ((FileChannel) outChannel).force(false);
-        // }
-        //
-        // // JsyncServerResponse.ok(buffer).write(selectionKey);
-        // buffer.clear();
-        // buffer.putInt(RemoteUtils.STATUS_OK); // Status
-        // buffer.putLong(sizeOfFile); // Content-Length
-        //
-        // buffer.flip();
-        // writeBuffer(selectionKey, buffer);
-        // }
-        // catch (IOException ioex)
-        // {
-        // getLogger().error(null, ioex);
-        // }
-        // finally
-        // {
-        // outChannel.close();
-        // }
-        // }
-    }
-
-    /**
-     * Die Daten werden zum Client gesendet.
-     *
-     * @param ctx {@link ChannelHandlerContext}
-     * @param buf {@link ByteBuf}
-     * @param sender {@link Sender}
-     * @throws Exception Falls was schief geht.
-     */
-    protected void fileChannel(final ChannelHandlerContext ctx, final ByteBuf buf, final Sender sender) throws Exception
-    {
-        String baseDir = getSerializer().readFrom(buf, String.class);
-        String relativeFile = getSerializer().readFrom(buf, String.class);
-        long sizeOfFile = buf.readLong();
-
-        Exception exception = null;
-        ReadableByteChannel inChannel = null;
-
-        try
-        {
-            inChannel = sender.getChannel(baseDir, relativeFile, sizeOfFile);
-        }
-        catch (Exception ex)
-        {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
-
-            try
-            {
-                // Exception senden.
-                Exception ex = exception;
-                JsyncServerResponse.error(buf).write(ctx, buffer -> getSerializer().writeTo(buffer, ex, Exception.class));
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        }
-        else
-        {
-            try
-            {
-                // Response senden
-                buf.clear();
-                buf.writeInt(RemoteUtils.STATUS_OK); // Status
-                buf.writeLong(sizeOfFile); // Content-Length
-
-                ctx.write(buf.retain());
-                ctx.write(new ChunkedNioStream(inChannel, 1024 * 1024 * 2));
-                ctx.flush();
-
-                // RandomAccessFile raf = new RandomAccessFile(fileName, "r");
-                //
-                // if (ctx.pipeline().get(SslHandler.class) == null)
-                // {
-                // // SSL not enabled - can use zero-copy file transfer.
-                // ctx.write(new DefaultFileRegion(raf.getChannel(), 0, sizeOfFile));
-                // }
-                // else
-                // {
-                // // SSL enabled - cannot use zero-copy file transfer.
-                // ctx.write(new ChunkedFile(raf));
-                // }
-            }
-            finally
-            {
-                inChannel.close();
-            }
-        }
-    }
-
-    /**
      * @return {@link Logger}
      */
     protected Logger getLogger()
@@ -651,6 +488,162 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
         }
 
         ByteBufferPool.getInstance().release(bufferChunk);
+    }
+
+    /**
+     * Die Daten werden zum Client gesendet.
+     *
+     * @param ctx {@link ChannelHandlerContext}
+     * @param buf {@link ByteBuf}
+     * @param sender {@link Sender}
+     * @throws Exception Falls was schief geht.
+     */
+    protected void resourceReadable(final ChannelHandlerContext ctx, final ByteBuf buf, final Sender sender) throws Exception
+    {
+        String baseDir = getSerializer().readFrom(buf, String.class);
+        String relativeFile = getSerializer().readFrom(buf, String.class);
+        long sizeOfFile = buf.readLong();
+
+        Exception exception = null;
+        Resource resourceSender = null;
+
+        try
+        {
+            resourceSender = sender.getResource(baseDir, relativeFile, sizeOfFile);
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        if (exception != null)
+        {
+            getLogger().error(null, exception);
+
+            try
+            {
+                // Exception senden.
+                Exception ex = exception;
+                JsyncServerResponse.error(buf).write(ctx, buffer -> getSerializer().writeTo(buffer, ex, Exception.class));
+            }
+            catch (IOException ioex)
+            {
+                getLogger().error(null, ioex);
+            }
+        }
+        else
+        {
+            try (ReadableByteChannel inChannel = resourceSender.readableChannel())
+            {
+                // Response senden
+                buf.clear();
+                buf.writeInt(RemoteUtils.STATUS_OK); // Status
+                buf.writeLong(sizeOfFile); // Content-Length
+
+                ctx.write(buf.retain());
+                ctx.write(new ChunkedNioStream(inChannel, 1024 * 1024 * 2));
+                ctx.flush();
+
+                // RandomAccessFile raf = new RandomAccessFile(fileName, "r");
+                //
+                // if (ctx.pipeline().get(SslHandler.class) == null)
+                // {
+                // // SSL not enabled - can use zero-copy file transfer.
+                // ctx.write(new DefaultFileRegion(raf.getChannel(), 0, sizeOfFile));
+                // }
+                // else
+                // {
+                // // SSL enabled - cannot use zero-copy file transfer.
+                // ctx.write(new ChunkedFile(raf));
+                // }
+            }
+        }
+    }
+
+    /**
+     * Die Daten werden zum Server gesendet.
+     *
+     * @param ctx {@link ChannelHandlerContext}
+     * @param buf {@link ByteBuf}
+     * @param receiver {@link Receiver}
+     * @throws Exception Falls was schief geht.
+     */
+    protected void resourceWritable(final ChannelHandlerContext ctx, final ByteBuf buf, final Receiver receiver) throws Exception
+    {
+        String baseDir = getSerializer().readFrom(buf, String.class);
+        String relativeFile = getSerializer().readFrom(buf, String.class);
+        long sizeOfFile = buf.readLong();
+
+        Exception exception = null;
+        WritableResource resourceReceiver = null;
+        ReadableByteChannel inChannel = null;
+
+        // try
+        // {
+        // inChannel = (ReadableByteChannel) selectionKey.channel();
+        // resourceReceiver = receiver.getResource(baseDir, relativeFile, sizeOfFile);
+        // }
+        // catch (Exception ex)
+        // {
+        // exception = ex;
+        // }
+        //
+        // if (exception != null)
+        // {
+        // getLogger().error(null, exception);
+        //
+        // try
+        // {
+        // // Exception senden.
+        // Exception ex = exception;
+        // JsyncServerResponse.error(buf).write(ctx, buffer -> getSerializer().writeTo(buffer, ex, Exception.class));
+        // }
+        // catch (IOException ioex)
+        // {
+        // getLogger().error(null, ioex);
+        // }
+        // }
+        // else
+        // {
+        // try (WritableByteChannel outChannel = resourceReceiver.writableChannel())
+        // {
+        // @SuppressWarnings("unused")
+        // long totalRead = 0;
+        // long totalWritten = 0;
+        //
+        // while (totalWritten < sizeOfFile)
+        // {
+        // buffer.clear();
+        //
+        // totalRead += inChannel.read(buffer);
+        // buffer.flip();
+        //
+        // while (buffer.hasRemaining())
+        // {
+        // totalWritten += outChannel.write(buffer);
+        //
+        // getLogger().debug("WritableByteChannel: sizeOfFile={}, totalWritten={}", sizeOfFile, totalWritten);
+        // }
+        // }
+        //
+        // if (outChannel instanceof FileChannel)
+        // {
+        // ((FileChannel) outChannel).force(false);
+        // }
+        //
+        // // JsyncServerResponse.ok(buffer).write(selectionKey);
+        // buffer.clear();
+        // buffer.putInt(RemoteUtils.STATUS_OK); // Status
+        // buffer.putLong(sizeOfFile); // Content-Length
+        //
+        // buffer.flip();
+        // writeBuffer(selectionKey, buffer);
+        // }
+        // catch (IOException ioex)
+        // {
+        // getLogger().error(null, ioex);
+        // }
+        // }
     }
 
     /**

@@ -45,22 +45,6 @@ public abstract class AbstractClient implements Client
     /**
      * @author Thomas Freese
      */
-    private enum CopyMode
-    {
-        /**
-         *
-         */
-        CHANNEL,
-
-        /**
-         *
-         */
-        CHUNK;
-    }
-
-    /**
-     * @author Thomas Freese
-     */
     public enum RemoteMode
     {
         /**
@@ -72,11 +56,6 @@ public abstract class AbstractClient implements Client
          */
         SPRING_REST_TEMPLATE,
     }
-
-    /**
-     *
-     */
-    private final CopyMode copyMode;
 
     /**
      *
@@ -158,8 +137,6 @@ public abstract class AbstractClient implements Client
         this.senderPath = JSyncUtils.normalizePath(senderUri);
         this.receiverPath = JSyncUtils.normalizePath(receiverUri);
 
-        this.copyMode = CopyMode.CHANNEL;
-
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
             switch (this.remoteMode)
@@ -207,17 +184,6 @@ public abstract class AbstractClient implements Client
      */
     protected void copyFile(final SyncItem syncItem, final ClientListener clientListener)
     {
-        if (CopyMode.CHUNK.equals(this.copyMode))
-        {
-            copyFileByChunk(syncItem, clientListener);
-            return;
-        }
-        else if (CopyMode.CHANNEL.equals(this.copyMode))
-        {
-            copyFileByChannel(syncItem, clientListener);
-            return;
-        }
-
         clientListener.copyProgress(getOptions(), syncItem, 0);
 
         if (getOptions().isDryRun())
@@ -248,28 +214,29 @@ public abstract class AbstractClient implements Client
                 // original - apparently has trouble copying large files on Windows
                 // fileChannelSender.transferTo(0, fileChannelSender.size(), resourceReceiver.writableChannel());
 
+                // Magic number for Windows: (64Mb - 32Kb)
+                // Größere Blöcke kann Windows nicht kopieren, sonst gibs Fehler.
+                long maxWindowsBlockSize = (64 * 1024 * 1024) - (32 * 1024);
+
                 long count = sizeOfFile;
 
-                if (JSyncUtils.isWindows())
+                if ((count > maxWindowsBlockSize) && JSyncUtils.isWindows())
                 {
-                    // Magic number for Windows: (64Mb - 32Kb)
-                    // Größere Blöcke kann Windows nicht kopieren, sonst gibs Fehler.
-                    long maxWindowsBlockSize = (64 * 1024 * 1024) - (32 * 1024);
-
-                    if (count > maxWindowsBlockSize)
-                    {
-                        count = maxWindowsBlockSize;
-                    }
+                    count = maxWindowsBlockSize;
                 }
 
                 long position = 0;
 
                 while (position < sizeOfFile)
                 {
+                    if ((sizeOfFile - position) < count)
+                    {
+                        count = sizeOfFile - position;
+                    }
+
                     long transfered = fileChannelSender.transferTo(position, count, writableByteChannel);
 
                     position += transfered;
-                    count -= transfered;
 
                     totalWritten = position;
                     clientListener.copyProgress(getOptions(), syncItem, totalWritten);
@@ -280,7 +247,7 @@ public abstract class AbstractClient implements Client
             {
                 // Remote
                 // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
-                Thread.sleep(1);
+                // Thread.sleep(1);
 
                 while (totalRead < sizeOfFile)
                 {
@@ -298,79 +265,6 @@ public abstract class AbstractClient implements Client
 
                     getLogger().debug("copyFile: totalRead={}, totalWritten={}", totalRead, totalWritten);
                 }
-            }
-        }
-        catch (Exception ex)
-        {
-            clientListener.error(null, ex);
-
-            return;
-        }
-        finally
-        {
-            ByteBufferPool.getInstance().release(buffer);
-        }
-
-        try
-        {
-            // Datei überprüfen.
-            clientListener.validate(getOptions(), syncItem);
-            getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum());
-        }
-        catch (Exception ex)
-        {
-            clientListener.error(null, ex);
-        }
-    }
-
-    /**
-     * Kopieren der Dateien von der Quelle in die Senke<br>
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
-     */
-    void copyFileByChannel(final SyncItem syncItem, final ClientListener clientListener)
-    {
-        clientListener.copyProgress(getOptions(), syncItem, 0);
-
-        if (getOptions().isDryRun())
-        {
-            clientListener.copyProgress(getOptions(), syncItem, syncItem.getSize());
-            return;
-        }
-
-        // readableByteChannel = new MonitoringReadableByteChannel(readableByteChannel, monitorRead, fileSize);
-        // writableByteChannel = new MonitoringWritableByteChannel(writableByteChannel, monitorWrite, fileSize);
-        // FileChannel.transferFrom(ReadableByteChannel, position, count);
-        // FileChannel.transferTo(position, count, WritableByteChannel);
-
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
-        buffer.clear();
-
-        long sizeOfFile = syncItem.getSize();
-        long totalRead = 0;
-        long totalWritten = 0;
-
-        try (ReadableByteChannel readableByteChannel = getSender().getChannel(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
-             WritableByteChannel writableByteChannel = getReceiver().getChannel(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile))
-        {
-            // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
-            Thread.sleep(1);
-
-            while (totalRead < sizeOfFile)
-            {
-                totalRead += readableByteChannel.read(buffer);
-                buffer.flip();
-
-                while (buffer.hasRemaining())
-                {
-                    totalWritten += writableByteChannel.write(buffer);
-                    clientListener.copyProgress(getOptions(), syncItem, totalWritten);
-                }
-
-                buffer.clear();
-
-                getLogger().debug("copyFile: totalRead={}, totalWritten={}", totalRead, totalWritten);
             }
         }
         catch (Exception ex)
@@ -436,37 +330,6 @@ public abstract class AbstractClient implements Client
                     ByteBufferPool.getInstance().release(buffer);
                 }
             }
-
-            // long sizeOfChunk = Math.min(sizeOfFile, Options.BUFFER_SIZE);
-            // int numOfChunks = (int) Math.ceil((double) sizeOfFile / sizeOfChunk);
-            //
-            // for (int chunk = 0; chunk < numOfChunks; chunk++)
-            // {
-            // long position = chunk * Options.BUFFER_SIZE;
-            //
-            // // if (chunk > 0)
-            // // {
-            // // position++;
-            // // }
-            //
-            // // Letzter Chunk
-            // if ((position + sizeOfChunk) > syncItem.getSize())
-            // {
-            // sizeOfChunk = syncItem.getSize() - position;
-            // }
-            //
-            // ByteBuffer buffer = ByteBufferPool.getInstance().get();
-            //
-            // try
-            // {
-            // getSender().readChunk(getSenderPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
-            // getReceiver().writeChunk(getReceiverPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
-            // }
-            // finally
-            // {
-            // ByteBufferPool.getInstance().release(buffer);
-            // }
-            // }
         }
         catch (Exception ex)
         {

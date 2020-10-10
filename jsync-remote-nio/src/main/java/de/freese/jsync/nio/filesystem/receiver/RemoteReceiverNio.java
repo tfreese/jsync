@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.WritableResource;
 import org.springframework.core.io.buffer.DataBuffer;
+import de.freese.jsync.filesystem.RemoteReceiverResource;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.model.SyncItem;
@@ -141,17 +142,6 @@ public class RemoteReceiverNio extends AbstractReceiver implements RemoteSupport
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String,long)
-     */
-    @Override
-    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        SocketChannel channel = this.channelPool.get();
-
-        return getWritableChannel(channel, this.channelPool::release, baseDir, relativeFile, sizeOfFile);
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
@@ -175,7 +165,19 @@ public class RemoteReceiverNio extends AbstractReceiver implements RemoteSupport
     @Override
     public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        throw new UnsupportedOperationException("not implemented");
+        SocketChannel channel = this.channelPool.get();
+
+        WritableByteChannel writableByteChannel = getWritableChannel(channel, this.channelPool::release, baseDir, relativeFile, sizeOfFile);
+
+        try
+        {
+            return new RemoteReceiverResource(baseDir + "/" + relativeFile, sizeOfFile, writableByteChannel);
+        }
+        finally
+        {
+            // Channel wird im NoCloseWritableByteChannel freigegeben.
+            // this.channelPool.release(channel);
+        }
     }
 
     /**

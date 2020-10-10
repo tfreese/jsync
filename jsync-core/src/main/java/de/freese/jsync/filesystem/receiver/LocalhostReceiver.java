@@ -6,7 +6,6 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -127,34 +126,6 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#getChannel(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public WritableByteChannel getChannel(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        getLogger().info("get writable channel: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
-
-        Path path = Paths.get(baseDir, relativeFile);
-        Path parentPath = path.getParent();
-
-        try
-        {
-            if (Files.notExists(parentPath))
-            {
-                Files.createDirectories(parentPath);
-            }
-
-            // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            return Files.newByteChannel(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
@@ -189,6 +160,9 @@ public class LocalhostReceiver extends AbstractReceiver
             {
                 Files.createFile(path);
             }
+
+            // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            // Files.newByteChannel(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
             // return new PathResource(path);
             return new FileSystemResource(path); // Liefert FileChannel

@@ -3,8 +3,6 @@ package de.freese.jsync.spring.server.rest;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletRequest;
@@ -13,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,9 +26,8 @@ import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
-import de.freese.jsync.utils.ByteBufferInputStream;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
@@ -43,6 +42,11 @@ public class SenderRestService
     private static final Logger LOGGER = LoggerFactory.getLogger(SenderRestService.class);
 
     /**
+    *
+    */
+    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+
+    /**
      *
      */
     @javax.annotation.Resource
@@ -51,7 +55,7 @@ public class SenderRestService
     /**
     *
     */
-    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
 
     /**
      * Erstellt ein neues {@link SenderRestService} Object.
@@ -95,7 +99,7 @@ public class SenderRestService
     // @PathVariable("followSymLinks") final boolean followSymLinks, final HttpServletRequest request,
     // final HttpServletResponse response)
     @GetMapping(path = "/syncItems", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<ByteBuffer> generateSyncItems(@RequestParam("baseDir") final String baseDir,
+    public ResponseEntity<DataBuffer> generateSyncItems(@RequestParam("baseDir") final String baseDir,
                                                         @RequestParam("followSymLinks") final boolean followSymLinks, final ServletRequest request,
                                                         final ServletResponse response)
     {
@@ -107,36 +111,22 @@ public class SenderRestService
             syncItems.add(syncItem);
         });
 
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        DataBuffer buffer = this.dataBufferFactory.allocateBuffer();
+        buffer.readPosition(0);
+        buffer.writePosition(0);
 
-        try
+        getSerializer().writeTo(buffer, syncItems.size());
+
+        for (SyncItem syncItem : syncItems)
         {
-            buffer.clear();
-            buffer.putInt(syncItems.size());
-
-            for (SyncItem syncItem : syncItems)
-            {
-                getSerializer().writeTo(buffer, syncItem);
-            }
-
-            buffer.flip();
-
-            // byte[] data = new byte[buffer.limit()];
-            // buffer.get(data);
-            // Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
-
-            // response.getOutputStream().write(data);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-            ResponseEntity<ByteBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
-
-            return responseEntity;
+            getSerializer().writeTo(buffer, syncItem);
         }
-        finally
-        {
-            ByteBufferPool.getInstance().release(buffer);
-        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
+
+        return responseEntity;
     }
 
     // @RequestMapping(value = "/image-byte-array", method = RequestMethod.GET)
@@ -189,9 +179,9 @@ public class SenderRestService
     }
 
     /**
-     * @return Serializer<ByteBuffer>
+     * @return Serializer<DataBuffer>
      */
-    private Serializer<ByteBuffer> getSerializer()
+    private Serializer<DataBuffer> getSerializer()
     {
         return this.serializer;
     }
@@ -215,28 +205,6 @@ public class SenderRestService
     /**
      * @param baseDir String
      * @param relativeFile String
-     * @param sizeOfFile long
-     * @return {@link ResponseEntity}
-     */
-    // @GetMapping("/channel/{baseDir}/{relativeFile}/{position}/{size}")
-    @GetMapping("/readChannel")
-    public ResponseEntity<Resource> readChannel(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                @RequestParam("sizeOfFile") final long sizeOfFile)
-    {
-        ReadableByteChannel channel = this.sender.getChannel(baseDir, relativeFile, sizeOfFile);
-
-        Resource resource = new InputStreamResource(Channels.newInputStream(channel));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-        ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
-
-        return responseEntity;
-    }
-
-    /**
-     * @param baseDir String
-     * @param relativeFile String
      * @param position long
      * @param sizeOfChunk long
      * @return {@link ResponseEntity}
@@ -245,27 +213,21 @@ public class SenderRestService
     // public ResponseEntity<Resource> readChunk(@PathVariable("baseDir") final String baseDir, @PathVariable("relativeFile") final String relativeFile,
     // @PathVariable("position") final long position, @PathVariable("size") final long size)
     @GetMapping(path = "/readChunkBuffer", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<ByteBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+    public ResponseEntity<DataBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
                                                       @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
     {
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        DataBuffer buffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
+        buffer.readPosition(0);
+        buffer.writePosition(0);
 
-        try
-        {
-            buffer.clear();
-            this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, buffer);
-            buffer.flip();
+        ByteBuffer byteBuffer = buffer.asByteBuffer(0, (int) sizeOfChunk);
+        this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-            ResponseEntity<ByteBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
 
-            return responseEntity;
-        }
-        finally
-        {
-            ByteBufferPool.getInstance().release(buffer);
-        }
+        return responseEntity;
     }
 
     /**
@@ -279,25 +241,39 @@ public class SenderRestService
     public ResponseEntity<Resource> readChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
                                                     @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
     {
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        DataBuffer buffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
+        buffer.readPosition(0);
+        buffer.writePosition(0);
 
-        try
-        {
-            buffer.clear();
-            this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, buffer);
-            buffer.flip();
+        ByteBuffer byteBuffer = buffer.asByteBuffer(0, (int) sizeOfChunk);
+        this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
 
-            Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
+        Resource resource = new InputStreamResource(buffer.asInputStream(true));
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-            ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+        ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
 
-            return responseEntity;
-        }
-        finally
-        {
-            ByteBufferPool.getInstance().release(buffer);
-        }
+        return responseEntity;
+    }
+
+    /**
+     * @param baseDir String
+     * @param relativeFile String
+     * @param sizeOfFile long
+     * @return {@link ResponseEntity}
+     */
+    // @GetMapping("/channel/{baseDir}/{relativeFile}/{position}/{size}")
+    @GetMapping(path = "/resourceReadable", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<Resource> resourceReadable(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                     @RequestParam("sizeOfFile") final long sizeOfFile)
+    {
+        Resource resource = this.sender.getResource(baseDir, relativeFile, sizeOfFile);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+        ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
+
+        return responseEntity;
     }
 }

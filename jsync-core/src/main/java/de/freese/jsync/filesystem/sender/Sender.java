@@ -2,7 +2,6 @@
 package de.freese.jsync.filesystem.sender;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
 import de.freese.jsync.filesystem.FileSystem;
 
 /**
@@ -12,12 +11,6 @@ import de.freese.jsync.filesystem.FileSystem;
  */
 public interface Sender extends FileSystem
 {
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChannel(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public ReadableByteChannel getChannel(String baseDir, String relativeFile, long sizeOfFile);
-
     /**
      * Liest nur einen bestimmten Bereich aus einer Datei.
      *
