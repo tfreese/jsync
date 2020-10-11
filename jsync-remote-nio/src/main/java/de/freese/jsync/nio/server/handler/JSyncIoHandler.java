@@ -31,7 +31,6 @@ import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.server.JsyncServerResponse;
 import de.freese.jsync.remote.RemoteUtils;
 import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
-import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * Verarbeitet den Request und Response.<br>
@@ -112,41 +111,19 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativeFile = getSerializer().readFrom(buffer, String.class);
 
-        Exception exception = null;
-        String checksum = null;
-
         try
         {
-            checksum = fileSystem.getChecksum(baseDir, relativeFile, i -> {
+            String checksum = fileSystem.getChecksum(baseDir, relativeFile, i -> {
             });
+
+            JsyncServerResponse.ok(buffer).write(selectionKey, buf -> getSerializer().writeTo(buffer, checksum));
         }
         catch (Exception ex)
         {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
-
             try
             {
                 // Exception senden.
-                Exception ex = exception;
                 JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        }
-        else
-        {
-            try
-            {
-                // Response senden.
-                String chksm = checksum;
-                JsyncServerResponse.ok(buffer).write(selectionKey, buf -> getSerializer().writeTo(buffer, chksm));
             }
             catch (IOException ioex)
             {
@@ -167,38 +144,21 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativePath = getSerializer().readFrom(buffer, String.class);
 
-        Exception exception = null;
-
         try
         {
             receiver.createDirectory(baseDir, relativePath);
+
+            // Response senden.
+            JsyncServerResponse.ok(buffer).write(selectionKey);
         }
         catch (Exception ex)
         {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
+            getLogger().error(null, ex);
 
             try
             {
                 // Exception senden.
-                Exception ex = exception;
                 JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        }
-        else
-        {
-            try
-            {
-                // Response senden.
-                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
@@ -219,50 +179,34 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         String baseDir = getSerializer().readFrom(buffer, String.class);
         boolean followSymLinks = getSerializer().readFrom(buffer, Boolean.class);
 
-        Exception exception = null;
-        List<SyncItem> syncItems = new ArrayList<>(128);
-
         try
         {
+            List<SyncItem> syncItems = new ArrayList<>(128);
+
             fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
                 getLogger().debug("{}: SyncItem generated: {}", getRemoteAddress(selectionKey), syncItem);
 
                 syncItems.add(syncItem);
             });
+
+            // Response senden.
+            JsyncServerResponse.ok(buffer).write(selectionKey, buf -> {
+                buf.putInt(syncItems.size());
+
+                for (SyncItem syncItem : syncItems)
+                {
+                    getSerializer().writeTo(buf, syncItem);
+                }
+            });
         }
         catch (Exception ex)
         {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
+            getLogger().error(null, ex);
 
             try
             {
                 // Exception senden.
-                Exception ex = exception;
                 JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        }
-        else
-        {
-            try
-            {
-                // Response senden.
-                JsyncServerResponse.ok(buffer).write(selectionKey, buf -> {
-                    buf.putInt(syncItems.size());
-
-                    for (SyncItem syncItem : syncItems)
-                    {
-                        getSerializer().writeTo(buf, syncItem);
-                    }
-                });
             }
             catch (IOException ioex)
             {
@@ -284,38 +228,19 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         String relativePath = getSerializer().readFrom(buffer, String.class);
         boolean followSymLinks = getSerializer().readFrom(buffer, Boolean.class);
 
-        Exception exception = null;
-
         try
         {
             receiver.delete(baseDir, relativePath, followSymLinks);
+
+            // Response senden.
+            JsyncServerResponse.ok(buffer).write(selectionKey);
         }
         catch (Exception ex)
         {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
-
             try
             {
                 // Exception senden.
-                Exception ex = exception;
                 JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        }
-        else
-        {
-            try
-            {
-                // Response senden.
-                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
@@ -490,26 +415,39 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         long position = buffer.getLong();
         long sizeOfChunk = buffer.getLong();
 
-        Exception exception = null;
-        ByteBuffer bufferChunk = ByteBufferPool.getInstance().get();
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
+
+        ByteBuffer bufferChunk = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
 
         try
         {
             sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, bufferChunk);
+
+            // Response senden
+            // JsyncServerResponse.ok(buffer).write(selectionKey);
+            buffer.clear();
+            buffer.putInt(RemoteUtils.STATUS_OK); // Status
+            buffer.putLong(sizeOfChunk); // Content-Length
+            buffer.flip();
+
+            bufferChunk.flip();
+
+            SocketChannel channel = (SocketChannel) selectionKey.channel();
+            channel.write(new ByteBuffer[]
+            {
+                    buffer, bufferChunk
+            });
+            // writeBuffer(selectionKey, bufferChunk);
         }
         catch (Exception ex)
         {
-            exception = ex;
-        }
+            getLogger().error(null, ex);
 
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
-
+            // Exception senden.
             try
             {
-                // Exception senden.
-                Exception ex = exception;
                 JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
@@ -517,33 +455,10 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 getLogger().error(null, ioex);
             }
         }
-        else
+        finally
         {
-            try
-            {
-                // Response senden
-                // JsyncServerResponse.ok(buffer).write(selectionKey);
-                buffer.clear();
-                buffer.putInt(RemoteUtils.STATUS_OK); // Status
-                buffer.putLong(sizeOfChunk); // Content-Length
-                buffer.flip();
-
-                bufferChunk.flip();
-
-                SocketChannel channel = (SocketChannel) selectionKey.channel();
-                channel.write(new ByteBuffer[]
-                {
-                        buffer, bufferChunk
-                });
-                // writeBuffer(selectionKey, bufferChunk);
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
+            DataBufferUtils.release(dataBuffer);
         }
-
-        ByteBufferPool.getInstance().release(bufferChunk);
     }
 
     /**
@@ -722,38 +637,21 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         String baseDir = getSerializer().readFrom(buffer, String.class);
         SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
 
-        Exception exception = null;
-
         try
         {
             receiver.update(baseDir, syncItem);
+
+            // Response senden.
+            JsyncServerResponse.ok(buffer).write(selectionKey);
         }
         catch (Exception ex)
         {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
+            getLogger().error(null, ex);
 
             try
             {
                 // Exception senden.
-                Exception ex = exception;
                 JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        }
-        else
-        {
-            try
-            {
-                // Response senden.
-                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
@@ -775,38 +673,21 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
         boolean withChecksum = getSerializer().readFrom(buffer, Boolean.class);
 
-        Exception exception = null;
-
         try
         {
             receiver.validateFile(baseDir, syncItem, withChecksum);
+
+            // Response senden.
+            JsyncServerResponse.ok(buffer).write(selectionKey);
         }
         catch (Exception ex)
         {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
+            getLogger().error(null, ex);
 
             try
             {
                 // Exception senden.
-                Exception ex = exception;
                 JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
-        }
-        else
-        {
-            try
-            {
-                // Response senden.
-                JsyncServerResponse.ok(buffer).write(selectionKey);
             }
             catch (IOException ioex)
             {
@@ -855,8 +736,11 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         long position = buffer.getLong();
         long sizeOfChunk = buffer.getLong();
 
-        Exception exception = null;
-        ByteBuffer bufferChunk = ByteBufferPool.getInstance().get();
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
+
+        ByteBuffer bufferChunk = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
 
         try
         {
@@ -875,20 +759,17 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             }
 
             receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, bufferChunk);
+
+            // Response senden.
+            JsyncServerResponse.ok(buffer).write(selectionKey);
         }
         catch (Exception ex)
         {
-            exception = ex;
-        }
-
-        if (exception != null)
-        {
-            getLogger().error(null, exception);
+            getLogger().error(null, ex);
 
             try
             {
                 // Exception senden.
-                Exception ex = exception;
                 JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
             }
             catch (IOException ioex)
@@ -896,19 +777,9 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 getLogger().error(null, ioex);
             }
         }
-        else
+        finally
         {
-            try
-            {
-                // Response senden.
-                JsyncServerResponse.ok(buffer).write(selectionKey);
-            }
-            catch (IOException ioex)
-            {
-                getLogger().error(null, ioex);
-            }
+            DataBufferUtils.release(dataBuffer);
         }
-
-        ByteBufferPool.getInstance().release(bufferChunk);
     }
 }

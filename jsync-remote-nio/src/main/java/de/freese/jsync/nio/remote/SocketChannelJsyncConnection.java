@@ -2,11 +2,11 @@
 package de.freese.jsync.nio.remote;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.buffer.DataBuffer;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.remote.api.JsyncConnection;
@@ -30,7 +30,7 @@ public class SocketChannelJsyncConnection implements JsyncConnection
     /**
      *
      */
-    private final Serializer<ByteBuffer> serializer;
+    private final Serializer<DataBuffer> serializer;
 
     /**
      * Erstellt ein neues {@link SocketChannelJsyncConnection} Object.
@@ -38,7 +38,7 @@ public class SocketChannelJsyncConnection implements JsyncConnection
      * @param channel {@link SocketChannel}
      * @param serializer {@link Serializer}
      */
-    public SocketChannelJsyncConnection(final SocketChannel channel, final Serializer<ByteBuffer> serializer)
+    public SocketChannelJsyncConnection(final SocketChannel channel, final Serializer<DataBuffer> serializer)
     {
         super();
 

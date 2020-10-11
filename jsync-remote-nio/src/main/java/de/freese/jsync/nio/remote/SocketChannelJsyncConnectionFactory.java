@@ -5,14 +5,14 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
+import org.springframework.core.io.buffer.DataBuffer;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.remote.api.JsyncConnection;
 import de.freese.jsync.remote.api.JsyncConnectionFactory;
+import de.freese.jsync.utils.buffer.DataBufferAdapter;
 
 /**
  * @author Thomas Freese
@@ -22,7 +22,7 @@ public class SocketChannelJsyncConnectionFactory implements JsyncConnectionFacto
     /**
     *
     */
-    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
 
     /**
     *

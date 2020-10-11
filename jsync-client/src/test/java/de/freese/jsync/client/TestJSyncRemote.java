@@ -194,13 +194,15 @@ class TestJSyncRemote extends AbstractJSyncTest
         List<SyncItem> syncItemsSender = new ArrayList<>();
         client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
             syncItemsSender.add(syncItem);
-            client.generateChecksum(EFileSystem.SENDER, syncItem, null);
+            client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+            });
         });
 
         List<SyncItem> syncItemsReceiver = new ArrayList<>();
         client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
             syncItemsReceiver.add(syncItem);
-            client.generateChecksum(EFileSystem.RECEIVER, syncItem, null);
+            client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+            });
         });
 
         List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);

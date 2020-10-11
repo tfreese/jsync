@@ -2,14 +2,14 @@
 package de.freese.jsync.nio.remote;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.nio.filesystem.RemoteSupport;
 import de.freese.jsync.remote.api.JsyncResponse;
-import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * @author Thomas Freese
@@ -19,32 +19,32 @@ public class SocketChannelJsyncResponse implements JsyncResponse, RemoteSupport
     /**
     *
     */
-    private final ByteBuffer buffer;
-
-    /**
-    *
-    */
     private final SocketChannel channel;
 
     /**
     *
     */
-    private final Serializer<ByteBuffer> serializer;
+    private final DataBuffer dataBuffer;
+
+    /**
+    *
+    */
+    private final Serializer<DataBuffer> serializer;
 
     /**
      * Erstellt ein neues {@link SocketChannelJsyncResponse} Object.
      *
      * @param channel {@link SocketChannel}
      * @param serializer {@link Serializer}
-     * @param buffer {@link ByteBuffer}
+     * @param dataBuffer {@link DataBuffer}
      */
-    public SocketChannelJsyncResponse(final SocketChannel channel, final Serializer<ByteBuffer> serializer, final ByteBuffer buffer)
+    public SocketChannelJsyncResponse(final SocketChannel channel, final Serializer<DataBuffer> serializer, final DataBuffer dataBuffer)
     {
         super();
 
         this.channel = Objects.requireNonNull(channel, "channel required");
         this.serializer = Objects.requireNonNull(serializer, "serializer required");
-        this.buffer = Objects.requireNonNull(buffer, "buffer required");
+        this.dataBuffer = Objects.requireNonNull(dataBuffer, "dataBuffer required");
     }
 
     /**
@@ -53,7 +53,7 @@ public class SocketChannelJsyncResponse implements JsyncResponse, RemoteSupport
     @Override
     public void close() throws IOException
     {
-        ByteBufferPool.getInstance().release(this.buffer);
+        DataBufferUtils.release(this.dataBuffer);
     }
 
     /**
@@ -90,20 +90,10 @@ public class SocketChannelJsyncResponse implements JsyncResponse, RemoteSupport
      * @see de.freese.jsync.nio.filesystem.RemoteSupport#getSerializer()
      */
     @Override
-    public Serializer<ByteBuffer> getSerializer()
+    public Serializer<DataBuffer> getSerializer()
     {
         return this.serializer;
     }
-
-    // /**
-    // * @see de.freese.jsync.nio.filesystem.RemoteSupport#getSerializerDataBuffer()
-    // */
-    // @Override
-    // public Serializer<DataBuffer> getSerializerDataBuffer()
-    // {
-    // // TODO Auto-generated method stub
-    // return null;
-    // }
 
     /**
      * @see de.freese.jsync.remote.api.JsyncResponse#getStatus()

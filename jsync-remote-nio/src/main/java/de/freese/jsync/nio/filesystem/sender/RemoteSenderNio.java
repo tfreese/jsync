@@ -8,18 +8,12 @@ import java.nio.channels.SocketChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.buffer.DataBuffer;
 import de.freese.jsync.filesystem.RemoteSenderResource;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.filesystem.RemoteSupport;
 import de.freese.jsync.nio.utils.pool.SocketChannelPool;
-import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * {@link Sender} für NIO Remote-Filesysteme.
@@ -31,22 +25,7 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
     /**
      *
      */
-    private final ByteBufferPool byteBufferPool = ByteBufferPool.getInstance();
-
-    /**
-     *
-     */
     private SocketChannelPool channelPool;
-
-    /**
-     *
-     */
-    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
-
-    /**
-    *
-    */
-    private final Serializer<DataBuffer> serializerDataBuffer = DefaultSerializer.of(new DataBufferAdapter());
 
     /**
      * Erstellt ein neues {@link RemoteSenderNio} Object.
@@ -83,8 +62,6 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
     public void disconnect()
     {
         this.channelPool.destroy(channel -> disconnect(channel, getLogger()));
-
-        this.byteBufferPool.clear();
     }
 
     /**
@@ -143,24 +120,6 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
             // this.channelPool.release(channel);
         }
     }
-
-    /**
-     * @see de.freese.jsync.nio.filesystem.RemoteSupport#getSerializer()
-     */
-    @Override
-    public Serializer<ByteBuffer> getSerializer()
-    {
-        return this.serializer;
-    }
-
-    // /**
-    // * @see de.freese.jsync.nio.filesystem.RemoteSupport#getSerializerDataBuffer()
-    // */
-    // @Override
-    // public Serializer<DataBuffer> getSerializerDataBuffer()
-    // {
-    // return this.serializerDataBuffer;
-    // }
 
     /**
      * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)

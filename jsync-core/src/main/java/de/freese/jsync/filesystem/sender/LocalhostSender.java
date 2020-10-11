@@ -133,7 +133,6 @@ public class LocalhostSender extends AbstractSender
             {
                 MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, sizeOfChunk);
 
-                buffer.clear();
                 buffer.put(mappedByteBuffer);
             }
         }

@@ -8,17 +8,15 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
  */
 public class NoCloseWritableByteChannel implements WritableByteChannel, RemoteSupport
 {
-
     /**
       *
       */
@@ -28,11 +26,6 @@ public class NoCloseWritableByteChannel implements WritableByteChannel, RemoteSu
     *
     */
     private final SocketChannel delegate;
-
-    /**
-    *
-    */
-    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * Erstellt ein neues {@link NoCloseWritableByteChannel} Object.
@@ -54,13 +47,14 @@ public class NoCloseWritableByteChannel implements WritableByteChannel, RemoteSu
     @Override
     public void close() throws IOException
     {
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
-        buffer.clear();
+        DataBuffer dataBuffer = DefaultPooledDataBufferFactory.getInstance().allocateBuffer();
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
         try
         {
             // Response auslesen.
-            readResponseHeader(this.delegate);
+            readResponseHeader(dataBuffer, this.delegate);
         }
         catch (IOException ex)
         {
@@ -75,18 +69,9 @@ public class NoCloseWritableByteChannel implements WritableByteChannel, RemoteSu
         }
         finally
         {
-            ByteBufferPool.getInstance().release(buffer);
+            DataBufferUtils.release(dataBuffer);
             this.channelReleaser.accept(this.delegate);
         }
-    }
-
-    /**
-     * @see de.freese.jsync.nio.filesystem.RemoteSupport#getSerializer()
-     */
-    @Override
-    public Serializer<ByteBuffer> getSerializer()
-    {
-        return this.serializer;
     }
 
     /**

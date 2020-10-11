@@ -35,7 +35,6 @@ import de.freese.jsync.spring.filesystem.receiver.RemoteReceiverRestTemplate;
 import de.freese.jsync.spring.filesystem.sender.RemoteSenderRestTemplate;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
-import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * Basis-Implementierung des {@link Client}.
@@ -280,7 +279,6 @@ public abstract class AbstractClient implements Client
         }
         finally
         {
-            // ByteBufferPool.getInstance().release(buffer);
             DataBufferUtils.release(dataBuffer);
         }
 
@@ -312,29 +310,26 @@ public abstract class AbstractClient implements Client
             return;
         }
 
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer(Options.DATABUFFER_SIZE);
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
+
         try
         {
             long sizeOfFile = syncItem.getSize();
             long position = 0;
 
+            ByteBuffer buffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
+
             while (position < sizeOfFile)
             {
                 long sizeOfChunk = Math.min(sizeOfFile - position, Options.DATABUFFER_SIZE);
 
-                ByteBuffer buffer = ByteBufferPool.getInstance().get();
+                getSender().readChunk(getSenderPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
 
-                try
-                {
-                    getSender().readChunk(getSenderPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
+                getReceiver().writeChunk(getReceiverPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
 
-                    getReceiver().writeChunk(getReceiverPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
-
-                    position += sizeOfChunk;
-                }
-                finally
-                {
-                    ByteBufferPool.getInstance().release(buffer);
-                }
+                position += sizeOfChunk;
             }
         }
         catch (Exception ex)
@@ -342,6 +337,10 @@ public abstract class AbstractClient implements Client
             clientListener.error(null, ex);
 
             return;
+        }
+        finally
+        {
+            DataBufferUtils.release(dataBuffer);
         }
 
         try
