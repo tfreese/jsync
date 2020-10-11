@@ -51,8 +51,7 @@ public class DefaultGenerator extends AbstractGenerator
     {
         Path path = Paths.get(baseDir, relativeFile);
 
-        // String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, bytesRead -> listener.checksum(syncItem.getSize(), bytesRead));
-        String checksum = DigestUtils.sha256DigestAsHex(path, Options.BYTEBUFFER_SIZE, consumerBytesRead);
+        String checksum = DigestUtils.sha256DigestAsHex(path, Options.DATABUFFER_SIZE, consumerBytesRead);
 
         return checksum;
     }

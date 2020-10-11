@@ -148,7 +148,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
                         , new StringHttpMessageConverter()
                         , new ResourceHttpMessageConverter(true)
                         //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get())
-                        , new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.BYTEBUFFER_SIZE))
+                        , new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.DATABUFFER_SIZE))
                         , new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, this.dataBufferFactory)
                         )
                 ;

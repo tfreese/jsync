@@ -142,20 +142,20 @@ public class ReceiverRestService
             syncItems.add(syncItem);
         });
 
-        DataBuffer buffer = this.dataBufferFactory.allocateBuffer();
-        buffer.readPosition(0);
-        buffer.writePosition(0);
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer();
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
-        getSerializer().writeTo(buffer, syncItems.size());
+        getSerializer().writeTo(dataBuffer, syncItems.size());
 
         for (SyncItem syncItem : syncItems)
         {
-            getSerializer().writeTo(buffer, syncItem);
+            getSerializer().writeTo(dataBuffer, syncItem);
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
+        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(dataBuffer, headers, HttpStatus.OK);
 
         return responseEntity;
     }
@@ -207,27 +207,28 @@ public class ReceiverRestService
     {
         WritableResource writableResource = this.receiver.getResource(baseDir, relativeFile, sizeOfFile);
 
-        DataBuffer buffer = this.dataBufferFactory.allocateBuffer((int) Math.min(sizeOfFile, Options.BYTEBUFFER_SIZE));
-        buffer.readPosition(0);
-        buffer.writePosition(0);
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) Math.min(sizeOfFile, Options.DATABUFFER_SIZE));
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
         try (ReadableByteChannel readableByteChannel = resource.readableChannel();
              WritableByteChannel writableByteChannel = writableResource.writableChannel())
         {
+            ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
             long totalRead = 0;
 
             while (totalRead < sizeOfFile)
             {
-                int bytesRead = readableByteChannel.read(buffer.asByteBuffer(0, buffer.capacity()));
+                byteBuffer.clear();
+
+                int bytesRead = readableByteChannel.read(byteBuffer);
                 totalRead += bytesRead;
 
-                buffer.readPosition(0);
-                buffer.writePosition(bytesRead);
+                byteBuffer.flip();
 
-                while (buffer.readableByteCount() > 0)
+                while (byteBuffer.hasRemaining())
                 {
-                    int bytesWritten = writableByteChannel.write(buffer.asByteBuffer());
-                    buffer.readPosition(buffer.readPosition() + bytesWritten);
+                    writableByteChannel.write(byteBuffer);
                 }
             }
 
@@ -239,7 +240,7 @@ public class ReceiverRestService
         }
         finally
         {
-            DataBufferUtils.release(buffer);
+            DataBufferUtils.release(dataBuffer);
         }
     }
 
@@ -335,9 +336,9 @@ public class ReceiverRestService
                                                    @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk,
                                                    @RequestBody final Resource resource)
     {
-        DataBuffer buffer = this.dataBufferFactory.allocateBuffer();
-        buffer.readPosition(0);
-        buffer.writePosition(0);
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer();
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
         try
         {
@@ -347,10 +348,10 @@ public class ReceiverRestService
 
             while ((bytesRead = inputStream.read(bytes)) != -1)
             {
-                buffer.write(bytes, 0, bytesRead);
+                dataBuffer.write(bytes, 0, bytesRead);
             }
 
-            ByteBuffer byteBuffer = buffer.asByteBuffer(0, (int) sizeOfChunk);
+            ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
 
             this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
 
@@ -362,7 +363,7 @@ public class ReceiverRestService
         }
         finally
         {
-            DataBufferUtils.release(buffer);
+            DataBufferUtils.release(dataBuffer);
         }
     }
 }

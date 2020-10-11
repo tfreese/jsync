@@ -98,7 +98,7 @@ public class Options
     /**
      * Default: 4 MB
      */
-    public static final int BYTEBUFFER_SIZE = 1024 * 1024 * 4;
+    public static final int DATABUFFER_SIZE = 1024 * 1024 * 4;
 
     /**
      * Default: UTF-8

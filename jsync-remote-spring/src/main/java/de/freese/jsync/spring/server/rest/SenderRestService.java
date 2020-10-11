@@ -111,20 +111,20 @@ public class SenderRestService
             syncItems.add(syncItem);
         });
 
-        DataBuffer buffer = this.dataBufferFactory.allocateBuffer();
-        buffer.readPosition(0);
-        buffer.writePosition(0);
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer();
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
-        getSerializer().writeTo(buffer, syncItems.size());
+        getSerializer().writeTo(dataBuffer, syncItems.size());
 
         for (SyncItem syncItem : syncItems)
         {
-            getSerializer().writeTo(buffer, syncItem);
+            getSerializer().writeTo(dataBuffer, syncItem);
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
+        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(dataBuffer, headers, HttpStatus.OK);
 
         return responseEntity;
     }
@@ -216,16 +216,16 @@ public class SenderRestService
     public ResponseEntity<DataBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
                                                       @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
     {
-        DataBuffer buffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
-        buffer.readPosition(0);
-        buffer.writePosition(0);
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
-        ByteBuffer byteBuffer = buffer.asByteBuffer(0, (int) sizeOfChunk);
+        ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
         this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setCacheControl(CacheControl.noCache().getHeaderValue());
-        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(buffer, headers, HttpStatus.OK);
+        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(dataBuffer, headers, HttpStatus.OK);
 
         return responseEntity;
     }
@@ -241,14 +241,14 @@ public class SenderRestService
     public ResponseEntity<Resource> readChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
                                                     @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
     {
-        DataBuffer buffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
-        buffer.readPosition(0);
-        buffer.writePosition(0);
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
-        ByteBuffer byteBuffer = buffer.asByteBuffer(0, (int) sizeOfChunk);
+        ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
         this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
 
-        Resource resource = new InputStreamResource(buffer.asInputStream(true));
+        Resource resource = new InputStreamResource(dataBuffer.asInputStream(true));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setCacheControl(CacheControl.noCache().getHeaderValue());

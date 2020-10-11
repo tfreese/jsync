@@ -15,7 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -196,8 +198,9 @@ public abstract class AbstractClient implements Client
         long totalRead = 0;
         long totalWritten = 0;
 
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
-        buffer.clear();
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer(Options.DATABUFFER_SIZE);
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
         Resource resourceSender = getSender().getResource(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
         WritableResource resourceReceiver = getReceiver().getResource(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile);
@@ -247,21 +250,23 @@ public abstract class AbstractClient implements Client
             {
                 // Remote
                 // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
-                // Thread.sleep(1);
+                Thread.sleep(1);
+
+                ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
 
                 while (totalRead < sizeOfFile)
                 {
-                    totalRead += readableByteChannel.read(buffer);
-                    buffer.flip();
+                    totalRead += readableByteChannel.read(byteBuffer);
+                    byteBuffer.flip();
 
-                    while (buffer.hasRemaining())
+                    while (byteBuffer.hasRemaining())
                     {
-                        totalWritten += writableByteChannel.write(buffer);
+                        totalWritten += writableByteChannel.write(byteBuffer);
 
                         clientListener.copyProgress(getOptions(), syncItem, totalWritten);
                     }
 
-                    buffer.clear();
+                    byteBuffer.clear();
 
                     getLogger().debug("copyFile: totalRead={}, totalWritten={}", totalRead, totalWritten);
                 }
@@ -275,7 +280,8 @@ public abstract class AbstractClient implements Client
         }
         finally
         {
-            ByteBufferPool.getInstance().release(buffer);
+            // ByteBufferPool.getInstance().release(buffer);
+            DataBufferUtils.release(dataBuffer);
         }
 
         try
@@ -313,7 +319,7 @@ public abstract class AbstractClient implements Client
 
             while (position < sizeOfFile)
             {
-                long sizeOfChunk = Math.min(sizeOfFile - position, Options.BYTEBUFFER_SIZE);
+                long sizeOfChunk = Math.min(sizeOfFile - position, Options.DATABUFFER_SIZE);
 
                 ByteBuffer buffer = ByteBufferPool.getInstance().get();
 

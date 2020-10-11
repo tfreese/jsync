@@ -14,6 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -26,6 +30,7 @@ import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.server.JsyncServerResponse;
 import de.freese.jsync.remote.RemoteUtils;
+import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
@@ -76,6 +81,11 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             channel.write(buffer);
         }
     }
+
+    /**
+    *
+    */
+    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
 
     /**
      *
@@ -352,16 +362,18 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     @Override
     public void read(final SelectionKey selectionKey)
     {
-        ByteBuffer buffer = ByteBufferPool.getInstance().get();
+        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer(Options.DATABUFFER_SIZE);
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
         try
         {
             ReadableByteChannel channel = (ReadableByteChannel) selectionKey.channel();
 
             // JSyncCommand lesen.
-            buffer.clear();
+            ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
 
-            int bytesRead = channel.read(buffer);
+            int bytesRead = channel.read(byteBuffer);
 
             if (bytesRead == -1)
             {
@@ -369,9 +381,9 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 return;
             }
 
-            buffer.flip();
+            byteBuffer.flip();
 
-            JSyncCommand command = getSerializer().readFrom(buffer, JSyncCommand.class);
+            JSyncCommand command = getSerializer().readFrom(byteBuffer, JSyncCommand.class);
             getLogger().debug("{}: read command: {}", getRemoteAddress(selectionKey), command);
 
             if (command == null)
@@ -384,7 +396,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             switch (command)
             {
                 case DISCONNECT:
-                    JsyncServerResponse.ok(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, "DISCONNECTED"));
+                    JsyncServerResponse.ok(byteBuffer).write(selectionKey, buf -> getSerializer().writeTo(buf, "DISCONNECTED"));
 
                     selectionKey.attach(null);
                     // selectionKey.interestOps(SelectionKey.OP_CONNECT);
@@ -393,55 +405,55 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     break;
 
                 case CONNECT:
-                    JsyncServerResponse.ok(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, "CONNECTED"));
+                    JsyncServerResponse.ok(byteBuffer).write(selectionKey, buf -> getSerializer().writeTo(buf, "CONNECTED"));
                     break;
 
                 case SOURCE_CHECKSUM:
-                    createChecksum(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    createChecksum(selectionKey, byteBuffer, THREAD_LOCAL_SENDER.get());
                     break;
 
                 case SOURCE_CREATE_SYNC_ITEMS:
-                    createSyncItems(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    createSyncItems(selectionKey, byteBuffer, THREAD_LOCAL_SENDER.get());
                     break;
 
                 case SOURCE_READ_CHUNK:
-                    readChunk(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    readChunk(selectionKey, byteBuffer, THREAD_LOCAL_SENDER.get());
                     break;
 
                 case SOURCE_READABLE_RESOURCE:
-                    resourceReadable(selectionKey, buffer, THREAD_LOCAL_SENDER.get());
+                    resourceReadable(selectionKey, byteBuffer, THREAD_LOCAL_SENDER.get());
                     break;
 
                 case TARGET_CHECKSUM:
-                    createChecksum(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    createChecksum(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_CREATE_DIRECTORY:
-                    createDirectory(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    createDirectory(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_CREATE_SYNC_ITEMS:
-                    createSyncItems(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    createSyncItems(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_DELETE:
-                    delete(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    delete(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_WRITE_CHUNK:
-                    writeChunk(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    writeChunk(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_UPDATE:
-                    update(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    update(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_VALIDATE_FILE:
-                    validate(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    validate(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_WRITEABLE_RESOURCE:
-                    resourceWritable(selectionKey, buffer, THREAD_LOCAL_RECEIVER.get());
+                    resourceWritable(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 default:
@@ -459,7 +471,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         finally
         {
-            ByteBufferPool.getInstance().release(buffer);
+            // ByteBufferPool.getInstance().release(byteBuffer);
+            DataBufferUtils.release(dataBuffer);
         }
     }
 

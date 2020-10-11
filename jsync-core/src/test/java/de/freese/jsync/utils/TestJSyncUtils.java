@@ -37,8 +37,8 @@ class TestJSyncUtils
     {
         Path path = Paths.get("pom.xml");
 
-        String checksum1 = DigestUtils.sha256DigestAsHex(path, 16, null);
-        String checksum2 = DigestUtils.sha256DigestAsHex(path, 32, null);
+        String checksum1 = DigestUtils.sha256DigestAsHex(path, 16);
+        String checksum2 = DigestUtils.sha256DigestAsHex(path, 32);
 
         assertEquals(checksum1, checksum2);
     }

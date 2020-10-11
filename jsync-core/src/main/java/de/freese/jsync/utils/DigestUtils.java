@@ -12,8 +12,10 @@ import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.function.LongConsumer;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import de.freese.jsync.Options;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
@@ -113,49 +115,52 @@ public final class DigestUtils
         }
 
         return messageDigest.digest();
+
+        // return sha256Digest(Channels.newChannel(inputStream), Options.DATABUFFER_SIZE, i -> {
+        // });
     }
 
     /**
-     * @param path {@link Path}
+     * @param readableByteChannel {@link ReadableByteChannel}
      * @param bufferSize int
      * @param consumerBytesRead {@link LongConsumer}; optional
      * @return byte[]
      * @throws IOException Falls was schief geht.
      */
-    public static byte[] sha256Digest(final Path path, final int bufferSize, final LongConsumer consumerBytesRead) throws IOException
+    public static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final int bufferSize, final LongConsumer consumerBytesRead)
+        throws IOException
     {
-        final MessageDigest messageDigest = createSha256Digest();
+        MessageDigest messageDigest = createSha256Digest();
         byte[] bytes = null;
 
-        LongConsumer consumer = consumerBytesRead != null ? consumerBytesRead : i -> {
-            // Empty
-        };
+        consumerBytesRead.accept(0);
 
-        consumer.accept(0);
+        DataBuffer dataBuffer = DefaultPooledDataBufferFactory.getInstance().allocateBuffer(bufferSize);
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
 
-        final ByteBuffer buffer = ByteBufferPool.getInstance().get();
-        buffer.clear();
+        ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
 
-        try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
+        try
         {
             long bytesRead = 0;
 
-            while (channel.read(buffer) != -1)
+            while (readableByteChannel.read(byteBuffer) != -1)
             {
-                bytesRead += buffer.position();
+                bytesRead += byteBuffer.position();
 
-                consumer.accept(bytesRead);
+                consumerBytesRead.accept(bytesRead);
 
-                buffer.flip();
-                messageDigest.update(buffer);
-                buffer.clear();
+                byteBuffer.flip();
+                messageDigest.update(byteBuffer);
+                byteBuffer.clear();
             }
 
             bytes = messageDigest.digest();
         }
         finally
         {
-            ByteBufferPool.getInstance().release(buffer);
+            DataBufferUtils.release(dataBuffer);
         }
 
         return bytes;
@@ -164,16 +169,28 @@ public final class DigestUtils
     /**
      * @param path {@link Path}
      * @param bufferSize int
-     * @param consumerBytesRead {@link LongConsumer}; optional
+     * @return String
+     */
+    public static String sha256DigestAsHex(final Path path, final int bufferSize)
+    {
+        return sha256DigestAsHex(path, bufferSize, i -> {
+            // Empty
+        });
+    }
+
+    /**
+     * @param path {@link Path}
+     * @param bufferSize int
+     * @param consumerBytesRead {@link LongConsumer}
      * @return String
      */
     public static String sha256DigestAsHex(final Path path, final int bufferSize, final LongConsumer consumerBytesRead)
     {
-        try
+        try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
         {
-            final byte[] bytes = sha256Digest(path, bufferSize, consumerBytesRead);
+            byte[] bytes = sha256Digest(channel, bufferSize, consumerBytesRead);
 
-            final String hex = JSyncUtils.bytesToHex(bytes);
+            String hex = JSyncUtils.bytesToHex(bytes);
 
             return hex;
         }
