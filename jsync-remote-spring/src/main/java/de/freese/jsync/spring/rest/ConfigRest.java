@@ -1,19 +1,18 @@
 // Created: 15.09.2020
-package de.freese.jsync.spring.server;
+package de.freese.jsync.spring.rest;
 
-import java.nio.ByteBuffer;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.spring.utils.ByteBufferHttpMessageConverter;
 import de.freese.jsync.spring.utils.DataBufferHttpMessageConverter;
 import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
@@ -21,17 +20,20 @@ import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
  * @author Thomas Freese
  */
 @Configuration
-public class Config implements WebMvcConfigurer// , WebServerFactoryCustomizer<TomcatServletWebServerFactory>
+@EnableAutoConfiguration
+@ComponentScan("de.freese.jsync.spring.rest")
+@PropertySource("classpath:rest.properties")
+public class ConfigRest implements WebMvcConfigurer// , WebServerFactoryCustomizer<TomcatServletWebServerFactory>
 {
-    /**
-     *
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(Config.class);
+    // /**
+    // *
+    // */
+    // private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRest.class);
 
     /**
-     * Erstellt ein neues {@link Config} Object.
+     * Erstellt ein neues {@link ConfigRest} Object.
      */
-    public Config()
+    public ConfigRest()
     {
         super();
     }
@@ -43,7 +45,7 @@ public class Config implements WebMvcConfigurer// , WebServerFactoryCustomizer<T
     public void configureMessageConverters(final List<HttpMessageConverter<?>> converters)
     {
         // converters.add(new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get()));
-        converters.add(new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.DATABUFFER_SIZE)));
+        // converters.add(new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.DATABUFFER_SIZE)));
         converters.add(new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, DefaultPooledDataBufferFactory.getInstance()));
     }
 
@@ -92,13 +94,13 @@ public class Config implements WebMvcConfigurer// , WebServerFactoryCustomizer<T
     // return containerFactory;
     // }
 
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return LOGGER;
-    }
+    // /**
+    // * @return {@link Logger}
+    // */
+    // protected Logger getLogger()
+    // {
+    // return LOGGER;
+    // }
 
     /**
      * @return {@link LocalhostReceiver}

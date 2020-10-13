@@ -1,5 +1,5 @@
 // Created: 15.09.2020
-package de.freese.jsync.spring.server.rest;
+package de.freese.jsync.spring.rest.facade;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -24,27 +24,25 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
  */
 @RestController
 @RequestMapping(path = "/sender", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-public class SenderRestService
+public class SenderRestFacade
 {
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SenderRestService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SenderRestFacade.class);
 
     /**
     *
     */
-    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+    @javax.annotation.Resource
+    private DataBufferFactory dataBufferFactory;
 
     /**
      *
@@ -55,12 +53,13 @@ public class SenderRestService
     /**
     *
     */
-    private final Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
+    @javax.annotation.Resource
+    private Serializer<DataBuffer> serializer;
 
     /**
-     * Erstellt ein neues {@link SenderRestService} Object.
+     * Erstellt ein neues {@link SenderRestFacade} Object.
      */
-    public SenderRestService()
+    public SenderRestFacade()
     {
         super();
     }

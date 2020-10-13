@@ -28,7 +28,7 @@ import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.netty.server.JsyncNettyServer;
 import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
-import de.freese.jsync.spring.server.JsyncServerApplication;
+import de.freese.jsync.spring.JsyncServerApplication;
 
 /**
  * @author Thomas Freese

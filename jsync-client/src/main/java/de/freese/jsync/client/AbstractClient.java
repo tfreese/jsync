@@ -31,8 +31,8 @@ import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
 import de.freese.jsync.nio.filesystem.receiver.RemoteReceiverNio;
 import de.freese.jsync.nio.filesystem.sender.RemoteSenderNio;
-import de.freese.jsync.spring.filesystem.receiver.RemoteReceiverRestTemplate;
-import de.freese.jsync.spring.filesystem.sender.RemoteSenderRestTemplate;
+import de.freese.jsync.spring.rest.filesystem.RemoteReceiverRestClient;
+import de.freese.jsync.spring.rest.filesystem.RemoteSenderRestClient;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
@@ -143,7 +143,7 @@ public abstract class AbstractClient implements Client
             switch (this.remoteMode)
             {
                 case NIO -> this.sender = new RemoteSenderNio();
-                case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestTemplate();
+                case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestClient();
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
             }
         }
@@ -157,7 +157,7 @@ public abstract class AbstractClient implements Client
             switch (this.remoteMode)
             {
                 case NIO -> this.receiver = new RemoteReceiverNio();
-                case SPRING_REST_TEMPLATE -> this.receiver = new RemoteReceiverRestTemplate();
+                case SPRING_REST_TEMPLATE -> this.receiver = new RemoteReceiverRestClient();
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
             }
         }

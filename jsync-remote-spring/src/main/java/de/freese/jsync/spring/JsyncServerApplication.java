@@ -1,14 +1,14 @@
 // Created: 15.09.2020
-package de.freese.jsync.spring.server;
+package de.freese.jsync.spring;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.Banner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
+import de.freese.jsync.spring.common.ConfigCommon;
+import de.freese.jsync.spring.rest.ConfigRest;
 
 /**
  * POM:<br>
@@ -19,10 +19,6 @@ import org.springframework.context.annotation.ComponentScan;
  * @author Thomas Freese
  */
 @SpringBootApplication
-@ComponentScan(basePackages =
-{
-        "de.freese.jsync.spring.server"
-})
 public class JsyncServerApplication extends SpringBootServletInitializer
 {
     /**
@@ -35,7 +31,10 @@ public class JsyncServerApplication extends SpringBootServletInitializer
     {
         //@formatter:off
         return builder
-            .sources(JsyncServerApplication.class)
+            //.sources(JsyncServerApplication.class)
+            .parent(ConfigCommon.class)
+            .child(ConfigRest.class)
+            //.sibling(...)
             .bannerMode(Banner.Mode.OFF)
             .headless(true)
             .registerShutdownHook(true);
@@ -49,6 +48,7 @@ public class JsyncServerApplication extends SpringBootServletInitializer
      */
     public static void main(final String[] args)
     {
+        // configureApplication(new SpringApplicationBuilder(ConfigCommon.class).child(ConfigRest.class)).run(args);
         configureApplication(new SpringApplicationBuilder()).run(args);
     }
 
@@ -88,7 +88,8 @@ public class JsyncServerApplication extends SpringBootServletInitializer
 
         Thread thread = new Thread(() -> {
             this.context.close();
-            this.context = SpringApplication.run(JsyncServerApplication.class, args.getSourceArgs());
+            // this.context = SpringApplication.run(JsyncServerApplication.class, args.getSourceArgs());
+            this.context = configureApplication(new SpringApplicationBuilder()).run(args.getSourceArgs());
         });
 
         thread.setPriority(Thread.NORM_PRIORITY);

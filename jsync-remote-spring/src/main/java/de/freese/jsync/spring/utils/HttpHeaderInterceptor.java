@@ -1,5 +1,5 @@
 // Created: 16.09.2020
-package de.freese.jsync.spring;
+package de.freese.jsync.spring.utils;
 
 import java.io.IOException;
 import java.util.Objects;

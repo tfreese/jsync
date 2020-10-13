@@ -19,20 +19,7 @@ management:
                 include: '*'
     endpoint:
         health:
-            show-details: ALWAYS         
-    
-server:
-    port: 8003
-    http2:
-        enabled: true
-    servlet:
-        context-path: /jsync
-    tomcat:
-        connection-timeout: 120000
-        threads:
-            min-spare: 2
-            max: 4
-        
+            show-details: ALWAYS                
 spring:
     jackson:
         date-format: “yyyy-MM-dd HH:mm:ss”

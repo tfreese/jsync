@@ -1,5 +1,5 @@
 // Created: 15.09.2020
-package de.freese.jsync.spring.filesystem.receiver;
+package de.freese.jsync.spring.rest.filesystem;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -47,9 +47,8 @@ import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.spring.HttpHeaderInterceptor;
-import de.freese.jsync.spring.utils.ByteBufferHttpMessageConverter;
 import de.freese.jsync.spring.utils.DataBufferHttpMessageConverter;
+import de.freese.jsync.spring.utils.HttpHeaderInterceptor;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.JsyncThreadFactory;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
@@ -60,7 +59,7 @@ import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
  *
  * @author Thomas Freese
  */
-public class RemoteReceiverRestTemplate extends AbstractReceiver
+public class RemoteReceiverRestClient extends AbstractReceiver
 {
     /**
     *
@@ -93,9 +92,9 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
     private final Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
 
     /**
-     * Erstellt ein neues {@link RemoteReceiverRestTemplate} Object.
+     * Erstellt ein neues {@link RemoteReceiverRestClient} Object.
      */
-    public RemoteReceiverRestTemplate()
+    public RemoteReceiverRestClient()
     {
         super();
 
@@ -148,7 +147,7 @@ public class RemoteReceiverRestTemplate extends AbstractReceiver
                         , new StringHttpMessageConverter()
                         , new ResourceHttpMessageConverter(true)
                         //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get())
-                        , new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.DATABUFFER_SIZE))
+                        //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.DATABUFFER_SIZE))
                         , new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, this.dataBufferFactory)
                         )
                 ;
