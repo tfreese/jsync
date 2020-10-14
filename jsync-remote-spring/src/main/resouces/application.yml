@@ -19,7 +19,12 @@ management:
                 include: '*'
     endpoint:
         health:
-            show-details: ALWAYS                
+            show-details: ALWAYS
+
+server:
+    http2:
+        enabled: true
+             
 spring:
     jackson:
         date-format: “yyyy-MM-dd HH:mm:ss”

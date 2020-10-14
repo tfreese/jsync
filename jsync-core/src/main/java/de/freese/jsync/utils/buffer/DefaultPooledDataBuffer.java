@@ -25,7 +25,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     /**
      * @author Thomas Freese
      */
-    private class DefaultDataBufferInputStream extends InputStream
+    private class DefaultPooledDataBufferInputStream extends InputStream
     {
         /**
          *
@@ -33,11 +33,11 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
         private final boolean releaseOnClose;
 
         /**
-         * Erstellt ein neues {@link DefaultDataBufferInputStream} Object.
+         * Erstellt ein neues {@link DefaultPooledDataBufferInputStream} Object.
          *
          * @param releaseOnClose boolean
          */
-        private DefaultDataBufferInputStream(final boolean releaseOnClose)
+        private DefaultPooledDataBufferInputStream(final boolean releaseOnClose)
         {
             super();
 
@@ -99,7 +99,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     /**
      * @author Thomas Freese
      */
-    private class DefaultDataBufferOutputStream extends OutputStream
+    private class DefaultPooledDataBufferOutputStream extends OutputStream
     {
         /**
          * @see java.io.OutputStream#write(byte[], int, int)
@@ -123,16 +123,16 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     /**
      * @author Thomas Freese
      */
-    private static class SlicedDefaultDataBuffer extends DefaultPooledDataBuffer
+    private static class SlicedDefaultPooledDataBuffer extends DefaultPooledDataBuffer
     {
         /**
-         * Erstellt ein neues {@link SlicedDefaultDataBuffer} Object.
+         * Erstellt ein neues {@link SlicedDefaultPooledDataBuffer} Object.
          *
          * @param byteBuffer {@link ByteBuffer}
          * @param dataBufferFactory {@link DefaultPooledDataBufferFactory}
          * @param length int
          */
-        SlicedDefaultDataBuffer(final ByteBuffer byteBuffer, final DefaultPooledDataBufferFactory dataBufferFactory, final int length)
+        SlicedDefaultPooledDataBuffer(final ByteBuffer byteBuffer, final DefaultPooledDataBufferFactory dataBufferFactory, final int length)
         {
             super(dataBufferFactory, byteBuffer);
 
@@ -269,7 +269,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     @Override
     public InputStream asInputStream(final boolean releaseOnClose)
     {
-        return new DefaultDataBufferInputStream(releaseOnClose);
+        return new DefaultPooledDataBufferInputStream(releaseOnClose);
     }
 
     /**
@@ -278,7 +278,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     @Override
     public OutputStream asOutputStream()
     {
-        return new DefaultDataBufferOutputStream();
+        return new DefaultPooledDataBufferOutputStream();
     }
 
     /**
@@ -650,7 +650,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     @Override
     public boolean release()
     {
-        if (this instanceof SlicedDefaultDataBuffer)
+        if (this instanceof SlicedDefaultPooledDataBuffer)
         {
             return true;
         }
@@ -698,7 +698,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
             // Explicit cast for compatibility with covariant return type on JDK 9's ByteBuffer
             slice.limit(length);
 
-            return new SlicedDefaultDataBuffer(slice, this.dataBufferFactory, length);
+            return new SlicedDefaultPooledDataBuffer(slice, this.dataBufferFactory, length);
         }
         finally
         {

@@ -33,6 +33,7 @@ import de.freese.jsync.nio.filesystem.receiver.RemoteReceiverNio;
 import de.freese.jsync.nio.filesystem.sender.RemoteSenderNio;
 import de.freese.jsync.spring.rest.filesystem.RemoteReceiverRestClient;
 import de.freese.jsync.spring.rest.filesystem.RemoteSenderRestClient;
+import de.freese.jsync.spring.webflux.filesystem.RemoteSenderWebFluxClient;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
@@ -56,6 +57,10 @@ public abstract class AbstractClient implements Client
          *
          */
         SPRING_REST_TEMPLATE,
+        /**
+        *
+        */
+        SPRING_WEB_CLIENT;
     }
 
     /**
@@ -144,6 +149,7 @@ public abstract class AbstractClient implements Client
             {
                 case NIO -> this.sender = new RemoteSenderNio();
                 case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestClient();
+                case SPRING_WEB_CLIENT -> this.sender = new RemoteSenderWebFluxClient();
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
             }
         }

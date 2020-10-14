@@ -8,7 +8,7 @@
 
 spring:
     application:
-        name: jsync-service
+        name: jsync-server
 #  cloud.:
 #    config:
 #        server:

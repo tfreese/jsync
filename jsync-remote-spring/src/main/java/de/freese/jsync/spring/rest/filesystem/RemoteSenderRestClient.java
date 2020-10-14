@@ -183,7 +183,6 @@ public class RemoteSenderRestClient extends AbstractSender
         ResponseEntity<DataBuffer> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), DataBuffer.class);
 
         DataBuffer bufferResponse = responseEntity.getBody();
-        bufferResponse.readPosition(0);
 
         try
         {
@@ -282,7 +281,6 @@ public class RemoteSenderRestClient extends AbstractSender
         ResponseEntity<DataBuffer> responseEntity = rt.getForEntity(builder.toUriString(), DataBuffer.class);
 
         DataBuffer bufferResponse = responseEntity.getBody();
-        bufferResponse.readPosition(0);
 
         try
         {
