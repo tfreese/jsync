@@ -1,14 +1,18 @@
 // Created: 14.10.2020
 package de.freese.jsync.spring.webflux.filesystem;
 
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,13 +21,14 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import de.freese.jsync.filesystem.RemoteSenderResource;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 import io.netty.channel.ChannelOption;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
@@ -38,11 +43,6 @@ public class RemoteSenderWebFluxClient extends AbstractSender
      *
      */
     private ConnectionProvider connectionProvider;
-
-    /**
-    *
-    */
-    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
 
     /**
     *
@@ -85,6 +85,27 @@ public class RemoteSenderWebFluxClient extends AbstractSender
                     tcpClient = tcpClient.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 120_000);
                     tcpClient = tcpClient.option(ChannelOption.SO_TIMEOUT, 120_000);
                     tcpClient = tcpClient.option(ChannelOption.SO_KEEPALIVE, true);
+//                    tcpClient = tcpClient.option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(true) {
+//
+//                        /**
+//                         * @see io.netty.buffer.PooledByteBufAllocator#newDirectBuffer(int, int)
+//                         */
+//                        @Override
+//                        protected ByteBuf newDirectBuffer(final int initialCapacity, final int maxCapacity)
+//                        {
+//                            return super.newDirectBuffer(Options.DATABUFFER_SIZE, maxCapacity);
+//                        }
+//
+//                        /**
+//                         * @see io.netty.buffer.PooledByteBufAllocator#newHeapBuffer(int, int)
+//                         */
+//                        @Override
+//                        protected ByteBuf newHeapBuffer(final int initialCapacity, final int maxCapacity)
+//                        {
+//                            return super.newHeapBuffer(Options.DATABUFFER_SIZE, maxCapacity);
+//                        }
+//
+//                    });
                     tcpClient = tcpClient.runOn(loopResources);
 
                     //tcpClient = tcpClient.doOnConnected(connection -> {
@@ -193,6 +214,7 @@ public class RemoteSenderWebFluxClient extends AbstractSender
             .accept(MediaType.APPLICATION_OCTET_STREAM)
             .retrieve()
             .bodyToMono(DataBuffer.class)
+            //.doOnNext(DataBufferUtils.releaseConsumer())
 //            .subscribe(dataBuffer -> {
 //                System.err.println(Thread.currentThread().getName());
 //                @SuppressWarnings("unused")
@@ -221,6 +243,7 @@ public class RemoteSenderWebFluxClient extends AbstractSender
         }
 
         DataBufferUtils.release(dataBuffer);
+        // DataBufferUtils.retain(dataBuffer);
     }
 
     /**
@@ -248,8 +271,39 @@ public class RemoteSenderWebFluxClient extends AbstractSender
     @Override
     public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        // TODO Auto-generated method stub
-        return null;
+        // @formatter:off
+        UriComponents builder = UriComponentsBuilder.fromPath("/resourceReadable")
+                .queryParam("baseDir", baseDir)
+                .queryParam("relativeFile", relativeFile)
+                .queryParam("sizeOfFile", sizeOfFile)
+                .build();
+        // @formatter:on
+
+        // @formatter:off
+        Flux<DataBuffer> response = this.webClient
+                .get()
+                .uri(builder.toUriString())
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .retrieve()
+                .bodyToFlux(DataBuffer.class)
+                ;
+        // @formatter:on
+
+        try
+        {
+            PipedOutputStream outPipe = new PipedOutputStream();
+            PipedInputStream inPipe = new PipedInputStream(outPipe);
+
+            DataBufferUtils.write(response, outPipe).subscribe(DataBufferUtils.releaseConsumer());
+
+            RemoteSenderResource senderResource = new RemoteSenderResource(relativeFile, sizeOfFile, Channels.newChannel(inPipe));
+
+            return senderResource;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     /**
@@ -264,9 +318,29 @@ public class RemoteSenderWebFluxClient extends AbstractSender
      * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
      */
     @Override
-    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
+    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
     {
-        // TODO Auto-generated method stub
+        // @formatter:off
+        UriComponents builder = UriComponentsBuilder.fromPath("/readChunkBuffer")
+                .queryParam("baseDir", baseDir)
+                .queryParam("relativeFile", relativeFile)
+                .queryParam("position", position)
+                .queryParam("sizeOfChunk", sizeOfChunk)
+                .build();
+        // @formatter:on
 
+        // @formatter:off
+        Mono<DataBuffer> response = this.webClient
+                .get()
+                .uri(builder.toUriString())
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .retrieve()
+                .bodyToMono(DataBuffer.class)
+                ;
+        // @formatter:on
+        DataBuffer dataBuffer = response.block();
+
+        byteBuffer.clear();
+        byteBuffer.put(dataBuffer.asByteBuffer(0, (int) sizeOfChunk));
     }
 }

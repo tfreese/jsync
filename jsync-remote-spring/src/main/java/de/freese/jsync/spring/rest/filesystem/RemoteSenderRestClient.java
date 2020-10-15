@@ -280,13 +280,13 @@ public class RemoteSenderRestClient extends AbstractSender
 
         ResponseEntity<DataBuffer> responseEntity = rt.getForEntity(builder.toUriString(), DataBuffer.class);
 
-        DataBuffer bufferResponse = responseEntity.getBody();
+        DataBuffer dataBuffer = responseEntity.getBody();
 
         try
         {
 
             byteBuffer.clear();
-            byteBuffer.put(bufferResponse.asByteBuffer(0, (int) sizeOfChunk));
+            byteBuffer.put(dataBuffer.asByteBuffer(0, (int) sizeOfChunk));
         }
         catch (RuntimeException rex)
         {

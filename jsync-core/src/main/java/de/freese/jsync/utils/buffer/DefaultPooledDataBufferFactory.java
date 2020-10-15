@@ -41,14 +41,14 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
     }
 
     /**
+    *
+    */
+    private static final AtomicInteger BUFFERFACTORY_ID = new AtomicInteger(0);
+
+    /**
      *
      */
     private static final int DEFAULT_INITIAL_CAPACITY = 1024;
-
-    /**
-    *
-    */
-    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(0);
 
     /**
      * @return {@link DefaultPooledDataBufferFactory}
@@ -57,6 +57,11 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
     {
         return DefaultPooledDataBufferFactoryHolder.INSTANCE;
     }
+
+    /**
+    *
+    */
+    private final AtomicInteger bufferId = new AtomicInteger(0);
 
     /**
      *
@@ -116,7 +121,7 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
         this.preferDirect = preferDirect;
         this.defaultInitialCapacity = defaultInitialCapacity;
 
-        this.id = "factory-" + ID_GENERATOR.incrementAndGet();
+        this.id = "factory-" + BUFFERFACTORY_ID.incrementAndGet();
     }
 
     /**
@@ -154,7 +159,7 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
                 // System.err.println("create new buffer");
                 ByteBuffer byteBuffer = this.preferDirect ? ByteBuffer.allocateDirect(initialCapacity) : ByteBuffer.allocate(initialCapacity);
 
-                dataBuffer = new DefaultPooledDataBuffer(this, byteBuffer);
+                dataBuffer = new DefaultPooledDataBuffer(this, byteBuffer, this.id + "-buffer-" + this.bufferId.incrementAndGet());
             }
 
             dataBuffer.readPosition(0);
@@ -171,14 +176,6 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
         {
             getLock().unlock();
         }
-    }
-
-    /**
-     * @return String
-     */
-    String getId()
-    {
-        return this.id;
     }
 
     /**

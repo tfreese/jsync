@@ -8,7 +8,6 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntPredicate;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
@@ -130,11 +129,12 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
          *
          * @param byteBuffer {@link ByteBuffer}
          * @param dataBufferFactory {@link DefaultPooledDataBufferFactory}
+         * @param id String
          * @param length int
          */
-        SlicedDefaultPooledDataBuffer(final ByteBuffer byteBuffer, final DefaultPooledDataBufferFactory dataBufferFactory, final int length)
+        SlicedDefaultPooledDataBuffer(final ByteBuffer byteBuffer, final DefaultPooledDataBufferFactory dataBufferFactory, final String id, final int length)
         {
-            super(dataBufferFactory, byteBuffer);
+            super(dataBufferFactory, byteBuffer, id);
 
             writePosition(length);
         }
@@ -153,11 +153,6 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
      *
      */
     private static final int CAPACITY_THRESHOLD = 1024 * 1024 * 4;
-
-    /**
-     *
-     */
-    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(0);
 
     /**
      *
@@ -199,8 +194,9 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
      *
      * @param dataBufferFactory {@link DefaultPooledDataBufferFactory}
      * @param byteBuffer {@link ByteBuffer}
+     * @param id String
      */
-    DefaultPooledDataBuffer(final DefaultPooledDataBufferFactory dataBufferFactory, final ByteBuffer byteBuffer)
+    DefaultPooledDataBuffer(final DefaultPooledDataBufferFactory dataBufferFactory, final ByteBuffer byteBuffer, final String id)
     {
         super();
 
@@ -213,7 +209,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
         this.byteBuffer = slice;
         this.capacity = slice.remaining();
 
-        this.id = dataBufferFactory.getId() + "-buffer-" + ID_GENERATOR.incrementAndGet();
+        this.id = id;
     }
 
     /**
@@ -666,7 +662,9 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     @Override
     public PooledDataBuffer retain()
     {
-        throw new UnsupportedOperationException("retain() for DefaultPooledDataBuffer is not supported");
+        release();
+
+        return this;
     }
 
     /**
@@ -698,7 +696,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
             // Explicit cast for compatibility with covariant return type on JDK 9's ByteBuffer
             slice.limit(length);
 
-            return new SlicedDefaultPooledDataBuffer(slice, this.dataBufferFactory, length);
+            return new SlicedDefaultPooledDataBuffer(slice, this.dataBufferFactory, this.id + "-sliced", length);
         }
         finally
         {

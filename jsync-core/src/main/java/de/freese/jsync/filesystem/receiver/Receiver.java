@@ -60,7 +60,7 @@ public interface Receiver extends FileSystem
      * @param relativeFile String
      * @param position long
      * @param sizeOfChunk long
-     * @param buffer {@link ByteBuffer}
+     * @param byteBuffer {@link ByteBuffer}
      */
-    public void writeChunk(String baseDir, String relativeFile, long position, final long sizeOfChunk, ByteBuffer buffer);
+    public void writeChunk(String baseDir, String relativeFile, long position, final long sizeOfChunk, ByteBuffer byteBuffer);
 }
