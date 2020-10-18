@@ -46,10 +46,22 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jsync-remote-spring</artifactId>
+            <artifactId>jsync-remote-springrest</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
+        <!--dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jsync-remote-springwebflux</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency-->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jsync-remote-springrsocket</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>        
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-netty</artifactId>
