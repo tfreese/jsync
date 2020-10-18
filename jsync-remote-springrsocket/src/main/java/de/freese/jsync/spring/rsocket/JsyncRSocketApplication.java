@@ -1,25 +1,20 @@
 // Created: 15.09.2020
-package de.freese.jsync.spring;
+package de.freese.jsync.spring.rsocket;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import de.freese.jsync.spring.common.ConfigCommon;
-import de.freese.jsync.spring.webflux.ConfigWebflux;
 
 /**
- * POM:<br>
- * &lt;packaging>&gt;war&lt;/packaging&gt;<<br>
- * Tomcat aus spring-boot-starter-web excludieren und explizit auf provided setzen.<br>
- * Alle anderen J2EE-Jars auf provided setzen.
- *
  * @author Thomas Freese
  */
-@SpringBootApplication
-public class JsyncServerApplication extends SpringBootServletInitializer
+@SpringBootApplication(scanBasePackages =
+{
+        "de.freese.jsync.spring.rsocket"
+})
+public class JsyncRSocketApplication
 {
     /**
      * Konfiguriert die SpringApplication.
@@ -31,11 +26,7 @@ public class JsyncServerApplication extends SpringBootServletInitializer
     {
         //@formatter:off
         return builder
-            //.sources(JsyncServerApplication.class)
-            .parent(ConfigCommon.class)
-            //.child(ConfigRest.class, ConfigWebflux.class)
-            .child(ConfigWebflux.class)
-            //.sibling(...)
+            .sources(JsyncRSocketApplication.class)
             .bannerMode(Banner.Mode.OFF)
             .headless(true)
             .registerShutdownHook(true);
@@ -49,7 +40,6 @@ public class JsyncServerApplication extends SpringBootServletInitializer
      */
     public static void main(final String[] args)
     {
-        // configureApplication(new SpringApplicationBuilder(ConfigCommon.class).child(ConfigRest.class)).run(args);
         configureApplication(new SpringApplicationBuilder()).run(args);
     }
 
@@ -59,25 +49,11 @@ public class JsyncServerApplication extends SpringBootServletInitializer
     private ConfigurableApplicationContext context;
 
     /**
-     * Erstellt ein neues {@link JsyncServerApplication} Object.
+     * Erstellt ein neues {@link JsyncRSocketApplication} Object.
      */
-    public JsyncServerApplication()
+    public JsyncRSocketApplication()
     {
         super();
-    }
-
-    /**
-     * POM:<br>
-     * &lt;packaging>&gt;war&lt;/packaging&gt;<<br>
-     * Tomcat aus spring-boot-starter-web excludieren und explizit auf provided setzen.<br>
-     * Alle anderen J2EE-Jars auf provided setzen.
-     *
-     * @see org.springframework.boot.web.servlet.support.SpringBootServletInitializer#configure(org.springframework.boot.builder.SpringApplicationBuilder)
-     */
-    @Override
-    protected SpringApplicationBuilder configure(final SpringApplicationBuilder application)
-    {
-        return configureApplication(application);
     }
 
     /**
@@ -89,7 +65,6 @@ public class JsyncServerApplication extends SpringBootServletInitializer
 
         Thread thread = new Thread(() -> {
             this.context.close();
-            // this.context = SpringApplication.run(JsyncServerApplication.class, args.getSourceArgs());
             this.context = configureApplication(new SpringApplicationBuilder()).run(args.getSourceArgs());
         });
 
