@@ -27,6 +27,7 @@
     <modules>
         <module>jsync-core</module>
         <module>jsync-remote-nio</module>
+        <module>jsync-remote-rsocket</module>
         <module>jsync-remote-springrest</module> 
         <module>jsync-remote-springwebflux</module>
         <module>jsync-remote-springrsocket</module> 
