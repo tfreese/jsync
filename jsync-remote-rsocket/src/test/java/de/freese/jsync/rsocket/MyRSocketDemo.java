@@ -4,6 +4,7 @@ package de.freese.jsync.rsocket;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketConnector;
@@ -14,6 +15,7 @@ import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import io.rsocket.util.DefaultPayload;
 import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
 import reactor.netty.tcp.TcpClient;
 import reactor.netty.tcp.TcpServer;
 import reactor.util.retry.Retry;
@@ -95,6 +97,7 @@ public class MyRSocketDemo
                 ;
         // @formatter:on
 
+        // Request - Response
         for (int i = 0; i < 3; i++)
         {
             // @formatter:off
@@ -113,6 +116,20 @@ public class MyRSocketDemo
                 ;
             // @formatter:on
         }
+
+        // Channel: Erwartung = '/tmp/test.txt' mit 'Hello World !' wird geschrieben.
+        Payload first = DefaultPayload.create("Hello", "/tmp/test.txt");
+        Payload second = DefaultPayload.create(" World !");
+
+        // @formatter:off
+        socket
+            .requestChannel(Flux.just(first, second))
+            .map(Payload::getDataUtf8)
+            .doOnNext(LOGGER::debug)
+            .then()
+            .block()
+            ;
+        // @formatter:on
 
         server.dispose();
         socket.dispose();
