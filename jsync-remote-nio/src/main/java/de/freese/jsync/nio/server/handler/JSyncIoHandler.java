@@ -365,16 +365,16 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     delete(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
-                case TARGET_WRITE_CHUNK:
-                    writeChunk(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
-                    break;
-
                 case TARGET_UPDATE:
                     update(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_VALIDATE_FILE:
                     validate(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
+                    break;
+
+                case TARGET_WRITE_CHUNK:
+                    writeChunk(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     break;
 
                 case TARGET_WRITEABLE_RESOURCE:

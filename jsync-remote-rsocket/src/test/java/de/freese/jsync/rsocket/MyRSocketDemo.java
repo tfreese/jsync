@@ -4,6 +4,7 @@ package de.freese.jsync.rsocket;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import de.freese.jsync.rsocket.utils.RSocketUtils;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.SocketAcceptor;
@@ -13,9 +14,10 @@ import io.rsocket.core.Resume;
 import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.transport.netty.server.TcpServerTransport;
-import io.rsocket.util.DefaultPayload;
+import io.rsocket.util.ByteBufPayload;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.netty.tcp.TcpClient;
 import reactor.netty.tcp.TcpServer;
 import reactor.util.retry.Retry;
@@ -102,34 +104,70 @@ public class MyRSocketDemo
         {
             // @formatter:off
             socket
-                .requestResponse(DefaultPayload.create("Hello", "meta"))
+                .requestResponse(ByteBufPayload.create("Hello", "meta"))
                 .map(pl -> {
                     String response = pl.getDataUtf8();
-                    pl.release();
+                    RSocketUtils.release(pl);
 
                     return response;
                 })
                 .doOnError(th -> LOGGER.error(th.getMessage()))
-                .onErrorReturn("error")
                 .doOnNext(LOGGER::debug)
+                .onErrorReturn("error")
+                //.doOnError(th -> LOGGER.error(null, th))
+                //.doFinally(signalType -> RSocketUtils.release(request))
                 .block()
                 ;
             // @formatter:on
         }
 
         // Channel: Erwartung = '/tmp/test.txt' mit 'Hello World !' wird geschrieben.
-        Payload first = DefaultPayload.create("Hello", "/tmp/test.txt");
-        Payload second = DefaultPayload.create(" World !");
+        Payload meta = ByteBufPayload.create("", "/tmp/test.txt");
+        Payload first = ByteBufPayload.create("Hello");
+        Payload second = ByteBufPayload.create(" World !");
+        Flux<Payload> fileFlux = Flux.just(first, second);
 
         // @formatter:off
         socket
-            .requestChannel(Flux.just(first, second))
-            .map(Payload::getDataUtf8)
+            .requestChannel(Flux.concat(Mono.just(meta),fileFlux).doOnEach(signal -> RSocketUtils.release(signal.get())))
+            .map(payload -> {
+                String response = payload.getDataUtf8();
+                RSocketUtils.release(payload);
+                return response;
+            })
             .doOnNext(LOGGER::debug)
+            .doOnError(th -> LOGGER.error(null, th))
             .then()
             .block()
             ;
         // @formatter:on
+
+        // ReadableByteChannel readableByteChannel = Files.newByteChannel(path, StandardOpenOption.READ);
+        // fileFlux = Flux.generate(new ReadableByteChannelGenerator(readableByteChannel, 1024 * 1024 * 4)).map(ByteBufPayload::create).doFinally(signalType ->
+        // {
+        // try
+        // {
+        // readableByteChannel.close();
+        // }
+        // catch (IOException ex)
+        // {
+        // LOGGER.error(ex.getMessage());
+        //
+        // throw new UncheckedIOException(ex);
+        // }
+        // });
+
+        // fileFlux = Flux.using(() -> readableByteChannel,
+        // channel -> Flux.generate(new ReadableByteChannelGenerator(channel, 1024 * 1024 * 4)).map(ByteBufPayload::create), channel -> {
+        // try
+        // {
+        // channel.close();
+        // }
+        // catch (IOException ex)
+        // {
+        // throw new UncheckedIOException(ex);
+        // }
+        // });
 
         server.dispose();
         socket.dispose();

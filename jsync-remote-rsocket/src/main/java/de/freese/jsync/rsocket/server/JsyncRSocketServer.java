@@ -65,7 +65,7 @@ public class JsyncRSocketServer
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(
                         Retry
-                            .fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(1))
+                            .fixedDelay(10, Duration.ofSeconds(1))
                             .doBeforeRetry(s -> LOGGER.debug("Disconnected. Trying to resume..."))
                 )
                 ;
