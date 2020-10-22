@@ -36,8 +36,8 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.spring.rest.utils.DataBufferHttpMessageConverter;
 import de.freese.jsync.spring.rest.utils.HttpHeaderInterceptor;
+import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * {@link Sender} für Remote-Filesysteme für Spring-REST.
@@ -49,7 +49,7 @@ public class RemoteSenderRestClient extends AbstractSender
     /**
     *
     */
-    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+    private final DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
 
     /**
      *

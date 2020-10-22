@@ -2,22 +2,26 @@
 package de.freese.jsync.rsocket;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import de.freese.jsync.rsocket.utils.RSocketUtils;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.SocketAcceptor;
+import io.rsocket.client.LoadBalancedRSocketMono;
+import io.rsocket.client.filter.RSocketSupplier;
 import io.rsocket.core.RSocketConnector;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
-import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.transport.netty.server.TcpServerTransport;
-import io.rsocket.util.ByteBufPayload;
+import io.rsocket.util.DefaultPayload;
 import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.netty.resources.LoopResources;
 import reactor.netty.tcp.TcpClient;
 import reactor.netty.tcp.TcpServer;
 import reactor.util.retry.Retry;
@@ -37,110 +41,58 @@ public class MyRSocketDemo
      */
     public static void main(final String[] args)
     {
-        // @formatter:off
-        Resume resume = new Resume()
-                .sessionDuration(Duration.ofMinutes(5))
-                .retry(
-                        Retry
-                            .fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(1))
-                            .doBeforeRetry(s -> LOGGER.debug("Disconnected. Trying to resume..."))
-                )
-                ;
-        // @formatter:on
-
-        // TcpResources.set(LoopResources.create("demo-threadPool", 2, 4, true));
+        // Globale Default-Resourcen.
+        // TcpResources.set(LoopResources.create("demo", 4, true));
         // TcpResources.set(ConnectionProvider.create("demo-connectionPool", 16));
 
-        // @formatter:off
-        TcpServer tcpServer = TcpServer.create()
-               .host("localhost")
-                .port(7000)
-                //.runOn(LoopResources.create("demo-server", 2, 4, true))
-                ;
-        // @formatter:on
+        List<Disposable> servers = startServers(7000, 8000, 9000);
 
-        // @formatter:off
-        Disposable server = RSocketServer
-                .create(SocketAcceptor.with(new MyRSocketHandler()))
-                .resume(resume)
-                .payloadDecoder(PayloadDecoder.ZERO_COPY)
-                //.bind(TcpServerTransport.create("localhost", 7000))
-                .bind(TcpServerTransport.create(tcpServer))
-                //.subscribe()
-                .block()
-        ;
-        // @formatter:on
-
-        // Mono<RSocket> source =
-        // RSocketConnector.create()
-        // .reconnect(Retry.backoff(50, Duration.ofMillis(500)))
-        // .connect(TcpClientTransport.create("localhost", 7000));
-        //
-        // RSocketClient.from(source)
-
-        // @formatter:off
-        TcpClient tcpClient = TcpClient.create()
-                .host("localhost")
-                .port(7000)
-               //.runOn(LoopResources.create("demo-client", 4, true))
-                ;
-        // @formatter:on
-
-        // @formatter:off
-        RSocket socket = RSocketConnector
-                .create()
-                //.resume(resume)
-                .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
-                .payloadDecoder(PayloadDecoder.ZERO_COPY)
-                //.connectWith(TcpClientTransport.create("localhost", 7000))
-                .connect(TcpClientTransport.create(tcpClient))
-               //.connectWith(TcpClientTransport.create(tcpClient))
-                .block()
-                ;
-        // @formatter:on
+        Mono<RSocket> client = startClients(7000, 8000, 9000);
 
         // Request - Response
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 30; i++)
         {
-            // @formatter:off
-            socket
-                .requestResponse(ByteBufPayload.create("Hello", "meta"))
-                .map(pl -> {
-                    String response = pl.getDataUtf8();
-                    RSocketUtils.release(pl);
+            // if (i == 10)
+            // {
+            // // Funktioniert irgendwie nicht.
+            // Disposable server = servers.remove(0);
+            // server.dispose();
+            // }
 
-                    return response;
-                })
-                .doOnError(th -> LOGGER.error(th.getMessage()))
-                .doOnNext(LOGGER::debug)
-                .onErrorReturn("error")
-                //.doOnError(th -> LOGGER.error(null, th))
-                //.doFinally(signalType -> RSocketUtils.release(request))
-                .block()
+            // @formatter:off
+            client.block()
+                .requestResponse(DefaultPayload.create("test " + i))
+                .map(Payload::getDataUtf8)
+                .doOnNext(LOGGER::info)
+                .doOnError(th -> LOGGER.error(null, th))
+                .block() // Wartet auf jeden Response.
+                //.subscribe() // Führt alles im Hintergrund aus.
                 ;
             // @formatter:on
         }
 
-        // Channel: Erwartung = '/tmp/test.txt' mit 'Hello World !' wird geschrieben.
-        Payload meta = ByteBufPayload.create("", "/tmp/test.txt");
-        Payload first = ByteBufPayload.create("Hello");
-        Payload second = ByteBufPayload.create(" World !");
-        Flux<Payload> fileFlux = Flux.just(first, second);
+        // System.err.println(((PooledByteBufAllocator) ByteBufAllocator.DEFAULT).dumpStats());
 
-        // @formatter:off
-        socket
-            .requestChannel(Flux.concat(Mono.just(meta),fileFlux).doOnEach(signal -> RSocketUtils.release(signal.get())))
-            .map(payload -> {
-                String response = payload.getDataUtf8();
-                RSocketUtils.release(payload);
-                return response;
-            })
-            .doOnNext(LOGGER::debug)
-            .doOnError(th -> LOGGER.error(null, th))
-            .then()
-            .block()
-            ;
-        // @formatter:on
+        // // Channel: Erwartung = '/tmp/test.txt' mit 'Hello World !' wird geschrieben.
+        // Payload meta = ByteBufPayload.create("", "/tmp/test.txt");
+        // Payload first = ByteBufPayload.create("Hello");
+        // Payload second = ByteBufPayload.create(" World !");
+        // Flux<Payload> fileFlux = Flux.just(first, second);
+        //
+//        // @formatter:off
+//        socket
+//            .requestChannel(Flux.concat(Mono.just(meta),fileFlux).doOnEach(signal -> RSocketUtils.release(signal.get())))
+//            .map(payload -> {
+//                String response = payload.getDataUtf8();
+//                RSocketUtils.release(payload);
+//                return response;
+//            })
+//            .doOnNext(LOGGER::debug)
+//            .doOnError(th -> LOGGER.error(null, th))
+//            .then()
+//            .block()
+//            ;
+//        // @formatter:on
 
         // ReadableByteChannel readableByteChannel = Files.newByteChannel(path, StandardOpenOption.READ);
         // fileFlux = Flux.generate(new ReadableByteChannelGenerator(readableByteChannel, 1024 * 1024 * 4)).map(ByteBufPayload::create).doFinally(signalType ->
@@ -169,7 +121,109 @@ public class MyRSocketDemo
         // }
         // });
 
-        server.dispose();
-        socket.dispose();
+        servers.forEach(Disposable::dispose);
+        client.block().dispose();
+    }
+
+    /**
+     * @param ports int[]
+     * @return {@link Mono}
+     */
+    private static Mono<RSocket> startClients(final int...ports)
+    {
+        // @formatter:off
+        List<RSocketSupplier> rSocketSupplierList = IntStream.of(ports)
+                .mapToObj(port ->
+                     RSocketConnector
+                            .create()
+                            //.payloadDecoder(PayloadDecoder.ZERO_COPY)
+                            .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
+                            //.reconnect(Retry.backoff(50, Duration.ofMillis(500)))
+                            .connect(TcpClientTransport.create(TcpClient.create()
+                                        .host("localhost")
+                                        .port(port)
+                                        .runOn(LoopResources.create("client-" + port, 2, true))
+                                        )
+                                    )
+                            //.connect(LocalClientTransport.create("test-local-" + port))
+                            .block()
+                )
+                .map(rsocket -> new RSocketSupplier(() -> Mono.just(rsocket)))
+                .collect(Collectors.toList())
+                ;
+        // @formatter:on
+
+        Publisher<List<RSocketSupplier>> factories = subscriber -> {
+            subscriber.onNext(rSocketSupplierList);
+            subscriber.onComplete();
+        };
+
+        LoadBalancedRSocketMono balancer = LoadBalancedRSocketMono.create(factories);
+
+        return balancer;
+
+//        // @formatter:off
+//        Mono<RSocket> client = RSocketConnector
+//                .create()
+//                //.payloadDecoder(PayloadDecoder.ZERO_COPY)
+//                .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
+//                //.reconnect(Retry.backoff(50, Duration.ofMillis(500)))
+//                .connect(TcpClientTransport.create(TcpClient.create()
+//                            .host("localhost")
+//                            .port(ports[0])
+//                            .runOn(LoopResources.create("client-" + ports[0], 2, true))
+//                            )
+//                        )
+//                //.connect(LocalClientTransport.create("test-local-" + port))
+//                ;
+//        // @formatter:on
+        //
+        // return client;
+    }
+
+    /**
+     * @param ports int[]
+     * @return {@link List}
+     */
+    private static List<Disposable> startServers(final int...ports)
+    {
+        // @formatter:off
+        Resume resume = new Resume()
+                .sessionDuration(Duration.ofMinutes(5))
+                .retry(
+                        Retry
+                            .fixedDelay(20, Duration.ofSeconds(1))
+                            .doBeforeRetry(s -> LOGGER.info("Disconnected. Trying to resume..."))
+                )
+                ;
+        // @formatter:on
+
+        // @formatter:off
+        List<Disposable> servers = IntStream.of(ports)
+                .mapToObj(port ->
+                    RSocketServer
+                        .create()
+                        .acceptor(SocketAcceptor.forRequestResponse(payload -> {
+                                    LOGGER.info("Server {} got {}", port, payload.getDataUtf8());
+                                    return Mono.just(DefaultPayload.create("Server " + port + " response")).delayElement(Duration.ofMillis(100));
+                                  })
+                         )
+                        //.payloadDecoder(PayloadDecoder.ZERO_COPY)
+                        .resume(resume)
+                        .bind(TcpServerTransport.create(TcpServer.create()
+                                .host("localhost")
+                                .port(port)
+                                .runOn(LoopResources.create("server-" + port, 1, 2, true))
+                                )
+                        )
+                        //.bind(LocalServerTransport.create("test-local-" + port))
+                        //.subscribe()
+                        .block()
+                )
+                .collect(Collectors.toList())
+                ;
+        // @formatter:on
+
+        return servers;
     }
 }

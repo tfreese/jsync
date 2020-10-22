@@ -30,7 +30,7 @@ public class JsyncRSocketServer
     public static void main(final String[] args)
     {
         JsyncRSocketServer server = new JsyncRSocketServer();
-        server.start(8888);
+        server.start(8888, 1, 4);
         server.stop();
     }
 
@@ -57,8 +57,10 @@ public class JsyncRSocketServer
 
     /**
      * @param port int
+     * @param selectCount int
+     * @param workerCount int
      */
-    public void start(final int port)
+    public void start(final int port, final int selectCount, final int workerCount)
     {
         // @formatter:off
         Resume resume = new Resume()
@@ -71,6 +73,7 @@ public class JsyncRSocketServer
                 ;
         // @formatter:on
 
+        // Globale Default-Resourcen.
         // TcpResources.set(LoopResources.create("jsync-server", 2, 4, true));
         // TcpResources.set(ConnectionProvider.create("demo-connectionPool", 16));
 
@@ -78,13 +81,14 @@ public class JsyncRSocketServer
         TcpServer tcpServer = TcpServer.create()
                 .host("localhost")
                 .port(port)
-                .runOn(LoopResources.create("jsync-server", 2, 4, true))
+                .runOn(LoopResources.create("jsync-server-", selectCount, workerCount, true))
                 ;
         // @formatter:on
 
         // @formatter:off
          this.server = RSocketServer
-                .create(SocketAcceptor.with(new JsyncRSocketHandler()))
+                .create()
+                .acceptor(SocketAcceptor.with(new JsyncRSocketHandler()))
                 .resume(resume)
                 .payloadDecoder(PayloadDecoder.ZERO_COPY)
                 //.bind(TcpServerTransport.create("localhost", 7000))

@@ -25,7 +25,15 @@
         <dependency>
             <groupId>io.rsocket</groupId>
             <artifactId>rsocket-transport-netty</artifactId>
-        </dependency>      
+        </dependency>
+        <!--dependency>
+            <groupId>io.rsocket</groupId>
+            <artifactId>rsocket-transport-local</artifactId>
+        </dependency-->
+        <dependency>
+            <groupId>io.rsocket</groupId>
+            <artifactId>rsocket-load-balancer</artifactId>
+        </dependency>                     
 
         <!-- runtime scope -->
         <dependency>

@@ -15,7 +15,6 @@ import java.util.function.LongConsumer;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import de.freese.jsync.Options;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
@@ -135,7 +134,7 @@ public final class DigestUtils
 
         consumerBytesRead.accept(0);
 
-        DataBuffer dataBuffer = DefaultPooledDataBufferFactory.getInstance().allocateBuffer(bufferSize);
+        DataBuffer dataBuffer = JSyncUtils.getDataBufferFactory().allocateBuffer(bufferSize);
         dataBuffer.readPosition(0);
         dataBuffer.writePosition(0);
 

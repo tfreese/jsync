@@ -35,9 +35,9 @@ import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.JsyncThreadFactory;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 import io.netty.channel.ChannelOption;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
@@ -57,7 +57,7 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
     /**
     *
     */
-    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+    private final DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
 
     /**
     *

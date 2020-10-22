@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -26,16 +25,15 @@ import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.netty.server.JsyncNettyServer;
 import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
-import de.freese.jsync.spring.rest.JsyncRestApplication;
+import de.freese.jsync.rsocket.server.JsyncRSocketServer;
 
 /**
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
-@Disabled("")
+// @Disabled("")
 class TestJSyncRemote extends AbstractJSyncTest
 {
     /**
@@ -83,23 +81,23 @@ class TestJSyncRemote extends AbstractJSyncTest
         options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
     }
 
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    private void startNettyServer() throws Exception
-    {
-        if (!CLOSEABLES.containsKey("netty"))
-        {
-            JsyncNettyServer server = new JsyncNettyServer();
-            server.start(8002, 2, 4);
-            CLOSEABLES.put("netty", () -> server.stop());
-        }
-    }
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // private void startServerNetty() throws Exception
+    // {
+    // if (!CLOSEABLES.containsKey("netty"))
+    // {
+    // JsyncNettyServer server = new JsyncNettyServer();
+    // server.start(8002, 2, 4);
+    // CLOSEABLES.put("netty", () -> server.stop());
+    // }
+    // }
 
     /**
      * @throws Exception Falls was schief geht.
      */
-    private void startNioServer() throws Exception
+    private void startServerNio() throws Exception
     {
         if (!CLOSEABLES.containsKey("nio"))
         {
@@ -114,30 +112,43 @@ class TestJSyncRemote extends AbstractJSyncTest
     /**
      * @throws Exception Falls was schief geht.
      */
-    private void startSpringServerRest() throws Exception
+    private void startServerRSocket() throws Exception
     {
-//      // @formatter:off
-//      new SpringApplicationBuilder(JsyncServerApplication.class)
-//              //.properties("server.port=8081") // Funktioniert nicht, wenn server.port in application.yml enthalten ist.
-//              //.run(args);
-//              .run(new String[]{"--server.port=8001"});
-//      // @formatter:on
-
-        if (!CLOSEABLES.containsKey("springrest"))
+        if (!CLOSEABLES.containsKey("rsocket"))
         {
-            JsyncRestApplication server = new JsyncRestApplication();
-            server.start(new String[]
-            {
-                    "--server.port=8003"
-            });
-            CLOSEABLES.put("springrest", () -> server.stop());
+            JsyncRSocketServer server = new JsyncRSocketServer();
+            server.start(8002, 2, 4);
+            CLOSEABLES.put("rsocket", () -> server.stop());
         }
     }
 
     // /**
     // * @throws Exception Falls was schief geht.
     // */
-    // private void startSpringServerWebflux() throws Exception
+    // private void startServerSpringRest() throws Exception
+    // {
+////      // @formatter:off
+////      new SpringApplicationBuilder(JsyncServerApplication.class)
+////              //.properties("server.port=8081") // Funktioniert nicht, wenn server.port in application.yml enthalten ist.
+////              //.run(args);
+////              .run(new String[]{"--server.port=8001"});
+////      // @formatter:on
+    //
+    // if (!CLOSEABLES.containsKey("springrest"))
+    // {
+    // JsyncRestApplication server = new JsyncRestApplication();
+    // server.start(new String[]
+    // {
+    // "--server.port=8003"
+    // });
+    // CLOSEABLES.put("springrest", () -> server.stop());
+    // }
+    // }
+
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // private void startServerSpringWebflux() throws Exception
     // {
     // if (!CLOSEABLES.containsKey("springwebflux"))
     // {
@@ -203,43 +214,43 @@ class TestJSyncRemote extends AbstractJSyncTest
         assertTrue(true);
     }
 
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testNettyLocalToRemote() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // @Test
+    // void testNettyLocalToRemote() throws Exception
+    // {
+    // System.out.println();
+    // TimeUnit.MILLISECONDS.sleep(500);
+    //
+    // startServerNetty();
+    //
+    // URI senderUri = PATH_QUELLE.toUri();
+    // URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
+    //
+    // syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
+    //
+    // assertTrue(true);
+    // }
 
-        startNettyServer();
-
-        URI senderUri = PATH_QUELLE.toUri();
-        URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
-
-        assertTrue(true);
-    }
-
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testNettyRemoteToLocal() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startNettyServer();
-
-        URI senderUri = new URI("jsync://localhost:8002/" + PATH_QUELLE.toString());
-        URI receiverUri = PATH_ZIEL.toUri();
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
-
-        assertTrue(true);
-    }
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // @Test
+    // void testNettyRemoteToLocal() throws Exception
+    // {
+    // System.out.println();
+    // TimeUnit.MILLISECONDS.sleep(500);
+    //
+    // startServerNetty();
+    //
+    // URI senderUri = new URI("jsync://localhost:8002/" + PATH_QUELLE.toString());
+    // URI receiverUri = PATH_ZIEL.toUri();
+    //
+    // syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
+    //
+    // assertTrue(true);
+    // }
 
     /**
      * @throws Exception Falls was schief geht.
@@ -250,7 +261,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
-        startNioServer();
+        startServerNio();
 
         URI senderUri = PATH_QUELLE.toUri();
         URI receiverUri = new URI("jsync://localhost:8001/" + PATH_ZIEL.toString());
@@ -269,7 +280,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
-        startNioServer();
+        startServerNio();
 
         URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
@@ -288,7 +299,7 @@ class TestJSyncRemote extends AbstractJSyncTest
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
-        startNioServer();
+        startServerNio();
 
         // URI sender = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
         // URI receiver = new URI("jsync", null, "localhost", 8001, "/" + PATH_ZIEL.toString(), null, null);
@@ -304,113 +315,132 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void testSpringRestLocalToRemote() throws Exception
+    void testRSocketRemoteToLocal() throws Exception
     {
         System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
-        startSpringServerRest();
+        startServerRSocket();
 
-        URI senderUri = PATH_QUELLE.toUri();
-        URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
-
-        assertTrue(true);
-    }
-
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testSpringRestRemoteToLocal() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startSpringServerRest();
-
-        URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+        URI senderUri = new URI("jsync://localhost:8002/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
 
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.RSOCKET);
 
         assertTrue(true);
     }
 
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testSpringRestRemoteToRemote() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // @Test
+    // void testSpringRestLocalToRemote() throws Exception
+    // {
+    // System.out.println();
+    // TimeUnit.MILLISECONDS.sleep(500);
+    //
+    // startServerSpringRest();
+    //
+    // URI senderUri = PATH_QUELLE.toUri();
+    // URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
+    //
+    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
+    //
+    // assertTrue(true);
+    // }
 
-        startSpringServerRest();
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // @Test
+    // void testSpringRestRemoteToLocal() throws Exception
+    // {
+    // System.out.println();
+    // TimeUnit.MILLISECONDS.sleep(500);
+    //
+    // startServerSpringRest();
+    //
+    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+    // URI receiverUri = PATH_ZIEL.toUri();
+    //
+    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
+    //
+    // assertTrue(true);
+    // }
 
-        URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
-        URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // @Test
+    // void testSpringRestRemoteToRemote() throws Exception
+    // {
+    // System.out.println();
+    // TimeUnit.MILLISECONDS.sleep(500);
+    //
+    // startServerSpringRest();
+    //
+    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+    // URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
+    //
+    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
+    //
+    // assertTrue(true);
+    // }
 
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // @Test
+    // void testSpringWebfluxLocalToRemote() throws Exception
+    // {
+    // System.out.println();
+    // TimeUnit.MILLISECONDS.sleep(500);
+    //
+    // startServerSpringRest();
+    //
+    // URI senderUri = PATH_QUELLE.toUri();
+    // URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
+    //
+    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_WEB_CLIENT);
+    //
+    // assertTrue(true);
+    // }
 
-        assertTrue(true);
-    }
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // @Test
+    // void testSpringWebfluxRemoteToLocal() throws Exception
+    // {
+    // System.out.println();
+    // TimeUnit.MILLISECONDS.sleep(500);
+    //
+    // startServerSpringRest();
+    //
+    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+    // URI receiverUri = PATH_ZIEL.toUri();
+    //
+    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_WEB_CLIENT);
+    //
+    // assertTrue(true);
+    // }
 
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testSpringWebfluxLocalToRemote() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startSpringServerRest();
-
-        URI senderUri = PATH_QUELLE.toUri();
-        URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_WEB_CLIENT);
-
-        assertTrue(true);
-    }
-
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testSpringWebfluxRemoteToLocal() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startSpringServerRest();
-
-        URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
-        URI receiverUri = PATH_ZIEL.toUri();
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_WEB_CLIENT);
-
-        assertTrue(true);
-    }
-
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testSpringWebfluxRemoteToRemote() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startSpringServerRest();
-
-        URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
-        URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_WEB_CLIENT);
-
-        assertTrue(true);
-    }
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // @Test
+    // void testSpringWebfluxRemoteToRemote() throws Exception
+    // {
+    // System.out.println();
+    // TimeUnit.MILLISECONDS.sleep(500);
+    //
+    // startServerSpringRest();
+    //
+    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+    // URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
+    //
+    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_WEB_CLIENT);
+    //
+    // assertTrue(true);
+    // }
 }

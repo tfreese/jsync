@@ -16,7 +16,7 @@ import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.nio.filesystem.RemoteSupport;
 import de.freese.jsync.remote.api.JsyncRequest;
 import de.freese.jsync.remote.api.JsyncResponse;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
@@ -66,7 +66,7 @@ public class SocketChannelJsyncRequest implements JsyncRequest, RemoteSupport
         this.channel = Objects.requireNonNull(channel, "channel required");
         this.serializer = Objects.requireNonNull(serializer, "serializer required");
 
-        this.dataBuffer = DefaultPooledDataBufferFactory.getInstance().allocateBuffer();
+        this.dataBuffer = JSyncUtils.getDataBufferFactory().allocateBuffer();
         this.dataBuffer.readPosition(0);
         this.dataBuffer.writePosition(0);
     }

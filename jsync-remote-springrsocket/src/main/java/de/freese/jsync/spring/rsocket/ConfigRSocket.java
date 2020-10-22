@@ -18,8 +18,8 @@ import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.spring.rsocket.model.Constants;
+import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -45,7 +45,7 @@ public class ConfigRSocket
     @Bean
     public DataBufferFactory dataBufferFactory()
     {
-        DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+        DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
 
         return dataBufferFactory;
     }

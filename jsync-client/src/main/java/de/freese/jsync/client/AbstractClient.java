@@ -31,8 +31,7 @@ import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
 import de.freese.jsync.nio.filesystem.receiver.RemoteReceiverNio;
 import de.freese.jsync.nio.filesystem.sender.RemoteSenderNio;
-import de.freese.jsync.spring.rest.filesystem.RemoteReceiverRestClient;
-import de.freese.jsync.spring.rest.filesystem.RemoteSenderRestClient;
+import de.freese.jsync.rsocket.filesystem.RemoteSenderRSocket;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
@@ -52,6 +51,10 @@ public abstract class AbstractClient implements Client
          *
          */
         NIO,
+        /**
+        *
+        */
+        RSOCKET,
         /**
          *
          */
@@ -147,7 +150,8 @@ public abstract class AbstractClient implements Client
             switch (this.remoteMode)
             {
                 case NIO -> this.sender = new RemoteSenderNio();
-                case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestClient();
+                case RSOCKET -> this.sender = new RemoteSenderRSocket();
+                // case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestClient();
                 // case SPRING_WEB_CLIENT -> this.sender = new RemoteSenderWebFluxClient();
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
             }
@@ -162,7 +166,7 @@ public abstract class AbstractClient implements Client
             switch (this.remoteMode)
             {
                 case NIO -> this.receiver = new RemoteReceiverNio();
-                case SPRING_REST_TEMPLATE -> this.receiver = new RemoteReceiverRestClient();
+                // case SPRING_REST_TEMPLATE -> this.receiver = new RemoteReceiverRestClient();
                 // case SPRING_WEB_CLIENT -> this.receiver = new RemoteReceiverWebFluxClient();
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
             }

@@ -52,7 +52,6 @@ import de.freese.jsync.spring.rest.utils.HttpHeaderInterceptor;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.JsyncThreadFactory;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * {@link Receiver} für Remote-Filesysteme für Spring-REST.
@@ -64,7 +63,7 @@ public class RemoteReceiverRestClient extends AbstractReceiver
     /**
     *
     */
-    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+    private final DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
 
     /**
      *

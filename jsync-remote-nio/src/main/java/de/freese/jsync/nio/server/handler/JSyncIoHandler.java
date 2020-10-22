@@ -30,7 +30,7 @@ import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
 import de.freese.jsync.nio.server.JsyncServerResponse;
 import de.freese.jsync.remote.RemoteUtils;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * Verarbeitet den Request und Response.<br>
@@ -84,7 +84,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
     *
     */
-    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+    private final DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
 
     /**
      *

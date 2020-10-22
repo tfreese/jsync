@@ -46,28 +46,34 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>jsync-remote-rsocket</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>        
+        <!--dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-springrest</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
-        </dependency>
+        </dependency-->
         <!--dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-springwebflux</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency-->
-        <dependency>
+        <!--dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-springrsocket</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
-        </dependency>        
-        <dependency>
+        </dependency-->        
+        <!--dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-netty</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
-        </dependency>              
+        </dependency-->              
 
         <!-- runtime scope -->
         <!-- provided scope -->

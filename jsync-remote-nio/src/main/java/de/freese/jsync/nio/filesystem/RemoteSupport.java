@@ -19,8 +19,8 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.remote.RemoteUtils;
+import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
@@ -30,7 +30,7 @@ public interface RemoteSupport
     /**
      *
      */
-    static final DataBufferFactory DATA_BUFFER_FACTORY = DefaultPooledDataBufferFactory.getInstance();
+    static final DataBufferFactory DATA_BUFFER_FACTORY = JSyncUtils.getDataBufferFactory();
 
     /**
     *

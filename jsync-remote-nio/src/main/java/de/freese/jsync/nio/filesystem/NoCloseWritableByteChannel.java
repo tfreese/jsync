@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
@@ -47,7 +47,7 @@ public class NoCloseWritableByteChannel implements WritableByteChannel, RemoteSu
     @Override
     public void close() throws IOException
     {
-        DataBuffer dataBuffer = DefaultPooledDataBufferFactory.getInstance().allocateBuffer();
+        DataBuffer dataBuffer = JSyncUtils.getDataBufferFactory().allocateBuffer();
         dataBuffer.readPosition(0);
         dataBuffer.writePosition(0);
 

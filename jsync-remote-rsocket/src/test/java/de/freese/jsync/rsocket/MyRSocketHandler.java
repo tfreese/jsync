@@ -108,7 +108,7 @@ public class MyRSocketHandler implements RSocket
      * @return {@link Flux}
      * @throws Exception Falls was schief geht.
      */
-    private Flux<Payload> writeFile1(final String fileName, final Publisher<Payload> payloads) throws Exception
+    Flux<Payload> writeFile1(final String fileName, final Publisher<Payload> payloads) throws Exception
     {
         Path path = Paths.get(fileName);
         final WritableByteChannel writableByteChannel = Files.newByteChannel(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
@@ -141,7 +141,7 @@ public class MyRSocketHandler implements RSocket
      * @return {@link Flux}
      * @throws Exception Falls was schief geht.
      */
-    private Flux<Payload> writeFile2(final String fileName, final Publisher<Payload> payloads) throws Exception
+    Flux<Payload> writeFile2(final String fileName, final Publisher<Payload> payloads) throws Exception
     {
         Path path = Paths.get(fileName);
         final WritableByteChannel writableByteChannel = Files.newByteChannel(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE);

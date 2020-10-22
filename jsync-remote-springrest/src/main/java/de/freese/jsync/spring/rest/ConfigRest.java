@@ -15,8 +15,8 @@ import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.spring.rest.utils.DataBufferHttpMessageConverter;
+import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
@@ -46,7 +46,7 @@ public class ConfigRest implements WebMvcConfigurer// , WebServerFactoryCustomiz
     {
         // converters.add(new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get()));
         // converters.add(new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.DATABUFFER_SIZE)));
-        converters.add(new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, DefaultPooledDataBufferFactory.getInstance()));
+        converters.add(new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, JSyncUtils.getDataBufferFactory()));
     }
 
     /**
@@ -55,7 +55,7 @@ public class ConfigRest implements WebMvcConfigurer// , WebServerFactoryCustomiz
     @Bean
     public DataBufferFactory dataBufferFactory()
     {
-        DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+        DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
 
         return dataBufferFactory;
     }

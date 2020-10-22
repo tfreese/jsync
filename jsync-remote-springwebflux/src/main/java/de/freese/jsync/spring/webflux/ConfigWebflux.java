@@ -13,8 +13,8 @@ import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
@@ -47,7 +47,7 @@ public class ConfigWebflux implements WebFluxConfigurer
     @Bean
     public DataBufferFactory dataBufferFactory()
     {
-        DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
+        DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
 
         return dataBufferFactory;
     }
