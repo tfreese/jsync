@@ -1,11 +1,18 @@
 // Created: 19.10.2020
 package de.freese.jsync.rsocket.server;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.NettyDataBuffer;
+import org.springframework.core.io.buffer.NettyDataBufferFactory;
+import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -94,6 +101,45 @@ public class JsyncRSocketHandler implements RSocket
     }
 
     /**
+     * Create the Directory.
+     *
+     * @param payload {@link Payload}
+     * @param receiver {@link Receiver}
+     * @return {@link Mono}
+     */
+    private Mono<Payload> createDirectory(final Payload payload, final Receiver receiver)
+    {
+        ByteBuf byteBufData = payload.data();
+
+        String baseDir = getSerializer().readFrom(byteBufData, String.class);
+        String relativePath = getSerializer().readFrom(byteBufData, String.class);
+
+        receiver.createDirectory(baseDir, relativePath);
+
+        return Mono.just(ByteBufPayload.create("OK"));
+    }
+
+    /**
+     * Delete Directory or File.
+     *
+     * @param payload {@link Payload}
+     * @param receiver {@link Receiver}
+     * @return {@link Mono}
+     */
+    private Mono<Payload> delete(final Payload payload, final Receiver receiver)
+    {
+        ByteBuf byteBufData = payload.data();
+
+        String baseDir = getSerializer().readFrom(byteBufData, String.class);
+        String relativePath = getSerializer().readFrom(byteBufData, String.class);
+        boolean followSymLinks = getSerializer().readFrom(byteBufData, Boolean.class);
+
+        receiver.delete(baseDir, relativePath, followSymLinks);
+
+        return Mono.just(ByteBufPayload.create("OK"));
+    }
+
+    /**
      * @return {@link Mono}
      */
     private Mono<Payload> disconnect()
@@ -161,6 +207,30 @@ public class JsyncRSocketHandler implements RSocket
     }
 
     /**
+     * Read File-Chunk from Sender.
+     *
+     * @param payload {@link Payload}
+     * @param sender {@link Sender}
+     * @return {@link Mono}
+     */
+    private Mono<Payload> readChunk(final Payload payload, final Sender sender)
+    {
+        ByteBuf byteBufData = payload.data();
+
+        String baseDir = getSerializer().readFrom(byteBufData, String.class);
+        String relativeFile = getSerializer().readFrom(byteBufData, String.class);
+        long position = getSerializer().readFrom(byteBufData, Long.class);
+        long sizeOfChunk = getSerializer().readFrom(byteBufData, Long.class);
+
+        ByteBuf byteBuf = getByteBufAllocator().buffer((int) sizeOfChunk);
+        ByteBuffer byteBuffer = byteBuf.nioBuffer(0, (int) sizeOfChunk);
+
+        sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
+
+        return Mono.just(ByteBufPayload.create(byteBuf));
+    }
+
+    /**
      * @see io.rsocket.RSocket#requestChannel(org.reactivestreams.Publisher)
      */
     @Override
@@ -179,12 +249,6 @@ public class JsyncRSocketHandler implements RSocket
 
                 switch (command)
                 {
-                    // case SOURCE_READ_CHUNK:
-                    // return readChunk(selectionKey, byteBuffer, THREAD_LOCAL_SENDER.get());
-                    //
-                    // case SOURCE_READABLE_RESOURCE:
-                    // return resourceReadable(selectionKey, byteBuffer, THREAD_LOCAL_SENDER.get());
-                    //
                     // case TARGET_WRITE_CHUNK:
                     // return writeChunk(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
                     //
@@ -233,6 +297,30 @@ public class JsyncRSocketHandler implements RSocket
                 case SOURCE_CHECKSUM:
                     return checksum(payload, THREAD_LOCAL_SENDER.get());
 
+                case SOURCE_READ_CHUNK:
+                    return readChunk(payload, THREAD_LOCAL_SENDER.get());
+
+                case TARGET_CREATE_SYNC_ITEMS:
+                    return generateSyncItems(payload, THREAD_LOCAL_RECEIVER.get());
+
+                case TARGET_CHECKSUM:
+                    return checksum(payload, THREAD_LOCAL_RECEIVER.get());
+
+                case TARGET_CREATE_DIRECTORY:
+                    return createDirectory(payload, THREAD_LOCAL_RECEIVER.get());
+
+                case TARGET_DELETE:
+                    return delete(payload, THREAD_LOCAL_RECEIVER.get());
+
+                case TARGET_UPDATE:
+                    return update(payload, THREAD_LOCAL_RECEIVER.get());
+
+                case TARGET_VALIDATE_FILE:
+                    return validate(payload, THREAD_LOCAL_RECEIVER.get());
+
+                case TARGET_WRITE_CHUNK:
+                    return writeChunk(payload, THREAD_LOCAL_RECEIVER.get());
+
                 default:
                     throw new IllegalStateException("unknown JSyncCommand: " + command);
             }
@@ -247,5 +335,133 @@ public class JsyncRSocketHandler implements RSocket
         {
             RSocketUtils.release(payload);
         }
+    }
+
+    /**
+     * @see io.rsocket.RSocket#requestStream(io.rsocket.Payload)
+     */
+    @Override
+    public Flux<Payload> requestStream(final Payload payload)
+    {
+        try
+        {
+            ByteBuf byteBufMeta = payload.metadata();
+
+            JSyncCommand command = getSerializer().readFrom(byteBufMeta, JSyncCommand.class);
+            getLogger().debug("read command: {}", command);
+
+            switch (command)
+            {
+                case SOURCE_READABLE_RESOURCE:
+                    return resourceReadable(payload, THREAD_LOCAL_SENDER.get());
+
+                default:
+                    throw new IllegalStateException("unknown JSyncCommand: " + command);
+            }
+        }
+        catch (Exception ex)
+        {
+            getLogger().error(null, ex);
+
+            return Flux.error(ex);
+        }
+        finally
+        {
+            RSocketUtils.release(payload);
+        }
+    }
+
+    /**
+     * Die Daten werden zum Client gesendet.
+     *
+     * @param payload {@link Payload}
+     * @param sender {@link Sender}
+     * @return {@link Flux}
+     */
+    private Flux<Payload> resourceReadable(final Payload payload, final Sender sender)
+    {
+        ByteBuf byteBufData = payload.data();
+
+        String baseDir = getSerializer().readFrom(byteBufData, String.class);
+        String relativeFile = getSerializer().readFrom(byteBufData, String.class);
+        long sizeOfFile = getSerializer().readFrom(byteBufData, Long.class);
+
+        Resource resource = sender.getResource(baseDir, relativeFile, sizeOfFile);
+
+        Flux<DataBuffer> flux = DataBufferUtils.read(resource, new NettyDataBufferFactory(getByteBufAllocator()), Options.DATABUFFER_SIZE);
+
+        // @formatter:off
+        return flux
+                .cast(NettyDataBuffer.class)
+                .map(dataBuffer -> {
+                    Payload pl = ByteBufPayload.create(dataBuffer.getNativeBuffer());
+                    //dataBuffer.retain();
+                    return pl;
+                })
+                //.doFinally(signalType -> dataBuffer.release())
+                ;
+        // @formatter:on
+    }
+
+    /**
+     * Update Directory or File.
+     *
+     * @param payload {@link Payload}
+     * @param receiver {@link Receiver}
+     * @return {@link Mono}
+     */
+    private Mono<Payload> update(final Payload payload, final Receiver receiver)
+    {
+        ByteBuf byteBufData = payload.data();
+
+        String baseDir = getSerializer().readFrom(byteBufData, String.class);
+        SyncItem syncItem = getSerializer().readFrom(byteBufData, SyncItem.class);
+
+        receiver.update(baseDir, syncItem);
+
+        return Mono.just(ByteBufPayload.create("OK"));
+    }
+
+    /**
+     * Validate Directory or File.
+     *
+     * @param payload {@link Payload}
+     * @param receiver {@link Receiver}
+     * @return {@link Mono}
+     */
+    private Mono<Payload> validate(final Payload payload, final Receiver receiver)
+    {
+        ByteBuf byteBufData = payload.data();
+
+        String baseDir = getSerializer().readFrom(byteBufData, String.class);
+        SyncItem syncItem = getSerializer().readFrom(byteBufData, SyncItem.class);
+        boolean withChecksum = getSerializer().readFrom(byteBufData, Boolean.class);
+
+        receiver.validateFile(baseDir, syncItem, withChecksum);
+
+        return Mono.just(ByteBufPayload.create("OK"));
+    }
+
+    /**
+     * Write File-Chunk to Receiver.
+     *
+     * @param payload {@link Payload}
+     * @param receiver {@link Receiver}
+     * @return {@link Mono}
+     */
+    private Mono<Payload> writeChunk(final Payload payload, final Receiver receiver)
+    {
+        ByteBuf byteBufData = payload.data();
+
+        String baseDir = getSerializer().readFrom(byteBufData, String.class);
+        String relativeFile = getSerializer().readFrom(byteBufData, String.class);
+        long position = getSerializer().readFrom(byteBufData, Long.class);
+        long sizeOfChunk = getSerializer().readFrom(byteBufData, Long.class);
+
+        ByteBuffer byteBuffer = byteBufData.nioBuffer();
+
+        receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
+
+        return Mono.just(ByteBufPayload.create("OK"));
     }
 }

@@ -1,6 +1,8 @@
 // Created: 18.11.2018
 package de.freese.jsync.spring.rest.filesystem;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;
@@ -29,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
+import de.freese.jsync.filesystem.FileResource;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
@@ -226,6 +229,24 @@ public class RemoteSenderRestClient extends AbstractSender
         String checksum = responseEntity.getBody();
 
         return checksum;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.sender.Sender#readFileResource(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public FileResource readFileResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    {
+        Resource resource = getResource(baseDir, relativeFile, sizeOfFile);
+
+        try
+        {
+            return new FileResource().readableByteChannel(resource.readableChannel());
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     /**

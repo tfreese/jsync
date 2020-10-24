@@ -7,6 +7,7 @@ import java.io.PipedOutputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -41,6 +42,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
+import de.freese.jsync.filesystem.FileResource;
 import de.freese.jsync.filesystem.RemoteReceiverResource;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -52,6 +54,7 @@ import de.freese.jsync.spring.rest.utils.HttpHeaderInterceptor;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.JsyncThreadFactory;
 import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.utils.io.MonitoringReadableByteChannel;
 
 /**
  * {@link Receiver} für Remote-Filesysteme für Spring-REST.
@@ -459,6 +462,38 @@ public class RemoteReceiverRestClient extends AbstractReceiver
         // Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
         // ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), resource, String.class);
         ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), byteBuffer, String.class);
+        responseEntity.getBody();
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileResource(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileResource,
+     *      java.util.function.LongConsumer)
+     */
+    @Override
+    public void writeFileResource(final String baseDir, final String relativeFile, final long sizeOfFile, final FileResource fileResource,
+                                  final LongConsumer bytesWrittenConsumer)
+    {
+        // @formatter:off
+        UriComponents builder = UriComponentsBuilder.fromPath("/resourceWritable")
+                .queryParam("baseDir", baseDir)
+                .queryParam("relativeFile", relativeFile)
+                .queryParam("sizeOfFile", sizeOfFile)
+                .build();
+         // @formatter:on
+
+        // @formatter:off
+        RestTemplate rt = this.restTemplateBuilder
+            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE), new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE))
+            .build()
+            ;
+        // @formatter:on
+
+        MonitoringReadableByteChannel monitoringReadableByteChannel =
+                new MonitoringReadableByteChannel(fileResource.getReadableByteChannel(), bytesWrittenConsumer, true);
+
+        Resource resource = new InputStreamResource(Channels.newInputStream(monitoringReadableByteChannel));
+        ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), resource, String.class);
+
         responseEntity.getBody();
     }
 }

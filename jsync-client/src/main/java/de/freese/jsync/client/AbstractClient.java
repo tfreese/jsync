@@ -228,7 +228,7 @@ public abstract class AbstractClient implements Client
 
                 // Magic number for Windows: (64Mb - 32Kb)
                 // Größere Blöcke kann Windows nicht kopieren, sonst gibs Fehler.
-                long maxWindowsBlockSize = (64 * 1024 * 1024) - (32 * 1024);
+                long maxWindowsBlockSize = (64L * 1024 * 1024) - (32L * 1024);
 
                 long count = sizeOfFile;
 

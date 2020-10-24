@@ -30,6 +30,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
+import de.freese.jsync.filesystem.FileResource;
 import de.freese.jsync.filesystem.RemoteReceiverResource;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.model.SyncItem;
@@ -454,6 +455,37 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
                 .uri(builder.toUriString())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(BodyInserters.fromValue(byteBuffer))
+                .retrieve()
+                .bodyToMono(String.class)
+                ;
+        // @formatter:on
+
+        response.block();
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileResource(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileResource,
+     *      java.util.function.LongConsumer)
+     */
+    @Override
+    public void writeFileResource(final String baseDir, final String relativeFile, final long sizeOfFile, final FileResource fileResource,
+                                  final LongConsumer bytesWrittenConsumer)
+    {
+        // @formatter:off
+        UriComponents builder = UriComponentsBuilder.fromPath("/resourceWritable")
+                .queryParam("baseDir", baseDir)
+                .queryParam("relativeFile", relativeFile)
+                .queryParam("sizeOfFile", sizeOfFile)
+                .build();
+        // @formatter:on
+
+        // @formatter:off
+        Mono<String> response = this.webClient
+                .post()
+                .uri(builder.toUriString())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                //.body(BodyInserters.fromResource(new InputStreamResource(pipeIn)))
+                .body(BodyInserters.fromValue(fileResource.getReadableByteChannel()))
                 .retrieve()
                 .bodyToMono(String.class)
                 ;

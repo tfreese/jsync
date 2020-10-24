@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import de.freese.jsync.filesystem.FileResource;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.SyncItem;
@@ -135,6 +136,33 @@ public class LocalhostSender extends AbstractSender
 
                 buffer.put(mappedByteBuffer);
             }
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.sender.Sender#readFileResource(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public FileResource readFileResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    {
+        getLogger().debug("read resource: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+
+        Path path = Paths.get(baseDir, relativeFile);
+
+        if (!Files.exists(path))
+        {
+            String message = String.format("file doesn't exist anymore: %s", path);
+            getLogger().warn(message);
+            return null;
+        }
+
+        try
+        {
+            return new FileResource().readableByteChannel(FileChannel.open(path, StandardOpenOption.READ));
         }
         catch (IOException ex)
         {

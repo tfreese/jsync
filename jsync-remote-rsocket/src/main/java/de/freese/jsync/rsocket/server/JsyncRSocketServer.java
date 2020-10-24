@@ -10,6 +10,7 @@ import io.rsocket.core.Resume;
 import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import reactor.core.Disposable;
+import reactor.core.publisher.Hooks;
 import reactor.netty.resources.LoopResources;
 import reactor.netty.tcp.TcpServer;
 import reactor.util.retry.Retry;
@@ -62,6 +63,9 @@ public class JsyncRSocketServer
      */
     public void start(final int port, final int selectCount, final int workerCount)
     {
+        // Fehlermeldung, wenn Client die Verbindung schliesst.
+        Hooks.onErrorDropped(th -> LOGGER.error(th.getMessage()));
+
         // @formatter:off
         Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
@@ -91,9 +95,7 @@ public class JsyncRSocketServer
                 .acceptor(SocketAcceptor.with(new JsyncRSocketHandler()))
                 .resume(resume)
                 .payloadDecoder(PayloadDecoder.ZERO_COPY)
-                //.bind(TcpServerTransport.create("localhost", 7000))
                 .bind(TcpServerTransport.create(tcpServer))
-                //.subscribe()
                 .block()
                 ;
         // @formatter:on

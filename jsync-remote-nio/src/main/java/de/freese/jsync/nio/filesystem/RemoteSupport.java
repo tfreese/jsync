@@ -11,9 +11,11 @@ import java.nio.channels.WritableByteChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import de.freese.jsync.filesystem.FileResource;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
@@ -607,14 +609,14 @@ public interface RemoteSupport
      */
     default int write(final AsynchronousSocketChannel channel, final ByteBuffer byteBuffer) throws Exception
     {
-        int totalWritten = 0;
+        int bytesWritten = 0;
 
         while (byteBuffer.hasRemaining())
         {
-            totalWritten += channel.write(byteBuffer).get();
+            bytesWritten += channel.write(byteBuffer).get();
         }
 
-        return totalWritten;
+        return bytesWritten;
     }
 
     /**
@@ -625,14 +627,14 @@ public interface RemoteSupport
      */
     public default int write(final SocketChannel channel, final ByteBuffer byteBuffer) throws Exception
     {
-        int totalWritten = 0;
+        int bytesWritten = 0;
 
         while (byteBuffer.hasRemaining())
         {
-            totalWritten += channel.write(byteBuffer);
+            bytesWritten += channel.write(byteBuffer);
         }
 
-        return totalWritten;
+        return bytesWritten;
     }
 
     /**
@@ -682,6 +684,74 @@ public interface RemoteSupport
             channel.write(buffers);
 
             readResponseHeader(dataBuffer, channel);
+        }
+        catch (RuntimeException rex)
+        {
+            throw rex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            DataBufferUtils.release(dataBuffer);
+        }
+    }
+
+    /**
+     * Liefert die {@link Resource} zur Datei.
+     *
+     * @param channel {@link SocketChannel}
+     * @param baseDir String
+     * @param relativeFile String
+     * @param sizeOfFile long
+     * @param fileResource {@link FileResource}
+     * @param bytesWrittenConsumer {@link LongConsumer}
+     */
+    public default void writeFileResource(final SocketChannel channel, final String baseDir, final String relativeFile, final long sizeOfFile,
+                                          final FileResource fileResource, final LongConsumer bytesWrittenConsumer)
+    {
+        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
+        dataBuffer.readPosition(0);
+        dataBuffer.writePosition(0);
+
+        try
+        {
+            getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_WRITEABLE_RESOURCE);
+            getSerializer().writeTo(dataBuffer, baseDir);
+            getSerializer().writeTo(dataBuffer, relativeFile);
+            getSerializer().writeTo(dataBuffer, sizeOfFile);
+
+            write(channel, dataBuffer);
+
+            dataBuffer.readPosition(0).writePosition(0);
+
+            try (ReadableByteChannel readableByteChannel = fileResource.getReadableByteChannel())
+            {
+                ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
+                long totalWritten = 0L;
+
+                while (totalWritten < sizeOfFile)
+                {
+                    readableByteChannel.read(byteBuffer);
+                    byteBuffer.flip();
+
+                    int bytesWritten = write(channel, byteBuffer);
+
+                    totalWritten += bytesWritten;
+                    bytesWrittenConsumer.accept(totalWritten);
+
+                    byteBuffer.clear();
+                }
+            }
+
+            // Response auslesen erfolgt in NoCloseWritableByteChannel#close.
+            // return new NoCloseWritableByteChannel(channel, channelReleaser);
         }
         catch (RuntimeException rex)
         {

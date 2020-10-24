@@ -8,6 +8,10 @@ import java.util.stream.IntStream;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.SocketAcceptor;
@@ -20,6 +24,7 @@ import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import io.rsocket.util.DefaultPayload;
 import reactor.core.Disposable;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.LoopResources;
 import reactor.netty.tcp.TcpClient;
@@ -38,9 +43,13 @@ public class MyRSocketDemo
 
     /**
      * @param args String[]
+     * @throws Exception Falls was schief geht.
      */
-    public static void main(final String[] args)
+    public static void main(final String[] args) throws Exception
     {
+        // Fehlermeldung, wenn Client die Verbindung schliesst.
+        Hooks.onErrorDropped(th -> LOGGER.error(th.getMessage()));
+
         // Globale Default-Resourcen.
         // TcpResources.set(LoopResources.create("demo", 4, true));
         // TcpResources.set(ConnectionProvider.create("demo-connectionPool", 16));
@@ -128,9 +137,17 @@ public class MyRSocketDemo
     /**
      * @param ports int[]
      * @return {@link Mono}
+     * @throws Exception Falls was schief geht.
      */
-    private static Mono<RSocket> startClients(final int...ports)
+    private static Mono<RSocket> startClients(final int...ports) throws Exception
     {
+        // @formatter:off
+        SslContextBuilder sslContextBuilder = SslContextBuilder.forClient()
+                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                .sslProvider(SslProvider.JDK)
+                ;
+       // @formatter:on
+
         // @formatter:off
         List<RSocketSupplier> rSocketSupplierList = IntStream.of(ports)
                 .mapToObj(port ->
@@ -143,6 +160,7 @@ public class MyRSocketDemo
                                         .host("localhost")
                                         .port(port)
                                         .runOn(LoopResources.create("client-" + port, 2, true))
+                                        .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilder))
                                         )
                                     )
                             //.connect(LocalClientTransport.create("test-local-" + port))
@@ -184,8 +202,9 @@ public class MyRSocketDemo
     /**
      * @param ports int[]
      * @return {@link List}
+     * @throws Exception Falls was schief geht.
      */
-    private static List<Disposable> startServers(final int...ports)
+    private static List<Disposable> startServers(final int...ports) throws Exception
     {
         // @formatter:off
         Resume resume = new Resume()
@@ -197,6 +216,9 @@ public class MyRSocketDemo
                 )
                 ;
         // @formatter:on
+
+        SelfSignedCertificate cert = new SelfSignedCertificate();
+        SslContextBuilder sslContextBuilder = SslContextBuilder.forServer(cert.certificate(), cert.privateKey());
 
         // @formatter:off
         List<Disposable> servers = IntStream.of(ports)
@@ -210,10 +232,13 @@ public class MyRSocketDemo
                          )
                         //.payloadDecoder(PayloadDecoder.ZERO_COPY)
                         .resume(resume)
+                        //.resume()
+                        //.resumeSessionDuration(Duration.ofMinutes(5))
                         .bind(TcpServerTransport.create(TcpServer.create()
                                 .host("localhost")
                                 .port(port)
                                 .runOn(LoopResources.create("server-" + port, 1, 2, true))
+                                .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilder))
                                 )
                         )
                         //.bind(LocalServerTransport.create("test-local-" + port))

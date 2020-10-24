@@ -8,6 +8,7 @@ import java.nio.channels.WritableByteChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.WritableResource;
+import de.freese.jsync.filesystem.FileResource;
 import de.freese.jsync.filesystem.RemoteReceiverResource;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -204,6 +205,26 @@ public class RemoteReceiverNio extends AbstractReceiver implements RemoteSupport
         try
         {
             writeChunk(channel, baseDir, relativeFile, position, sizeOfChunk, buffer);
+        }
+        finally
+        {
+            this.channelPool.release(channel);
+        }
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileResource(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileResource,
+     *      java.util.function.LongConsumer)
+     */
+    @Override
+    public void writeFileResource(final String baseDir, final String relativeFile, final long sizeOfFile, final FileResource fileResource,
+                                  final LongConsumer bytesWrittenConsumer)
+    {
+        SocketChannel channel = this.channelPool.get();
+
+        try
+        {
+            writeFileResource(channel, baseDir, relativeFile, sizeOfFile, fileResource, bytesWrittenConsumer);
         }
         finally
         {
