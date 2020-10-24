@@ -3,7 +3,6 @@ package de.freese.jsync.nio.server.handler;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -13,11 +12,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.WritableResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import de.freese.jsync.Options;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -551,16 +550,16 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     {
         String baseDir = getSerializer().readFrom(buffer, String.class);
         String relativeFile = getSerializer().readFrom(buffer, String.class);
-        long sizeOfFile = buffer.getLong();
+        long sizeOfFile = getSerializer().readFrom(buffer, Long.class);
 
         Exception exception = null;
-        WritableResource resourceReceiver = null;
+        // WritableResource resourceReceiver = null;
         ReadableByteChannel inChannel = null;
 
         try
         {
             inChannel = (ReadableByteChannel) selectionKey.channel();
-            resourceReceiver = receiver.getResource(baseDir, relativeFile, sizeOfFile);
+            // resourceReceiver = receiver.getResource(baseDir, relativeFile, sizeOfFile);
         }
         catch (Exception ex)
         {
@@ -584,31 +583,11 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         else
         {
-            try (WritableByteChannel outChannel = resourceReceiver.writableChannel())
+            try
             {
-                @SuppressWarnings("unused")
-                long totalRead = 0;
-                long totalWritten = 0;
-
-                while (totalWritten < sizeOfFile)
-                {
-                    buffer.clear();
-
-                    totalRead += inChannel.read(buffer);
-                    buffer.flip();
-
-                    while (buffer.hasRemaining())
-                    {
-                        totalWritten += outChannel.write(buffer);
-
-                        getLogger().debug("WritableByteChannel: sizeOfFile={}, totalWritten={}", sizeOfFile, totalWritten);
-                    }
-                }
-
-                if (outChannel instanceof FileChannel)
-                {
-                    ((FileChannel) outChannel).force(false);
-                }
+                FileHandle fileHandle = new FileHandle().readableByteChannel(inChannel);
+                receiver.writeFileHandle(baseDir, relativeFile, sizeOfFile, fileHandle, bytesWritten -> {
+                });
 
                 // JsyncServerResponse.ok(buffer).write(selectionKey);
                 buffer.clear();
@@ -618,10 +597,48 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 buffer.flip();
                 writeBuffer(selectionKey, buffer);
             }
-            catch (IOException ioex)
+            catch (Exception ioex)
             {
                 getLogger().error(null, ioex);
             }
+            // try (WritableByteChannel outChannel = resourceReceiver.writableChannel())
+            // {
+            // @SuppressWarnings("unused")
+            // long totalRead = 0;
+            // long totalWritten = 0;
+            //
+            // while (totalWritten < sizeOfFile)
+            // {
+            // buffer.clear();
+            //
+            // totalRead += inChannel.read(buffer);
+            // buffer.flip();
+            //
+            // while (buffer.hasRemaining())
+            // {
+            // totalWritten += outChannel.write(buffer);
+            //
+            // getLogger().debug("WritableByteChannel: sizeOfFile={}, totalWritten={}", sizeOfFile, totalWritten);
+            // }
+            // }
+            //
+            // if (outChannel instanceof FileChannel)
+            // {
+            // ((FileChannel) outChannel).force(false);
+            // }
+            //
+            // // JsyncServerResponse.ok(buffer).write(selectionKey);
+            // buffer.clear();
+            // buffer.putInt(RemoteUtils.STATUS_OK); // Status
+            // buffer.putLong(sizeOfFile); // Content-Length
+            //
+            // buffer.flip();
+            // writeBuffer(selectionKey, buffer);
+            // }
+            // catch (IOException ioex)
+            // {
+            // getLogger().error(null, ioex);
+            // }
         }
     }
 

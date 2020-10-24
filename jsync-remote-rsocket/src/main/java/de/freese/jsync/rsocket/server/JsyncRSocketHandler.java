@@ -1,7 +1,14 @@
 // Created: 19.10.2020
 package de.freese.jsync.rsocket.server;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import org.reactivestreams.Publisher;
@@ -239,27 +246,21 @@ public class JsyncRSocketHandler implements RSocket
         return Flux.from(payloads).switchOnFirst((firstSignal, flux) -> {
             try
             {
-                final Payload payloadMeta = firstSignal.get();
-                ByteBuf byteBufMeta = payloadMeta.metadata();
+                final Payload payload = firstSignal.get();
+                ByteBuf byteBufMeta = payload.metadata();
 
                 JSyncCommand command = getSerializer().readFrom(byteBufMeta, JSyncCommand.class);
                 getLogger().debug("read command: {}", command);
 
-                RSocketUtils.release(payloadMeta);
+                // RSocketUtils.release(payload);
 
                 switch (command)
                 {
-                    // case TARGET_WRITE_CHUNK:
-                    // return writeChunk(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
-                    //
-                    // case TARGET_WRITEABLE_RESOURCE:
-                    // return resourceWritable(selectionKey, byteBuffer, THREAD_LOCAL_RECEIVER.get());
+                    case TARGET_WRITEABLE_RESOURCE:
+                        return resourceWritable(payload, flux.skip(1), THREAD_LOCAL_RECEIVER.get());
                     default:
                         throw new IllegalStateException("unknown JSyncCommand: " + command);
                 }
-
-                // // return writeFile1(fileName, flux.skip(1));
-                // return writeFile2(fileName, flux.skip(1));
             }
             catch (Exception ex)
             {
@@ -333,7 +334,7 @@ public class JsyncRSocketHandler implements RSocket
         }
         finally
         {
-            RSocketUtils.release(payload);
+            // RSocketUtils.release(payload);
         }
     }
 
@@ -367,7 +368,7 @@ public class JsyncRSocketHandler implements RSocket
         }
         finally
         {
-            RSocketUtils.release(payload);
+            // RSocketUtils.release(payload);
         }
     }
 
@@ -401,6 +402,111 @@ public class JsyncRSocketHandler implements RSocket
                 //.doFinally(signalType -> dataBuffer.release())
                 ;
         // @formatter:on
+    }
+
+    /**
+     * Die Daten werden zum Server gesendet.
+     *
+     * @param payload {@link Payload}
+     * @param flux {@link Flux}
+     * @param receiver {@link Receiver}
+     * @return {@link Flux}
+     */
+    private Flux<Payload> resourceWritable(final Payload payload, final Flux<Payload> flux, final Receiver receiver)
+    {
+        ByteBuf byteBufData = payload.data();
+
+        String baseDir = getSerializer().readFrom(byteBufData, String.class);
+        String relativeFile = getSerializer().readFrom(byteBufData, String.class);
+        long sizeOfFile = getSerializer().readFrom(byteBufData, Long.class);
+
+        Path path = Paths.get(baseDir, relativeFile);
+        Path parentPath = path.getParent();
+
+        Flux<Payload> response = null;
+
+        try
+        {
+            if (Files.notExists(parentPath))
+            {
+                Files.createDirectories(parentPath);
+            }
+
+            if (Files.notExists(path))
+            {
+                Files.createFile(path);
+            }
+
+            final WritableByteChannel writableByteChannel =
+                    Files.newByteChannel(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            // @formatter:off
+             response = flux
+                     //.publishOn(Schedulers.elastic()) // Siehe JavaDoc von Schedulers
+                     .map(Payload::getData)
+                     .map(byteBuffer -> {
+                         int bytesWritten = 0;
+
+                         try
+                            {
+                                 while (byteBuffer.hasRemaining())
+                                 {
+                                     bytesWritten += writableByteChannel.write(byteBuffer);
+                                 }
+                            }
+                            catch (IOException ex)
+                            {
+                                throw new UncheckedIOException(ex);
+                            }
+
+
+                         return bytesWritten;
+                     })
+                     .map(bytesWritten -> ByteBufPayload.create("CHUNK_COMPLETED: bytesWritten = " + bytesWritten))
+                     .doOnError(th -> ByteBufPayload.create(th.getMessage()))
+                     .doFinally(signalType -> {
+                         RSocketUtils.close(writableByteChannel);
+                     })
+                     ;
+             // @formatter:on
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+
+        // @formatter:off
+        return Flux.concat(response, Mono.just(ByteBufPayload.create("TRANSFER COMPLETED")));
+        // @formatter:on
+
+        // FileHandle fileHandle = new FileHandle().fluxByteBuffer(flux.map(Payload::getData));
+        // receiver.writeFileHandle(baseDir, relativeFile, sizeOfFile, fileHandle, bytesWritten -> {
+        // });
+
+//        // @formatter:off
+//        Flux<Payload> response = Flux.from(payloads)
+//                .map(payload -> {
+//                    int bytesWritten = RSocketUtils.write(payload, writableByteChannel);
+//
+//                    return bytesWritten;
+//                })
+//                .map(bytesWritten -> ByteBufPayload.create("CHUNK_COMPLETED: bytesWritten = " + bytesWritten))
+////                .map(bytesWritten -> ByteBufPayload.create(DefaultPayload.EMPTY_BUFFER))
+//                .doFinally(signalType -> {
+//                    RSocketUtils.close(writableByteChannel);
+//                })
+//                ;
+//        // @formatter:on
+        //
+        // // return Flux.concat(response, Mono.just(DefaultPayload.create("COMPLETED"))).onErrorReturn(DefaultPayload.create("FAILED"));
+        //
+//        // @formatter:off
+//        return Flux.concat(response, Mono.just(ByteBufPayload.create("COMPLETED")))
+//                .doOnError(th -> ByteBufPayload.create(th.getMessage()))
+//                .doOnEach(signal -> RSocketUtils.release(signal.get()))
+//                ;
+
+//        return Flux.just(ByteBufPayload.create("OK"));
     }
 
     /**

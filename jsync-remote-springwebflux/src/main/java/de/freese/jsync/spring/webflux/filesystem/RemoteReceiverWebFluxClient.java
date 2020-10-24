@@ -30,7 +30,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.FileResource;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.filesystem.RemoteReceiverResource;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.model.SyncItem;
@@ -464,12 +464,12 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileResource(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileResource,
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileHandle,
      *      java.util.function.LongConsumer)
      */
     @Override
-    public void writeFileResource(final String baseDir, final String relativeFile, final long sizeOfFile, final FileResource fileResource,
-                                  final LongConsumer bytesWrittenConsumer)
+    public void writeFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile, final FileHandle fileHandle,
+                                final LongConsumer bytesWrittenConsumer)
     {
         // @formatter:off
         UriComponents builder = UriComponentsBuilder.fromPath("/resourceWritable")
@@ -485,7 +485,7 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
                 .uri(builder.toUriString())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 //.body(BodyInserters.fromResource(new InputStreamResource(pipeIn)))
-                .body(BodyInserters.fromValue(fileResource.getReadableByteChannel()))
+                .body(BodyInserters.fromValue(fileHandle.getReadableByteChannel()))
                 .retrieve()
                 .bodyToMono(String.class)
                 ;

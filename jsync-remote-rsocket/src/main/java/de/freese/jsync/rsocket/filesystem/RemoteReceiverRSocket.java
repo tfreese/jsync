@@ -9,7 +9,7 @@ import java.util.function.LongConsumer;
 import org.springframework.core.io.WritableResource;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
-import de.freese.jsync.filesystem.FileResource;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
@@ -22,7 +22,6 @@ import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.core.RSocketConnector;
-import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.ByteBufPayload;
 import reactor.core.publisher.Flux;
@@ -74,7 +73,7 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         this.client = RSocketConnector
               .create()
-              .payloadDecoder(PayloadDecoder.ZERO_COPY)
+              //.payloadDecoder(PayloadDecoder.ZERO_COPY)
               .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
               //.reconnect(Retry.backoff(50, Duration.ofMillis(500)))
               .connect(TcpClientTransport.create(TcpClient.create()
@@ -93,11 +92,12 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         this.client.block()
             .requestResponse(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta))
-            .map(payload -> {
-                String data = payload.getDataUtf8();
-                payload.release();
-                return data;
-            })
+            //.map(payload -> {
+            //    String data = payload.getDataUtf8();
+            //    payload.release();
+            //    return data;
+            //})
+            .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
             //.doFinally(signalType -> byteBufMeta.release())
@@ -122,12 +122,13 @@ public class RemoteReceiverRSocket extends AbstractReceiver
 
         // @formatter:off
         this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufMeta, byteBufMeta))
-            .map(payload -> {
-                String data = payload.getDataUtf8();
-                payload.release();
-                return data;
-            })
+            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+            //.map(payload -> {
+            //    String data = payload.getDataUtf8();
+            //    payload.release();
+            //    return data;
+            //})
+            .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
             .block()
@@ -151,12 +152,13 @@ public class RemoteReceiverRSocket extends AbstractReceiver
 
         // @formatter:off
         this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufMeta, byteBufMeta))
-            .map(payload -> {
-                String data = payload.getDataUtf8();
-                payload.release();
-                return data;
-            })
+            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+            //.map(payload -> {
+            //    String data = payload.getDataUtf8();
+            //    payload.release();
+            //    return data;
+            //})
+            .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
             .block()
@@ -176,11 +178,12 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         this.client.block()
             .requestResponse(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta))
-            .map(payload -> {
-                String data = payload.getDataUtf8();
-                payload.release();
-                return data;
-            })
+            //.map(payload -> {
+            //    String data = payload.getDataUtf8();
+            //    payload.release();
+            //    return data;
+            //})
+            .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
             //.doFinally(signalType -> byteBufMeta.release())
@@ -228,7 +231,7 @@ public class RemoteReceiverRSocket extends AbstractReceiver
                     consumerSyncItem.accept(syncItem);
                 }
 
-                payload.release();
+                //payload.release();
                 //byteBuf.release();
 
                 return Mono.empty();
@@ -263,11 +266,12 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         String checksum = this.client.block()
             .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
-            .map(payload -> {
-                String data = payload.getDataUtf8();
-                payload.release();
-                return data;
-            })
+            //.map(payload -> {
+            //    String data = payload.getDataUtf8();
+            //    payload.release();
+            //    return data;
+            //})
+            .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
             .block()
@@ -339,12 +343,13 @@ public class RemoteReceiverRSocket extends AbstractReceiver
 
         // @formatter:off
         this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufMeta, byteBufMeta))
-            .map(payload -> {
-                String data = payload.getDataUtf8();
-                payload.release();
-                return data;
-            })
+            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+            //.map(payload -> {
+            //    String data = payload.getDataUtf8();
+            //    payload.release();
+            //    return data;
+            //})
+            .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
             .block()
@@ -359,7 +364,7 @@ public class RemoteReceiverRSocket extends AbstractReceiver
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
     {
         ByteBuf byteBufMeta = getByteBufAllocator().buffer();
-        getSerializer().writeTo(byteBufMeta, JSyncCommand.TARGET_UPDATE);
+        getSerializer().writeTo(byteBufMeta, JSyncCommand.TARGET_VALIDATE_FILE);
 
         ByteBuf byteBufData = getByteBufAllocator().buffer();
         getSerializer().writeTo(byteBufData, baseDir);
@@ -368,12 +373,13 @@ public class RemoteReceiverRSocket extends AbstractReceiver
 
         // @formatter:off
         this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufMeta, byteBufMeta))
-            .map(payload -> {
-                String data = payload.getDataUtf8();
-                payload.release();
-                return data;
-            })
+            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+            //.map(payload -> {
+            //    String data = payload.getDataUtf8();
+            //    payload.release();
+            //    return data;
+            //})
+            .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
             .block()
@@ -400,12 +406,13 @@ public class RemoteReceiverRSocket extends AbstractReceiver
 
         // @formatter:off
         this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufMeta, byteBufMeta))
-            .map(payload -> {
-                String data = payload.getDataUtf8();
-                payload.release();
-                return data;
-            })
+            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+            //.map(payload -> {
+            //    String data = payload.getDataUtf8();
+            //    payload.release();
+            //    return data;
+            //})
+            .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
             .block()
@@ -414,12 +421,12 @@ public class RemoteReceiverRSocket extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileResource(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileResource,
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileHandle,
      *      java.util.function.LongConsumer)
      */
     @Override
-    public void writeFileResource(final String baseDir, final String relativeFile, final long sizeOfFile, final FileResource fileResource,
-                                  final LongConsumer bytesWrittenConsumer)
+    public void writeFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile, final FileHandle fileHandle,
+                                final LongConsumer bytesWrittenConsumer)
     {
         ByteBuf byteBufMeta = getByteBufAllocator().buffer();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.TARGET_WRITEABLE_RESOURCE);
@@ -429,17 +436,18 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         getSerializer().writeTo(byteBufData, relativeFile);
         getSerializer().writeTo(byteBufData, sizeOfFile);
 
-        Flux<Payload> flux = Flux.concat(Mono.just(ByteBufPayload.create(byteBufMeta, byteBufMeta)),
-                fileResource.getFluxDataBuffer().map(dataBuffer -> ByteBufPayload.create(dataBuffer.asByteBuffer(0, dataBuffer.capacity()))));
+        Flux<Payload> flux = Flux.concat(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)),
+                fileHandle.getFluxDataBuffer().map(dataBuffer -> ByteBufPayload.create(dataBuffer.asByteBuffer(0, dataBuffer.capacity()))));
 
         // @formatter:off
         this.client.block()
           .requestChannel(flux)
-          .map(payload -> {
-              String data = payload.getDataUtf8();
-              payload.release();
-              return data;
-          })
+          //.map(payload -> {
+          //    String data = payload.getDataUtf8();
+          //    payload.release();
+          //    return data;
+          //})
+          .map(Payload::getDataUtf8)
           .doOnNext(getLogger()::debug)
           .doOnError(th -> getLogger().error(null, th))
           .then()

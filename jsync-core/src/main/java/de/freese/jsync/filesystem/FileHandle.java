@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
  *
  * @author Thomas Freese
  */
-public class FileResource
+public class FileHandle
 {
     /**
     *
@@ -33,18 +33,18 @@ public class FileResource
     private ReadableByteChannel readableByteChannel;
 
     /**
-     * Erstellt ein neues {@link FileResource} Object.
+     * Erstellt ein neues {@link FileHandle} Object.
      */
-    public FileResource()
+    public FileHandle()
     {
         super();
     }
 
     /**
      * @param fluxByteBuffer Flux<ByteBuffer>
-     * @return {@link FileResource}
+     * @return {@link FileHandle}
      */
-    public FileResource fluxByteBuffer(final Flux<ByteBuffer> fluxByteBuffer)
+    public FileHandle fluxByteBuffer(final Flux<ByteBuffer> fluxByteBuffer)
     {
         setFluxByteBuffer(fluxByteBuffer);
 
@@ -53,9 +53,9 @@ public class FileResource
 
     /**
      * @param fluxDataBuffer Flux<DataBuffer>
-     * @return {@link FileResource}
+     * @return {@link FileHandle}
      */
-    public FileResource fluxDataBuffer(final Flux<DataBuffer> fluxDataBuffer)
+    public FileHandle fluxDataBuffer(final Flux<DataBuffer> fluxDataBuffer)
     {
         setFluxDataBuffer(fluxDataBuffer);
 
@@ -88,9 +88,9 @@ public class FileResource
 
     /**
      * @param readableByteChannel {@link ReadableByteChannel}
-     * @return {@link FileResource}
+     * @return {@link FileHandle}
      */
-    public FileResource readableByteChannel(final ReadableByteChannel readableByteChannel)
+    public FileHandle readableByteChannel(final ReadableByteChannel readableByteChannel)
     {
         setReadableByteChannel(readableByteChannel);
 

@@ -31,7 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.FileResource;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
@@ -232,16 +232,16 @@ public class RemoteSenderRestClient extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readFileResource(java.lang.String, java.lang.String, long)
+     * @see de.freese.jsync.filesystem.sender.Sender#readFileHandle(java.lang.String, java.lang.String, long)
      */
     @Override
-    public FileResource readFileResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    public FileHandle readFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         Resource resource = getResource(baseDir, relativeFile, sizeOfFile);
 
         try
         {
-            return new FileResource().readableByteChannel(resource.readableChannel());
+            return new FileHandle().readableByteChannel(resource.readableChannel());
         }
         catch (IOException ex)
         {

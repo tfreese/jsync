@@ -256,25 +256,6 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void testNioLocalToRemote() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startServerNio();
-
-        URI senderUri = PATH_QUELLE.toUri();
-        URI receiverUri = new URI("jsync://localhost:8001/" + PATH_ZIEL.toString());
-
-        syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
-
-        assertTrue(true);
-    }
-
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
     void testNioRemoteToLocal() throws Exception
     {
         System.out.println();
@@ -324,6 +305,25 @@ class TestJSyncRemote extends AbstractJSyncTest
 
         URI senderUri = new URI("jsync://localhost:8002/" + PATH_QUELLE.toString());
         URI receiverUri = PATH_ZIEL.toUri();
+
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.RSOCKET);
+
+        assertTrue(true);
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    void testRSocketRemoteToRemote() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        startServerRSocket();
+
+        URI senderUri = new URI("jsync://localhost:8002/" + PATH_QUELLE.toString());
+        URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
 
         syncDirectories(options, senderUri, receiverUri, RemoteMode.RSOCKET);
 

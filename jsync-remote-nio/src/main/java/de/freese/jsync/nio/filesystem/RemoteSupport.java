@@ -15,7 +15,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import de.freese.jsync.filesystem.FileResource;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
@@ -353,8 +353,7 @@ public interface RemoteSupport
                                                           final String relativeFile, final long sizeOfFile)
     {
         DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        dataBuffer.readPosition(0).writePosition(0);
 
         try
         {
@@ -398,8 +397,7 @@ public interface RemoteSupport
                                   final ByteBuffer byteBufferChunk)
     {
         DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        dataBuffer.readPosition(0).writePosition(0);
 
         try
         {
@@ -710,15 +708,14 @@ public interface RemoteSupport
      * @param baseDir String
      * @param relativeFile String
      * @param sizeOfFile long
-     * @param fileResource {@link FileResource}
+     * @param fileHandle {@link FileHandle}
      * @param bytesWrittenConsumer {@link LongConsumer}
      */
-    public default void writeFileResource(final SocketChannel channel, final String baseDir, final String relativeFile, final long sizeOfFile,
-                                          final FileResource fileResource, final LongConsumer bytesWrittenConsumer)
+    public default void writeFileHandle(final SocketChannel channel, final String baseDir, final String relativeFile, final long sizeOfFile,
+                                        final FileHandle fileHandle, final LongConsumer bytesWrittenConsumer)
     {
         DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        dataBuffer.readPosition(0).writePosition(0);
 
         try
         {
@@ -731,7 +728,7 @@ public interface RemoteSupport
 
             dataBuffer.readPosition(0).writePosition(0);
 
-            try (ReadableByteChannel readableByteChannel = fileResource.getReadableByteChannel())
+            try (ReadableByteChannel readableByteChannel = fileHandle.getReadableByteChannel())
             {
                 ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
                 long totalWritten = 0L;
@@ -750,6 +747,7 @@ public interface RemoteSupport
                 }
             }
 
+            readResponseHeader(dataBuffer, channel);
             // Response auslesen erfolgt in NoCloseWritableByteChannel#close.
             // return new NoCloseWritableByteChannel(channel, channelReleaser);
         }

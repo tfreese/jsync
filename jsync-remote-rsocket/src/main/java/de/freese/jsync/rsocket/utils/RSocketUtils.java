@@ -21,7 +21,7 @@ public final class RSocketUtils
      */
     public static void close(final Channel channel)
     {
-        System.out.println("RSocketUtils.close(): " + Thread.currentThread().getName());
+        // System.out.println("RSocketUtils.close(): " + Thread.currentThread().getName());
 
         if ((channel != null) && channel.isOpen())
         {
@@ -82,7 +82,7 @@ public final class RSocketUtils
         }
         finally
         {
-            RSocketUtils.release(payload);
+            // RSocketUtils.release(payload);
         }
 
         return bytesWritten;

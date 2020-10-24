@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import de.freese.jsync.filesystem.FileResource;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.SyncItem;
@@ -144,12 +144,12 @@ public class LocalhostSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readFileResource(java.lang.String, java.lang.String, long)
+     * @see de.freese.jsync.filesystem.sender.Sender#readFileHandle(java.lang.String, java.lang.String, long)
      */
     @Override
-    public FileResource readFileResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    public FileHandle readFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        getLogger().debug("read resource: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+        getLogger().debug("read fileHandle: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
         Path path = Paths.get(baseDir, relativeFile);
 
@@ -162,7 +162,7 @@ public class LocalhostSender extends AbstractSender
 
         try
         {
-            return new FileResource().readableByteChannel(FileChannel.open(path, StandardOpenOption.READ));
+            return new FileHandle().readableByteChannel(FileChannel.open(path, StandardOpenOption.READ));
         }
         catch (IOException ex)
         {

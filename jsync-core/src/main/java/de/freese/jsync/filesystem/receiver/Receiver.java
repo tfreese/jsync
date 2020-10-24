@@ -4,7 +4,7 @@ package de.freese.jsync.filesystem.receiver;
 import java.nio.ByteBuffer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.WritableResource;
-import de.freese.jsync.filesystem.FileResource;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.model.SyncItem;
 
@@ -67,13 +67,13 @@ public interface Receiver extends FileSystem
     public void writeChunk(String baseDir, String relativeFile, long position, final long sizeOfChunk, ByteBuffer byteBuffer);
 
     /**
-     * Schreibt die {@link FileResource} in die Datei.
+     * Schreibt die {@link FileHandle} in die Datei.
      *
      * @param baseDir String
      * @param relativeFile String
      * @param sizeOfFile long
-     * @param fileResource {@link FileResource}
+     * @param fileHandle {@link FileHandle}
      * @param bytesWrittenConsumer {@link LongConsumer}
      */
-    public void writeFileResource(String baseDir, final String relativeFile, long sizeOfFile, FileResource fileResource, LongConsumer bytesWrittenConsumer);
+    public void writeFileHandle(String baseDir, final String relativeFile, long sizeOfFile, FileHandle fileHandle, LongConsumer bytesWrittenConsumer);
 }

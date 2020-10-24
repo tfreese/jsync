@@ -42,7 +42,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.FileResource;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.filesystem.RemoteReceiverResource;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -466,12 +466,12 @@ public class RemoteReceiverRestClient extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileResource(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileResource,
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileHandle,
      *      java.util.function.LongConsumer)
      */
     @Override
-    public void writeFileResource(final String baseDir, final String relativeFile, final long sizeOfFile, final FileResource fileResource,
-                                  final LongConsumer bytesWrittenConsumer)
+    public void writeFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile, final FileHandle fileHandle,
+                                final LongConsumer bytesWrittenConsumer)
     {
         // @formatter:off
         UriComponents builder = UriComponentsBuilder.fromPath("/resourceWritable")
@@ -489,7 +489,7 @@ public class RemoteReceiverRestClient extends AbstractReceiver
         // @formatter:on
 
         MonitoringReadableByteChannel monitoringReadableByteChannel =
-                new MonitoringReadableByteChannel(fileResource.getReadableByteChannel(), bytesWrittenConsumer, true);
+                new MonitoringReadableByteChannel(fileHandle.getReadableByteChannel(), bytesWrittenConsumer, true);
 
         Resource resource = new InputStreamResource(Channels.newInputStream(monitoringReadableByteChannel));
         ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), resource, String.class);

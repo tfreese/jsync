@@ -24,9 +24,10 @@ import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.WritableResource;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.FileResource;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.SyncItem;
@@ -308,14 +309,14 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileResource(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileResource,
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileHandle,
      *      java.util.function.LongConsumer)
      */
     @Override
-    public void writeFileResource(final String baseDir, final String relativeFile, final long sizeOfFile, final FileResource fileResource,
-                                  final LongConsumer bytesWrittenConsumer)
+    public void writeFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile, final FileHandle fileHandle,
+                                final LongConsumer bytesWrittenConsumer)
     {
-        getLogger().info("write resource: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+        getLogger().info("write fileHandle: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
         Path path = Paths.get(baseDir, relativeFile);
         Path parentPath = path.getParent();
@@ -338,10 +339,10 @@ public class LocalhostReceiver extends AbstractReceiver
                 MonitoringWritableByteChannel monitoringWritableByteChannel =
                         new MonitoringWritableByteChannel(fileChannelReceiver, bytesWrittenConsumer, false);
 
-                if (fileResource.getReadableByteChannel() instanceof FileChannel)
+                if (fileHandle.getReadableByteChannel() instanceof FileChannel)
                 {
                     // Lokales Kopieren
-                    FileChannel fileChannelSender = (FileChannel) fileResource.getReadableByteChannel();
+                    FileChannel fileChannelSender = (FileChannel) fileHandle.getReadableByteChannel();
 
                     // original - apparently has trouble copying large files on Windows
                     // fileChannelSender.transferTo(0, fileChannelSender.size(), resourceReceiver.writableChannel());
@@ -371,15 +372,37 @@ public class LocalhostReceiver extends AbstractReceiver
                         position += transfered;
                     }
                 }
-                else if (fileResource.getFluxDataBuffer() != null)
+                else if (fileHandle.getReadableByteChannel() != null)
                 {
-                    DataBufferUtils.write(fileResource.getFluxDataBuffer(), monitoringWritableByteChannel);
+                    DataBuffer dataBuffer = JSyncUtils.getDataBufferFactory().allocateBuffer(Options.DATABUFFER_SIZE);
+                    ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
+                    long totalRead = 0;
+
+                    while (totalRead < sizeOfFile)
+                    {
+                        byteBuffer.clear();
+
+                        totalRead += fileHandle.getReadableByteChannel().read(byteBuffer);
+                        byteBuffer.flip();
+
+                        while (byteBuffer.hasRemaining())
+                        {
+                            monitoringWritableByteChannel.write(byteBuffer);
+                        }
+                    }
+
+                    DataBufferUtils.release(dataBuffer);
                 }
-                else if (fileResource.getFluxByteBuffer() != null)
+                else if (fileHandle.getFluxDataBuffer() != null)
+                {
+                    DataBufferUtils.write(fileHandle.getFluxDataBuffer(), monitoringWritableByteChannel).blockLast();
+                }
+                else if (fileHandle.getFluxByteBuffer() != null)
                 {
                     // @formatter:off
-                    fileResource.getFluxByteBuffer()
-                        .subscribe(byteBuffer -> {
+                    fileHandle.getFluxByteBuffer()
+                        //.publishOn(Schedulers.elastic()) // Siehe JavaDoc von Schedulers
+                        .doOnNext(byteBuffer -> {
                             try
                             {
                                 monitoringWritableByteChannel.write(byteBuffer);
@@ -389,10 +412,13 @@ public class LocalhostReceiver extends AbstractReceiver
                                 throw new UncheckedIOException(ex);
                             }
                         })
-                        .dispose()
+                        .subscribe()
+                        .dispose();
                         ;
                     // @formatter:on
                 }
+
+                fileChannelReceiver.force(false);
             }
         }
         catch (IOException ex)

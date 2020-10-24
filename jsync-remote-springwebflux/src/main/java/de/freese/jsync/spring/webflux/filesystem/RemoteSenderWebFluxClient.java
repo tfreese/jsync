@@ -22,7 +22,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.FileResource;
+import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.filesystem.RemoteSenderResource;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.model.SyncItem;
@@ -269,10 +269,10 @@ public class RemoteSenderWebFluxClient extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readFileResource(java.lang.String, java.lang.String, long)
+     * @see de.freese.jsync.filesystem.sender.Sender#readFileHandle(java.lang.String, java.lang.String, long)
      */
     @Override
-    public FileResource readFileResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    public FileHandle readFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         // @formatter:off
         UriComponents builder = UriComponentsBuilder.fromPath("/resourceReadable")
@@ -292,7 +292,7 @@ public class RemoteSenderWebFluxClient extends AbstractSender
                 ;
         // @formatter:on
 
-        return new FileResource().fluxDataBuffer(response);
+        return new FileHandle().fluxDataBuffer(response);
     }
 
     /**
