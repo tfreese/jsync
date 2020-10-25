@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
+import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import reactor.core.Disposable;
 import reactor.core.publisher.Hooks;
@@ -93,7 +94,7 @@ public class JsyncRSocketServer
                 .create()
                 .acceptor(SocketAcceptor.with(new JsyncRSocketHandler()))
                 .resume(resume)
-                //.payloadDecoder(PayloadDecoder.ZERO_COPY)
+                .payloadDecoder(PayloadDecoder.DEFAULT)
                 .bind(TcpServerTransport.create(tcpServer))
                 .block()
                 ;

@@ -1,5 +1,5 @@
 // Created: 06.10.2020
-package de.freese.jsync.utils.buffer;
+package de.freese.jsync.spring.rest.utils.buffer;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -162,8 +162,7 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
                 dataBuffer = new DefaultPooledDataBuffer(this, byteBuffer, this.id + "-buffer-" + this.bufferId.incrementAndGet());
             }
 
-            dataBuffer.readPosition(0);
-            dataBuffer.writePosition(0);
+            dataBuffer.readPosition(0).writePosition(0);
 
             if (dataBuffer.capacity() < initialCapacity)
             {

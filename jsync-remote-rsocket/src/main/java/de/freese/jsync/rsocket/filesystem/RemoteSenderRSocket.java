@@ -1,25 +1,18 @@
 // Created: 22.10.2020
 package de.freese.jsync.rsocket.filesystem;
 
-import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferFactory;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
-import de.freese.jsync.filesystem.FileHandle;
-import de.freese.jsync.filesystem.RemoteSenderResource;
+import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.rsocket.filesystem.fileHandle.FileHandleFluxByteBuffer;
 import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -50,11 +43,6 @@ public class RemoteSenderRSocket extends AbstractSender
      *
      */
     private Mono<RSocket> client;
-
-    /**
-    *
-    */
-    private final DataBufferFactory dataBufferFactory = new NettyDataBufferFactory(this.byteBufAllocator);
 
     /**
     *
@@ -227,79 +215,71 @@ public class RemoteSenderRSocket extends AbstractSender
         return checksum;
     }
 
-    /**
-     * @return {@link DataBufferFactory}
-     */
-    private DataBufferFactory getDataBufferFactory()
-    {
-        return this.dataBufferFactory;
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
-        getSerializer().writeTo(byteBufMeta, JSyncCommand.SOURCE_READABLE_RESOURCE);
-
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
-        getSerializer().writeTo(byteBufData, baseDir);
-        getSerializer().writeTo(byteBufData, relativeFile);
-        getSerializer().writeTo(byteBufData, sizeOfFile);
-
-        // @formatter:off
-        Flux<DataBuffer> response = this.client.block()
-            .requestStream(ByteBufPayload.create(byteBufData, byteBufMeta))
-            .map(payload -> {
-//                System.out.println("RemoteSenderRSocket.getResource()");
-                ByteBuf byteBuf = payload.data();
-                //payload.retain();
-                return ((NettyDataBufferFactory) getDataBufferFactory()).wrap(byteBuf);
-            })
-            .cast(DataBuffer.class)
-            .doOnError(th -> getLogger().error(null, th))
-            ;
-        // @formatter:on
-
-        InputStream emptyInputStream = new InputStream()
-        {
-            /**
-             * @see java.io.InputStream#read()
-             */
-            @Override
-            public int read()
-            {
-                return -1;
-            }
-        };
-
-        // @formatter:off
-        InputStream inputStream = response
-            .reduce(emptyInputStream, (in, dataBuffer) -> new SequenceInputStream(in, dataBuffer.asInputStream()))
-            .block()
-            ;
-         // @formatter:on
-
-        // try
-        // {
-        // PipedOutputStream outPipe = new PipedOutputStream();
-        // PipedInputStream inPipe = new PipedInputStream(outPipe);
-        //
-        // DataBufferUtils.write(response, outPipe).subscribe(DataBufferUtils.releaseConsumer());
-
-        // RemoteSenderResource senderResource = new RemoteSenderResource(relativeFile, sizeOfFile, Channels.newChannel(inPipe));
-
-        RemoteSenderResource senderResource = new RemoteSenderResource(relativeFile, sizeOfFile, Channels.newChannel(inputStream));
-
-        return senderResource;
-        // }
-        // catch (IOException ex)
-        // {
-        // throw new UncheckedIOException(ex);
-        // }
-    }
+    // /**
+    // * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
+    // */
+    // @Override
+    // public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    // {
+    // ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+    // getSerializer().writeTo(byteBufMeta, JSyncCommand.SOURCE_READABLE_RESOURCE);
+    //
+    // ByteBuf byteBufData = getByteBufAllocator().buffer();
+    // getSerializer().writeTo(byteBufData, baseDir);
+    // getSerializer().writeTo(byteBufData, relativeFile);
+    // getSerializer().writeTo(byteBufData, sizeOfFile);
+    //
+//        // @formatter:off
+//        Flux<DataBuffer> response = this.client.block()
+//            .requestStream(ByteBufPayload.create(byteBufData, byteBufMeta))
+//            .map(payload -> {
+////                System.out.println("RemoteSenderRSocket.getResource()");
+//                ByteBuf byteBuf = payload.data();
+//                //payload.retain();
+//                return ((NettyDataBufferFactory) getDataBufferFactory()).wrap(byteBuf);
+//            })
+//            .cast(DataBuffer.class)
+//            .doOnError(th -> getLogger().error(null, th))
+//            ;
+//        // @formatter:on
+    //
+    // InputStream emptyInputStream = new InputStream()
+    // {
+    // /**
+    // * @see java.io.InputStream#read()
+    // */
+    // @Override
+    // public int read()
+    // {
+    // return -1;
+    // }
+    // };
+    //
+//        // @formatter:off
+//        InputStream inputStream = response
+//            .reduce(emptyInputStream, (in, dataBuffer) -> new SequenceInputStream(in, dataBuffer.asInputStream()))
+//            .block()
+//            ;
+//         // @formatter:on
+    //
+    // // try
+    // // {
+    // // PipedOutputStream outPipe = new PipedOutputStream();
+    // // PipedInputStream inPipe = new PipedInputStream(outPipe);
+    // //
+    // // DataBufferUtils.write(response, outPipe).subscribe(DataBufferUtils.releaseConsumer());
+    //
+    // // RemoteSenderResource senderResource = new RemoteSenderResource(relativeFile, sizeOfFile, Channels.newChannel(inPipe));
+    //
+    // RemoteSenderResource senderResource = new RemoteSenderResource(relativeFile, sizeOfFile, Channels.newChannel(inputStream));
+    //
+    // return senderResource;
+    // // }
+    // // catch (IOException ex)
+    // // {
+    // // throw new UncheckedIOException(ex);
+    // // }
+    // }
 
     /**
      * @return {@link Serializer}<ByteBuf>
@@ -309,36 +289,36 @@ public class RemoteSenderRSocket extends AbstractSender
         return this.serializer;
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
-     */
-    @Override
-    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
-    {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
-        getSerializer().writeTo(byteBufMeta, JSyncCommand.SOURCE_READ_CHUNK);
-
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
-        getSerializer().writeTo(byteBufData, baseDir);
-        getSerializer().writeTo(byteBufData, relativeFile);
-        getSerializer().writeTo(byteBufData, position);
-        getSerializer().writeTo(byteBufData, sizeOfChunk);
-
-        // @formatter:off
-        this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
-            .map(payload -> {
-                ByteBuffer byteBufferData = payload.getData();
-                //payload.release();
-
-                byteBuffer.clear();
-                return byteBuffer.put(byteBufferData);
-            })
-            .doOnError(th -> getLogger().error(null, th))
-            .block()
-            ;
-        // @formatter:on
-    }
+    // /**
+    // * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
+    // */
+    // @Override
+    // public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
+    // {
+    // ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+    // getSerializer().writeTo(byteBufMeta, JSyncCommand.SOURCE_READ_CHUNK);
+    //
+    // ByteBuf byteBufData = getByteBufAllocator().buffer();
+    // getSerializer().writeTo(byteBufData, baseDir);
+    // getSerializer().writeTo(byteBufData, relativeFile);
+    // getSerializer().writeTo(byteBufData, position);
+    // getSerializer().writeTo(byteBufData, sizeOfChunk);
+    //
+//        // @formatter:off
+//        this.client.block()
+//            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+//            .map(payload -> {
+//                ByteBuffer byteBufferData = payload.getData();
+//                //payload.release();
+//
+//                byteBuffer.clear();
+//                return byteBuffer.put(byteBufferData);
+//            })
+//            .doOnError(th -> getLogger().error(null, th))
+//            .block()
+//            ;
+//        // @formatter:on
+    // }
 
     /**
      * @see de.freese.jsync.filesystem.sender.Sender#readFileHandle(java.lang.String, java.lang.String, long)
@@ -347,7 +327,7 @@ public class RemoteSenderRSocket extends AbstractSender
     public FileHandle readFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         ByteBuf byteBufMeta = getByteBufAllocator().buffer();
-        getSerializer().writeTo(byteBufMeta, JSyncCommand.SOURCE_READABLE_RESOURCE);
+        getSerializer().writeTo(byteBufMeta, JSyncCommand.SOURCE_READ_FILE_HANDLE);
 
         ByteBuf byteBufData = getByteBufAllocator().buffer();
         getSerializer().writeTo(byteBufData, baseDir);
@@ -355,19 +335,20 @@ public class RemoteSenderRSocket extends AbstractSender
         getSerializer().writeTo(byteBufData, sizeOfFile);
 
         // @formatter:off
-        Flux<DataBuffer> response = this.client.block()
+        Flux<ByteBuffer> response = this.client.block()
             .requestStream(ByteBufPayload.create(byteBufData, byteBufMeta))
-            .map(payload -> {
-//                System.out.println("RemoteSenderRSocket.getResource()");
-                ByteBuf byteBuf = payload.data();
-                //payload.retain();
-                return ((NettyDataBufferFactory) getDataBufferFactory()).wrap(byteBuf);
-            })
-            .cast(DataBuffer.class)
+            .map(Payload::getData)
+//            .map(payload -> {
+////                System.out.println("RemoteSenderRSocket.getResource()");
+//                ByteBuf byteBuf = payload.data();
+//                //payload.retain();
+//                return ((NettyDataBufferFactory) getDataBufferFactory()).wrap(byteBuf);
+//            })
+            //.cast(DataBuffer.class)
             .doOnError(th -> getLogger().error(null, th))
             ;
         // @formatter:on
 
-        return new FileHandle().fluxDataBuffer(response);
+        return new FileHandleFluxByteBuffer(response);
     }
 }

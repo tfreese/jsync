@@ -2,17 +2,14 @@
 package de.freese.jsync.spring.webflux.facade;
 
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -164,50 +161,50 @@ public class SenderWebfluxFacade
         return this.serializer;
     }
 
-    /**
-     * @param baseDir String
-     * @param relativeFile String
-     * @param position long
-     * @param sizeOfChunk long
-     * @return {@link Publisher}
-     */
-    @GetMapping(path = "/readChunkBuffer", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public Publisher<DataBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                 @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
-    {
-        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+    // /**
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param position long
+    // * @param sizeOfChunk long
+    // * @return {@link Publisher}
+    // */
+    // @GetMapping(path = "/readChunkBuffer", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    // public Publisher<DataBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+    // @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
+    // {
+    // DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
+    // dataBuffer.readPosition(0);
+    // dataBuffer.writePosition(0);
+    //
+    // ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
+    // this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
+    //
+    // // HttpHeaders headers = new HttpHeaders();
+    // // headers.setCacheControl(CacheControl.noCache());
+    // // ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(dataBuffer, headers, HttpStatus.OK);
+    // //
+    // // return responseEntity;
+    //
+    // return Mono.just(dataBuffer);
+    // }
 
-        ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
-        this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
-
-        // HttpHeaders headers = new HttpHeaders();
-        // headers.setCacheControl(CacheControl.noCache());
-        // ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(dataBuffer, headers, HttpStatus.OK);
-        //
-        // return responseEntity;
-
-        return Mono.just(dataBuffer);
-    }
-
-    /**
-     * @param baseDir String
-     * @param relativeFile String
-     * @param sizeOfFile long
-     * @return {@link ResponseEntity}
-     */
-    @GetMapping(path = "/resourceReadable", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public Publisher<Resource> resourceReadable(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                @RequestParam("sizeOfFile") final long sizeOfFile)
-    {
-        Resource resource = this.sender.getResource(baseDir, relativeFile, sizeOfFile);
-
-        // HttpHeaders headers = new HttpHeaders();
-        // headers.setCacheControl(CacheControl.noCache());
-        // ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
-        //
-        // return responseEntity;
-        return Mono.just(resource);
-    }
+    // /**
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param sizeOfFile long
+    // * @return {@link ResponseEntity}
+    // */
+    // @GetMapping(path = "/resourceReadable", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    // public Publisher<Resource> resourceReadable(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+    // @RequestParam("sizeOfFile") final long sizeOfFile)
+    // {
+    // Resource resource = this.sender.getResource(baseDir, relativeFile, sizeOfFile);
+    //
+    // // HttpHeaders headers = new HttpHeaders();
+    // // headers.setCacheControl(CacheControl.noCache());
+    // // ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
+    // //
+    // // return responseEntity;
+    // return Mono.just(resource);
+    // }
 }

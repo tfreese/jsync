@@ -1,14 +1,16 @@
 // Created: 15.09.2020
 package de.freese.jsync.spring.rest.facade;
 
-import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
@@ -198,60 +200,60 @@ public class SenderRestFacade
     // return new ResponseEntity(HttpStatus.OK);
     // }
 
-    /**
-     * @param baseDir String
-     * @param relativeFile String
-     * @param position long
-     * @param sizeOfChunk long
-     * @return {@link ResponseEntity}
-     */
-    // @GetMapping("/chunk/{baseDir}/{relativeFile}/{position}/{size}")
-    // public ResponseEntity<Resource> readChunk(@PathVariable("baseDir") final String baseDir, @PathVariable("relativeFile") final String relativeFile,
-    // @PathVariable("position") final long position, @PathVariable("size") final long size)
-    @GetMapping(path = "/readChunkBuffer", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<DataBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                      @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
-    {
-        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+    // /**
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param position long
+    // * @param sizeOfChunk long
+    // * @return {@link ResponseEntity}
+    // */
+    // // @GetMapping("/chunk/{baseDir}/{relativeFile}/{position}/{size}")
+    // // public ResponseEntity<Resource> readChunk(@PathVariable("baseDir") final String baseDir, @PathVariable("relativeFile") final String relativeFile,
+    // // @PathVariable("position") final long position, @PathVariable("size") final long size)
+    // @GetMapping(path = "/readChunkBuffer", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    // public ResponseEntity<DataBuffer> readChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+    // @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
+    // {
+    // DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
+    // dataBuffer.readPosition(0);
+    // dataBuffer.writePosition(0);
+    //
+    // ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
+    // this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
+    //
+    // HttpHeaders headers = new HttpHeaders();
+    // headers.setCacheControl(CacheControl.noCache());
+    // ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(dataBuffer, headers, HttpStatus.OK);
+    //
+    // return responseEntity;
+    // }
 
-        ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
-        this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setCacheControl(CacheControl.noCache());
-        ResponseEntity<DataBuffer> responseEntity = new ResponseEntity<>(dataBuffer, headers, HttpStatus.OK);
-
-        return responseEntity;
-    }
-
-    /**
-     * @param baseDir String
-     * @param relativeFile String
-     * @param position long
-     * @param sizeOfChunk long
-     * @return {@link ResponseEntity}
-     */
-    @GetMapping(path = "/readChunkStream", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Resource> readChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                    @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
-    {
-        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
-
-        ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
-        this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
-
-        Resource resource = new InputStreamResource(dataBuffer.asInputStream(true));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setCacheControl(CacheControl.noCache());
-        ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
-
-        return responseEntity;
-    }
+    // /**
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param position long
+    // * @param sizeOfChunk long
+    // * @return {@link ResponseEntity}
+    // */
+    // @GetMapping(path = "/readChunkStream", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    // public ResponseEntity<Resource> readChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+    // @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk)
+    // {
+    // DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) sizeOfChunk);
+    // dataBuffer.readPosition(0);
+    // dataBuffer.writePosition(0);
+    //
+    // ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
+    // this.sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
+    //
+    // Resource resource = new InputStreamResource(dataBuffer.asInputStream(true));
+    //
+    // HttpHeaders headers = new HttpHeaders();
+    // headers.setCacheControl(CacheControl.noCache());
+    // ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
+    //
+    // return responseEntity;
+    // }
 
     /**
      * @param baseDir String
@@ -260,11 +262,24 @@ public class SenderRestFacade
      * @return {@link ResponseEntity}
      */
     // @GetMapping("/channel/{baseDir}/{relativeFile}/{position}/{size}")
-    @GetMapping(path = "/resourceReadable", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Resource> resourceReadable(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                     @RequestParam("sizeOfFile") final long sizeOfFile)
+    @GetMapping(path = "/readFileHandle", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<Resource> readFileHandle(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                   @RequestParam("sizeOfFile") final long sizeOfFile)
     {
-        Resource resource = this.sender.getResource(baseDir, relativeFile, sizeOfFile);
+        getLogger().debug("get resource: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+
+        Path path = Paths.get(baseDir, relativeFile);
+
+        if (!Files.exists(path))
+        {
+            String message = String.format("file doesn't exist anymore: %s", path);
+            getLogger().warn(message);
+
+            return null;
+        }
+
+        // Resource resource = new PathResource(path);
+        Resource resource = new FileSystemResource(path); // Liefert FileChannel
 
         HttpHeaders headers = new HttpHeaders();
         headers.setCacheControl(CacheControl.noCache());
@@ -272,4 +287,24 @@ public class SenderRestFacade
 
         return responseEntity;
     }
+
+    // /**
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param sizeOfFile long
+    // * @return {@link ResponseEntity}
+    // */
+    // // @GetMapping("/channel/{baseDir}/{relativeFile}/{position}/{size}")
+    // @GetMapping(path = "/resourceReadable", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    // public ResponseEntity<Resource> resourceReadable(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+    // @RequestParam("sizeOfFile") final long sizeOfFile)
+    // {
+    // Resource resource = this.sender.getResource(baseDir, relativeFile, sizeOfFile);
+    //
+    // HttpHeaders headers = new HttpHeaders();
+    // headers.setCacheControl(CacheControl.noCache());
+    // ResponseEntity<Resource> responseEntity = new ResponseEntity<>(resource, headers, HttpStatus.OK);
+    //
+    // return responseEntity;
+    // }
 }

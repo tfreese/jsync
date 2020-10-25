@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -28,12 +29,12 @@ import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.rsocket.server.JsyncRSocketServer;
+import de.freese.jsync.spring.rest.JsyncRestApplication;
 
 /**
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
-// @Disabled("")
 class TestJSyncRemote extends AbstractJSyncTest
 {
     /**
@@ -122,28 +123,28 @@ class TestJSyncRemote extends AbstractJSyncTest
         }
     }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // private void startServerSpringRest() throws Exception
-    // {
-////      // @formatter:off
-////      new SpringApplicationBuilder(JsyncServerApplication.class)
-////              //.properties("server.port=8081") // Funktioniert nicht, wenn server.port in application.yml enthalten ist.
-////              //.run(args);
-////              .run(new String[]{"--server.port=8001"});
-////      // @formatter:on
-    //
-    // if (!CLOSEABLES.containsKey("springrest"))
-    // {
-    // JsyncRestApplication server = new JsyncRestApplication();
-    // server.start(new String[]
-    // {
-    // "--server.port=8003"
-    // });
-    // CLOSEABLES.put("springrest", () -> server.stop());
-    // }
-    // }
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    private void startServerSpringRest() throws Exception
+    {
+//      // @formatter:off
+//      new SpringApplicationBuilder(JsyncServerApplication.class)
+//              //.properties("server.port=8081") // Funktioniert nicht, wenn server.port in application.yml enthalten ist.
+//              //.run(args);
+//              .run(new String[]{"--server.port=8001"});
+//      // @formatter:on
+
+        if (!CLOSEABLES.containsKey("springrest"))
+        {
+            JsyncRestApplication server = new JsyncRestApplication();
+            server.start(new String[]
+            {
+                    "--server.port=8003"
+            });
+            CLOSEABLES.put("springrest", () -> server.stop());
+        }
+    }
 
     // /**
     // * @throws Exception Falls was schief geht.
@@ -214,48 +215,11 @@ class TestJSyncRemote extends AbstractJSyncTest
         assertTrue(true);
     }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // @Test
-    // void testNettyLocalToRemote() throws Exception
-    // {
-    // System.out.println();
-    // TimeUnit.MILLISECONDS.sleep(500);
-    //
-    // startServerNetty();
-    //
-    // URI senderUri = PATH_QUELLE.toUri();
-    // URI receiverUri = new URI("jsync://localhost:8002/" + PATH_ZIEL.toString());
-    //
-    // syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
-    //
-    // assertTrue(true);
-    // }
-
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // @Test
-    // void testNettyRemoteToLocal() throws Exception
-    // {
-    // System.out.println();
-    // TimeUnit.MILLISECONDS.sleep(500);
-    //
-    // startServerNetty();
-    //
-    // URI senderUri = new URI("jsync://localhost:8002/" + PATH_QUELLE.toString());
-    // URI receiverUri = PATH_ZIEL.toUri();
-    //
-    // syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
-    //
-    // assertTrue(true);
-    // }
-
     /**
      * @throws Exception Falls was schief geht.
      */
     @Test
+    @Disabled("RemoteToRemote reicht als ganzheitlicher Test")
     void testNioRemoteToLocal() throws Exception
     {
         System.out.println();
@@ -296,6 +260,7 @@ class TestJSyncRemote extends AbstractJSyncTest
      * @throws Exception Falls was schief geht.
      */
     @Test
+    @Disabled("RemoteToRemote reicht als ganzheitlicher Test")
     void testRSocketRemoteToLocal() throws Exception
     {
         System.out.println();
@@ -330,81 +295,44 @@ class TestJSyncRemote extends AbstractJSyncTest
         assertTrue(true);
     }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // @Test
-    // void testSpringRestLocalToRemote() throws Exception
-    // {
-    // System.out.println();
-    // TimeUnit.MILLISECONDS.sleep(500);
-    //
-    // startServerSpringRest();
-    //
-    // URI senderUri = PATH_QUELLE.toUri();
-    // URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
-    //
-    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
-    //
-    // assertTrue(true);
-    // }
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    @Disabled("RemoteToRemote reicht als ganzheitlicher Test")
+    void testSpringRestRemoteToLocal() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // @Test
-    // void testSpringRestRemoteToLocal() throws Exception
-    // {
-    // System.out.println();
-    // TimeUnit.MILLISECONDS.sleep(500);
-    //
-    // startServerSpringRest();
-    //
-    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
-    // URI receiverUri = PATH_ZIEL.toUri();
-    //
-    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
-    //
-    // assertTrue(true);
-    // }
+        startServerSpringRest();
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // @Test
-    // void testSpringRestRemoteToRemote() throws Exception
-    // {
-    // System.out.println();
-    // TimeUnit.MILLISECONDS.sleep(500);
-    //
-    // startServerSpringRest();
-    //
-    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
-    // URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
-    //
-    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
-    //
-    // assertTrue(true);
-    // }
+        URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+        URI receiverUri = PATH_ZIEL.toUri();
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // @Test
-    // void testSpringWebfluxLocalToRemote() throws Exception
-    // {
-    // System.out.println();
-    // TimeUnit.MILLISECONDS.sleep(500);
-    //
-    // startServerSpringRest();
-    //
-    // URI senderUri = PATH_QUELLE.toUri();
-    // URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
-    //
-    // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_WEB_CLIENT);
-    //
-    // assertTrue(true);
-    // }
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
+
+        assertTrue(true);
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    void testSpringRestRemoteToRemote() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        startServerSpringRest();
+
+        URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+        URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
+
+        syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
+
+        assertTrue(true);
+    }
 
     // /**
     // * @throws Exception Falls was schief geht.
@@ -443,4 +371,24 @@ class TestJSyncRemote extends AbstractJSyncTest
     //
     // assertTrue(true);
     // }
+
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // @Test
+    // void testNettyRemoteToLocal() throws Exception
+    // {
+    // System.out.println();
+    // TimeUnit.MILLISECONDS.sleep(500);
+    //
+    // startServerNetty();
+    //
+    // URI senderUri = new URI("jsync://localhost:8002/" + PATH_QUELLE.toString());
+    // URI receiverUri = PATH_ZIEL.toUri();
+    //
+    // syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
+    //
+    // assertTrue(true);
+    // }
+
 }

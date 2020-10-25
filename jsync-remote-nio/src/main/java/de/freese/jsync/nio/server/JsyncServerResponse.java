@@ -7,7 +7,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
-import de.freese.jsync.remote.RemoteUtils;
+import de.freese.jsync.nio.utils.RemoteUtils;
 
 /**
  * @author Thomas Freese

@@ -8,8 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
@@ -27,30 +25,10 @@ class TestSerializers
      */
     private static final ByteBuffer BUFFER = ByteBuffer.allocate(1024 * 8);
 
-    // /**
-    // * 8 kb
-    // */
-    // private static final DataBuffer DATABUFFER = new DefaultPooledDataBufferFactory().allocateBuffer(1024 * 8);
-
     /**
     *
     */
     private static final Serializer<ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
-
-    // /**
-    // * Create objects stream.
-    // *
-    // * @return {@link Stream}
-    // */
-    // static Stream<Arguments> createSerializer()
-    // {
-//        //  @formatter:off
-//        return Stream.of(
-//                Arguments.of("ByteBufferAdapter",  DefaultSerializer.of(new ByteBufferAdapter()))
-//                ,Arguments.of("DataBufferAdapter", DefaultSerializer.of(new DataBufferAdapter()))
-//                );
-//        //  @formatter:on
-    // }
 
     /**
      *
@@ -59,20 +37,6 @@ class TestSerializers
     void beforeEach()
     {
         BUFFER.clear();
-
-        // DATABUFFER.readPosition(0);
-        // DATABUFFER.writePosition(0);
-    }
-
-    /**
-     * @param name String
-     * @param serializer {@link Serializer}
-     */
-    @ParameterizedTest(name = "{index} -> {0}")
-    @MethodSource("createSerializer")
-    void test0000(final String name, final Serializer<Object> serializer)
-    {
-        // Empty
     }
 
     /**

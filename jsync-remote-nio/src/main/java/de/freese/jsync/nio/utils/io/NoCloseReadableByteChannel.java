@@ -1,5 +1,5 @@
 // Created: 07.09.2020
-package de.freese.jsync.nio.filesystem;
+package de.freese.jsync.nio.utils.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

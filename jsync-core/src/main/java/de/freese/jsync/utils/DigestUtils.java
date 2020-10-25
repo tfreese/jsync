@@ -12,9 +12,8 @@ import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.function.LongConsumer;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import de.freese.jsync.Options;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * @author Thomas Freese
@@ -134,11 +133,7 @@ public final class DigestUtils
 
         consumerBytesRead.accept(0);
 
-        DataBuffer dataBuffer = JSyncUtils.getDataBufferFactory().allocateBuffer(bufferSize);
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
-
-        ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate(Options.DATABUFFER_SIZE);
 
         try
         {
@@ -159,7 +154,7 @@ public final class DigestUtils
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
 
         return bytes;

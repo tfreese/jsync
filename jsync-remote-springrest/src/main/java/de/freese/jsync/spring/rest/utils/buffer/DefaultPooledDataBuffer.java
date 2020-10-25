@@ -1,5 +1,5 @@
 // Created: 06.10.2020
-package de.freese.jsync.utils.buffer;
+package de.freese.jsync.spring.rest.utils.buffer;
 
 import java.io.IOException;
 import java.io.InputStream;

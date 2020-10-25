@@ -12,7 +12,7 @@ import de.freese.jsync.utils.pool.AbstractPool;
 /**
  * @author Thomas Freese
  */
-public class SocketChannelPool extends AbstractPool<SocketChannel>
+public final class SocketChannelPool extends AbstractPool<SocketChannel>
 {
     /**
      *
@@ -78,5 +78,14 @@ public class SocketChannelPool extends AbstractPool<SocketChannel>
         {
             getLogger().warn(ex.getMessage());
         }
+    }
+
+    /**
+     * @see de.freese.jsync.utils.pool.AbstractPool#get()
+     */
+    @Override
+    public SocketChannel get()
+    {
+        return super.get();
     }
 }

@@ -2,7 +2,6 @@
 package de.freese.jsync.client;
 
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -10,14 +9,11 @@ import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferFactory;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
-import de.freese.jsync.filesystem.FileHandle;
 import de.freese.jsync.filesystem.FileSystem;
+import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
@@ -29,8 +25,9 @@ import de.freese.jsync.nio.filesystem.receiver.RemoteReceiverNio;
 import de.freese.jsync.nio.filesystem.sender.RemoteSenderNio;
 import de.freese.jsync.rsocket.filesystem.RemoteReceiverRSocket;
 import de.freese.jsync.rsocket.filesystem.RemoteSenderRSocket;
+import de.freese.jsync.spring.rest.filesystem.RemoteReceiverRestClient;
+import de.freese.jsync.spring.rest.filesystem.RemoteSenderRestClient;
 import de.freese.jsync.utils.JSyncUtils;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * Basis-Implementierung des {@link Client}.
@@ -61,11 +58,6 @@ public abstract class AbstractClient implements Client
         */
         SPRING_WEB_CLIENT;
     }
-
-    /**
-     *
-     */
-    private final DataBufferFactory dataBufferFactory = new DefaultPooledDataBufferFactory(true, 1024);
 
     /**
      *
@@ -148,7 +140,7 @@ public abstract class AbstractClient implements Client
             {
                 case NIO -> this.sender = new RemoteSenderNio();
                 case RSOCKET -> this.sender = new RemoteSenderRSocket();
-                // case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestClient();
+                case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestClient();
                 // case SPRING_WEB_CLIENT -> this.sender = new RemoteSenderWebFluxClient();
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
             }
@@ -164,7 +156,7 @@ public abstract class AbstractClient implements Client
             {
                 case NIO -> this.receiver = new RemoteReceiverNio();
                 case RSOCKET -> this.receiver = new RemoteReceiverRSocket();
-                // case SPRING_REST_TEMPLATE -> this.receiver = new RemoteReceiverRestClient();
+                case SPRING_REST_TEMPLATE -> this.receiver = new RemoteReceiverRestClient();
                 // case SPRING_WEB_CLIENT -> this.receiver = new RemoteReceiverWebFluxClient();
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
             }
@@ -202,12 +194,6 @@ public abstract class AbstractClient implements Client
         }
 
         long sizeOfFile = syncItem.getSize();
-        long totalRead = 0;
-        long totalWritten = 0;
-
-        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer(Options.DATABUFFER_SIZE);
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
 
         try
         {
@@ -215,86 +201,12 @@ public abstract class AbstractClient implements Client
 
             getReceiver().writeFileHandle(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileHandle,
                     byteWritten -> clientListener.copyProgress(getOptions(), syncItem, byteWritten));
-
-            // Resource resourceSender = getSender().getResource(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
-            // WritableResource resourceReceiver = getReceiver().getResource(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile);
-            //
-            // try (ReadableByteChannel readableByteChannel = resourceSender.readableChannel();
-            // WritableByteChannel writableByteChannel = resourceReceiver.writableChannel())
-            // {
-            //
-            // if (resourceSender.isFile() && resourceReceiver.isFile())
-            // {
-            // // Lokales Kopieren
-            // FileChannel fileChannelSender = (FileChannel) readableByteChannel;
-            //
-            // // original - apparently has trouble copying large files on Windows
-            // // fileChannelSender.transferTo(0, fileChannelSender.size(), resourceReceiver.writableChannel());
-            //
-            // // Magic number for Windows: (64Mb - 32Kb)
-            // // Größere Blöcke kann Windows nicht kopieren, sonst gibs Fehler.
-            // long maxWindowsBlockSize = (64L * 1024 * 1024) - (32L * 1024);
-            //
-            // long count = sizeOfFile;
-            //
-            // if ((count > maxWindowsBlockSize) && JSyncUtils.isWindows())
-            // {
-            // count = maxWindowsBlockSize;
-            // }
-            //
-            // long position = 0;
-            //
-            // while (position < sizeOfFile)
-            // {
-            // if ((sizeOfFile - position) < count)
-            // {
-            // count = sizeOfFile - position;
-            // }
-            //
-            // long transfered = fileChannelSender.transferTo(position, count, writableByteChannel);
-            //
-            // position += transfered;
-            //
-            // totalWritten = position;
-            // clientListener.copyProgress(getOptions(), syncItem, totalWritten);
-            // getLogger().debug("copyFile: totalWritten={}", totalWritten);
-            // }
-            // }
-            // else
-            // {
-            // // Remote
-            // // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
-            // Thread.sleep(1);
-            //
-            // ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
-            //
-            // while (totalRead < sizeOfFile)
-            // {
-            // totalRead += readableByteChannel.read(byteBuffer);
-            // byteBuffer.flip();
-            //
-            // while (byteBuffer.hasRemaining())
-            // {
-            // totalWritten += writableByteChannel.write(byteBuffer);
-            //
-            // clientListener.copyProgress(getOptions(), syncItem, totalWritten);
-            // }
-            //
-            // byteBuffer.clear();
-            //
-            // getLogger().debug("copyFile: totalRead={}, totalWritten={}", totalRead, totalWritten);
-            // }
-            // }
         }
         catch (Exception ex)
         {
             clientListener.error(null, ex);
 
             return;
-        }
-        finally
-        {
-            DataBufferUtils.release(dataBuffer);
         }
 
         try
@@ -309,66 +221,66 @@ public abstract class AbstractClient implements Client
         }
     }
 
-    /**
-     * Kopieren der Dateien von der Quelle in die Senke<br>
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
-     */
-    void copyFileByChunk(final SyncItem syncItem, final ClientListener clientListener)
-    {
-        clientListener.copyProgress(getOptions(), syncItem, 0);
-
-        if (getOptions().isDryRun())
-        {
-            clientListener.copyProgress(getOptions(), syncItem, syncItem.getSize());
-            return;
-        }
-
-        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer(Options.DATABUFFER_SIZE);
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
-
-        try
-        {
-            long sizeOfFile = syncItem.getSize();
-            long position = 0;
-
-            ByteBuffer buffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
-
-            while (position < sizeOfFile)
-            {
-                long sizeOfChunk = Math.min(sizeOfFile - position, Options.DATABUFFER_SIZE);
-
-                getSender().readChunk(getSenderPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
-
-                getReceiver().writeChunk(getReceiverPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
-
-                position += sizeOfChunk;
-            }
-        }
-        catch (Exception ex)
-        {
-            clientListener.error(null, ex);
-
-            return;
-        }
-        finally
-        {
-            DataBufferUtils.release(dataBuffer);
-        }
-
-        try
-        {
-            // Datei überprüfen.
-            clientListener.validate(getOptions(), syncItem);
-            getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum());
-        }
-        catch (Exception ex)
-        {
-            clientListener.error(null, ex);
-        }
-    }
+    // /**
+    // * Kopieren der Dateien von der Quelle in die Senke<br>
+    // *
+    // * @param syncItem {@link SyncItem}
+    // * @param clientListener {@link ClientListener}
+    // */
+    // void copyFileByChunk(final SyncItem syncItem, final ClientListener clientListener)
+    // {
+    // clientListener.copyProgress(getOptions(), syncItem, 0);
+    //
+    // if (getOptions().isDryRun())
+    // {
+    // clientListener.copyProgress(getOptions(), syncItem, syncItem.getSize());
+    // return;
+    // }
+    //
+    // DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer(Options.DATABUFFER_SIZE);
+    // dataBuffer.readPosition(0);
+    // dataBuffer.writePosition(0);
+    //
+    // try
+    // {
+    // long sizeOfFile = syncItem.getSize();
+    // long position = 0;
+    //
+    // ByteBuffer buffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
+    //
+    // while (position < sizeOfFile)
+    // {
+    // long sizeOfChunk = Math.min(sizeOfFile - position, Options.DATABUFFER_SIZE);
+    //
+    // getSender().readChunk(getSenderPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
+    //
+    // getReceiver().writeChunk(getReceiverPath(), syncItem.getRelativePath(), position, sizeOfChunk, buffer);
+    //
+    // position += sizeOfChunk;
+    // }
+    // }
+    // catch (Exception ex)
+    // {
+    // clientListener.error(null, ex);
+    //
+    // return;
+    // }
+    // finally
+    // {
+    // DataBufferUtils.release(dataBuffer);
+    // }
+    //
+    // try
+    // {
+    // // Datei überprüfen.
+    // clientListener.validate(getOptions(), syncItem);
+    // getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum());
+    // }
+    // catch (Exception ex)
+    // {
+    // clientListener.error(null, ex);
+    // }
+    // }
 
     /**
      * Kopieren der Dateien auf den {@link Receiver}<br>

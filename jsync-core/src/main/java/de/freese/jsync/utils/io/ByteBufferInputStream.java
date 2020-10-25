@@ -1,5 +1,5 @@
 // Created: 15.09.2020
-package de.freese.jsync.utils;
+package de.freese.jsync.utils.io;
 
 import java.io.IOException;
 import java.io.InputStream;

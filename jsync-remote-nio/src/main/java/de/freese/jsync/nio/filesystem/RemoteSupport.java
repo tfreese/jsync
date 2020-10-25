@@ -7,22 +7,18 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.slf4j.Logger;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferFactory;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import de.freese.jsync.filesystem.FileHandle;
+import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.remote.RemoteUtils;
-import de.freese.jsync.utils.JSyncUtils;
-import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
+import de.freese.jsync.nio.utils.RemoteUtils;
+import de.freese.jsync.nio.utils.io.NoCloseReadableByteChannel;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * @author Thomas Freese
@@ -30,34 +26,27 @@ import de.freese.jsync.utils.buffer.DataBufferAdapter;
 public interface RemoteSupport
 {
     /**
-     *
-     */
-    static final DataBufferFactory DATA_BUFFER_FACTORY = JSyncUtils.getDataBufferFactory();
-
-    /**
     *
     */
-    static final Serializer<DataBuffer> SERIALIZER = DefaultSerializer.of(new DataBufferAdapter());
+    static final Serializer<ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * @param channel {@link SocketChannel}
      */
     public default void connect(final SocketChannel channel)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.CONNECT);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.CONNECT);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            long contentLength = readResponseHeader(dataBuffer, channel);
-            readResponseBody(dataBuffer, channel, contentLength);
+            long contentLength = readResponseHeader(byteBuffer, channel);
+            readResponseBody(byteBuffer, channel, contentLength);
 
-            // String message = getSerializerDataBuffer().readFrom(dataBuffer, String.class);
+            // String message = getSerializer().readFrom(byteBuffer, String.class);
             // System.out.println(message);
         }
         catch (RuntimeException rex)
@@ -74,7 +63,7 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 
@@ -85,19 +74,17 @@ public interface RemoteSupport
      */
     public default void createDirectory(final SocketChannel channel, final String baseDir, final String relativePath)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, relativePath);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
+            getSerializer().writeTo(byteBuffer, baseDir);
+            getSerializer().writeTo(byteBuffer, relativePath);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            readResponseHeader(dataBuffer, channel);
+            readResponseHeader(byteBuffer, channel);
         }
         catch (RuntimeException rex)
         {
@@ -113,7 +100,7 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 
@@ -125,20 +112,18 @@ public interface RemoteSupport
      */
     public default void delete(final SocketChannel channel, final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_DELETE);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, relativePath);
-            getSerializer().writeTo(dataBuffer, followSymLinks);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.TARGET_DELETE);
+            getSerializer().writeTo(byteBuffer, baseDir);
+            getSerializer().writeTo(byteBuffer, relativePath);
+            getSerializer().writeTo(byteBuffer, followSymLinks);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            readResponseHeader(dataBuffer, channel);
+            readResponseHeader(byteBuffer, channel);
         }
         catch (RuntimeException rex)
         {
@@ -154,7 +139,7 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 
@@ -164,18 +149,16 @@ public interface RemoteSupport
      */
     public default void disconnect(final SocketChannel channel, final Logger logger)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.DISCONNECT);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.DISCONNECT);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            long contentLength = readResponseHeader(dataBuffer, channel);
-            readResponseBody(dataBuffer, channel, contentLength);
+            long contentLength = readResponseHeader(byteBuffer, channel);
+            readResponseBody(byteBuffer, channel, contentLength);
 
             // String message = getSerializerDataBuffer().readFrom(buffer, String.class);
             // System.out.println(message);
@@ -186,7 +169,7 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 
@@ -199,27 +182,25 @@ public interface RemoteSupport
     public default void generateSyncItems(final SocketChannel channel, final String baseDir, final boolean followSymLinks,
                                           final Consumer<SyncItem> consumerSyncItem)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, followSymLinks);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+            getSerializer().writeTo(byteBuffer, baseDir);
+            getSerializer().writeTo(byteBuffer, followSymLinks);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            long contentLength = readResponseHeader(dataBuffer, channel);
-            readResponseBody(dataBuffer, channel, contentLength);
+            long contentLength = readResponseHeader(byteBuffer, channel);
+            readResponseBody(byteBuffer, channel, contentLength);
 
-            @SuppressWarnings("unused")
-            int itemCount = getSerializer().readFrom(dataBuffer, int.class);
+            int itemCount = getSerializer().readFrom(byteBuffer, int.class);
 
-            while (dataBuffer.readableByteCount() > 0)
+            // while ((byteBuffer.limit() - byteBuffer.position()) > 0)
+            for (int i = 0; i < itemCount; i++)
             {
-                SyncItem syncItem = getSerializer().readFrom(dataBuffer, SyncItem.class);
+                SyncItem syncItem = getSerializer().readFrom(byteBuffer, SyncItem.class);
                 consumerSyncItem.accept(syncItem);
             }
         }
@@ -237,7 +218,7 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 
@@ -250,22 +231,20 @@ public interface RemoteSupport
      */
     public default String getChecksum(final SocketChannel channel, final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.SOURCE_CHECKSUM);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, relativeFile);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.SOURCE_CHECKSUM);
+            getSerializer().writeTo(byteBuffer, baseDir);
+            getSerializer().writeTo(byteBuffer, relativeFile);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            long contentLength = readResponseHeader(dataBuffer, channel);
-            readResponseBody(dataBuffer, channel, contentLength);
+            long contentLength = readResponseHeader(byteBuffer, channel);
+            readResponseBody(byteBuffer, channel, contentLength);
 
-            String checksum = getSerializer().readFrom(dataBuffer, String.class);
+            String checksum = getSerializer().readFrom(byteBuffer, String.class);
 
             return checksum;
         }
@@ -283,11 +262,13 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 
     /**
+     * Liefert den {@link FileHandle} zur Datei.
+     *
      * @param channel {@link SocketChannel}
      * @param channelReleaser {@link Consumer}
      * @param baseDir String
@@ -298,20 +279,18 @@ public interface RemoteSupport
     public default ReadableByteChannel getReadableChannel(final SocketChannel channel, final Consumer<SocketChannel> channelReleaser, final String baseDir,
                                                           final String relativeFile, final long sizeOfFile)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.SOURCE_READABLE_RESOURCE);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, relativeFile);
-            getSerializer().writeTo(dataBuffer, sizeOfFile);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.SOURCE_READ_FILE_HANDLE);
+            getSerializer().writeTo(byteBuffer, baseDir);
+            getSerializer().writeTo(byteBuffer, relativeFile);
+            getSerializer().writeTo(byteBuffer, sizeOfFile);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            readResponseHeader(dataBuffer, channel);
+            readResponseHeader(byteBuffer, channel);
 
             return new NoCloseReadableByteChannel(channel, channelReleaser);
         }
@@ -329,107 +308,107 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 
     /**
      * @return {@link Serializer}
      */
-    public default Serializer<DataBuffer> getSerializer()
+    public default Serializer<ByteBuffer> getSerializer()
     {
         return SERIALIZER;
     }
 
-    /**
-     * @param channel {@link SocketChannel}
-     * @param channelReleaser {@link Consumer}
-     * @param baseDir String
-     * @param relativeFile String
-     * @param sizeOfFile long
-     * @return {@link WritableByteChannel}
-     */
-    public default WritableByteChannel getWritableChannel(final SocketChannel channel, final Consumer<SocketChannel> channelReleaser, final String baseDir,
-                                                          final String relativeFile, final long sizeOfFile)
-    {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0).writePosition(0);
+    // /**
+    // * @param channel {@link SocketChannel}
+    // * @param channelReleaser {@link Consumer}
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param sizeOfFile long
+    // * @return {@link WritableByteChannel}
+    // */
+    // public default WritableByteChannel getWritableChannel(final SocketChannel channel, final Consumer<SocketChannel> channelReleaser, final String baseDir,
+    // final String relativeFile, final long sizeOfFile)
+    // {
+    // DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
+    // dataBuffer.readPosition(0).writePosition(0);
+    //
+    // try
+    // {
+    // getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_WRITEABLE_RESOURCE);
+    // getSerializer().writeTo(dataBuffer, baseDir);
+    // getSerializer().writeTo(dataBuffer, relativeFile);
+    // getSerializer().writeTo(dataBuffer, sizeOfFile);
+    //
+    // write(channel, dataBuffer);
+    //
+    // // Response auslesen erfolgt in NoCloseWritableByteChannel#close.
+    // return new NoCloseWritableByteChannel(channel, channelReleaser);
+    // }
+    // catch (RuntimeException rex)
+    // {
+    // throw rex;
+    // }
+    // catch (IOException ex)
+    // {
+    // throw new UncheckedIOException(ex);
+    // }
+    // catch (Exception ex)
+    // {
+    // throw new RuntimeException(ex);
+    // }
+    // finally
+    // {
+    // DataBufferUtils.release(dataBuffer);
+    // }
+    // }
 
-        try
-        {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_WRITEABLE_RESOURCE);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, relativeFile);
-            getSerializer().writeTo(dataBuffer, sizeOfFile);
-
-            write(channel, dataBuffer);
-
-            // Response auslesen erfolgt in NoCloseWritableByteChannel#close.
-            return new NoCloseWritableByteChannel(channel, channelReleaser);
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
-        }
-        finally
-        {
-            DataBufferUtils.release(dataBuffer);
-        }
-    }
-
-    /**
-     * @param channel {@link SocketChannel}
-     * @param baseDir String
-     * @param relativeFile String
-     * @param position long
-     * @param sizeOfChunk long
-     * @param byteBufferChunk {@link ByteBuffer}
-     */
-    public default void readChunk(final SocketChannel channel, final String baseDir, final String relativeFile, final long position, final long sizeOfChunk,
-                                  final ByteBuffer byteBufferChunk)
-    {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0).writePosition(0);
-
-        try
-        {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.SOURCE_READ_CHUNK);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, relativeFile);
-            getSerializer().writeTo(dataBuffer, position);
-            getSerializer().writeTo(dataBuffer, sizeOfChunk);
-
-            write(channel, dataBuffer);
-
-            // Nur den Status auslesen.
-            long contentLength = readResponseHeader(dataBuffer, channel);
-            readResponseBody(byteBufferChunk, channel, contentLength);
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
-        }
-        finally
-        {
-            DataBufferUtils.release(dataBuffer);
-        }
-    }
+    // /**
+    // * @param channel {@link SocketChannel}
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param position long
+    // * @param sizeOfChunk long
+    // * @param byteBufferChunk {@link ByteBuffer}
+    // */
+    // public default void readChunk(final SocketChannel channel, final String baseDir, final String relativeFile, final long position, final long sizeOfChunk,
+    // final ByteBuffer byteBufferChunk)
+    // {
+    // DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
+    // dataBuffer.readPosition(0).writePosition(0);
+    //
+    // try
+    // {
+    // getSerializer().writeTo(dataBuffer, JSyncCommand.SOURCE_READ_CHUNK);
+    // getSerializer().writeTo(dataBuffer, baseDir);
+    // getSerializer().writeTo(dataBuffer, relativeFile);
+    // getSerializer().writeTo(dataBuffer, position);
+    // getSerializer().writeTo(dataBuffer, sizeOfChunk);
+    //
+    // write(channel, dataBuffer);
+    //
+    // // Nur den Status auslesen.
+    // long contentLength = readResponseHeader(dataBuffer, channel);
+    // readResponseBody(byteBufferChunk, channel, contentLength);
+    // }
+    // catch (RuntimeException rex)
+    // {
+    // throw rex;
+    // }
+    // catch (IOException ex)
+    // {
+    // throw new UncheckedIOException(ex);
+    // }
+    // catch (Exception ex)
+    // {
+    // throw new RuntimeException(ex);
+    // }
+    // finally
+    // {
+    // DataBufferUtils.release(dataBuffer);
+    // }
+    // }
 
     /**
      * Fertig lesen des Bodys.
@@ -457,61 +436,42 @@ public interface RemoteSupport
     }
 
     /**
-     * Fertig lesen des Bodys.
-     *
-     * @param dataBuffer {@link DataBuffer}
-     * @param channel {@link SocketChannel}
-     * @param contentLength long
-     * @throws Exception Falls was schief geht.
-     */
-    public default void readResponseBody(final DataBuffer dataBuffer, final SocketChannel channel, final long contentLength) throws Exception
-    {
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
-
-        ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
-
-        int totalRead = readResponseBody(byteBuffer, channel, contentLength);
-        dataBuffer.writePosition(totalRead);
-    }
-
-    /**
      * Einlesen des Headers und ggf. der Exception.
      *
-     * @param dataBuffer {@link DataBuffer}
+     * @param byteBuffer {@link ByteBuffer}
      * @param channel {@link SocketChannel}
      * @return long
      * @throws Exception Falls was schief geht.
      */
-    public default long readResponseHeader(final DataBuffer dataBuffer, final SocketChannel channel) throws Exception
+    public default long readResponseHeader(final ByteBuffer byteBuffer, final SocketChannel channel) throws Exception
     {
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        byteBuffer.clear();
 
-        // Auf keinen Fall mehr lesen als den Header: 12 Bytes.
-        ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, 12);
+        // Auf keinen Fall mehr lesen als den Header: 12 Bytes
+        ByteBuffer byteBufferHeader = byteBuffer.slice(0, 12);
 
-        channel.read(byteBuffer);
-        dataBuffer.writePosition(12);
+        channel.read(byteBufferHeader);
+        byteBufferHeader.flip();
 
-        int status = getSerializer().readFrom(dataBuffer, int.class);
-        long contentLength = getSerializer().readFrom(dataBuffer, long.class);
+        int status = getSerializer().readFrom(byteBufferHeader, int.class);
+        long contentLength = getSerializer().readFrom(byteBufferHeader, long.class);
+
+        byteBuffer.clear();
 
         if (RemoteUtils.STATUS_ERROR == status)
         {
-            byteBuffer = dataBuffer.asByteBuffer(12, (int) contentLength);
-
             // Exception einlesen.
             int totalRead = channel.read(byteBuffer);
-            dataBuffer.writePosition(dataBuffer.writePosition() + totalRead);
 
             while (totalRead < contentLength)
             {
-                totalRead += channel.read(byteBuffer);
-                dataBuffer.writePosition(dataBuffer.writePosition() + totalRead);
+                int bytesRead = channel.read(byteBuffer);
+                totalRead += bytesRead;
             }
 
-            Exception exception = getSerializer().readFrom(dataBuffer, Exception.class);
+            byteBuffer.flip();
+
+            Exception exception = getSerializer().readFrom(byteBuffer, Exception.class);
 
             throw exception;
         }
@@ -526,19 +486,17 @@ public interface RemoteSupport
      */
     public default void update(final SocketChannel channel, final String baseDir, final SyncItem syncItem)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_UPDATE);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, syncItem);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.TARGET_UPDATE);
+            getSerializer().writeTo(byteBuffer, baseDir);
+            getSerializer().writeTo(byteBuffer, syncItem);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            readResponseHeader(dataBuffer, channel);
+            readResponseHeader(byteBuffer, channel);
         }
         catch (RuntimeException rex)
         {
@@ -554,7 +512,7 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 
@@ -566,20 +524,18 @@ public interface RemoteSupport
      */
     public default void validateFile(final SocketChannel channel, final String baseDir, final SyncItem syncItem, final boolean withChecksum)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_VALIDATE_FILE);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, syncItem);
-            getSerializer().writeTo(dataBuffer, withChecksum);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.TARGET_VALIDATE_FILE);
+            getSerializer().writeTo(byteBuffer, baseDir);
+            getSerializer().writeTo(byteBuffer, syncItem);
+            getSerializer().writeTo(byteBuffer, withChecksum);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            readResponseHeader(dataBuffer, channel);
+            readResponseHeader(byteBuffer, channel);
         }
         catch (RuntimeException rex)
         {
@@ -595,7 +551,7 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 
@@ -607,14 +563,16 @@ public interface RemoteSupport
      */
     default int write(final AsynchronousSocketChannel channel, final ByteBuffer byteBuffer) throws Exception
     {
-        int bytesWritten = 0;
+        int totalWritten = 0;
 
         while (byteBuffer.hasRemaining())
         {
-            bytesWritten += channel.write(byteBuffer).get();
+            int bytesWritten = channel.write(byteBuffer).get();
+
+            totalWritten += bytesWritten;
         }
 
-        return bytesWritten;
+        return totalWritten;
     }
 
     /**
@@ -625,84 +583,79 @@ public interface RemoteSupport
      */
     public default int write(final SocketChannel channel, final ByteBuffer byteBuffer) throws Exception
     {
-        int bytesWritten = 0;
+        if (byteBuffer.position() > 0)
+        {
+            byteBuffer.flip();
+        }
+
+        int totalWritten = 0;
 
         while (byteBuffer.hasRemaining())
         {
-            bytesWritten += channel.write(byteBuffer);
+            int bytesWritten = channel.write(byteBuffer);
+
+            totalWritten += bytesWritten;
         }
 
-        return bytesWritten;
+        return totalWritten;
     }
 
-    /**
-     * @param channel {@link SocketChannel}
-     * @param dataBuffer {@link DataBuffer}
-     * @throws Exception Falls was schief geht.
-     * @return int, Bytes written
-     */
-    public default int write(final SocketChannel channel, final DataBuffer dataBuffer) throws Exception
-    {
-        return write(channel, dataBuffer.asByteBuffer());
-    }
+    // /**
+    // * @param channel {@link SocketChannel}
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param position long
+    // * @param sizeOfChunk long
+    // * @param byteBufferChunk {@link ByteBuffer}
+    // */
+    // public default void writeChunk(final SocketChannel channel, final String baseDir, final String relativeFile, final long position, final long sizeOfChunk,
+    // final ByteBuffer byteBufferChunk)
+    // {
+    // DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
+    // dataBuffer.readPosition(0).writePosition(0);
+    //
+    // try
+    // {
+    // getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_WRITE_CHUNK);
+    // getSerializer().writeTo(dataBuffer, baseDir);
+    // getSerializer().writeTo(dataBuffer, relativeFile);
+    // getSerializer().writeTo(dataBuffer, position);
+    // getSerializer().writeTo(dataBuffer, sizeOfChunk);
+    //
+    // if (byteBufferChunk.position() > 0)
+    // {
+    // byteBufferChunk.flip();
+    // }
+    //
+    // // channelWriter.write(bufferCmd, buffer);
+    // ByteBuffer[] buffers = new ByteBuffer[]
+    // {
+    // dataBuffer.asByteBuffer(), byteBufferChunk
+    // };
+    // channel.write(buffers);
+    //
+    // readResponseHeader(dataBuffer, channel);
+    // }
+    // catch (RuntimeException rex)
+    // {
+    // throw rex;
+    // }
+    // catch (IOException ex)
+    // {
+    // throw new UncheckedIOException(ex);
+    // }
+    // catch (Exception ex)
+    // {
+    // throw new RuntimeException(ex);
+    // }
+    // finally
+    // {
+    // DataBufferUtils.release(dataBuffer);
+    // }
+    // }
 
     /**
-     * @param channel {@link SocketChannel}
-     * @param baseDir String
-     * @param relativeFile String
-     * @param position long
-     * @param sizeOfChunk long
-     * @param byteBufferChunk {@link ByteBuffer}
-     */
-    public default void writeChunk(final SocketChannel channel, final String baseDir, final String relativeFile, final long position, final long sizeOfChunk,
-                                   final ByteBuffer byteBufferChunk)
-    {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
-
-        try
-        {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_WRITE_CHUNK);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, relativeFile);
-            getSerializer().writeTo(dataBuffer, position);
-            getSerializer().writeTo(dataBuffer, sizeOfChunk);
-
-            if (byteBufferChunk.position() > 0)
-            {
-                byteBufferChunk.flip();
-            }
-
-            // channelWriter.write(bufferCmd, buffer);
-            ByteBuffer[] buffers = new ByteBuffer[]
-            {
-                    dataBuffer.asByteBuffer(), byteBufferChunk
-            };
-            channel.write(buffers);
-
-            readResponseHeader(dataBuffer, channel);
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
-        }
-        finally
-        {
-            DataBufferUtils.release(dataBuffer);
-        }
-    }
-
-    /**
-     * Liefert die {@link Resource} zur Datei.
+     * Schreibt den {@link FileHandle} in die Datei.
      *
      * @param channel {@link SocketChannel}
      * @param baseDir String
@@ -714,42 +667,24 @@ public interface RemoteSupport
     public default void writeFileHandle(final SocketChannel channel, final String baseDir, final String relativeFile, final long sizeOfFile,
                                         final FileHandle fileHandle, final LongConsumer bytesWrittenConsumer)
     {
-        DataBuffer dataBuffer = DATA_BUFFER_FACTORY.allocateBuffer();
-        dataBuffer.readPosition(0).writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
-            getSerializer().writeTo(dataBuffer, JSyncCommand.TARGET_WRITEABLE_RESOURCE);
-            getSerializer().writeTo(dataBuffer, baseDir);
-            getSerializer().writeTo(dataBuffer, relativeFile);
-            getSerializer().writeTo(dataBuffer, sizeOfFile);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.TARGET_WRITE_FILE_HANDLE);
+            getSerializer().writeTo(byteBuffer, baseDir);
+            getSerializer().writeTo(byteBuffer, relativeFile);
+            getSerializer().writeTo(byteBuffer, sizeOfFile);
 
-            write(channel, dataBuffer);
+            write(channel, byteBuffer);
 
-            dataBuffer.readPosition(0).writePosition(0);
+            // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
+            // Warum auch immer ...
+            Thread.sleep(1);
 
-            try (ReadableByteChannel readableByteChannel = fileHandle.getReadableByteChannel())
-            {
-                ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
-                long totalWritten = 0L;
+            fileHandle.writeTo(channel, sizeOfFile);
 
-                while (totalWritten < sizeOfFile)
-                {
-                    readableByteChannel.read(byteBuffer);
-                    byteBuffer.flip();
-
-                    int bytesWritten = write(channel, byteBuffer);
-
-                    totalWritten += bytesWritten;
-                    bytesWrittenConsumer.accept(totalWritten);
-
-                    byteBuffer.clear();
-                }
-            }
-
-            readResponseHeader(dataBuffer, channel);
-            // Response auslesen erfolgt in NoCloseWritableByteChannel#close.
-            // return new NoCloseWritableByteChannel(channel, channelReleaser);
+            readResponseHeader(byteBuffer, channel);
         }
         catch (RuntimeException rex)
         {
@@ -765,7 +700,7 @@ public interface RemoteSupport
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
         }
     }
 }

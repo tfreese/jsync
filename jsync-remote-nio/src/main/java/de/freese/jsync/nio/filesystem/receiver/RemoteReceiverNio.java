@@ -2,14 +2,10 @@
 package de.freese.jsync.nio.filesystem.receiver;
 
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-import org.springframework.core.io.WritableResource;
-import de.freese.jsync.filesystem.FileHandle;
-import de.freese.jsync.filesystem.RemoteReceiverResource;
+import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.model.SyncItem;
@@ -137,26 +133,26 @@ public class RemoteReceiverNio extends AbstractReceiver implements RemoteSupport
         }
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#getResource(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        SocketChannel channel = this.channelPool.get();
-
-        WritableByteChannel writableByteChannel = getWritableChannel(channel, this.channelPool::release, baseDir, relativeFile, sizeOfFile);
-
-        try
-        {
-            return new RemoteReceiverResource(baseDir + "/" + relativeFile, sizeOfFile, writableByteChannel);
-        }
-        finally
-        {
-            // Channel wird im NoCloseWritableByteChannel freigegeben.
-            // this.channelPool.release(channel);
-        }
-    }
+    // /**
+    // * @see de.freese.jsync.filesystem.receiver.Receiver#getResource(java.lang.String, java.lang.String, long)
+    // */
+    // @Override
+    // public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    // {
+    // SocketChannel channel = this.channelPool.get();
+    //
+    // WritableByteChannel writableByteChannel = getWritableChannel(channel, this.channelPool::release, baseDir, relativeFile, sizeOfFile);
+    //
+    // try
+    // {
+    // return new RemoteReceiverResource(baseDir + "/" + relativeFile, sizeOfFile, writableByteChannel);
+    // }
+    // finally
+    // {
+    // // Channel wird im NoCloseWritableByteChannel freigegeben.
+    // // this.channelPool.release(channel);
+    // }
+    // }
 
     /**
      * @see de.freese.jsync.filesystem.receiver.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
@@ -194,26 +190,26 @@ public class RemoteReceiverNio extends AbstractReceiver implements RemoteSupport
         }
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
-     */
-    @Override
-    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
-    {
-        SocketChannel channel = this.channelPool.get();
+    // /**
+    // * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
+    // */
+    // @Override
+    // public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
+    // {
+    // SocketChannel channel = this.channelPool.get();
+    //
+    // try
+    // {
+    // writeChunk(channel, baseDir, relativeFile, position, sizeOfChunk, buffer);
+    // }
+    // finally
+    // {
+    // this.channelPool.release(channel);
+    // }
+    // }
 
-        try
-        {
-            writeChunk(channel, baseDir, relativeFile, position, sizeOfChunk, buffer);
-        }
-        finally
-        {
-            this.channelPool.release(channel);
-        }
-    }
-
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileHandle,
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.fileHandle.FileHandle,
      *      java.util.function.LongConsumer)
      */
     @Override

@@ -22,8 +22,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <!-- Tests sind alleine lauffähig, aber im Verbund mit anderen nicht -->
-                        <exclude>**/TestJSyncRemote.java</exclude>
+                        <!--exclude>**/TestJSyncRemote.java</exclude-->
                     </excludes>
                 </configuration>
             </plugin>
@@ -50,12 +49,12 @@
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>        
-        <!--dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-springrest</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
-        </dependency-->
+        </dependency>
         <!--dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-springwebflux</artifactId>

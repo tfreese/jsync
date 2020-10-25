@@ -18,7 +18,7 @@ import de.freese.jsync.utils.pool.AbstractPool;
 /**
  * @author Thomas Freese
  */
-public class AsynchronousSocketChannelPool extends AbstractPool<AsynchronousSocketChannel>
+public final class AsynchronousSocketChannelPool extends AbstractPool<AsynchronousSocketChannel>
 {
     /**
      *
@@ -111,5 +111,14 @@ public class AsynchronousSocketChannelPool extends AbstractPool<AsynchronousSock
         {
             getLogger().error(null, ex);
         }
+    }
+
+    /**
+     * @see de.freese.jsync.utils.pool.AbstractPool#get()
+     */
+    @Override
+    public AsynchronousSocketChannel get()
+    {
+        return super.get();
     }
 }

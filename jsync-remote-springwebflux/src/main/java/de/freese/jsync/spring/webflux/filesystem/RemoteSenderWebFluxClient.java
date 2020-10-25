@@ -1,17 +1,10 @@
 // Created: 14.10.2020
 package de.freese.jsync.spring.webflux.filesystem;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.UncheckedIOException;
 import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
@@ -23,7 +16,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.FileHandle;
-import de.freese.jsync.filesystem.RemoteSenderResource;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
@@ -268,6 +260,55 @@ public class RemoteSenderWebFluxClient extends AbstractSender
         return checksum;
     }
 
+    // /**
+    // * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
+    // */
+    // @Override
+    // public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    // {
+//        // @formatter:off
+//        UriComponents builder = UriComponentsBuilder.fromPath("/resourceReadable")
+//                .queryParam("baseDir", baseDir)
+//                .queryParam("relativeFile", relativeFile)
+//                .queryParam("sizeOfFile", sizeOfFile)
+//                .build();
+//        // @formatter:on
+    //
+//        // @formatter:off
+//        Flux<DataBuffer> response = this.webClient
+//                .get()
+//                .uri(builder.toUriString())
+//                .accept(MediaType.APPLICATION_OCTET_STREAM)
+//                .retrieve()
+//                .bodyToFlux(DataBuffer.class)
+//                ;
+//        // @formatter:on
+    //
+    // try
+    // {
+    // PipedOutputStream outPipe = new PipedOutputStream();
+    // PipedInputStream inPipe = new PipedInputStream(outPipe);
+    //
+    // DataBufferUtils.write(response, outPipe).subscribe(DataBufferUtils.releaseConsumer());
+    //
+    // RemoteSenderResource senderResource = new RemoteSenderResource(relativeFile, sizeOfFile, Channels.newChannel(inPipe));
+    //
+    // return senderResource;
+    // }
+    // catch (IOException ex)
+    // {
+    // throw new UncheckedIOException(ex);
+    // }
+    // }
+
+    /**
+     * @return {@link Serializer}<DataBuffer>
+     */
+    private Serializer<DataBuffer> getSerializer()
+    {
+        return this.serializer;
+    }
+
     /**
      * @see de.freese.jsync.filesystem.sender.Sender#readFileHandle(java.lang.String, java.lang.String, long)
      */
@@ -295,82 +336,33 @@ public class RemoteSenderWebFluxClient extends AbstractSender
         return new FileHandle().fluxDataBuffer(response);
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/resourceReadable")
-                .queryParam("baseDir", baseDir)
-                .queryParam("relativeFile", relativeFile)
-                .queryParam("sizeOfFile", sizeOfFile)
-                .build();
-        // @formatter:on
-
-        // @formatter:off
-        Flux<DataBuffer> response = this.webClient
-                .get()
-                .uri(builder.toUriString())
-                .accept(MediaType.APPLICATION_OCTET_STREAM)
-                .retrieve()
-                .bodyToFlux(DataBuffer.class)
-                ;
-        // @formatter:on
-
-        try
-        {
-            PipedOutputStream outPipe = new PipedOutputStream();
-            PipedInputStream inPipe = new PipedInputStream(outPipe);
-
-            DataBufferUtils.write(response, outPipe).subscribe(DataBufferUtils.releaseConsumer());
-
-            RemoteSenderResource senderResource = new RemoteSenderResource(relativeFile, sizeOfFile, Channels.newChannel(inPipe));
-
-            return senderResource;
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-    }
-
-    /**
-     * @return {@link Serializer}<DataBuffer>
-     */
-    private Serializer<DataBuffer> getSerializer()
-    {
-        return this.serializer;
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
-     */
-    @Override
-    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
-    {
-        // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/readChunkBuffer")
-                .queryParam("baseDir", baseDir)
-                .queryParam("relativeFile", relativeFile)
-                .queryParam("position", position)
-                .queryParam("sizeOfChunk", sizeOfChunk)
-                .build();
-        // @formatter:on
-
-        // @formatter:off
-        Mono<DataBuffer> response = this.webClient
-                .get()
-                .uri(builder.toUriString())
-                .accept(MediaType.APPLICATION_OCTET_STREAM)
-                .retrieve()
-                .bodyToMono(DataBuffer.class)
-                ;
-        // @formatter:on
-        DataBuffer dataBuffer = response.block();
-
-        byteBuffer.clear();
-        byteBuffer.put(dataBuffer.asByteBuffer(0, (int) sizeOfChunk));
-    }
+    // /**
+    // * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
+    // */
+    // @Override
+    // public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
+    // {
+//        // @formatter:off
+//        UriComponents builder = UriComponentsBuilder.fromPath("/readChunkBuffer")
+//                .queryParam("baseDir", baseDir)
+//                .queryParam("relativeFile", relativeFile)
+//                .queryParam("position", position)
+//                .queryParam("sizeOfChunk", sizeOfChunk)
+//                .build();
+//        // @formatter:on
+    //
+//        // @formatter:off
+//        Mono<DataBuffer> response = this.webClient
+//                .get()
+//                .uri(builder.toUriString())
+//                .accept(MediaType.APPLICATION_OCTET_STREAM)
+//                .retrieve()
+//                .bodyToMono(DataBuffer.class)
+//                ;
+//        // @formatter:on
+    // DataBuffer dataBuffer = response.block();
+    //
+    // byteBuffer.clear();
+    // byteBuffer.put(dataBuffer.asByteBuffer(0, (int) sizeOfChunk));
+    // }
 }

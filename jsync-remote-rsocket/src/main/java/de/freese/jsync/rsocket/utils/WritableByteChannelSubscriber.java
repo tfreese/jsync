@@ -12,7 +12,7 @@ import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.FluxSink;
 
 /**
- * GRklaut von org.springframework.core.io.buffer.DataBufferUtils#WritableByteChannelSubscriber
+ * Geklaut von org.springframework.core.io.buffer.DataBufferUtils#WritableByteChannelSubscriber
  *
  * @author Thomas Freese
  */

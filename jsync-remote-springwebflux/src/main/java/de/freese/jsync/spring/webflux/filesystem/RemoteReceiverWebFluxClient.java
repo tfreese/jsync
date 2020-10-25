@@ -1,23 +1,12 @@
 // Created: 17.10.2020
 package de.freese.jsync.spring.webflux.filesystem;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.UncheckedIOException;
 import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
 import java.time.Duration;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.WritableResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -31,7 +20,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.FileHandle;
-import de.freese.jsync.filesystem.RemoteReceiverResource;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
@@ -260,102 +248,102 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
         return checksum;
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#getResource(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/resourceWritable")
-                .queryParam("baseDir", baseDir)
-                .queryParam("relativeFile", relativeFile)
-                .queryParam("sizeOfFile", sizeOfFile)
-                .build();
-        // @formatter:on
-
-        try
-        {
-            PipedOutputStream pipeOut = new PipedOutputStream();
-            PipedInputStream pipeIn = new PipedInputStream(pipeOut, 8192);
-
-            Callable<String> callable = () -> {
-                // @formatter:off
-                Mono<String> response = this.webClient
-                        .post()
-                        .uri(builder.toUriString())
-                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                        .body(BodyInserters.fromResource(new InputStreamResource(pipeIn)))
-                        .retrieve()
-                        .bodyToMono(String.class)
-                        ;
-                // @formatter:on
-
-                return response.block();
-            };
-
-            final Future<String> future = this.executorService.submit(callable);
-
-            WritableByteChannel channel = new WritableByteChannel()
-            {
-                /**
-                 *
-                 */
-                private final byte[] bytes = new byte[Options.BUFFER_SIZE];
-
-                /**
-                 * @see java.nio.channels.Channel#close()
-                 */
-                @Override
-                public void close() throws IOException
-                {
-                    pipeOut.flush();
-                    pipeOut.close();
-
-                    try
-                    {
-                        future.get();
-                    }
-                    catch (InterruptedException | ExecutionException ex)
-                    {
-                        getLogger().error(null, ex);
-                    }
-
-                    pipeIn.close();
-                }
-
-                /**
-                 * @see java.nio.channels.Channel#isOpen()
-                 */
-                @Override
-                public boolean isOpen()
-                {
-                    return true;
-                }
-
-                /**
-                 * @see java.nio.channels.WritableByteChannel#write(java.nio.ByteBuffer)
-                 */
-                @Override
-                public int write(final ByteBuffer src) throws IOException
-                {
-                    int length = Math.min(src.remaining(), this.bytes.length);
-
-                    src.get(this.bytes, 0, length);
-
-                    pipeOut.write(this.bytes, 0, length);
-
-                    return length;
-                }
-            };
-
-            return new RemoteReceiverResource(baseDir + "/" + relativeFile, sizeOfFile, channel);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-    }
+    // /**
+    // * @see de.freese.jsync.filesystem.receiver.Receiver#getResource(java.lang.String, java.lang.String, long)
+    // */
+    // @Override
+    // public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    // {
+//        // @formatter:off
+//        UriComponents builder = UriComponentsBuilder.fromPath("/resourceWritable")
+//                .queryParam("baseDir", baseDir)
+//                .queryParam("relativeFile", relativeFile)
+//                .queryParam("sizeOfFile", sizeOfFile)
+//                .build();
+//        // @formatter:on
+    //
+    // try
+    // {
+    // PipedOutputStream pipeOut = new PipedOutputStream();
+    // PipedInputStream pipeIn = new PipedInputStream(pipeOut, 8192);
+    //
+    // Callable<String> callable = () -> {
+//                // @formatter:off
+//                Mono<String> response = this.webClient
+//                        .post()
+//                        .uri(builder.toUriString())
+//                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+//                        .body(BodyInserters.fromResource(new InputStreamResource(pipeIn)))
+//                        .retrieve()
+//                        .bodyToMono(String.class)
+//                        ;
+//                // @formatter:on
+    //
+    // return response.block();
+    // };
+    //
+    // final Future<String> future = this.executorService.submit(callable);
+    //
+    // WritableByteChannel channel = new WritableByteChannel()
+    // {
+    // /**
+    // *
+    // */
+    // private final byte[] bytes = new byte[Options.BUFFER_SIZE];
+    //
+    // /**
+    // * @see java.nio.channels.Channel#close()
+    // */
+    // @Override
+    // public void close() throws IOException
+    // {
+    // pipeOut.flush();
+    // pipeOut.close();
+    //
+    // try
+    // {
+    // future.get();
+    // }
+    // catch (InterruptedException | ExecutionException ex)
+    // {
+    // getLogger().error(null, ex);
+    // }
+    //
+    // pipeIn.close();
+    // }
+    //
+    // /**
+    // * @see java.nio.channels.Channel#isOpen()
+    // */
+    // @Override
+    // public boolean isOpen()
+    // {
+    // return true;
+    // }
+    //
+    // /**
+    // * @see java.nio.channels.WritableByteChannel#write(java.nio.ByteBuffer)
+    // */
+    // @Override
+    // public int write(final ByteBuffer src) throws IOException
+    // {
+    // int length = Math.min(src.remaining(), this.bytes.length);
+    //
+    // src.get(this.bytes, 0, length);
+    //
+    // pipeOut.write(this.bytes, 0, length);
+    //
+    // return length;
+    // }
+    // };
+    //
+    // return new RemoteReceiverResource(baseDir + "/" + relativeFile, sizeOfFile, channel);
+    // }
+    // catch (IOException ex)
+    // {
+    // throw new UncheckedIOException(ex);
+    // }
+    // }
 
     /**
      * @return {@link Serializer}<DataBuffer>
@@ -432,36 +420,36 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
         response.block();
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
-     */
-    @Override
-    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
-    {
-        // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/writeChunkBuffer")
-                .queryParam("baseDir", baseDir)
-                .queryParam("relativeFile", relativeFile)
-                .queryParam("position", position)
-                .queryParam("sizeOfChunk", sizeOfChunk)
-                .build();
-        // @formatter:on
-
-        byteBuffer.flip();
-
-        // @formatter:off
-        Mono<String> response = this.webClient
-                .post()
-                .uri(builder.toUriString())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(BodyInserters.fromValue(byteBuffer))
-                .retrieve()
-                .bodyToMono(String.class)
-                ;
-        // @formatter:on
-
-        response.block();
-    }
+    // /**
+    // * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
+    // */
+    // @Override
+    // public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
+    // {
+//        // @formatter:off
+//        UriComponents builder = UriComponentsBuilder.fromPath("/writeChunkBuffer")
+//                .queryParam("baseDir", baseDir)
+//                .queryParam("relativeFile", relativeFile)
+//                .queryParam("position", position)
+//                .queryParam("sizeOfChunk", sizeOfChunk)
+//                .build();
+//        // @formatter:on
+    //
+    // byteBuffer.flip();
+    //
+//        // @formatter:off
+//        Mono<String> response = this.webClient
+//                .post()
+//                .uri(builder.toUriString())
+//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+//                .body(BodyInserters.fromValue(byteBuffer))
+//                .retrieve()
+//                .bodyToMono(String.class)
+//                ;
+//        // @formatter:on
+    //
+    // response.block();
+    // }
 
     /**
      * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileHandle,

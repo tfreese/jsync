@@ -31,9 +31,9 @@
             <artifactId>rsocket-transport-local</artifactId>
         </dependency-->
         <dependency>
-            <groupId>io.rsocket</groupId>
-            <artifactId>rsocket-load-balancer</artifactId>
-        </dependency>                     
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>                           
 
         <!-- runtime scope -->
         <dependency>
@@ -54,6 +54,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.rsocket</groupId>
+            <artifactId>rsocket-load-balancer</artifactId>
+            <scope>test</scope>
+        </dependency>        
     </dependencies>
 
 </project>

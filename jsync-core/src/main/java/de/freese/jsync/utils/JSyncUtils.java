@@ -19,9 +19,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
-import org.springframework.core.io.buffer.DataBufferFactory;
 import de.freese.jsync.Options;
-import de.freese.jsync.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * @author Thomas Freese
@@ -177,14 +175,6 @@ public final class JSyncUtils
         {
             Files.delete(path);
         }
-    }
-
-    /**
-     * @return {@link DataBufferFactory}
-     */
-    public static DataBufferFactory getDataBufferFactory()
-    {
-        return DefaultPooledDataBufferFactory.getInstance();
     }
 
     /**

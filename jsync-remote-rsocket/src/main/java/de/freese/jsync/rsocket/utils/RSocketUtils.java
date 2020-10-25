@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
+import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import org.reactivestreams.Publisher;
 import org.springframework.util.Assert;
@@ -27,6 +28,11 @@ public final class RSocketUtils
         {
             try
             {
+                if (channel instanceof FileChannel)
+                {
+                    ((FileChannel) channel).force(false);
+                }
+
                 channel.close();
             }
             catch (IOException ex)
@@ -65,8 +71,6 @@ public final class RSocketUtils
     {
         ByteBuffer byteBuffer = payload.getData();
 
-        System.out.println("RSocketUtils.write(): " + Thread.currentThread().getName());
-
         int bytesWritten = 0;
 
         try
@@ -80,10 +84,6 @@ public final class RSocketUtils
         {
             throw new UncheckedIOException(ex);
         }
-        finally
-        {
-            // RSocketUtils.release(payload);
-        }
 
         return bytesWritten;
     }
@@ -92,6 +92,7 @@ public final class RSocketUtils
      * @param source {@link Publisher}
      * @param channel {@link WritableByteChannel}
      * @return {@link Flux}
+     * @see org.springframework.core.io.buffer.DataBufferUtils#write(Publisher, WritableByteChannel)
      */
     public static Flux<ByteBuffer> write(final Publisher<ByteBuffer> source, final WritableByteChannel channel)
     {

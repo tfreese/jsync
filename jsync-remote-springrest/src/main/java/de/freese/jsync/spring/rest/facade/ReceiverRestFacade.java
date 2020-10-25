@@ -2,11 +2,7 @@
 package de.freese.jsync.spring.rest.facade;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletRequest;
@@ -14,7 +10,6 @@ import javax.servlet.ServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.WritableResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -29,7 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import de.freese.jsync.Options;
+import de.freese.jsync.filesystem.fileHandle.FileHandle;
+import de.freese.jsync.filesystem.fileHandle.FileHandleReadableByteChannel;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializer;
@@ -190,55 +186,55 @@ public class ReceiverRestFacade
         return this.serializer;
     }
 
-    /**
-     * @param baseDir String
-     * @param relativeFile String
-     * @param sizeOfFile long
-     * @param resource {@link Resource}
-     * @return {@link ResponseEntity}
-     */
-    @PostMapping(path = "/resourceWritable", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<String> resourceWritable(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                   @RequestParam("sizeOfFile") final long sizeOfFile, @RequestBody final Resource resource)
-    {
-        WritableResource writableResource = this.receiver.getResource(baseDir, relativeFile, sizeOfFile);
-
-        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) Math.min(sizeOfFile, Options.DATABUFFER_SIZE));
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
-
-        try (ReadableByteChannel readableByteChannel = resource.readableChannel();
-             WritableByteChannel writableByteChannel = writableResource.writableChannel())
-        {
-            ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
-            long totalRead = 0;
-
-            while (totalRead < sizeOfFile)
-            {
-                byteBuffer.clear();
-
-                int bytesRead = readableByteChannel.read(byteBuffer);
-                totalRead += bytesRead;
-
-                byteBuffer.flip();
-
-                while (byteBuffer.hasRemaining())
-                {
-                    writableByteChannel.write(byteBuffer);
-                }
-            }
-
-            return ResponseEntity.ok("OK");
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        finally
-        {
-            DataBufferUtils.release(dataBuffer);
-        }
-    }
+    // /**
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param sizeOfFile long
+    // * @param resource {@link Resource}
+    // * @return {@link ResponseEntity}
+    // */
+    // @PostMapping(path = "/resourceWritable", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    // public ResponseEntity<String> resourceWritable(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+    // @RequestParam("sizeOfFile") final long sizeOfFile, @RequestBody final Resource resource)
+    // {
+    // WritableResource writableResource = this.receiver.getResource(baseDir, relativeFile, sizeOfFile);
+    //
+    // DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer((int) Math.min(sizeOfFile, Options.DATABUFFER_SIZE));
+    // dataBuffer.readPosition(0);
+    // dataBuffer.writePosition(0);
+    //
+    // try (ReadableByteChannel readableByteChannel = resource.readableChannel();
+    // WritableByteChannel writableByteChannel = writableResource.writableChannel())
+    // {
+    // ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
+    // long totalRead = 0;
+    //
+    // while (totalRead < sizeOfFile)
+    // {
+    // byteBuffer.clear();
+    //
+    // int bytesRead = readableByteChannel.read(byteBuffer);
+    // totalRead += bytesRead;
+    //
+    // byteBuffer.flip();
+    //
+    // while (byteBuffer.hasRemaining())
+    // {
+    // writableByteChannel.write(byteBuffer);
+    // }
+    // }
+    //
+    // return ResponseEntity.ok("OK");
+    // }
+    // catch (IOException ex)
+    // {
+    // throw new UncheckedIOException(ex);
+    // }
+    // finally
+    // {
+    // DataBufferUtils.release(dataBuffer);
+    // }
+    // }
 
     /**
      * @param baseDir String
@@ -290,76 +286,102 @@ public class ReceiverRestFacade
         }
     }
 
+    // /**
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param position long
+    // * @param sizeOfChunk long
+    // * @param chunk {@link DataBuffer}
+    // * @return {@link ResponseEntity}
+    // */
+    // @PostMapping(path = "/writeChunkBuffer", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    // public ResponseEntity<String> writeChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+    // @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk,
+    // @RequestBody final DataBuffer chunk)
+    // {
+    // try
+    // {
+    // chunk.readPosition(0);
+    //
+    // ByteBuffer byteBuffer = chunk.asByteBuffer(0, (int) sizeOfChunk);
+    //
+    // this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
+    //
+    // return ResponseEntity.ok("OK");
+    // }
+    // finally
+    // {
+    // DataBufferUtils.release(chunk);
+    // }
+    // }
+
+    // /**
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param position long
+    // * @param sizeOfChunk long
+    // * @param resource {@link Resource}
+    // * @return {@link ResponseEntity}
+    // */
+    // @PostMapping(path = "/writeChunkStream", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    // public ResponseEntity<String> writeChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+    // @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk,
+    // @RequestBody final Resource resource)
+    // {
+    // DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer();
+    // dataBuffer.readPosition(0);
+    // dataBuffer.writePosition(0);
+    //
+    // try
+    // {
+    // InputStream inputStream = resource.getInputStream();
+    // byte[] bytes = new byte[Options.BUFFER_SIZE];
+    // int bytesRead = 0;
+    //
+    // while ((bytesRead = inputStream.read(bytes)) != -1)
+    // {
+    // dataBuffer.write(bytes, 0, bytesRead);
+    // }
+    //
+    // ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
+    //
+    // this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
+    //
+    // return ResponseEntity.ok("OK");
+    // }
+    // catch (IOException ex)
+    // {
+    // throw new UncheckedIOException(ex);
+    // }
+    // finally
+    // {
+    // DataBufferUtils.release(dataBuffer);
+    // }
+    // }
+
     /**
      * @param baseDir String
      * @param relativeFile String
-     * @param position long
-     * @param sizeOfChunk long
-     * @param chunk {@link DataBuffer}
-     * @return {@link ResponseEntity}
-     */
-    @PostMapping(path = "/writeChunkBuffer", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<String> writeChunkBuffer(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                   @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk,
-                                                   @RequestBody final DataBuffer chunk)
-    {
-        try
-        {
-            chunk.readPosition(0);
-
-            ByteBuffer byteBuffer = chunk.asByteBuffer(0, (int) sizeOfChunk);
-
-            this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
-
-            return ResponseEntity.ok("OK");
-        }
-        finally
-        {
-            DataBufferUtils.release(chunk);
-        }
-    }
-
-    /**
-     * @param baseDir String
-     * @param relativeFile String
-     * @param position long
-     * @param sizeOfChunk long
+     * @param sizeOfFile long
      * @param resource {@link Resource}
      * @return {@link ResponseEntity}
      */
-    @PostMapping(path = "/writeChunkStream", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<String> writeChunkStream(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
-                                                   @RequestParam("position") final long position, @RequestParam("sizeOfChunk") final long sizeOfChunk,
-                                                   @RequestBody final Resource resource)
+    @PostMapping(path = "/writeFileHandle", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<String> writeFileHandle(@RequestParam("baseDir") final String baseDir, @RequestParam("relativeFile") final String relativeFile,
+                                                  @RequestParam("sizeOfFile") final long sizeOfFile, @RequestBody final Resource resource)
     {
-        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
-
         try
         {
-            InputStream inputStream = resource.getInputStream();
-            byte[] bytes = new byte[Options.BUFFER_SIZE];
-            int bytesRead = 0;
+            FileHandle fileHandle = new FileHandleReadableByteChannel(resource.readableChannel());
 
-            while ((bytesRead = inputStream.read(bytes)) != -1)
-            {
-                dataBuffer.write(bytes, 0, bytesRead);
-            }
-
-            ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, (int) sizeOfChunk);
-
-            this.receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
+            this.receiver.writeFileHandle(baseDir, relativeFile, sizeOfFile, fileHandle, bytesWritten -> {
+            });
 
             return ResponseEntity.ok("OK");
         }
         catch (IOException ex)
         {
             throw new UncheckedIOException(ex);
-        }
-        finally
-        {
-            DataBufferUtils.release(dataBuffer);
         }
     }
 }

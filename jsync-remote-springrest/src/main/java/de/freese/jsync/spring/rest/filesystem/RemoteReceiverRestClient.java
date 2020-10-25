@@ -1,19 +1,8 @@
 // Created: 15.09.2020
 package de.freese.jsync.spring.rest.filesystem;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.UncheckedIOException;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.apache.http.client.HttpClient;
@@ -28,7 +17,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.WritableResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -42,8 +30,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.FileHandle;
-import de.freese.jsync.filesystem.RemoteReceiverResource;
+import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.model.SyncItem;
@@ -51,9 +38,8 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.spring.rest.utils.DataBufferHttpMessageConverter;
 import de.freese.jsync.spring.rest.utils.HttpHeaderInterceptor;
-import de.freese.jsync.utils.JSyncUtils;
-import de.freese.jsync.utils.JsyncThreadFactory;
-import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.spring.rest.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.spring.rest.utils.buffer.DefaultPooledDataBufferFactory;
 import de.freese.jsync.utils.io.MonitoringReadableByteChannel;
 
 /**
@@ -66,12 +52,12 @@ public class RemoteReceiverRestClient extends AbstractReceiver
     /**
     *
     */
-    private final DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
+    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
 
-    /**
-     *
-     */
-    private final ExecutorService executorService;
+    // /**
+    // *
+    // */
+    // private final ExecutorService executorService;
 
     /**
     *
@@ -100,7 +86,7 @@ public class RemoteReceiverRestClient extends AbstractReceiver
     {
         super();
 
-        this.executorService = Executors.newSingleThreadExecutor(new JsyncThreadFactory("pipe-"));
+        // this.executorService = Executors.newSingleThreadExecutor(new JsyncThreadFactory("pipe-"));
     }
 
     /**
@@ -139,7 +125,8 @@ public class RemoteReceiverRestClient extends AbstractReceiver
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         httpRequestFactory.setBufferRequestBody(false); // Streaming
 
-        String rootUri = String.format("http://%s:%d/jsync/receiver", uri.getHost(), uri.getPort());
+        // String rootUri = String.format("http://%s:%d/jsync/receiver", uri.getHost(), uri.getPort());
+        String rootUri = String.format("http://%s:%d/receiver", uri.getHost(), uri.getPort());
 
         // @formatter:off
         this.restTemplateBuilder = new RestTemplateBuilder()
@@ -150,7 +137,7 @@ public class RemoteReceiverRestClient extends AbstractReceiver
                         , new ResourceHttpMessageConverter(true)
                         //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get())
                         //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.DATABUFFER_SIZE))
-                        , new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, this.dataBufferFactory)
+                        , new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, getDataBufferFactory())
                         )
                 ;
         // @formatter:on
@@ -212,7 +199,7 @@ public class RemoteReceiverRestClient extends AbstractReceiver
 
         this.poolingConnectionManager.close();
 
-        JSyncUtils.shutdown(this.executorService, getLogger());
+        // JSyncUtils.shutdown(this.executorService, getLogger());
     }
 
     /**
@@ -269,99 +256,107 @@ public class RemoteReceiverRestClient extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#getResource(java.lang.String, java.lang.String, long)
+     * @return {@link DataBufferFactory}
      */
-    @Override
-    public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    private DataBufferFactory getDataBufferFactory()
     {
-        // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/resourceWritable")
-                .queryParam("baseDir", baseDir)
-                .queryParam("relativeFile", relativeFile)
-                .queryParam("sizeOfFile", sizeOfFile)
-                .build();
-         // @formatter:on
-
-        // @formatter:off
-        RestTemplate rt = this.restTemplateBuilder
-            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE), new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE))
-            .build()
-            ;
-        // @formatter:on
-
-        try
-        {
-            PipedOutputStream pipeOut = new PipedOutputStream();
-            PipedInputStream pipeIn = new PipedInputStream(pipeOut, Options.BUFFER_SIZE);
-
-            Callable<String> callable = () -> {
-                Resource resource = new InputStreamResource(pipeIn);
-                ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), resource, String.class);
-                return responseEntity.getBody();
-            };
-
-            final Future<String> future = this.executorService.submit(callable);
-
-            WritableByteChannel channel = new WritableByteChannel()
-            {
-                /**
-                 *
-                 */
-                private final byte[] bytes = new byte[Options.BUFFER_SIZE];
-
-                /**
-                 * @see java.nio.channels.Channel#close()
-                 */
-                @Override
-                public void close() throws IOException
-                {
-                    pipeOut.flush();
-                    pipeOut.close();
-
-                    try
-                    {
-                        future.get();
-                    }
-                    catch (InterruptedException | ExecutionException ex)
-                    {
-                        getLogger().error(null, ex);
-                    }
-
-                    pipeIn.close();
-                }
-
-                /**
-                 * @see java.nio.channels.Channel#isOpen()
-                 */
-                @Override
-                public boolean isOpen()
-                {
-                    return true;
-                }
-
-                /**
-                 * @see java.nio.channels.WritableByteChannel#write(java.nio.ByteBuffer)
-                 */
-                @Override
-                public int write(final ByteBuffer src) throws IOException
-                {
-                    int length = Math.min(src.remaining(), this.bytes.length);
-
-                    src.get(this.bytes, 0, length);
-
-                    pipeOut.write(this.bytes, 0, length);
-
-                    return length;
-                }
-            };
-
-            return new RemoteReceiverResource(baseDir + "/" + relativeFile, sizeOfFile, channel);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
+        return this.dataBufferFactory;
     }
+
+    // /**
+    // * @see de.freese.jsync.filesystem.receiver.Receiver#getResource(java.lang.String, java.lang.String, long)
+    // */
+    // @Override
+    // public WritableResource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    // {
+//        // @formatter:off
+//        UriComponents builder = UriComponentsBuilder.fromPath("/resourceWritable")
+//                .queryParam("baseDir", baseDir)
+//                .queryParam("relativeFile", relativeFile)
+//                .queryParam("sizeOfFile", sizeOfFile)
+//                .build();
+//         // @formatter:on
+    //
+//        // @formatter:off
+//        RestTemplate rt = this.restTemplateBuilder
+//            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE), new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE))
+//            .build()
+//            ;
+//        // @formatter:on
+    //
+    // try
+    // {
+    // PipedOutputStream pipeOut = new PipedOutputStream();
+    // PipedInputStream pipeIn = new PipedInputStream(pipeOut, Options.BUFFER_SIZE);
+    //
+    // Callable<String> callable = () -> {
+    // Resource resource = new InputStreamResource(pipeIn);
+    // ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), resource, String.class);
+    // return responseEntity.getBody();
+    // };
+    //
+    // final Future<String> future = this.executorService.submit(callable);
+    //
+    // WritableByteChannel channel = new WritableByteChannel()
+    // {
+    // /**
+    // *
+    // */
+    // private final byte[] bytes = new byte[Options.BUFFER_SIZE];
+    //
+    // /**
+    // * @see java.nio.channels.Channel#close()
+    // */
+    // @Override
+    // public void close() throws IOException
+    // {
+    // pipeOut.flush();
+    // pipeOut.close();
+    //
+    // try
+    // {
+    // future.get();
+    // }
+    // catch (InterruptedException | ExecutionException ex)
+    // {
+    // getLogger().error(null, ex);
+    // }
+    //
+    // pipeIn.close();
+    // }
+    //
+    // /**
+    // * @see java.nio.channels.Channel#isOpen()
+    // */
+    // @Override
+    // public boolean isOpen()
+    // {
+    // return true;
+    // }
+    //
+    // /**
+    // * @see java.nio.channels.WritableByteChannel#write(java.nio.ByteBuffer)
+    // */
+    // @Override
+    // public int write(final ByteBuffer src) throws IOException
+    // {
+    // int length = Math.min(src.remaining(), this.bytes.length);
+    //
+    // src.get(this.bytes, 0, length);
+    //
+    // pipeOut.write(this.bytes, 0, length);
+    //
+    // return length;
+    // }
+    // };
+    //
+    // return new RemoteReceiverResource(baseDir + "/" + relativeFile, sizeOfFile, channel);
+    // }
+    // catch (IOException ex)
+    // {
+    // throw new UncheckedIOException(ex);
+    // }
+    // }
 
     /**
      * @return {@link Serializer}<DataBuffer>
@@ -377,9 +372,8 @@ public class RemoteReceiverRestClient extends AbstractReceiver
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        DataBuffer buffer = this.dataBufferFactory.allocateBuffer();
-        buffer.readPosition(0);
-        buffer.writePosition(0);
+        DataBuffer buffer = getDataBufferFactory().allocateBuffer();
+        buffer.readPosition(0).writePosition(0);
 
         getSerializer().writeTo(buffer, syncItem);
 
@@ -407,9 +401,8 @@ public class RemoteReceiverRestClient extends AbstractReceiver
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
     {
-        DataBuffer dataBuffer = this.dataBufferFactory.allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        DataBuffer dataBuffer = getDataBufferFactory().allocateBuffer();
+        dataBuffer.readPosition(0).writePosition(0);
 
         getSerializer().writeTo(dataBuffer, syncItem);
 
@@ -432,49 +425,49 @@ public class RemoteReceiverRestClient extends AbstractReceiver
         responseEntity.getBody();
     }
 
+    // /**
+    // * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
+    // */
+    // @Override
+    // public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
+    // {
+//        // @formatter:off
+//        UriComponents builder = UriComponentsBuilder.fromPath("/writeChunkBuffer")
+//                .queryParam("baseDir", baseDir)
+//                .queryParam("relativeFile", relativeFile)
+//                .queryParam("position", position)
+//                .queryParam("sizeOfChunk", sizeOfChunk)
+//                .build();
+//        // @formatter:on
+    //
+    // byteBuffer.flip();
+    //
+    // // DataBuffer buffer = this.dataBufferFactory.wrap(byteBuffer);
+    // // buffer.readPosition(0);
+    //
+//        // @formatter:off
+//        RestTemplate rt = this.restTemplateBuilder
+//            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE), new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE))
+//            .build()
+//            ;
+//        // @formatter:on
+    //
+    // // Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
+    // // ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), resource, String.class);
+    // ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), byteBuffer, String.class);
+    // responseEntity.getBody();
+    // }
+
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
-     */
-    @Override
-    public void writeChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
-    {
-        // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/writeChunkBuffer")
-                .queryParam("baseDir", baseDir)
-                .queryParam("relativeFile", relativeFile)
-                .queryParam("position", position)
-                .queryParam("sizeOfChunk", sizeOfChunk)
-                .build();
-        // @formatter:on
-
-        byteBuffer.flip();
-
-        // DataBuffer buffer = this.dataBufferFactory.wrap(byteBuffer);
-        // buffer.readPosition(0);
-
-        // @formatter:off
-        RestTemplate rt = this.restTemplateBuilder
-            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE), new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_JSON_VALUE))
-            .build()
-            ;
-        // @formatter:on
-
-        // Resource resource = new InputStreamResource(new ByteBufferInputStream(buffer));
-        // ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), resource, String.class);
-        ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), byteBuffer, String.class);
-        responseEntity.getBody();
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileHandle,
-     *      java.util.function.LongConsumer)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long,
+     *      de.freese.jsync.filesystem.fileHandle.FileHandle, java.util.function.LongConsumer)
      */
     @Override
     public void writeFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile, final FileHandle fileHandle,
                                 final LongConsumer bytesWrittenConsumer)
     {
         // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/resourceWritable")
+        UriComponents builder = UriComponentsBuilder.fromPath("/writeFileHandle")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
                 .queryParam("sizeOfFile", sizeOfFile)
@@ -488,8 +481,7 @@ public class RemoteReceiverRestClient extends AbstractReceiver
             ;
         // @formatter:on
 
-        MonitoringReadableByteChannel monitoringReadableByteChannel =
-                new MonitoringReadableByteChannel(fileHandle.getReadableByteChannel(), bytesWrittenConsumer, true);
+        MonitoringReadableByteChannel monitoringReadableByteChannel = new MonitoringReadableByteChannel(fileHandle.getHandle(), bytesWrittenConsumer, true);
 
         Resource resource = new InputStreamResource(Channels.newInputStream(monitoringReadableByteChannel));
         ResponseEntity<String> responseEntity = rt.postForEntity(builder.toUriString(), resource, String.class);

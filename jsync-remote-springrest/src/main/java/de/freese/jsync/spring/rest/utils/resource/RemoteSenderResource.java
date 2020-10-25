@@ -1,5 +1,5 @@
 // Created: 09.10.2020
-package de.freese.jsync.filesystem;
+package de.freese.jsync.spring.rest.utils.resource;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -29,7 +29,7 @@ public class RemoteSenderResource extends AbstractJsyncResource
     }
 
     /**
-     * @see de.freese.jsync.filesystem.AbstractJsyncResource#isReadable()
+     * @see de.freese.jsync.spring.rest.utils.resource.AbstractJsyncResource#isReadable()
      */
     @Override
     public boolean isReadable()
@@ -38,7 +38,7 @@ public class RemoteSenderResource extends AbstractJsyncResource
     }
 
     /**
-     * @see de.freese.jsync.filesystem.AbstractJsyncResource#readableChannel()
+     * @see de.freese.jsync.spring.rest.utils.resource.AbstractJsyncResource#readableChannel()
      */
     @Override
     public ReadableByteChannel readableChannel() throws IOException

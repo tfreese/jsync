@@ -1,5 +1,5 @@
 // Created: 04.09.20
-package de.freese.jsync.remote;
+package de.freese.jsync.nio.utils;
 
 /**
  * @author Thomas Freese

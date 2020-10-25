@@ -1,5 +1,5 @@
 // Created: 10.10.2020
-package de.freese.jsync.filesystem;
+package de.freese.jsync.spring.rest.utils.resource;
 
 import java.io.File;
 import java.io.IOException;

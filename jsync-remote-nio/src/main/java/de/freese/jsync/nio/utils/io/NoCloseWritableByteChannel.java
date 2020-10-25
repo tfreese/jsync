@@ -1,5 +1,5 @@
 // Created: 07.09.2020
-package de.freese.jsync.nio.filesystem;
+package de.freese.jsync.nio.utils.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -8,9 +8,8 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import de.freese.jsync.utils.JSyncUtils;
+import de.freese.jsync.nio.filesystem.RemoteSupport;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * @author Thomas Freese
@@ -47,14 +46,12 @@ public class NoCloseWritableByteChannel implements WritableByteChannel, RemoteSu
     @Override
     public void close() throws IOException
     {
-        DataBuffer dataBuffer = JSyncUtils.getDataBufferFactory().allocateBuffer();
-        dataBuffer.readPosition(0);
-        dataBuffer.writePosition(0);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
         try
         {
             // Response auslesen.
-            readResponseHeader(dataBuffer, this.delegate);
+            readResponseHeader(byteBuffer, this.delegate);
         }
         catch (IOException ex)
         {
@@ -69,7 +66,8 @@ public class NoCloseWritableByteChannel implements WritableByteChannel, RemoteSu
         }
         finally
         {
-            DataBufferUtils.release(dataBuffer);
+            ByteBufferPool.getInstance().release(byteBuffer);
+
             this.channelReleaser.accept(this.delegate);
         }
     }
@@ -95,7 +93,9 @@ public class NoCloseWritableByteChannel implements WritableByteChannel, RemoteSu
 
             while (src.hasRemaining())
             {
-                totalWritten += this.delegate.write(src);
+                int bytesWritten = this.delegate.write(src);
+
+                totalWritten += bytesWritten;
             }
 
             return totalWritten;

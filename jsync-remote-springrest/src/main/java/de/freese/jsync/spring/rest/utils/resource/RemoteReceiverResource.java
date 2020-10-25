@@ -1,5 +1,5 @@
 // Created: 09.10.2020
-package de.freese.jsync.filesystem;
+package de.freese.jsync.spring.rest.utils.resource;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,7 +51,7 @@ public class RemoteReceiverResource extends AbstractJsyncResource implements Wri
     }
 
     /**
-     * @see de.freese.jsync.filesystem.AbstractJsyncResource#readableChannel()
+     * @see de.freese.jsync.spring.rest.utils.resource.AbstractJsyncResource#readableChannel()
      */
     @Override
     public ReadableByteChannel readableChannel() throws IOException

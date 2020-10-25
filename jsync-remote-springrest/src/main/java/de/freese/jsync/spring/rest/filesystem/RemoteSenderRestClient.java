@@ -4,7 +4,6 @@ package de.freese.jsync.spring.rest.filesystem;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.apache.http.client.HttpClient;
@@ -31,7 +30,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.FileHandle;
+import de.freese.jsync.filesystem.fileHandle.FileHandle;
+import de.freese.jsync.filesystem.fileHandle.FileHandleReadableByteChannel;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
@@ -39,8 +39,8 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.spring.rest.utils.DataBufferHttpMessageConverter;
 import de.freese.jsync.spring.rest.utils.HttpHeaderInterceptor;
-import de.freese.jsync.utils.JSyncUtils;
-import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.spring.rest.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.spring.rest.utils.buffer.DefaultPooledDataBufferFactory;
 
 /**
  * {@link Sender} für Remote-Filesysteme für Spring-REST.
@@ -52,7 +52,7 @@ public class RemoteSenderRestClient extends AbstractSender
     /**
     *
     */
-    private final DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
+    private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
 
     /**
      *
@@ -118,7 +118,8 @@ public class RemoteSenderRestClient extends AbstractSender
         HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         httpRequestFactory.setBufferRequestBody(false); // Streaming
 
-        String rootUri = String.format("http://%s:%d/jsync/sender", uri.getHost(), uri.getPort());
+        // String rootUri = String.format("http://%s:%d/jsync/sender", uri.getHost(), uri.getPort());
+        String rootUri = String.format("http://%s:%d/sender", uri.getHost(), uri.getPort());
 
         // @formatter:off
         this.restTemplateBuilder = new RestTemplateBuilder()
@@ -129,7 +130,7 @@ public class RemoteSenderRestClient extends AbstractSender
                         , new ResourceHttpMessageConverter(true)
                         //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBufferPool.getInstance().get())
                         //, new ByteBufferHttpMessageConverter(Options.BUFFER_SIZE, () -> ByteBuffer.allocateDirect(Options.DATABUFFER_SIZE))
-                        , new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, this.dataBufferFactory)
+                        , new DataBufferHttpMessageConverter(Options.BUFFER_SIZE, getDataBufferFactory())
                         )
                 ;
         // @formatter:on
@@ -231,43 +232,97 @@ public class RemoteSenderRestClient extends AbstractSender
         return checksum;
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readFileHandle(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public FileHandle readFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        Resource resource = getResource(baseDir, relativeFile, sizeOfFile);
+    // /**
+    // * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
+    // */
+    // @Override
+    // public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
+    // {
+//        // @formatter:off
+//        UriComponents builder = UriComponentsBuilder.fromPath("/resourceReadable")
+//                .queryParam("baseDir", baseDir)
+//                .queryParam("relativeFile", relativeFile)
+//                .queryParam("sizeOfFile", sizeOfFile)
+//                .build();
+//        // @formatter:on
+    //
+    // ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), Resource.class);
+    // Resource resource = responseEntity.getBody();
+    //
+    // return resource;
+    // }
 
-        try
-        {
-            return new FileHandle().readableByteChannel(resource.readableChannel());
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
+    /**
+     * @return DataBufferFactory
+     */
+    private DataBufferFactory getDataBufferFactory()
+    {
+        return this.dataBufferFactory;
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
-     */
-    @Override
-    public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
-        // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/resourceReadable")
-                .queryParam("baseDir", baseDir)
-                .queryParam("relativeFile", relativeFile)
-                .queryParam("sizeOfFile", sizeOfFile)
-                .build();
-        // @formatter:on
-
-        ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), Resource.class);
-        Resource resource = responseEntity.getBody();
-
-        return resource;
-    }
+    // /**
+    // * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
+    // */
+    // @Override
+    // public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
+    // {
+//        // @formatter:off
+//        UriComponents builder = UriComponentsBuilder.fromPath("/readChunkBuffer")
+//                .queryParam("baseDir", baseDir)
+//                .queryParam("relativeFile", relativeFile)
+//                .queryParam("position", position)
+//                .queryParam("sizeOfChunk", sizeOfChunk)
+//                .build();
+//        // @formatter:on
+    //
+//        // @formatter:off
+//        RestTemplate rt = this.restTemplateBuilder
+//            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE), new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_OCTET_STREAM_VALUE))
+//            .build()
+//            ;
+//        // @formatter:on
+    //
+    // ResponseEntity<DataBuffer> responseEntity = rt.getForEntity(builder.toUriString(), DataBuffer.class);
+    //
+    // DataBuffer dataBuffer = responseEntity.getBody();
+    //
+    // try
+    // {
+    //
+    // byteBuffer.clear();
+    // byteBuffer.put(dataBuffer.asByteBuffer(0, (int) sizeOfChunk));
+    // }
+    // catch (RuntimeException rex)
+    // {
+    // throw rex;
+    // }
+    // // catch (IOException ex)
+    // // {
+    // // throw new UncheckedIOException(ex);
+    // // }
+    // catch (Exception ex)
+    // {
+    // throw new RuntimeException(ex);
+    // }
+    //
+    // // final ResponseExtractor responseExtractor =
+    // // (ClientHttpResponse clientHttpResponse) -> {
+    // // streamConsumer.accept(clientHttpResponse.getBody());
+    // // return null;
+    // // };
+    // // restTemplate.execute(url, HttpMethod.GET, null, responseExtractor);
+    //
+    // // byte data[] = restTemplate.execute(link, HttpMethod.GET, null, new BinaryFileExtractor());
+    // // return new ByteArrayInputStream(data);
+    // //
+    // // public class BinaryFileExtractor implements ResponseExtractor<byte[]> {
+    // //
+    // // @Override
+    // // public byte[] extractData(ClientHttpResponse response) throws IOException {
+    // // return ByteStreams.toByteArray(response.getBody());
+    // // }
+    // // }
+    // }
 
     /**
      * @return {@link Serializer}<DataBuffer>
@@ -278,67 +333,30 @@ public class RemoteSenderRestClient extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
+     * @see de.freese.jsync.filesystem.sender.Sender#readFileHandle(java.lang.String, java.lang.String, long)
      */
     @Override
-    public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer byteBuffer)
+    public FileHandle readFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         // @formatter:off
-        UriComponents builder = UriComponentsBuilder.fromPath("/readChunkBuffer")
+        UriComponents builder = UriComponentsBuilder.fromPath("/readFileHandle")
                 .queryParam("baseDir", baseDir)
                 .queryParam("relativeFile", relativeFile)
-                .queryParam("position", position)
-                .queryParam("sizeOfChunk", sizeOfChunk)
+                .queryParam("sizeOfFile", sizeOfFile)
                 .build();
         // @formatter:on
 
-        // @formatter:off
-        RestTemplate rt = this.restTemplateBuilder
-            .interceptors(new HttpHeaderInterceptor("Content-Type", MediaType.APPLICATION_JSON_VALUE), new HttpHeaderInterceptor("Accept", MediaType.APPLICATION_OCTET_STREAM_VALUE))
-            .build()
-            ;
-        // @formatter:on
-
-        ResponseEntity<DataBuffer> responseEntity = rt.getForEntity(builder.toUriString(), DataBuffer.class);
-
-        DataBuffer dataBuffer = responseEntity.getBody();
+        ResponseEntity<Resource> responseEntity = this.restTemplate.getForEntity(builder.toUriString(), Resource.class);
+        Resource resource = responseEntity.getBody();
 
         try
         {
-
-            byteBuffer.clear();
-            byteBuffer.put(dataBuffer.asByteBuffer(0, (int) sizeOfChunk));
+            return new FileHandleReadableByteChannel(resource.readableChannel());
         }
-        catch (RuntimeException rex)
+        catch (IOException ex)
         {
-            throw rex;
+            throw new UncheckedIOException(ex);
         }
-        // catch (IOException ex)
-        // {
-        // throw new UncheckedIOException(ex);
-        // }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
-        }
-
-        // final ResponseExtractor responseExtractor =
-        // (ClientHttpResponse clientHttpResponse) -> {
-        // streamConsumer.accept(clientHttpResponse.getBody());
-        // return null;
-        // };
-        // restTemplate.execute(url, HttpMethod.GET, null, responseExtractor);
-
-        // byte data[] = restTemplate.execute(link, HttpMethod.GET, null, new BinaryFileExtractor());
-        // return new ByteArrayInputStream(data);
-        //
-        // public class BinaryFileExtractor implements ResponseExtractor<byte[]> {
-        //
-        // @Override
-        // public byte[] extractData(ClientHttpResponse response) throws IOException {
-        // return ByteStreams.toByteArray(response.getBody());
-        // }
-        // }
     }
 
     // /**

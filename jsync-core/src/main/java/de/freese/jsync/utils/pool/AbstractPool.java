@@ -53,7 +53,7 @@ public abstract class AbstractPool<T>
 
         try
         {
-            for (Iterator<T> iterator = this.pool.iterator(); iterator.hasNext();)
+            for (Iterator<T> iterator = getPool().iterator(); iterator.hasNext();)
             {
                 T object = iterator.next();
 
@@ -78,13 +78,13 @@ public abstract class AbstractPool<T>
     /**
      * @return Object
      */
-    public T get()
+    protected T get()
     {
         getLock().lock();
 
         try
         {
-            T object = this.pool.poll();
+            T object = getPool().poll();
 
             if (object == null)
             {
@@ -116,6 +116,14 @@ public abstract class AbstractPool<T>
     }
 
     /**
+     * @return {@link Queue}<T>
+     */
+    protected Queue<T> getPool()
+    {
+        return this.pool;
+    }
+
+    /**
      * @param object Object
      */
     public void release(final T object)
@@ -126,7 +134,7 @@ public abstract class AbstractPool<T>
 
         try
         {
-            this.pool.add(object);
+            getPool().add(object);
         }
         finally
         {
