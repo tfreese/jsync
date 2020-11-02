@@ -152,7 +152,7 @@ public class RemoteSenderRSocket extends AbstractSender
             // Siehe JavaDoc von Schedulers
             // #elastic(): Optimized for longer executions, an alternative for blocking tasks where the number of active tasks (and threads) can grow indefinitely
             // #boundedElastic(): Optimized for longer executions, an alternative for blocking tasks where the number of active tasks (and threads) is capped
-            .publishOn(Schedulers.elastic()) // Siehe JavaDoc von Schedulers
+            .publishOn(Schedulers.elastic())
             .map(payload -> {
                 ByteBuf byteBuf = payload.data();
 

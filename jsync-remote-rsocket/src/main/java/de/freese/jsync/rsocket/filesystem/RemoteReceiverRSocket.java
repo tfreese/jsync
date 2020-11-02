@@ -85,15 +85,9 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         this.client.block()
             .requestResponse(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta))
-            //.map(payload -> {
-            //    String data = payload.getDataUtf8();
-            //    payload.release();
-            //    return data;
-            //})
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
-            //.doFinally(signalType -> byteBufMeta.release())
             .block() // Wartet auf jeden Response.
             //.subscribe() // Führt alles im Hintergrund aus.
             ;
@@ -116,11 +110,6 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         this.client.block()
             .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
-            //.map(payload -> {
-            //    String data = payload.getDataUtf8();
-            //    payload.release();
-            //    return data;
-            //})
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -146,11 +135,6 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         this.client.block()
             .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
-            //.map(payload -> {
-            //    String data = payload.getDataUtf8();
-            //    payload.release();
-            //    return data;
-            //})
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -171,15 +155,9 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         this.client.block()
             .requestResponse(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta))
-            //.map(payload -> {
-            //    String data = payload.getDataUtf8();
-            //    payload.release();
-            //    return data;
-            //})
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
-            //.doFinally(signalType -> byteBufMeta.release())
             .block()
             ;
         // @formatter:on
@@ -211,7 +189,7 @@ public class RemoteReceiverRSocket extends AbstractReceiver
             // Siehe JavaDoc von Schedulers
             // #elastic(): Optimized for longer executions, an alternative for blocking tasks where the number of active tasks (and threads) can grow indefinitely
             // #boundedElastic(): Optimized for longer executions, an alternative for blocking tasks where the number of active tasks (and threads) is capped
-            .publishOn(Schedulers.elastic()) // Siehe JavaDoc von Schedulers
+            .publishOn(Schedulers.elastic())
             .map(payload -> {
                 ByteBuf byteBuf = payload.data();
 
@@ -223,9 +201,6 @@ public class RemoteReceiverRSocket extends AbstractReceiver
 
                     consumerSyncItem.accept(syncItem);
                 }
-
-                //payload.release();
-                //byteBuf.release();
 
                 return Mono.empty();
             })
@@ -259,11 +234,6 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         String checksum = this.client.block()
             .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
-            //.map(payload -> {
-            //    String data = payload.getDataUtf8();
-            //    payload.release();
-            //    return data;
-            //})
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -428,11 +398,6 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         // @formatter:off
         this.client.block()
           .requestChannel(flux)
-          //.map(payload -> {
-          //    String data = payload.getDataUtf8();
-          //    payload.release();
-          //    return data;
-          //})
           .map(Payload::getDataUtf8)
           .doOnNext(getLogger()::debug)
           .doOnError(th -> getLogger().error(null, th))
