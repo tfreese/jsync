@@ -7,13 +7,13 @@
     <!--property name="pattern" value="%date{HH:mm:ss.SSS} - %5level - [%12.-12thread] - %replace(%-22.-22logger{0}){' ', '.'} - %message%n" /-->
     <property name="pattern" value="%date{HH:mm:ss.SSS} - %5level - [%30.-30thread] - %-20logger{0} - %message%n" />
 
-    <property name="log.dir" value="${user.dir}/logs" />
+    <property name="log.dir" value="../logs" />
     <!--property name="log.dir" value="${user.home}/.jsync/logs" /-->
 
     <!-- Conditions brauchen org.codehaus.janino:janino -->
     <!--if condition='isNull("log.dir")'>
         <then>
-            <property name="log.dir" value="${user.home}/logs/pim" />
+            <property name="log.dir" value="${user.home}/log/jsync" />
         </then>
         <else>
         </else>

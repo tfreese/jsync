@@ -32,7 +32,7 @@ public class JsyncRSocketServer
     {
         JsyncRSocketServer server = new JsyncRSocketServer();
         server.start(8888, 1, 4);
-        server.stop();
+        // server.stop();
     }
 
     /**
@@ -63,6 +63,8 @@ public class JsyncRSocketServer
      */
     public void start(final int port, final int selectCount, final int workerCount)
     {
+        getLogger().info("starting jsync-rsocket server on port: {}", port);
+
         // Fehlermeldung, wenn Client die Verbindung schliesst.
         Hooks.onErrorDropped(th -> LOGGER.error(th.getMessage()));
 
@@ -85,7 +87,7 @@ public class JsyncRSocketServer
         TcpServer tcpServer = TcpServer.create()
                 .host("localhost")
                 .port(port)
-                .runOn(LoopResources.create("jsync-server-", selectCount, workerCount, true))
+                .runOn(LoopResources.create("jsync-server-", selectCount, workerCount, false))
                 ;
         // @formatter:on
 
@@ -106,6 +108,8 @@ public class JsyncRSocketServer
     */
     public void stop()
     {
+        getLogger().info("stopping jsync-rsocket server");
+
         this.server.dispose();
     }
 }
