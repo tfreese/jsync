@@ -64,8 +64,7 @@ public class RemoteReceiverRSocket extends AbstractReceiver
     public void connect(final URI uri)
     {
         // @formatter:off
-        this.client = RSocketConnector
-              .create()
+        this.client = RSocketConnector.create()
               .payloadDecoder(PayloadDecoder.DEFAULT)
               .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
               //.reconnect(Retry.backoff(50, Duration.ofMillis(500)))

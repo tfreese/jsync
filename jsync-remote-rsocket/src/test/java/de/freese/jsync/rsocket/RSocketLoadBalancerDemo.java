@@ -48,8 +48,7 @@ public class RSocketLoadBalancerDemo
                            .runOn(LoopResources.create("client-" + port, 2, true))
                            ;
 
-                       return RSocketConnector
-                           .create()
+                       return RSocketConnector.create()
                            .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
                            .connect(TcpClientTransport.create(tcpClient))
                            .block()

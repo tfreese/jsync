@@ -59,8 +59,7 @@ public class RSocketSimpleDemo
        // @formatter:on
 
        // @formatter:off
-       RSocket client = RSocketConnector
-           .create()
+       RSocket client = RSocketConnector.create()
            //.payloadDecoder(PayloadDecoder.ZERO_COPY)
            .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
            //.reconnect(Retry.backoff(50, Duration.ofMillis(500)))
