@@ -18,8 +18,10 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
+import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketConnector;
 import io.rsocket.frame.decoder.PayloadDecoder;
+import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.ByteBufPayload;
 import reactor.core.publisher.Flux;
@@ -42,7 +44,7 @@ public class RemoteReceiverRSocket extends AbstractReceiver
     /**
      *
      */
-    private Mono<RSocket> client;
+    private RSocketClient client;
 
     /**
     *
@@ -64,26 +66,34 @@ public class RemoteReceiverRSocket extends AbstractReceiver
     public void connect(final URI uri)
     {
         // @formatter:off
-        this.client = RSocketConnector.create()
-              .payloadDecoder(PayloadDecoder.DEFAULT)
-              .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
-              //.reconnect(Retry.backoff(50, Duration.ofMillis(500)))
-              .connect(TcpClientTransport.create(TcpClient.create()
-                  .host(uri.getHost())
-                  .port(uri.getPort())
-                  .runOn(LoopResources.create("jsync-client-sender-", 3, true))
-                  )
-              )
-              //.connect(LocalClientTransport.create("test-local-" + port))
-              ;
+        TcpClient tcpClient = TcpClient.create()
+                .host(uri.getHost())
+                .port(uri.getPort())
+                .runOn(LoopResources.create("jsync-client-receiver-", 3, true))
+                ;
         // @formatter:on
+
+        ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
+        // ClientTransport clientTransport = LocalClientTransport.create("test-local-" + port);
+
+        // @formatter:off
+        RSocketConnector connector = RSocketConnector.create()
+                .payloadDecoder(PayloadDecoder.DEFAULT)
+                .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
+                // .reconnect(Retry.backoff(50, Duration.ofMillis(500)))
+                ;
+        // @formatter:on
+
+        Mono<RSocket> rSocket = connector.connect(clientTransport);
+
+        this.client = RSocketClient.from(rSocket);
 
         ByteBuf byteBufMeta = getByteBufAllocator().buffer();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.CONNECT);
 
         // @formatter:off
-        this.client.block()
-            .requestResponse(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta))
+        this.client
+            .requestResponse(Mono.just(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta)))
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -107,8 +117,8 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         getSerializer().writeTo(byteBufData, relativePath);
 
         // @formatter:off
-        this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+        this.client
+            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -132,8 +142,8 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         getSerializer().writeTo(byteBufData, followSymLinks);
 
         // @formatter:off
-        this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+        this.client
+            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -152,8 +162,8 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         getSerializer().writeTo(byteBufMeta, JSyncCommand.DISCONNECT);
 
         // @formatter:off
-        this.client.block()
-            .requestResponse(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta))
+        this.client
+            .requestResponse(Mono.just(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta)))
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -161,7 +171,7 @@ public class RemoteReceiverRSocket extends AbstractReceiver
             ;
         // @formatter:on
 
-        this.client.block().dispose();
+        this.client.dispose();
         this.client = null;
     }
 
@@ -179,16 +189,15 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         getSerializer().writeTo(byteBufData, followSymLinks);
 
         // @formatter:off
-        this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+        this.client
+            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
             // Die weitere Verarbeitung soll in einem separaten Thread erfolgen.
             // Da der Consumer die Methode getChecksum aufruft, befindet sich dieser im gleichen reactivem-Thread.
             // Dort sind die #block-Methoden verboten -> "block()/blockFirst()/blockLast() are blocking, which is not supported in thread ..."
             //
             // Siehe JavaDoc von Schedulers
-            // #elastic(): Optimized for longer executions, an alternative for blocking tasks where the number of active tasks (and threads) can grow indefinitely
             // #boundedElastic(): Optimized for longer executions, an alternative for blocking tasks where the number of active tasks (and threads) is capped
-            .publishOn(Schedulers.elastic())
+            .publishOn(Schedulers.boundedElastic())
             .map(payload -> {
                 ByteBuf byteBuf = payload.data();
 
@@ -231,8 +240,8 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         getSerializer().writeTo(byteBufData, relativeFile);
 
         // @formatter:off
-        String checksum = this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+        String checksum = this.client
+            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -296,8 +305,8 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         getSerializer().writeTo(byteBufData, syncItem);
 
         // @formatter:off
-        this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+        this.client
+            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
             //.map(payload -> {
             //    String data = payload.getDataUtf8();
             //    payload.release();
@@ -326,8 +335,8 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         getSerializer().writeTo(byteBufData, withChecksum);
 
         // @formatter:off
-        this.client.block()
-            .requestResponse(ByteBufPayload.create(byteBufData, byteBufMeta))
+        this.client
+            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
             //.map(payload -> {
             //    String data = payload.getDataUtf8();
             //    payload.release();
@@ -395,7 +404,7 @@ public class RemoteReceiverRSocket extends AbstractReceiver
         Flux<Payload> flux = Flux.concat(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)), fluxByteBuffer.map(ByteBufPayload::create));
 
         // @formatter:off
-        this.client.block()
+        this.client
           .requestChannel(flux)
           .map(Payload::getDataUtf8)
           .doOnNext(getLogger()::debug)

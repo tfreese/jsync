@@ -4,7 +4,7 @@ package de.freese.jsync.netty.server;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
-import de.freese.jsync.remote.RemoteUtils;
+import de.freese.jsync.utils.RemoteUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 

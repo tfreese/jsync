@@ -8,16 +8,21 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.rsocket.Closeable;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.SocketAcceptor;
+import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketConnector;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
+import io.rsocket.transport.ClientTransport;
+import io.rsocket.transport.ServerTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.transport.netty.server.CloseableChannel;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import io.rsocket.util.DefaultPayload;
+import reactor.core.Disposable;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.LoopResources;
@@ -37,37 +42,41 @@ public class RSocketSimpleDemo
 
     /**
      * @param port int
-     * @return {@link RSocket}
+     * @return {@link RSocketClient}
      * @throws Exception Falls was schief geht
      */
-    private static final RSocket createClient(final int port) throws Exception
+    private static final RSocketClient createClient(final int port) throws Exception
     {
-       // @formatter:off
-       SslContextBuilder sslContextBuilderClient = SslContextBuilder.forClient()
-               .trustManager(InsecureTrustManagerFactory.INSTANCE)
-               .sslProvider(SslProvider.JDK)
-               ;
-       // @formatter:on
+        // @formatter:off
+        SslContextBuilder sslContextBuilderClient = SslContextBuilder.forClient()
+                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                .sslProvider(SslProvider.JDK)
+                ;
+        // @formatter:on
 
-       // @formatter:off
-       TcpClient tcpClient = TcpClient.create()
-               .host("localhost")
-               .port(port)
-               .runOn(LoopResources.create("client-" + port, 2, true))
-               .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilderClient))
-               ;
-       // @formatter:on
+        // @formatter:off
+        TcpClient tcpClient = TcpClient.create()
+                .host("localhost")
+                .port(port)
+                .runOn(LoopResources.create("client-" + port, 2, true))
+                .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilderClient))
+                ;
+        // @formatter:on
 
-       // @formatter:off
-       RSocket client = RSocketConnector.create()
-           //.payloadDecoder(PayloadDecoder.ZERO_COPY)
-           .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
-           //.reconnect(Retry.backoff(50, Duration.ofMillis(500)))
-           .connect(TcpClientTransport.create(tcpClient))
-           //.connect(LocalClientTransport.create("test-local-" + port))
-           .block()
-           ;
-       // @formatter:on
+        ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
+        // ClientTransport clientTransport = LocalClientTransport.create("test-local-" + port);
+
+        // @formatter:off
+        RSocketConnector connector = RSocketConnector.create()
+                // .payloadDecoder(PayloadDecoder.ZERO_COPY)
+                .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
+                // .reconnect(Retry.backoff(50, Duration.ofMillis(500)))
+                ;
+        // @formatter:on
+
+        Mono<RSocket> rSocket = connector.connect(clientTransport);
+
+        RSocketClient client = RSocketClient.from(rSocket);
 
         return client;
     }
@@ -88,15 +97,15 @@ public class RSocketSimpleDemo
 
         int port = 7000;
 
-        CloseableChannel server = startServer(port);
-        RSocket client = createClient(port);
+        Disposable server = startServer(port);
+        RSocketClient client = createClient(port);
 
         // Request - Response
         for (int i = 0; i < 30; i++)
         {
            // @formatter:off
            client
-               .requestResponse(DefaultPayload.create("test " + i))
+               .requestResponse(Mono.just(DefaultPayload.create("test " + i)))
                .map(Payload::getDataUtf8)
                .doOnNext(LOGGER::info)
                .block() // Wartet auf den Response.
@@ -113,49 +122,48 @@ public class RSocketSimpleDemo
 
     /**
      * @param port int
-     * @return {@link CloseableChannel}
+     * @return {@link Disposable}
      * @throws Exception Falls was schief geht
      */
-    private static final CloseableChannel startServer(final int port) throws Exception
+    private static final Disposable startServer(final int port) throws Exception
     {
-       // @formatter:off
-       Resume resume = new Resume()
-               .sessionDuration(Duration.ofMinutes(5))
-               .retry(
-                       Retry
-                           .fixedDelay(20, Duration.ofSeconds(1))
-                           .doBeforeRetry(s -> LOGGER.info("Disconnected. Trying to resume..."))
-               )
-               ;
-       // @formatter:on
+        // @formatter:off
+        Resume resume = new Resume()
+                .sessionDuration(Duration.ofMinutes(5))
+                .retry(Retry.fixedDelay(10, Duration.ofSeconds(1))
+                        .doBeforeRetry(s -> LOGGER.info("Disconnected. Trying to resume..."))
+                )
+                ;
+        // @formatter:on
 
         SelfSignedCertificate cert = new SelfSignedCertificate();
         SslContextBuilder sslContextBuilderServer = SslContextBuilder.forServer(cert.certificate(), cert.privateKey());
 
-       // @formatter:off
-       TcpServer tcpServer = TcpServer.create()
-               .host("localhost")
-               .port(port)
-               .runOn(LoopResources.create("server-" + port, 1, 2, true))
-               .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilderServer))
-               ;
-       // @formatter:on
+        // @formatter:off
+        TcpServer tcpServer = TcpServer.create()
+                .host("localhost")
+                .port(port)
+                .runOn(LoopResources.create("server-" + port, 1, 2, true))
+                .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilderServer))
+                ;
+        // @formatter:on
+
+        ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
+        // ServerTransport<Closeable> serverTransport = LocalServerTransport.create("test-local-" + port);
 
         SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
             LOGGER.info("Server {} got {}", port, payload.getDataUtf8());
             return Mono.just(DefaultPayload.create("Server " + port + " response")).delayElement(Duration.ofMillis(100));
         });
 
-       // @formatter:off
-       CloseableChannel server = RSocketServer.create()
-           .acceptor(socketAcceptor)
-           //.payloadDecoder(PayloadDecoder.ZERO_COPY)
-           .resume(resume)
-           .bindNow(TcpServerTransport.create(tcpServer))
-           //.bind(LocalServerTransport.create("test-local-" + port))
-           //.block()
-           ;
-       // @formatter:on
+        // @formatter:off
+        Closeable server = RSocketServer.create()
+                .acceptor(socketAcceptor)
+                //.payloadDecoder(PayloadDecoder.ZERO_COPY)
+                .resume(resume)
+                .bindNow(serverTransport)
+        ;
+        // @formatter:on
 
         return server;
     }

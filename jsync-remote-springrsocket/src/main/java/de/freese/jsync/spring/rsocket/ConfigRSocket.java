@@ -5,8 +5,8 @@ import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.codec.cbor.Jackson2CborDecoder;
 import org.springframework.http.codec.cbor.Jackson2CborEncoder;
 import org.springframework.messaging.rsocket.RSocketRequester;
@@ -15,13 +15,9 @@ import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.util.MimeType;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.spring.rsocket.model.Constants;
-import de.freese.jsync.utils.JSyncUtils;
-import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import io.netty.buffer.ByteBufAllocator;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 /**
@@ -45,22 +41,23 @@ public class ConfigRSocket
     @Bean
     public DataBufferFactory dataBufferFactory()
     {
-        DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
+        DataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
 
         return dataBufferFactory;
     }
 
     /**
      * @param builder {@link Builder}
-     * @return {@link Mono}
+     * @return {@link RSocketRequester}
      */
     @Bean
-    public Mono<RSocketRequester> getRSocketRequester(final RSocketRequester.Builder builder)
+    public RSocketRequester getRSocketRequester(final RSocketRequester.Builder builder)
     {
         // @formatter:off
         return builder
                 .rsocketConnector(rSocketConnector -> rSocketConnector.reconnect(Retry.fixedDelay(2, Duration.ofSeconds(2))))
-                .connect(TcpClientTransport.create(6565));
+                .transport(TcpClientTransport.create(6565))
+                ;
         // @formatter:on
     }
 
@@ -101,14 +98,14 @@ public class ConfigRSocket
         return new LocalhostSender();
     }
 
-    /**
-     * @return {@link Serializer}
-     */
-    @Bean
-    public Serializer<DataBuffer> serializer()
-    {
-        Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
-
-        return serializer;
-    }
+    // /**
+    // * @return {@link Serializer}
+    // */
+    // @Bean
+    // public Serializer<DataBuffer> serializer()
+    // {
+    // Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
+    //
+    // return serializer;
+    // }
 }

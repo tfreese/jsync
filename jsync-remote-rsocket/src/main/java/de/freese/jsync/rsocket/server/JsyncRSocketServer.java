@@ -8,6 +8,8 @@ import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
 import io.rsocket.frame.decoder.PayloadDecoder;
+import io.rsocket.transport.ServerTransport;
+import io.rsocket.transport.netty.server.CloseableChannel;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import reactor.core.Disposable;
 import reactor.core.publisher.Hooks;
@@ -91,14 +93,17 @@ public class JsyncRSocketServer
                 ;
         // @formatter:on
 
+        ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
+        // ServerTransport<Closeable> serverTransport = LocalServerTransport.create("test-local-" + port);
+
+        SocketAcceptor socketAcceptor = SocketAcceptor.with(new JsyncRSocketHandler());
+
         // @formatter:off
-         this.server = RSocketServer
-                .create()
-                .acceptor(SocketAcceptor.with(new JsyncRSocketHandler()))
+         this.server = RSocketServer.create()
+                .acceptor(socketAcceptor)
                 .resume(resume)
                 .payloadDecoder(PayloadDecoder.DEFAULT)
-                .bind(TcpServerTransport.create(tcpServer))
-                .block()
+                .bindNow(serverTransport)
                 ;
         // @formatter:on
     }

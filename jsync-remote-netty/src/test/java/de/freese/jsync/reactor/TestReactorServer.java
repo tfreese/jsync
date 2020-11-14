@@ -20,7 +20,7 @@ import reactor.netty.tcp.TcpClient;
 /**
  * @author Thomas Freese
  */
-@TestMethodOrder(MethodOrderer.Alphanumeric.class)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 class TestReactorServer
 {
     /**

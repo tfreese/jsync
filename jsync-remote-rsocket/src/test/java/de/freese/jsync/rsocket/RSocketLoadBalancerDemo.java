@@ -2,17 +2,16 @@
 package de.freese.jsync.rsocket;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.rsocket.Payload;
-import io.rsocket.RSocket;
-import io.rsocket.client.LoadBalancedRSocketMono;
-import io.rsocket.client.filter.RSocketSupplier;
+import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketConnector;
+import io.rsocket.loadbalance.LoadbalanceRSocketClient;
+import io.rsocket.loadbalance.LoadbalanceTarget;
+import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.DefaultPayload;
 import reactor.core.Disposable;
@@ -34,39 +33,72 @@ public class RSocketLoadBalancerDemo
 
     /**
      * @param ports int[]
-     * @return {@link Mono}
+     * @return {@link RSocketClient}
      * @throws Exception Falls was schief geht
      */
-    private static Mono<RSocket> createClient(final int...ports) throws Exception
+    private static RSocketClient createClient(final int...ports) throws Exception
     {
-       // @formatter:off
-       List<RSocketSupplier> rSocketSupplierList = IntStream.of(ports)
-               .mapToObj(port -> {
-                       TcpClient tcpClient = TcpClient.create()
-                           .host("localhost")
-                           .port(port)
-                           .runOn(LoopResources.create("client-" + port, 2, true))
-                           ;
+        List<LoadbalanceTarget> targets = new ArrayList<>(ports.length);
 
-                       return RSocketConnector.create()
-                           .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
-                           .connect(TcpClientTransport.create(tcpClient))
-                           .block()
-                           ;
-               })
-               .map(rsocket -> new RSocketSupplier(() -> Mono.just(rsocket)))
-               .collect(Collectors.toList())
-               ;
-       // @formatter:on
+        for (int port : ports)
+        {
+            // @formatter:off
+            TcpClient tcpClient = TcpClient.create()
+                    .host("localhost")
+                    .port(port)
+                    .runOn(LoopResources.create("client-" + port, 2, true))
+                    ;
+            // @formatter:on
 
-        Publisher<List<RSocketSupplier>> factories = subscriber -> {
-            subscriber.onNext(rSocketSupplierList);
-            subscriber.onComplete();
-        };
+            ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
+            // ClientTransport clientTransport = LocalClientTransport.create("test-local-" + port);
 
-        LoadBalancedRSocketMono balancer = LoadBalancedRSocketMono.create(factories);
+            LoadbalanceTarget target = LoadbalanceTarget.from(Integer.toString(port), clientTransport);
 
-        return balancer;
+            targets.add(target);
+        }
+
+        Mono<List<LoadbalanceTarget>> producer = Mono.just(targets);
+
+        // Flux<List<LoadbalanceTarget>> producer = Flux.interval(Duration.ofSeconds(2)).log().map(i -> {
+        // int val = i.intValue();
+        // switch (val)
+        // {
+        // case 0:
+        // return Collections.emptyList();
+        // case 1:
+        // return List.of(targets.get(0));
+        // case 2:
+        // return List.of(targets.get(0), targets.get(1));
+        // case 3:
+        // return List.of(targets.get(0), targets.get(2));
+        // case 4:
+        // return List.of(targets.get(1), targets.get(2));
+        // case 5:
+        // return List.of(targets.get(0), targets.get(1), targets.get(2));
+        // case 6:
+        // return Collections.emptyList();
+        // case 7:
+        // return Collections.emptyList();
+        // default:
+        // return List.of(targets.get(0), targets.get(1), targets.get(2));
+        // }
+        // });
+
+        RSocketConnector connector = RSocketConnector.create()
+                // .payloadDecoder(PayloadDecoder.ZERO_COPY)
+                .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)));
+
+        // @formatter:off
+        RSocketClient client = LoadbalanceRSocketClient
+                .builder(producer)
+                .connector(connector)
+                .roundRobinLoadbalanceStrategy()
+                .build()
+                ;
+        // @formatter:on
+
+        return client;
     }
 
     /**
@@ -79,7 +111,7 @@ public class RSocketLoadBalancerDemo
 
         List<Disposable> servers = List.of(startServer(7000), startServer(8000), startServer(9000));
 
-        Mono<RSocket> client = createClient(7000, 8000, 9000);
+        RSocketClient client = createClient(7000, 8000, 9000);
 
         // Request - Response
         for (int i = 0; i < 30; i++)
@@ -94,8 +126,7 @@ public class RSocketLoadBalancerDemo
             }
 
            // @formatter:off
-           client.block()
-               .requestResponse(DefaultPayload.create("test " + i))
+           client.requestResponse(Mono.just(DefaultPayload.create("test " + i)))
                .map(Payload::getDataUtf8)
                .doOnNext(LOGGER::info)
                .block()
@@ -103,7 +134,7 @@ public class RSocketLoadBalancerDemo
            // @formatter:on
         }
 
-        client.block().dispose();
+        client.dispose();
         servers.forEach(Disposable::dispose);
     }
 

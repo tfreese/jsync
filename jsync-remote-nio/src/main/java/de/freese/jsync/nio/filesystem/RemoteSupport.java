@@ -16,8 +16,8 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
-import de.freese.jsync.nio.utils.RemoteUtils;
 import de.freese.jsync.nio.utils.io.NoCloseReadableByteChannel;
+import de.freese.jsync.utils.RemoteUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**

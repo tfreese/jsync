@@ -4,17 +4,14 @@ package de.freese.jsync.spring.webflux;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.utils.JSyncUtils;
-import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import io.netty.buffer.ByteBufAllocator;
 
 /**
  * @author Thomas Freese
@@ -47,7 +44,7 @@ public class ConfigWebflux implements WebFluxConfigurer
     @Bean
     public DataBufferFactory dataBufferFactory()
     {
-        DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
+        DataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
 
         return dataBufferFactory;
     }
@@ -72,14 +69,14 @@ public class ConfigWebflux implements WebFluxConfigurer
         return new LocalhostSender();
     }
 
-    /**
-     * @return {@link Serializer}
-     */
-    @Bean
-    public Serializer<DataBuffer> serializer()
-    {
-        Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
-
-        return serializer;
-    }
+    // /**
+    // * @return {@link Serializer}
+    // */
+    // @Bean
+    // public Serializer<DataBuffer> serializer()
+    // {
+    // Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
+    //
+    // return serializer;
+    // }
 }

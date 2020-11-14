@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.WritableResource;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -570,7 +569,7 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
         long sizeOfFile = buf.readLong();
 
         Exception exception = null;
-        WritableResource resourceReceiver = null;
+        // WritableResource resourceReceiver = null;
         ReadableByteChannel inChannel = null;
 
         // try

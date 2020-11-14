@@ -34,7 +34,7 @@ import de.freese.jsync.spring.rest.JsyncRestApplication;
 /**
  * @author Thomas Freese
  */
-@TestMethodOrder(MethodOrderer.Alphanumeric.class)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncRemote extends AbstractJSyncTest
 {
     /**
@@ -56,6 +56,7 @@ class TestJSyncRemote extends AbstractJSyncTest
      *
      */
     private static final Map<String, AutoCloseable> CLOSEABLES = new HashMap<>();
+
     /**
      *
      */

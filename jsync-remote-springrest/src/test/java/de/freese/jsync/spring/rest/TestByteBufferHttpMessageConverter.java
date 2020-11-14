@@ -1,8 +1,7 @@
 package de.freese.jsync.spring.rest;
 
-// Created: 18.09.2020
-import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.nio.ByteBuffer;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ import de.freese.jsync.spring.rest.utils.ByteBufferHttpMessageConverter;
 /**
  * @author Thomas Freese
  */
-@TestMethodOrder(MethodOrderer.Alphanumeric.class)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 class TestByteBufferHttpMessageConverter
 {
     /**

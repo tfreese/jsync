@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
+import io.rsocket.transport.ServerTransport;
 import io.rsocket.transport.netty.server.CloseableChannel;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import io.rsocket.util.DefaultPayload;
@@ -27,7 +28,7 @@ class Server implements Disposable
     /**
      *
      */
-    private CloseableChannel channel;
+    private Disposable channel;
 
     /**
      * Erzeugt ein neues {@link Server} Objekt.
@@ -69,16 +70,19 @@ class Server implements Disposable
                 ;
         // @formatter:on
 
+        ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
+        // ServerTransport<Closeable> serverTransport = LocalServerTransport.create("test-local-" + port);
+
         SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
             LOGGER.info("Server {} got {}", port, payload.getDataUtf8());
             return Mono.just(DefaultPayload.create("Server " + port + " response")).delayElement(Duration.ofMillis(100));
         });
 
         // @formatter:off
-        this.channel = RSocketServer
-            .create()
+        this.channel = RSocketServer.create()
             .acceptor(socketAcceptor)
-            .bindNow(TcpServerTransport.create(tcpServer))
+            //.payloadDecoder(PayloadDecoder.DEFAULT)
+            .bindNow(serverTransport)
             ;
         // @formatter:on
     }
