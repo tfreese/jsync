@@ -22,16 +22,8 @@ import reactor.core.publisher.Mono;
  * @author Thomas Freese
  */
 @Controller
-public class SenderRSocketFacade
+public class RSocketUploadFacade
 {
-    /**
-     * Erstellt ein neues {@link SenderRSocketFacade} Object.
-     */
-    public SenderRSocketFacade()
-    {
-        super();
-    }
-
     /**
      * @param metadata {@link Map}
      * @param content {@link Flux}

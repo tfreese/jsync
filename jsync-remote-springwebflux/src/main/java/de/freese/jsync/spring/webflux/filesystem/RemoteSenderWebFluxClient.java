@@ -15,12 +15,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.FileHandle;
+import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.spring.webflux.filesystem.fileHandle.FileHandleFluxDataBuffer;
+import de.freese.jsync.spring.webflux.utils.DataBufferAdapter;
 import io.netty.channel.ChannelOption;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -74,41 +75,36 @@ public class RemoteSenderWebFluxClient extends AbstractSender
         // @formatter:off
         HttpClient httpClient=  HttpClient.create(this.connectionProvider)
                 //.baseUrl(rootUri)
-                .tcpConfiguration(tcpClient -> {
-                    tcpClient = tcpClient.option(ChannelOption.TCP_NODELAY, true);
-                    tcpClient = tcpClient.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 120_000);
-                    //tcpClient = tcpClient.option(ChannelOption.SO_TIMEOUT, 120_000);
-                    tcpClient = tcpClient.option(ChannelOption.SO_KEEPALIVE, true);
-//                    tcpClient = tcpClient.option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(true) {
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 120_000)
+                //.option(ChannelOption.SO_TIMEOUT, 120_000)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+//                .option(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(true) {
 //
-//                        /**
-//                         * @see io.netty.buffer.PooledByteBufAllocator#newDirectBuffer(int, int)
-//                         */
-//                        @Override
-//                        protected ByteBuf newDirectBuffer(final int initialCapacity, final int maxCapacity)
-//                        {
-//                            return super.newDirectBuffer(Options.DATABUFFER_SIZE, maxCapacity);
-//                        }
+//                    /**
+//                     * @see io.netty.buffer.PooledByteBufAllocator#newDirectBuffer(int, int)
+//                     */
+//                    @Override
+//                    protected ByteBuf newDirectBuffer(final int initialCapacity, final int maxCapacity)
+//                    {
+//                        return super.newDirectBuffer(Options.DATABUFFER_SIZE, maxCapacity);
+//                    }
 //
-//                        /**
-//                         * @see io.netty.buffer.PooledByteBufAllocator#newHeapBuffer(int, int)
-//                         */
-//                        @Override
-//                        protected ByteBuf newHeapBuffer(final int initialCapacity, final int maxCapacity)
-//                        {
-//                            return super.newHeapBuffer(Options.DATABUFFER_SIZE, maxCapacity);
-//                        }
+//                    /**
+//                     * @see io.netty.buffer.PooledByteBufAllocator#newHeapBuffer(int, int)
+//                     */
+//                    @Override
+//                    protected ByteBuf newHeapBuffer(final int initialCapacity, final int maxCapacity)
+//                    {
+//                        return super.newHeapBuffer(Options.DATABUFFER_SIZE, maxCapacity);
+//                    }
 //
-//                    });
-                    tcpClient = tcpClient.runOn(loopResources);
-
-                    //tcpClient = tcpClient.doOnConnected(connection -> {
-                    //    connection.addHandlerLast(new ReadTimeoutHandler(120_000, TimeUnit.MILLISECONDS));
-                    //    connection.addHandlerLast(new WriteTimeoutHandler(120_000, TimeUnit.MILLISECONDS));
-                    //});
-
-                    return tcpClient;
-                })
+//                })
+                .runOn(loopResources)
+//                .doOnConnected(connection -> {
+//                    connection.addHandlerLast(new ReadTimeoutHandler(120_000, TimeUnit.MILLISECONDS));
+//                    connection.addHandlerLast(new WriteTimeoutHandler(120_000, TimeUnit.MILLISECONDS));
+//                })
                 .responseTimeout(Duration.ofMillis(120_000))
                 //.protocol(HttpProtocol.H2)
                 ;
@@ -333,7 +329,7 @@ public class RemoteSenderWebFluxClient extends AbstractSender
                 ;
         // @formatter:on
 
-        return new FileHandle().fluxDataBuffer(response);
+        return new FileHandleFluxDataBuffer(response);
     }
 
     // /**

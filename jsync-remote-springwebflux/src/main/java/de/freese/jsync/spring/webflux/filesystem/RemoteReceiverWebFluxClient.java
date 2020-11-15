@@ -3,13 +3,12 @@ package de.freese.jsync.spring.webflux.filesystem;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ClientHttpConnector;
@@ -19,14 +18,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import de.freese.jsync.Options;
-import de.freese.jsync.filesystem.FileHandle;
+import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.utils.JSyncUtils;
-import de.freese.jsync.utils.JsyncThreadFactory;
-import de.freese.jsync.utils.buffer.DataBufferAdapter;
+import de.freese.jsync.spring.webflux.utils.DataBufferAdapter;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
@@ -46,12 +44,12 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
     /**
     *
     */
-    private final DataBufferFactory dataBufferFactory = JSyncUtils.getDataBufferFactory();
+    private final DataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
 
-    /**
-    *
-    */
-    private final ExecutorService executorService;
+    // /**
+    // *
+    // */
+    // private final ExecutorService executorService;
 
     /**
     *
@@ -70,7 +68,7 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
     {
         super();
 
-        this.executorService = Executors.newSingleThreadExecutor(new JsyncThreadFactory("pipe-"));
+        // this.executorService = Executors.newSingleThreadExecutor(new JsyncThreadFactory("pipe-"));
     }
 
     /**
@@ -86,15 +84,11 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
         // @formatter:off
         HttpClient httpClient=  HttpClient.create(this.connectionProvider)
                 //.baseUrl(rootUri)
-                .tcpConfiguration(tcpClient -> {
-                    tcpClient = tcpClient.option(ChannelOption.TCP_NODELAY, true);
-                    tcpClient = tcpClient.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 120_000);
-                    tcpClient = tcpClient.option(ChannelOption.SO_TIMEOUT, 120_000);
-                    tcpClient = tcpClient.option(ChannelOption.SO_KEEPALIVE, true);
-                    tcpClient = tcpClient.runOn(loopResources);
-
-                    return tcpClient;
-                })
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 120_000)
+                .option(ChannelOption.SO_TIMEOUT, 120_000)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .runOn(loopResources)
                 .responseTimeout(Duration.ofMillis(120_000))
                 ;
         // @formatter:on
@@ -452,8 +446,8 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
     // }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.FileHandle,
-     *      java.util.function.LongConsumer)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long,
+     *      de.freese.jsync.filesystem.fileHandle.FileHandle, java.util.function.LongConsumer)
      */
     @Override
     public void writeFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile, final FileHandle fileHandle,
@@ -473,7 +467,7 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
                 .uri(builder.toUriString())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 //.body(BodyInserters.fromResource(new InputStreamResource(pipeIn)))
-                .body(BodyInserters.fromValue(fileHandle.getReadableByteChannel()))
+                .body(BodyInserters.fromValue(fileHandle.getHandle()))
                 .retrieve()
                 .bodyToMono(String.class)
                 ;

@@ -18,7 +18,6 @@ import de.freese.jsync.spring.rsocket.model.Constants;
 import de.freese.jsync.spring.rsocket.model.Status;
 import io.netty.buffer.ByteBufAllocator;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * @author Thomas Freese
@@ -40,7 +39,7 @@ class FileUploadApplicationTests
      *
      */
     @javax.annotation.Resource
-    private Mono<RSocketRequester> rSocketRequester;
+    private RSocketRequester rSocketRequester;
 
     /**
      *
@@ -57,20 +56,29 @@ class FileUploadApplicationTests
         Flux<DataBuffer> readFlux = DataBufferUtils.read(resource, dataBufferFactory, Options.DATABUFFER_SIZE).doOnNext(s -> System.out.println("Sent"));
 
         // @formatter:off
+//        this.rSocketRequester
+//            .map(r -> r.route("file.upload")
+//                    .metadata(metadataSpec -> {
+//                        metadataSpec.metadata("data", MimeType.valueOf(Constants.MIME_FILE_EXTENSION));
+//                        metadataSpec.metadata("output", MimeType.valueOf(Constants.MIME_FILE_NAME));
+//                    })
+//            .data(readFlux))
+//            .flatMapMany(r -> r.retrieveFlux(Status.class))
+//            .doOnNext(s -> System.out.printf("Upload Status: %s - %s%n", Thread.currentThread().getName(), s))
+//            .blockLast()
+//            //.subscribe()
+//            ;
         this.rSocketRequester
-            .map(r -> r.route("file.upload")
-                    .metadata(metadataSpec -> {
-                        metadataSpec.metadata("data", MimeType.valueOf(Constants.MIME_FILE_EXTENSION));
-                        metadataSpec.metadata("output", MimeType.valueOf(Constants.MIME_FILE_NAME));
-                    })
-            .data(readFlux))
-            .flatMapMany(r -> r.retrieveFlux(Status.class))
+            .route("file.upload")
+            .metadata(metadataSpec -> {
+                metadataSpec.metadata("output", MimeType.valueOf(Constants.MIME_FILE_NAME));
+                metadataSpec.metadata("data", MimeType.valueOf(Constants.MIME_FILE_EXTENSION));
+            })
+            .data(readFlux)
+            .retrieveFlux(Status.class)
             .doOnNext(s -> System.out.printf("Upload Status: %s - %s%n", Thread.currentThread().getName(), s))
             .blockLast()
-            //.subscribe()
             ;
         // @formatter:on
-
-        // System.out.println();
     }
 }

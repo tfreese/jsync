@@ -4,6 +4,7 @@ package de.freese.jsync.spring.webflux;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.codec.ServerCodecConfigurer;
@@ -11,6 +12,9 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
+import de.freese.jsync.model.serializer.DefaultSerializer;
+import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.spring.webflux.utils.DataBufferAdapter;
 import io.netty.buffer.ByteBufAllocator;
 
 /**
@@ -20,14 +24,6 @@ import io.netty.buffer.ByteBufAllocator;
 // @PropertySource("classpath:webflux.properties")
 public class ConfigWebflux implements WebFluxConfigurer
 {
-    /**
-     * Erstellt ein neues {@link ConfigWebflux} Object.
-     */
-    public ConfigWebflux()
-    {
-        super();
-    }
-
     /**
      * @see org.springframework.web.reactive.config.WebFluxConfigurer#configureHttpMessageCodecs(org.springframework.http.codec.ServerCodecConfigurer)
      */
@@ -69,14 +65,14 @@ public class ConfigWebflux implements WebFluxConfigurer
         return new LocalhostSender();
     }
 
-    // /**
-    // * @return {@link Serializer}
-    // */
-    // @Bean
-    // public Serializer<DataBuffer> serializer()
-    // {
-    // Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
-    //
-    // return serializer;
-    // }
+    /**
+     * @return {@link Serializer}
+     */
+    @Bean
+    public Serializer<DataBuffer> serializer()
+    {
+        Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
+
+        return serializer;
+    }
 }

@@ -31,14 +31,6 @@ public class ConfigRest implements WebMvcConfigurer// , WebServerFactoryCustomiz
     // private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRest.class);
 
     /**
-     * Erstellt ein neues {@link ConfigRest} Object.
-     */
-    public ConfigRest()
-    {
-        super();
-    }
-
-    /**
      * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurer#configureMessageConverters(java.util.List)
      */
     @Override
