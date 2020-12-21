@@ -67,6 +67,7 @@ public final class JSyncUtils
      * @see Files#readAttributes(Path, String, LinkOption...)
      */
     private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = new LinkOption[0];
+
     /**
      *
      */
