@@ -744,6 +744,16 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     }
 
     /**
+     * @see org.springframework.core.io.buffer.PooledDataBuffer#touch(java.lang.Object)
+     */
+    @Override
+    public PooledDataBuffer touch(final Object hint)
+    {
+        // No Implementation.
+        return this;
+    }
+
+    /**
      * @see org.springframework.core.io.buffer.DataBuffer#writableByteCount()
      */
     @Override
