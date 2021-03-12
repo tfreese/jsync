@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -25,7 +24,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -59,11 +57,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
      *
      */
-    private final JPanel panel;
-    /**
-     *
-     */
-    private AccumulativeRunnable<SyncPair> accumulatorTableAdd = null;
+    private AccumulativeRunnable<SyncPair> accumulatorTableAdd;
     /**
      *
      */
@@ -92,6 +86,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
      *
      */
     private JCheckBox checkBoxParallelism;
+    /**
+     *
+     */
+    private final JPanel panel;
     /**
      *
      */
@@ -139,9 +137,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
     public void addProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
     {
         getAccumulatorProgressBarMinMaxText(fileSystem).add(new Object[]
-                {
-                        min, max, text
-                });
+        {
+                min, max, text
+        });
     }
 
     /**
@@ -181,6 +179,45 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * @return {@link JPanel}
+     */
+    private JPanel createConfigPanel()
+    {
+        JPanel confiPanel = new JPanel();
+        confiPanel.setLayout(new GridBagLayout());
+        // confiPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+
+        // Button Compare
+        confiPanel.add(getButtonCompare(), new GbcBuilder(0, 0).insets(5, 5, 5, 20));
+
+        // Optionen
+        JPanel panelOptions = new JPanel();
+        panelOptions.setLayout(new GridBagLayout());
+        panelOptions.setBorder(new TitledBorder(getMessage("jsync.options")));
+        confiPanel.add(panelOptions, new GbcBuilder(1, 0).anchorWest());
+
+        this.checkBoxChecksum = new JCheckBox(getMessage("jsync.options.checksum"), false);
+        panelOptions.add(this.checkBoxChecksum, new GbcBuilder(0, 0).anchorWest());
+        this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
+        panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 0).anchorWest());
+
+        // this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallelism"), false);
+        // panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 1).anchorWest());
+
+        this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), true);
+        panelOptions.add(this.checkBoxDelete, new GbcBuilder(0, 1).anchorWest());
+        this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), true);
+        panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(1, 1).anchorWest().gridwidth(2));
+
+        confiPanel.add(panelOptions, new GbcBuilder(1, 0));
+
+        // Button Synchronize
+        confiPanel.add(getButtonSyncronize(), new GbcBuilder(2, 0).insets(5, 20, 5, 5));
+
+        return confiPanel;
+    }
+
+    /**
      * @see de.freese.jsync.swing.view.SyncView#doOnCompare(java.util.function.Consumer)
      */
     @Override
@@ -196,6 +233,131 @@ public class DefaultSyncView extends AbstractView implements SyncView
     public void doOnSyncronize(final Consumer<JButton> consumer)
     {
         consumer.accept(getButtonSyncronize());
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     * @return {@link AccumulativeRunnable}<Object[]>
+     */
+    private AccumulativeRunnable<Object[]> getAccumulatorProgressBarMinMaxText(final EFileSystem fileSystem)
+    {
+        AccumulativeRunnable<Object[]> accumulator = this.accumulatorProgressBarMinMaxText.get(fileSystem);
+
+        if (accumulator == null)
+        {
+            ScheduledAccumulativeRunnable<Object[]> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
+            final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
+
+            sar.doOnSubmit(chunks -> {
+                Object[] chunk = chunks.get(chunks.size() - 1);
+                progressBar.setMinimum((int) chunk[0]);
+                progressBar.setMaximum((int) chunk[1]);
+                progressBar.setString((String) chunk[2]);
+            });
+
+            this.accumulatorProgressBarMinMaxText.put(fileSystem, sar);
+            accumulator = sar;
+        }
+
+        return accumulator;
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     * @return {@link AccumulativeRunnable}<String>
+     */
+    private AccumulativeRunnable<String> getAccumulatorProgressBarText(final EFileSystem fileSystem)
+    {
+        AccumulativeRunnable<String> accumulator = this.accumulatorProgressBarText.get(fileSystem);
+
+        if (accumulator == null)
+        {
+            ScheduledAccumulativeRunnable<String> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
+            final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
+
+            sar.doOnSubmit(chunks -> progressBar.setString(chunks.get(chunks.size() - 1)));
+
+            this.accumulatorProgressBarText.put(fileSystem, sar);
+            accumulator = sar;
+        }
+
+        return accumulator;
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     * @return {@link AccumulativeRunnable}<Integer>
+     */
+    private AccumulativeRunnable<Integer> getAccumulatorProgressBarValue(final EFileSystem fileSystem)
+    {
+        AccumulativeRunnable<Integer> accumulator = this.accumulatorProgressBarValue.get(fileSystem);
+
+        if (accumulator == null)
+        {
+            ScheduledAccumulativeRunnable<Integer> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
+            final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
+
+            sar.doOnSubmit(chunks -> progressBar.setValue(chunks.get(chunks.size() - 1)));
+
+            this.accumulatorProgressBarValue.put(fileSystem, sar);
+            accumulator = sar;
+        }
+
+        return accumulator;
+    }
+
+    /**
+     * @return AccumulativeRunnable<SyncPair>
+     */
+    private AccumulativeRunnable<SyncPair> getAccumulatorTableAdd()
+    {
+        if (this.accumulatorTableAdd == null)
+        {
+            ScheduledAccumulativeRunnable<SyncPair> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
+            sar.doOnSubmit(chunks -> {
+                getTableModel().addAll(chunks);
+
+                int row = getTableModel().getRowCount() - 1;
+                Rectangle rectangle = getTable().getCellRect(row, 0, false);
+                getTable().scrollRectToVisible(rectangle);
+
+                int value = getTableModel().getRowCount();
+                getProgressBarFiles().setValue(value);
+                getProgressBarFiles().setString(getMessage("jsync.files") + ": " + value + "/" + getProgressBarFiles().getMaximum());
+            });
+
+            this.accumulatorTableAdd = sar;
+        }
+
+        return this.accumulatorTableAdd;
+    }
+
+    /**
+     * @return {@link JButton}
+     */
+    private JButton getButtonCompare()
+    {
+        if (this.buttonCompare == null)
+        {
+            this.buttonCompare = new JButton(getMessage("jsync.compare"));
+            this.buttonCompare.setEnabled(false);
+        }
+
+        return this.buttonCompare;
+    }
+
+    /**
+     * @return {@link JButton}
+     */
+    private JButton getButtonSyncronize()
+    {
+        if (this.buttonSyncronize == null)
+        {
+            this.buttonSyncronize = new JButton(getMessage("jsync.synchronize"));
+            this.buttonSyncronize.setEnabled(false);
+        }
+
+        return this.buttonSyncronize;
     }
 
     /**
@@ -226,12 +388,127 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * @return {@link JProgressBar}
+     */
+    private JProgressBar getProgressBarFiles()
+    {
+        if (this.progressBarFiles == null)
+        {
+            this.progressBarFiles = new JProgressBar();
+            this.progressBarFiles.setStringPainted(true);
+            this.progressBarFiles.setPreferredSize(new Dimension(210, 20));
+        }
+
+        return this.progressBarFiles;
+    }
+
+    /**
+     * @return {@link JProgressBar}
+     */
+    private JProgressBar getProgressBarReceiver()
+    {
+        if (this.progressBarReceiver == null)
+        {
+            this.progressBarReceiver = new JProgressBar();
+            this.progressBarReceiver.setStringPainted(true);
+        }
+
+        return this.progressBarReceiver;
+    }
+
+    /**
+     * @return {@link JProgressBar}
+     */
+    private JProgressBar getProgressBarSender()
+    {
+        if (this.progressBarSender == null)
+        {
+            this.progressBarSender = new JProgressBar();
+            this.progressBarSender.setStringPainted(true);
+        }
+
+        return this.progressBarSender;
+    }
+
+    /**
      * @see de.freese.jsync.swing.view.SyncView#getSyncList()
      */
     @Override
     public List<SyncPair> getSyncList()
     {
         return getTableModel().getList();
+    }
+
+    /**
+     * @return {@link JTable}
+     */
+    private JTable getTable()
+    {
+        if (this.table == null)
+        {
+            this.table = new JTable();
+            this.table.setModel(new SyncListTableModel());
+
+            // Sender
+            this.table.getColumnModel().getColumn(0).setPreferredWidth(1000);
+            this.table.getColumnModel().getColumn(1).setMinWidth(70);
+            this.table.getColumnModel().getColumn(1).setMaxWidth(70);
+
+            // SyncStatus
+            this.table.getColumnModel().getColumn(2).setMinWidth(210);
+            this.table.getColumnModel().getColumn(2).setMaxWidth(210);
+
+            // Receiver
+            this.table.getColumnModel().getColumn(3).setPreferredWidth(1000);
+            this.table.getColumnModel().getColumn(4).setMinWidth(70);
+            this.table.getColumnModel().getColumn(4).setMaxWidth(70);
+
+            this.table.setDefaultRenderer(Object.class, new SyncListTableCellRenderer());
+            // DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
+            // cellRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+            //
+            // this.table.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
+            // this.table.getColumnModel().getColumn(2).setCellRenderer(cellRenderer);
+            // this.table.getColumnModel().getColumn(4).setCellRenderer(cellRenderer);
+        }
+
+        return this.table;
+    }
+
+    /**
+     * @return {@link SyncListTableModel}
+     */
+    private SyncListTableModel getTableModel()
+    {
+        return (SyncListTableModel) getTable().getModel();
+    }
+
+    /**
+     * @return {@link JTextField}
+     */
+    private JTextField getTextFieldReceiverPath()
+    {
+        if (this.textFieldReceiverPath == null)
+        {
+            this.textFieldReceiverPath = new JTextField();
+            this.textFieldReceiverPath.setEditable(true);
+        }
+
+        return this.textFieldReceiverPath;
+    }
+
+    /**
+     * @return {@link JTextField}
+     */
+    private JTextField getTextFieldSenderPath()
+    {
+        if (this.textFieldSenderPath == null)
+        {
+            this.textFieldSenderPath = new JTextField();
+            this.textFieldSenderPath.setEditable(false);
+        }
+
+        return this.textFieldSenderPath;
     }
 
     /**
@@ -280,8 +557,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.panel.add(labelPath, new GbcBuilder(0, row));
         this.panel.add(getTextFieldSenderPath(), new GbcBuilder(1, row).fillHorizontal());
         JButton buttonPath = new JButton(getMessage("jsync.open"));
-        buttonPath.addActionListener(event ->
-        {
+        buttonPath.addActionListener(event -> {
             File folder = selectFolder(getTextFieldSenderPath().getText());
 
             if (folder != null)
@@ -302,8 +578,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.panel.add(labelPath, new GbcBuilder(4, row).anchorEast());
         this.panel.add(getTextFieldReceiverPath(), new GbcBuilder(5, row).anchorEast().fillHorizontal());
         buttonPath = new JButton(getMessage("jsync.open"));
-        buttonPath.addActionListener(event ->
-        {
+        buttonPath.addActionListener(event -> {
             File folder = selectFolder(getTextFieldReceiverPath().getText());
 
             if (folder != null)
@@ -355,6 +630,30 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFiles(int)
+     */
+    @Override
+    public void setProgressBarFiles(final int max)
+    {
+        if (SwingUtilities.isEventDispatchThread())
+        {
+            getProgressBarFiles().setMinimum(0);
+            getProgressBarFiles().setMaximum(max);
+            getProgressBarFiles().setValue(0);
+            getProgressBarFiles().setString("");
+        }
+        else
+        {
+            SwingUtilities.invokeLater(() -> {
+                getProgressBarFiles().setMinimum(0);
+                getProgressBarFiles().setMaximum(max);
+                getProgressBarFiles().setValue(0);
+                getProgressBarFiles().setString("");
+            });
+        }
+    }
+
+    /**
      * @see de.freese.jsync.swing.view.SyncView#setProgressBarIndeterminate(de.freese.jsync.filesystem.EFileSystem, boolean)
      */
     @Override
@@ -386,314 +685,5 @@ public class DefaultSyncView extends AbstractView implements SyncView
         {
             SwingUtilities.invokeLater(() -> getTableModel().fireTableRowsUpdated(getTableModel().getRowCount() - 1, getTableModel().getRowCount() - 1));
         }
-    }
-
-    /**
-     * @return {@link JPanel}
-     */
-    private JPanel createConfigPanel()
-    {
-        JPanel confiPanel = new JPanel();
-        confiPanel.setLayout(new GridBagLayout());
-        // confiPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-
-        // Button Compare
-        confiPanel.add(getButtonCompare(), new GbcBuilder(0, 0).insets(5, 5, 5, 20));
-
-        // Optionen
-        JPanel panelOptions = new JPanel();
-        panelOptions.setLayout(new GridBagLayout());
-        panelOptions.setBorder(new TitledBorder(getMessage("jsync.options")));
-        confiPanel.add(panelOptions, new GbcBuilder(1, 0).anchorWest());
-
-        this.checkBoxChecksum = new JCheckBox(getMessage("jsync.options.checksum"), false);
-        panelOptions.add(this.checkBoxChecksum, new GbcBuilder(0, 0).anchorWest());
-        this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
-        panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 0).anchorWest());
-
-//        this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallelism"), false);
-//        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 1).anchorWest());
-
-        this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), true);
-        panelOptions.add(this.checkBoxDelete, new GbcBuilder(0, 1).anchorWest());
-        this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), true);
-        panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(1, 1).anchorWest().gridwidth(2));
-
-        confiPanel.add(panelOptions, new GbcBuilder(1, 0));
-
-        // Button Synchronize
-        confiPanel.add(getButtonSyncronize(), new GbcBuilder(2, 0).insets(5, 20, 5, 5));
-
-        return confiPanel;
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link AccumulativeRunnable}<Object[]>
-     */
-    private AccumulativeRunnable<Object[]> getAccumulatorProgressBarMinMaxText(final EFileSystem fileSystem)
-    {
-        AccumulativeRunnable<Object[]> accumulator = this.accumulatorProgressBarMinMaxText.get(fileSystem);
-
-        if (accumulator == null)
-        {
-            ScheduledAccumulativeRunnable<Object[]> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
-            final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
-
-            sar.doOnSubmit(chunks ->
-            {
-                Object[] chunk = chunks.get(chunks.size() - 1);
-                progressBar.setMinimum((int) chunk[0]);
-                progressBar.setMaximum((int) chunk[1]);
-                progressBar.setString((String) chunk[2]);
-            });
-
-            this.accumulatorProgressBarMinMaxText.put(fileSystem, sar);
-            accumulator = sar;
-        }
-
-        return accumulator;
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link AccumulativeRunnable}<String>
-     */
-    private AccumulativeRunnable<String> getAccumulatorProgressBarText(final EFileSystem fileSystem)
-    {
-        AccumulativeRunnable<String> accumulator = this.accumulatorProgressBarText.get(fileSystem);
-
-        if (accumulator == null)
-        {
-            ScheduledAccumulativeRunnable<String> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
-            final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
-
-            sar.doOnSubmit(chunks -> progressBar.setString(chunks.get(chunks.size() - 1)));
-
-            this.accumulatorProgressBarText.put(fileSystem, sar);
-            accumulator = sar;
-        }
-
-        return accumulator;
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link AccumulativeRunnable}<Integer>
-     */
-    private AccumulativeRunnable<Integer> getAccumulatorProgressBarValue(final EFileSystem fileSystem)
-    {
-        AccumulativeRunnable<Integer> accumulator = this.accumulatorProgressBarValue.get(fileSystem);
-
-        if (accumulator == null)
-        {
-            ScheduledAccumulativeRunnable<Integer> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
-            final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
-
-            sar.doOnSubmit(chunks -> progressBar.setValue(chunks.get(chunks.size() - 1)));
-
-            this.accumulatorProgressBarValue.put(fileSystem, sar);
-            accumulator = sar;
-        }
-
-        return accumulator;
-    }
-
-    /**
-     * @return AccumulativeRunnable<SyncPair>
-     */
-    private AccumulativeRunnable<SyncPair> getAccumulatorTableAdd()
-    {
-        if (this.accumulatorTableAdd == null)
-        {
-            ScheduledAccumulativeRunnable<SyncPair> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
-            sar.doOnSubmit(chunks ->
-            {
-                getTableModel().addAll(chunks);
-
-                int row = getTableModel().getRowCount() - 1;
-                Rectangle rectangle = getTable().getCellRect(row, 0, false);
-                getTable().scrollRectToVisible(rectangle);
-
-                int value = getTableModel().getRowCount();
-                getProgressBarFiles().setValue(value);
-                getProgressBarFiles().setString(getMessage("jsync.files") + ": " + value + "/" + getProgressBarFiles().getMaximum());
-            });
-
-            this.accumulatorTableAdd = sar;
-        }
-
-        return this.accumulatorTableAdd;
-    }
-
-    /**
-     * @return {@link JButton}
-     */
-    private JButton getButtonCompare()
-    {
-        if (this.buttonCompare == null)
-        {
-            this.buttonCompare = new JButton(getMessage("jsync.compare"));
-            this.buttonCompare.setEnabled(false);
-        }
-
-        return this.buttonCompare;
-    }
-
-    /**
-     * @return {@link JButton}
-     */
-    private JButton getButtonSyncronize()
-    {
-        if (this.buttonSyncronize == null)
-        {
-            this.buttonSyncronize = new JButton(getMessage("jsync.synchronize"));
-            this.buttonSyncronize.setEnabled(false);
-        }
-
-        return this.buttonSyncronize;
-    }
-
-    /**
-     * @return {@link JProgressBar}
-     */
-    private JProgressBar getProgressBarFiles()
-    {
-        if (this.progressBarFiles == null)
-        {
-            this.progressBarFiles = new JProgressBar();
-            this.progressBarFiles.setStringPainted(true);
-            this.progressBarFiles.setPreferredSize(new Dimension(210, 20));
-        }
-
-        return this.progressBarFiles;
-    }
-
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFiles(int)
-     */
-    @Override
-    public void setProgressBarFiles(final int max)
-    {
-        if (SwingUtilities.isEventDispatchThread())
-        {
-            getProgressBarFiles().setMinimum(0);
-            getProgressBarFiles().setMaximum(max);
-            getProgressBarFiles().setValue(0);
-            getProgressBarFiles().setString("");
-        }
-        else
-        {
-            SwingUtilities.invokeLater(() ->
-            {
-                getProgressBarFiles().setMinimum(0);
-                getProgressBarFiles().setMaximum(max);
-                getProgressBarFiles().setValue(0);
-                getProgressBarFiles().setString("");
-            });
-        }
-    }
-
-    /**
-     * @return {@link JProgressBar}
-     */
-    private JProgressBar getProgressBarReceiver()
-    {
-        if (this.progressBarReceiver == null)
-        {
-            this.progressBarReceiver = new JProgressBar();
-            this.progressBarReceiver.setStringPainted(true);
-        }
-
-        return this.progressBarReceiver;
-    }
-
-    /**
-     * @return {@link JProgressBar}
-     */
-    private JProgressBar getProgressBarSender()
-    {
-        if (this.progressBarSender == null)
-        {
-            this.progressBarSender = new JProgressBar();
-            this.progressBarSender.setStringPainted(true);
-        }
-
-        return this.progressBarSender;
-    }
-
-    /**
-     * @return {@link JTable}
-     */
-    private JTable getTable()
-    {
-        if (this.table == null)
-        {
-            this.table = new JTable();
-            this.table.setModel(new SyncListTableModel());
-
-            // Sender
-            this.table.getColumnModel().getColumn(0).setPreferredWidth(1000);
-            this.table.getColumnModel().getColumn(1).setMinWidth(70);
-            this.table.getColumnModel().getColumn(1).setMaxWidth(70);
-
-            // SyncStatus
-            this.table.getColumnModel().getColumn(2).setMinWidth(210);
-            this.table.getColumnModel().getColumn(2).setMaxWidth(210);
-
-            // Receiver
-            this.table.getColumnModel().getColumn(3).setPreferredWidth(1000);
-            this.table.getColumnModel().getColumn(4).setMinWidth(70);
-            this.table.getColumnModel().getColumn(4).setMaxWidth(70);
-
-            this.table.setDefaultRenderer(Object.class, new SyncListTableCellRenderer());
-//            DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
-//            cellRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-//
-//            this.table.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
-//            this.table.getColumnModel().getColumn(2).setCellRenderer(cellRenderer);
-//            this.table.getColumnModel().getColumn(4).setCellRenderer(cellRenderer);
-        }
-
-        return this.table;
-    }
-
-    /**
-     * @return {@link SyncListTableModel}
-     */
-    private SyncListTableModel getTableModel()
-    {
-        return (SyncListTableModel) getTable().getModel();
-    }
-
-    /**
-     * @return {@link JTextField}
-     */
-    private JTextField getTextFieldReceiverPath()
-    {
-        if (this.textFieldReceiverPath == null)
-        {
-            this.textFieldReceiverPath = new JTextField();
-            this.textFieldReceiverPath.setEditable(true);
-        }
-
-        return this.textFieldReceiverPath;
-    }
-
-    /**
-     * @return {@link JTextField}
-     */
-    private JTextField getTextFieldSenderPath()
-    {
-        if (this.textFieldSenderPath == null)
-        {
-            this.textFieldSenderPath = new JTextField();
-            this.textFieldSenderPath.setEditable(false);
-        }
-
-        return this.textFieldSenderPath;
     }
 }

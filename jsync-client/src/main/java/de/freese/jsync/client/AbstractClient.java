@@ -136,14 +136,15 @@ public abstract class AbstractClient implements Client
 
         if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
         {
-            switch (this.remoteMode)
+            this.sender = switch (this.remoteMode)
             {
-                case NIO -> this.sender = new RemoteSenderNio();
-                case RSOCKET -> this.sender = new RemoteSenderRSocket();
-                case SPRING_REST_TEMPLATE -> this.sender = new RemoteSenderRestClient();
-                // case SPRING_WEB_CLIENT -> this.sender = new RemoteSenderWebFluxClient();
+                case NIO -> new RemoteSenderNio();
+                case RSOCKET -> new RemoteSenderRSocket();
+                case SPRING_REST_TEMPLATE -> new RemoteSenderRestClient();
+                // case SPRING_WEB_CLIENT -> new RemoteSenderWebFluxClient();
+
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
-            }
+            };
         }
         else
         {
@@ -152,14 +153,15 @@ public abstract class AbstractClient implements Client
 
         if ((receiverUri.getScheme() != null) && receiverUri.getScheme().startsWith("jsync"))
         {
-            switch (this.remoteMode)
+            this.receiver = switch (this.remoteMode)
             {
-                case NIO -> this.receiver = new RemoteReceiverNio();
-                case RSOCKET -> this.receiver = new RemoteReceiverRSocket();
-                case SPRING_REST_TEMPLATE -> this.receiver = new RemoteReceiverRestClient();
-                // case SPRING_WEB_CLIENT -> this.receiver = new RemoteReceiverWebFluxClient();
+                case NIO -> new RemoteReceiverNio();
+                case RSOCKET -> new RemoteReceiverRSocket();
+                case SPRING_REST_TEMPLATE -> new RemoteReceiverRestClient();
+                // case SPRING_WEB_CLIENT -> new RemoteReceiverWebFluxClient();
+
                 default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
-            }
+            };
         }
         else
         {

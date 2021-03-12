@@ -105,13 +105,13 @@ public class RemoteReceiverRestClient extends AbstractReceiver
 
         this.poolingConnectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
         this.poolingConnectionManager.setMaxTotal(30);
-        this.poolingConnectionManager.setDefaultSocketConfig(SocketConfig.custom().setSoTimeout(120000).build());
+        this.poolingConnectionManager.setDefaultSocketConfig(SocketConfig.custom().setSoTimeout(1200_00).build());
 
         // @formatter:off
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(120000)
-                .setConnectTimeout(120000)
-                .setSocketTimeout(120000).build()
+                .setConnectionRequestTimeout(120_000)
+                .setConnectTimeout(120_000)
+                .setSocketTimeout(120_000).build()
                 ;
 
         HttpClient httpClient = HttpClients.custom()

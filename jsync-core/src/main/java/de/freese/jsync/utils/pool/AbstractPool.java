@@ -32,14 +32,6 @@ public abstract class AbstractPool<T>
     private final Queue<T> pool = new ConcurrentLinkedQueue<>();
 
     /**
-     * Erstellt ein neues {@link AbstractPool} Object.
-     */
-    public AbstractPool()
-    {
-        super();
-    }
-
-    /**
      * @return Object
      */
     protected abstract T createObject();

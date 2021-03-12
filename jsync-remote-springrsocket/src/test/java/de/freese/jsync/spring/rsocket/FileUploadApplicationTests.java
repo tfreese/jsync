@@ -1,6 +1,7 @@
 // Created: 18.10.2020
 package de.freese.jsync.spring.rsocket;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,7 +46,7 @@ class FileUploadApplicationTests
      *
      */
     @Test
-    void uploadFile()
+    void testUploadFile()
     {
         Resource resource = new FileSystemResource(Paths.get(System.getProperty("user.home"), "downloads", "iso", "archlinux-2020.10.01-x86_64.iso"));
 
@@ -80,5 +81,7 @@ class FileUploadApplicationTests
             .blockLast()
             ;
         // @formatter:on
+
+        assertTrue(true);
     }
 }

@@ -19,14 +19,6 @@ public abstract class AbstractFileSystem implements FileSystem
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Erzeugt eine neue Instanz von {@link AbstractFileSystem}.
-     */
-    public AbstractFileSystem()
-    {
-        super();
-    }
-
-    /**
      * @return {@link Charset}
      */
     protected Charset getCharset()

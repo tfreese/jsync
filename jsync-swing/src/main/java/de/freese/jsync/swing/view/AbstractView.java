@@ -32,14 +32,6 @@ public abstract class AbstractView
     public final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Erstellt ein neues {@link AbstractView} Object.
-     */
-    public AbstractView()
-    {
-        super();
-    }
-
-    /**
      * @return {@link Logger}
      */
     protected Logger getLogger()

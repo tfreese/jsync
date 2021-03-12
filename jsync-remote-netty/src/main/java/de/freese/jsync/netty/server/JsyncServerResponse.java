@@ -11,7 +11,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * @author Thomas Freese
  */
-public class JsyncServerResponse
+public final class JsyncServerResponse
 {
     /**
      * @param bufferBody {@link ByteBuf}

@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author Thomas Freese
  */
-public class Options
+public final class Options
 {
     /**
      * @author Thomas Freese
@@ -96,14 +96,14 @@ public class Options
     public static final int BUFFER_SIZE = 1024 * 8;
 
     /**
-     * Default: 4 MB
-     */
-    public static final int DATABUFFER_SIZE = 1024 * 1024 * 4;
-
-    /**
      * Default: UTF-8
      */
     public static final Charset CHARSET = StandardCharsets.UTF_8;
+
+    /**
+     * Default: 4 MB
+     */
+    public static final int DATABUFFER_SIZE = 1024 * 1024 * 4;
 
     /**
      *

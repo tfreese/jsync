@@ -13,7 +13,7 @@ public abstract class AbstractReceiver extends AbstractFileSystem implements Rec
     /**
      * Erzeugt eine neue Instanz von {@link AbstractReceiver}.
      */
-    public AbstractReceiver()
+    protected AbstractReceiver()
     {
         super();
     }

@@ -17,7 +17,7 @@ public class MonitorOutputStream extends OutputStream
     /**
     *
     */
-    private long bytesWritten = 0;
+    private long bytesWritten;
 
     /**
        *

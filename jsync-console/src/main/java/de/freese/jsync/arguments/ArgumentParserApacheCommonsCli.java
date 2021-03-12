@@ -1,11 +1,11 @@
 /**
  * Created: 14.03.2020
  */
-
 package de.freese.jsync.arguments;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -128,7 +128,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
         StringBuilder footer = new StringBuilder();
         footer.append("\n@Thomas Freese");
 
-        try (PrintWriter pw = new PrintWriter(printStream))
+        try (PrintWriter pw = new PrintWriter(printStream, true, StandardCharsets.UTF_8))
         {
             formatter.printHelp(pw, 120, "jsync [OPTIONS]\n", "\nParameter:", this.options, 3, 5, footer.toString(), true);
         }

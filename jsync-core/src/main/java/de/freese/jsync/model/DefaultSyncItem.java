@@ -31,7 +31,7 @@ public class DefaultSyncItem implements SyncItem
     /**
      *
      */
-    private long lastModifiedTime = 0;
+    private long lastModifiedTime;
 
     /**
      *
@@ -46,7 +46,7 @@ public class DefaultSyncItem implements SyncItem
     /**
      *
      */
-    private long size = 0;
+    private long size;
 
     /**
      *

@@ -16,7 +16,6 @@ package de.freese.jsync.swing.components;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.swing.SwingUtilities;
 
 /**
@@ -65,7 +64,6 @@ import javax.swing.SwingUtilities;
  * </pre>
  *
  * @param <T> the type this {@code Runnable} accumulates
- *
  * @author Igor Kushnirskiy
  * @author Thomas Freese
  * @see "sun.swing.AccumulativeRunnable"
@@ -79,14 +77,6 @@ public abstract class AccumulativeRunnable<T> implements Runnable
     private List<T> arguments;
 
     /**
-     * Erstellt ein neues {@link AccumulativeRunnable} Object.
-     */
-    public AccumulativeRunnable()
-    {
-        super();
-    }
-
-    /**
      * appends arguments and sends this {@link Runnable} for the execution if needed.
      * <p>
      * This implementation uses {@link #submit()} to send this {@code Runnable} for execution.
@@ -94,7 +84,7 @@ public abstract class AccumulativeRunnable<T> implements Runnable
      * @param args the arguments to accumulate
      */
     @SafeVarargs
-    public final synchronized void add(final T... args)
+    public final synchronized void add(final T...args)
     {
         if ((args == null) || (args.length == 0))
         {
@@ -115,6 +105,19 @@ public abstract class AccumulativeRunnable<T> implements Runnable
         {
             submit();
         }
+    }
+
+    /**
+     * Returns accumulated arguments and flashes the arguments storage.
+     *
+     * @return accumulated arguments
+     */
+    private synchronized List<T> flush()
+    {
+        List<T> list = this.arguments;
+        this.arguments = null;
+
+        return list;
     }
 
     /**
@@ -143,18 +146,5 @@ public abstract class AccumulativeRunnable<T> implements Runnable
     protected void submit()
     {
         SwingUtilities.invokeLater(this);
-    }
-
-    /**
-     * Returns accumulated arguments and flashes the arguments storage.
-     *
-     * @return accumulated arguments
-     */
-    private synchronized List<T> flush()
-    {
-        List<T> list = this.arguments;
-        this.arguments = null;
-
-        return list;
     }
 }

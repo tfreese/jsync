@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
-
 import de.freese.jsync.model.SyncItem;
 
 /**
@@ -16,25 +15,17 @@ public class GeneratorListenerAdapter implements GeneratorListener
     /**
      *
      */
-    private LongConsumer checksumConsumer = null;
+    private LongConsumer checksumConsumer;
 
     /**
      *
      */
-    private Consumer<SyncItem> currentItemConsumer = null;
+    private Consumer<SyncItem> currentItemConsumer;
 
     /**
      *
      */
-    private BiConsumer<Path, Integer> itemCountConsumer = null;
-
-    /**
-     * Erstellt ein neues {@link GeneratorListenerAdapter} Object.
-     */
-    public GeneratorListenerAdapter()
-    {
-        super();
-    }
+    private BiConsumer<Path, Integer> itemCountConsumer;
 
     /**
      * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long)

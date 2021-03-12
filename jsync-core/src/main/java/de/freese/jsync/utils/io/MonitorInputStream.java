@@ -19,7 +19,7 @@ public class MonitorInputStream extends InputStream
     /**
     *
     */
-    private long bytesRead = 0;
+    private long bytesRead;
 
     /**
        *

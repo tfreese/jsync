@@ -8,6 +8,7 @@ import java.nio.channels.SocketChannel;
  *
  * @author Thomas Freese
  */
+@FunctionalInterface
 public interface Dispatcher
 {
     /**

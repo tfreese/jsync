@@ -1,7 +1,6 @@
 /**
  * Created: 14.03.2020
  */
-
 package de.freese.jsync.arguments;
 
 import java.io.PrintStream;

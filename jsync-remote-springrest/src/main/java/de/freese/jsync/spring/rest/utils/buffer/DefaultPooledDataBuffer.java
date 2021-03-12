@@ -24,7 +24,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     /**
      * @author Thomas Freese
      */
-    private class DefaultPooledDataBufferInputStream extends InputStream
+    private final class DefaultPooledDataBufferInputStream extends InputStream
     {
         /**
          *

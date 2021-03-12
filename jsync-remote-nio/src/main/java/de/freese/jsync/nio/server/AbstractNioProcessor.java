@@ -38,7 +38,7 @@ public abstract class AbstractNioProcessor implements Runnable
      *
      * @param selector {@link Selector}
      */
-    public AbstractNioProcessor(final Selector selector)
+    protected AbstractNioProcessor(final Selector selector)
     {
         super();
 

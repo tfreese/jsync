@@ -13,7 +13,7 @@ public abstract class AbstractSender extends AbstractFileSystem implements Sende
     /**
      * Erzeugt eine neue Instanz von {@link AbstractSender}.
      */
-    public AbstractSender()
+    protected AbstractSender()
     {
         super();
     }

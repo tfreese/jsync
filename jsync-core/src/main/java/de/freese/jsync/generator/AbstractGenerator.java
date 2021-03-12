@@ -19,19 +19,10 @@ import java.util.stream.Stream;
 public abstract class AbstractGenerator implements Generator
 {
     /**
-     * Erzeugt eine neue Instanz von {@link AbstractGenerator}.
-     */
-    public AbstractGenerator()
-    {
-        super();
-    }
-
-    /**
      * Liefert ein Set mit allen Path-Objekten (Verzeichnisse, Dateien) das Basis-Verzeichnisses.
      *
-     * @param base         {@link Path}
+     * @param base {@link Path}
      * @param visitOptions {@link FileVisitOption}
-     *
      * @return {@link Set}
      */
     protected Set<Path> getPaths(final Path base, final FileVisitOption[] visitOptions)

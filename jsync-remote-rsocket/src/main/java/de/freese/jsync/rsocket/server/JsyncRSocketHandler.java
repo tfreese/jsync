@@ -287,13 +287,12 @@ public class JsyncRSocketHandler implements RSocket
 
                 // RSocketUtils.release(payload);
 
-                switch (command)
+                return switch (command)
                 {
-                    case TARGET_WRITE_FILE_HANDLE:
-                        return writeFileHandle(payload, flux.skip(1), THREAD_LOCAL_RECEIVER.get());
-                    default:
-                        throw new IllegalStateException("unknown JSyncCommand: " + command);
-                }
+                    case TARGET_WRITE_FILE_HANDLE -> writeFileHandle(payload, flux.skip(1), THREAD_LOCAL_RECEIVER.get());
+
+                    default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                };
             }
             catch (Exception ex)
             {
@@ -317,47 +316,23 @@ public class JsyncRSocketHandler implements RSocket
             JSyncCommand command = getSerializer().readFrom(byteBufMeta, JSyncCommand.class);
             getLogger().debug("read command: {}", command);
 
-            switch (command)
+            return switch (command)
             {
-                case CONNECT:
-                    return connect();
+                case CONNECT -> connect();
+                case DISCONNECT -> disconnect();
+                case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, THREAD_LOCAL_SENDER.get());
+                case SOURCE_CHECKSUM -> checksum(payload, THREAD_LOCAL_SENDER.get());
+                // case SOURCE_READ_CHUNK -> readChunk(payload, THREAD_LOCAL_SENDER.get());
+                case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, THREAD_LOCAL_RECEIVER.get());
+                case TARGET_CHECKSUM -> checksum(payload, THREAD_LOCAL_RECEIVER.get());
+                case TARGET_CREATE_DIRECTORY -> createDirectory(payload, THREAD_LOCAL_RECEIVER.get());
+                case TARGET_DELETE -> delete(payload, THREAD_LOCAL_RECEIVER.get());
+                case TARGET_UPDATE -> update(payload, THREAD_LOCAL_RECEIVER.get());
+                case TARGET_VALIDATE_FILE -> validate(payload, THREAD_LOCAL_RECEIVER.get());
+                // case TARGET_WRITE_CHUNK -> writeChunk(payload, THREAD_LOCAL_RECEIVER.get());
 
-                case DISCONNECT:
-                    return disconnect();
-
-                case SOURCE_CREATE_SYNC_ITEMS:
-                    return generateSyncItems(payload, THREAD_LOCAL_SENDER.get());
-
-                case SOURCE_CHECKSUM:
-                    return checksum(payload, THREAD_LOCAL_SENDER.get());
-
-                // case SOURCE_READ_CHUNK:
-                // return readChunk(payload, THREAD_LOCAL_SENDER.get());
-
-                case TARGET_CREATE_SYNC_ITEMS:
-                    return generateSyncItems(payload, THREAD_LOCAL_RECEIVER.get());
-
-                case TARGET_CHECKSUM:
-                    return checksum(payload, THREAD_LOCAL_RECEIVER.get());
-
-                case TARGET_CREATE_DIRECTORY:
-                    return createDirectory(payload, THREAD_LOCAL_RECEIVER.get());
-
-                case TARGET_DELETE:
-                    return delete(payload, THREAD_LOCAL_RECEIVER.get());
-
-                case TARGET_UPDATE:
-                    return update(payload, THREAD_LOCAL_RECEIVER.get());
-
-                case TARGET_VALIDATE_FILE:
-                    return validate(payload, THREAD_LOCAL_RECEIVER.get());
-
-                // case TARGET_WRITE_CHUNK:
-                // return writeChunk(payload, THREAD_LOCAL_RECEIVER.get());
-
-                default:
-                    throw new IllegalStateException("unknown JSyncCommand: " + command);
-            }
+                default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+            };
         }
         catch (Exception ex)
         {
@@ -384,14 +359,12 @@ public class JsyncRSocketHandler implements RSocket
             JSyncCommand command = getSerializer().readFrom(byteBufMeta, JSyncCommand.class);
             getLogger().debug("read command: {}", command);
 
-            switch (command)
+            return switch (command)
             {
-                case SOURCE_READ_FILE_HANDLE:
-                    return readFileHandle(payload, THREAD_LOCAL_SENDER.get());
+                case SOURCE_READ_FILE_HANDLE -> readFileHandle(payload, THREAD_LOCAL_SENDER.get());
 
-                default:
-                    throw new IllegalStateException("unknown JSyncCommand: " + command);
-            }
+                default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+            };
         }
         catch (Exception ex)
         {
@@ -507,9 +480,8 @@ public class JsyncRSocketHandler implements RSocket
                     .map(ByteBuffer::position)
                     .map(bytesWritten -> ByteBufPayload.create("CHUNK_COMPLETED: bytesWritten = " + bytesWritten))
                     .doOnError(th -> ByteBufPayload.create(th.getMessage()))
-                    .doFinally(signalType -> {
-                        RSocketUtils.close(fileChannel);
-                    });
+                    .doFinally(signalType -> RSocketUtils.close(fileChannel))
+                    ;
             // @formatter:on
 
 //            // @formatter:off

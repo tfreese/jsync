@@ -12,7 +12,7 @@ import de.freese.jsync.utils.RemoteUtils;
 /**
  * @author Thomas Freese
  */
-public class JsyncServerResponse
+public final class JsyncServerResponse
 {
     /**
      * @param bufferBody {@link ByteBuffer}
