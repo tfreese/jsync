@@ -4,8 +4,10 @@ package de.freese.jsync.rsocket;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import io.rsocket.Payload;
 import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketConnector;
@@ -24,7 +26,7 @@ import reactor.util.retry.Retry;
 /**
  * @author Thomas Freese
  */
-public class RSocketLoadBalancerDemo
+public final class RSocketLoadBalancerDemo
 {
     /**
     *

@@ -2,8 +2,10 @@
 package de.freese.jsync.rsocket;
 
 import java.time.Duration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.transport.ServerTransport;
@@ -18,7 +20,7 @@ import reactor.netty.tcp.TcpServer;
 /**
  * @author Thomas Freese
  */
-class Server implements Disposable
+final class Server implements Disposable
 {
     /**
     *
@@ -29,14 +31,6 @@ class Server implements Disposable
      *
      */
     private Disposable channel;
-
-    /**
-     * Erzeugt ein neues {@link Server} Objekt.
-     */
-    Server()
-    {
-        super();
-    }
 
     /**
      * @see reactor.core.Disposable#dispose()

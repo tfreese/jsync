@@ -2,9 +2,10 @@
 package de.freese.jsync.rsocket;
 
 import java.time.Duration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.netty.handler.ssl.SslContextBuilder;
+
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
@@ -26,14 +27,16 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.LoopResources;
+import reactor.netty.tcp.SslProvider.ProtocolSslContextSpec;
 import reactor.netty.tcp.TcpClient;
 import reactor.netty.tcp.TcpServer;
+import reactor.netty.tcp.TcpSslContextSpec;
 import reactor.util.retry.Retry;
 
 /**
  * @author Thomas Freese
  */
-public class RSocketSimpleDemo
+public final class RSocketSimpleDemo
 {
     /**
     *
@@ -48,9 +51,17 @@ public class RSocketSimpleDemo
     private static final RSocketClient createClient(final int port) throws Exception
     {
         // @formatter:off
-        SslContextBuilder sslContextBuilderClient = SslContextBuilder.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .sslProvider(SslProvider.JDK)
+//        SslContextBuilder sslContextBuilderClient = SslContextBuilder.forClient()
+//                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+//                .sslProvider(SslProvider.JDK)
+//                ;
+        // @formatter:on
+
+        // @formatter:off
+        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
+                .configure(builder -> builder
+                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                        .sslProvider(SslProvider.JDK))
                 ;
         // @formatter:on
 
@@ -59,7 +70,8 @@ public class RSocketSimpleDemo
                 .host("localhost")
                 .port(port)
                 .runOn(LoopResources.create("client-" + port, 2, true))
-                .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilderClient))
+                //.secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilderClient))
+                .secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
                 ;
         // @formatter:on
 
@@ -137,14 +149,16 @@ public class RSocketSimpleDemo
         // @formatter:on
 
         SelfSignedCertificate cert = new SelfSignedCertificate();
-        SslContextBuilder sslContextBuilderServer = SslContextBuilder.forServer(cert.certificate(), cert.privateKey());
+        // SslContextBuilder sslContextBuilderServer = SslContextBuilder.forServer(cert.certificate(), cert.privateKey());
+        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey());
 
         // @formatter:off
         TcpServer tcpServer = TcpServer.create()
                 .host("localhost")
                 .port(port)
                 .runOn(LoopResources.create("server-" + port, 1, 2, true))
-                .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilderServer))
+                //.secure(sslContextSpec -> sslContextSpec.sslContext(sslContextBuilderServer))
+                .secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
                 ;
         // @formatter:on
 
