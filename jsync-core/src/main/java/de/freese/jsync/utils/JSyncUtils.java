@@ -14,6 +14,8 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -513,6 +515,24 @@ public final class JSyncUtils
         String readableSize = String.format("%.0f %s", size / unitValue, SIZE_UNITS[unitIndex]);
 
         return readableSize;
+        
+        
+//        double value = Math.abs(size);
+//
+//        if (value < 1024)
+//        {
+//            return size + " B";
+//        }
+//
+//        CharacterIterator ci = new StringCharacterIterator("KMGTPE");
+//
+//        while (value > 1024)
+//        {
+//            value /= 1024;
+//            ci.next();
+//        }
+//
+//        return String.format("%.1f %cB", value, ci.previous());        
     }
 
     /**
