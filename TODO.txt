@@ -12,6 +12,4 @@ SSL with Java-NIO
 	
 	
 TODO:
-- Finish-Flag vom Server einbauen, sonst überholen sich die Operationen.
-- Im Finish-Flag die Infos für Exception einbauen
 
