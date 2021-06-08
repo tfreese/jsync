@@ -6,16 +6,21 @@ import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.rsocket.Closeable;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
+import io.rsocket.core.Resume;
 import io.rsocket.transport.ServerTransport;
 import io.rsocket.transport.netty.server.CloseableChannel;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import io.rsocket.util.DefaultPayload;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
-import reactor.netty.resources.LoopResources;
+import reactor.netty.tcp.SslProvider.ProtocolSslContextSpec;
 import reactor.netty.tcp.TcpServer;
+import reactor.netty.tcp.TcpSslContextSpec;
+import reactor.util.retry.Retry;
 
 /**
  * @author Thomas Freese
@@ -30,7 +35,7 @@ final class Server implements Disposable
     /**
      *
      */
-    private Disposable channel;
+    private Closeable channel;
 
     /**
      * @see reactor.core.Disposable#dispose()
@@ -57,10 +62,24 @@ final class Server implements Disposable
     public void start(final int port) throws Exception
     {
         // @formatter:off
+        Resume resume = new Resume()
+                .sessionDuration(Duration.ofMinutes(5))
+                .retry(Retry.fixedDelay(10, Duration.ofSeconds(1))
+                        .doBeforeRetry(s -> LOGGER.info("Disconnected. Trying to resume..."))
+                )
+                ;
+        // @formatter:on
+
+        SelfSignedCertificate cert = new SelfSignedCertificate();
+        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey());
+
+        // @formatter:off
         TcpServer tcpServer = TcpServer.create()
                 .host("localhost")
                 .port(port)
-                .runOn(LoopResources.create("server-" + port, 1, 2, true))
+                .secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
+                .doOnUnbound(connection -> LOGGER.info("Unbound: {}", connection.channel()))
+                //.runOn(LoopResources.create("server-" + port, 2, 4, true), false)
                 ;
         // @formatter:on
 
@@ -68,14 +87,16 @@ final class Server implements Disposable
         // ServerTransport<Closeable> serverTransport = LocalServerTransport.create("test-local-" + port);
 
         SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
-            LOGGER.info("Server {} got {}", port, payload.getDataUtf8());
-            return Mono.just(DefaultPayload.create("Server " + port + " response")).delayElement(Duration.ofMillis(100));
+            String request = payload.getDataUtf8();
+            LOGGER.info("Server:{} got request {}", port, request);
+            return Mono.just(DefaultPayload.create("Client of Server:" + port + " response=" + request)).delayElement(Duration.ofMillis(100));
         });
 
         // @formatter:off
         this.channel = RSocketServer.create()
             .acceptor(socketAcceptor)
             //.payloadDecoder(PayloadDecoder.DEFAULT)
+            .resume(resume)
             .bindNow(serverTransport)
             ;
         // @formatter:on
