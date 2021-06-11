@@ -1,16 +1,21 @@
 // Created: 28.10.2020
 package de.freese.jsync.rsocket;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.rsocket.Payload;
 import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketConnector;
@@ -47,20 +52,51 @@ public final class RSocketLoadBalancerDemo
      */
     private static RSocketClient createClient(final int...ports) throws Exception
     {
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+
+        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_keystore.p12"))
+        {
+            keyStore.load(is, "password".toCharArray());
+        }
+
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("NewSunX509");
+        keyManagerFactory.init(keyStore, "gehaim".toCharArray());
+
+        KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
+
+        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_truststore.p12"))
+        {
+            keyStoreTrust.load(is, "password".toCharArray());
+        }
+
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+        trustManagerFactory.init(keyStoreTrust);
+
+        // @formatter:off
+        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
+                .configure(builder -> builder
+                        .keyManager(keyManagerFactory)
+                        .trustManager(trustManagerFactory)
+                        .protocols("TLSv1.3")
+                        .sslProvider(SslProvider.JDK))
+                ;
+        // @formatter:on
+
+//        // @formatter:off
+//        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
+//                .configure(builder -> builder
+//                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
+//                        .protocols("TLSv1.3")
+//                        .sslProvider(SslProvider.JDK))
+//                ;
+//        // @formatter:on
+
         // @formatter:off
         Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(Retry.fixedDelay(10, Duration.ofSeconds(1))
                         .doBeforeRetry(s -> LOGGER.info("Disconnected. Trying to resume..."))
                 )
-                ;
-        // @formatter:on
-
-        // @formatter:off
-        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
-                .configure(builder -> builder
-                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                        .sslProvider(SslProvider.JDK))
                 ;
         // @formatter:on
 

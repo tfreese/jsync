@@ -1,12 +1,21 @@
 // Created: 28.10.2020
 package de.freese.jsync.rsocket;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.handler.ssl.SslProvider;
 import io.rsocket.Closeable;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
@@ -61,6 +70,51 @@ final class Server implements Disposable
      */
     public void start(final int port) throws Exception
     {
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+
+        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/server_keystore.p12"))
+        {
+            keyStore.load(is, "password".toCharArray());
+        }
+
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("NewSunX509");
+        keyManagerFactory.init(keyStore, "gehaim".toCharArray());
+
+        KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
+
+        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/server_truststore.p12"))
+        {
+            keyStoreTrust.load(is, "password".toCharArray());
+        }
+
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+        trustManagerFactory.init(keyStoreTrust);
+
+        Certificate certificate = keyStore.getCertificate("server");
+        PrivateKey privateKey = (PrivateKey) keyStore.getKey("server", "password".toCharArray());
+        // KeyStore.Entry entry = keyStore.getEntry("server", new KeyStore.PasswordProtection("password".toCharArray()));
+        // PrivateKey privateKey = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
+
+        // @formatter:off
+        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(privateKey, (X509Certificate) certificate)
+                .configure(builder -> builder
+                        //.keyManager(keyManagerFactory) // Verursacht Fehler
+                        .trustManager(trustManagerFactory)
+                        .protocols("TLSv1.3")
+                        .sslProvider(SslProvider.JDK))
+                ;
+        // @formatter:on
+
+        // SelfSignedCertificate cert = new SelfSignedCertificate();
+        //
+//         // @formatter:off
+//         ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
+//                 .configure(builder -> builder
+//                         .protocols("TLSv1.3")
+//                         .sslProvider(SslProvider.JDK))
+//                 ;
+//         // @formatter:on
+
         // @formatter:off
         Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
@@ -69,9 +123,6 @@ final class Server implements Disposable
                 )
                 ;
         // @formatter:on
-
-        SelfSignedCertificate cert = new SelfSignedCertificate();
-        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey());
 
         // @formatter:off
         TcpServer tcpServer = TcpServer.create()
