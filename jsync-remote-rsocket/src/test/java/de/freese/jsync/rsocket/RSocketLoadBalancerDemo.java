@@ -3,15 +3,19 @@ package de.freese.jsync.rsocket;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,26 +45,26 @@ import reactor.util.retry.Retry;
 public final class RSocketLoadBalancerDemo
 {
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketLoadBalancerDemo.class);
 
     /**
-     * @param ports int[]
+     * @param serverAddresses {@link List}
      * @return {@link RSocketClient}
      * @throws Exception Falls was schief geht
      */
-    private static RSocketClient createClient(final int...ports) throws Exception
+    private static RSocketClient createClient(final List<SocketAddress> serverAddresses) throws Exception
     {
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
-
-        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_keystore.p12"))
-        {
-            keyStore.load(is, "password".toCharArray());
-        }
-
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("NewSunX509");
-        keyManagerFactory.init(keyStore, "gehaim".toCharArray());
+        // KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        //
+        // try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_keystore.p12"))
+        // {
+        // keyStore.load(is, "password".toCharArray());
+        // }
+        //
+        // KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("NewSunX509");
+        // keyManagerFactory.init(keyStore, "gehaim".toCharArray());
 
         KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
 
@@ -75,21 +79,13 @@ public final class RSocketLoadBalancerDemo
         // @formatter:off
         ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
                 .configure(builder -> builder
-                        .keyManager(keyManagerFactory)
+                        //.keyManager(keyManagerFactory)
+                        //.trustManager(InsecureTrustManagerFactory.INSTANCE)
                         .trustManager(trustManagerFactory)
                         .protocols("TLSv1.3")
                         .sslProvider(SslProvider.JDK))
                 ;
         // @formatter:on
-
-//        // @formatter:off
-//        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
-//                .configure(builder -> builder
-//                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
-//                        .protocols("TLSv1.3")
-//                        .sslProvider(SslProvider.JDK))
-//                ;
-//        // @formatter:on
 
         // @formatter:off
         Resume resume = new Resume()
@@ -100,31 +96,31 @@ public final class RSocketLoadBalancerDemo
                 ;
         // @formatter:on
 
-        List<LoadbalanceTarget> targets = new ArrayList<>(ports.length);
-
-        for (int port : ports)
-        {
-            // @formatter:off
-            TcpClient tcpClient = TcpClient.create()
-                    .host("localhost")
-                    .port(port)
+        // Nachbildung einer Service-Discovery Anfrage.
+        // @formatter:off
+        Publisher<List<LoadbalanceTarget>> serverProducer = Flux.fromStream(serverAddresses.stream())
+            .map(serverAddress ->  {
+                TcpClient tcpClient = TcpClient.create()
+                    //.host(inetSocketAddress.getHostName())
+                    //.port(inetSocketAddress.getPort())
+                    .remoteAddress(() -> serverAddress)
                     .secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
-                    .doOnDisconnected(connection -> LOGGER.info("Disconnected: {}", connection.channel()))
+                    .doOnDisconnected(connection -> LOGGER.info("Disconnected: {}", connection.channel())
                     //.runOn(LoopResources.create("client-" + port, 2, true), false)
-                    ;
-            // @formatter:on
+                );
 
-            ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
-            // ClientTransport clientTransport = LocalClientTransport.create("test-local-" + port);
+                ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
+                // ClientTransport clientTransport = LocalClientTransport.create("test-local-" + port);
 
-            LoadbalanceTarget target = LoadbalanceTarget.from(Integer.toString(port), clientTransport);
+                return LoadbalanceTarget.from(serverAddress.toString(), clientTransport);
+            })
+            .collectList()
+            //.repeatWhen(f -> f.delayElements(Duration.ofSeconds(1))) // <- continuously retrieve new List of ServiceInstances
+            .doOnSubscribe(subcription -> LOGGER.info("Update Server Instances"))
+            ;
+        // @formatter:on
 
-            targets.add(target);
-        }
-
-        Mono<List<LoadbalanceTarget>> producer = Mono.just(targets);
-
-        // Flux<List<LoadbalanceTarget>> producer = Flux.interval(Duration.ofSeconds(2)).log().map(i -> {
+        // Publisher<List<LoadbalanceTarget>> serverProducer = Flux.interval(Duration.ofSeconds(2)).log().map(i -> {
         // int val = i.intValue();
         //
         // return switch (val)
@@ -155,7 +151,7 @@ public final class RSocketLoadBalancerDemo
 
         // @formatter:off
         RSocketClient client = LoadbalanceRSocketClient
-                .builder(producer)
+                .builder(serverProducer)
                 .connector(connector)
                 .roundRobinLoadbalanceStrategy()
                 .build()
@@ -179,23 +175,11 @@ public final class RSocketLoadBalancerDemo
         // Nur einmalig definieren, sonst gibs mehrere Logs-Meldungen !!!
         Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
 
-        int[] ports =
-        {
-                7000, 8000, 9000
-        };
-        // int[] ports =
-        // {
-        // SocketUtils.findAvailableTcpPort(), SocketUtils.findAvailableTcpPort(), SocketUtils.findAvailableTcpPort()
-        // };
+        // SocketUtils.findAvailableTcpPort()
+        List<SocketAddress> serverAddresses = Stream.of(7000, 8000, 9000).map(port -> new InetSocketAddress("localhost", port)).collect(Collectors.toList());
 
-        List<Disposable> servers = new ArrayList<>();
-
-        for (int port : ports)
-        {
-            servers.add(startServer(port));
-        }
-
-        RSocketClient client = createClient(ports);
+        List<Disposable> servers = startServer(serverAddresses);
+        RSocketClient client = createClient(serverAddresses);
 
         // Der IntStream blockiert, bis alle parallelen Operationen beendet sind.
         // Der Flux macht dies nicht, sondern im Hintergrund.
@@ -236,21 +220,37 @@ public final class RSocketLoadBalancerDemo
             // @formatter:on
         }
 
+        // TimeUnit.MILLISECONDS.sleep(1000);
+
         client.dispose();
         servers.forEach(Disposable::dispose);
     }
 
     /**
-     * @param port int
-     * @return {@link Disposable}
-     * @throws Exception Falls was schief geht
+     * @param serverAddresses {@link List}
+     * @return {@link List}
      */
-    private static final Disposable startServer(final int port) throws Exception
+    private static final List<Disposable> startServer(final List<SocketAddress> serverAddresses)
     {
-        Server server = new Server();
-        server.start(port);
+        List<Disposable> servers = new ArrayList<>();
 
-        return server;
+        for (SocketAddress serverAddress : serverAddresses)
+        {
+            Server server = new Server();
+
+            try
+            {
+                server.start(serverAddress);
+
+                servers.add(server);
+            }
+            catch (Exception ex)
+            {
+                LOGGER.error(null, ex);
+            }
+        }
+
+        return servers;
     }
 
     /**

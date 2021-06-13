@@ -3,13 +3,13 @@ package de.freese.jsync.rsocket;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.SocketAddress;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
@@ -65,10 +65,10 @@ final class Server implements Disposable
     }
 
     /**
-     * @param port int
+     * @param serverAddress {@link SocketAddress}
      * @throws Exception Falls was schief geht
      */
-    public void start(final int port) throws Exception
+    public void start(final SocketAddress serverAddress) throws Exception
     {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
 
@@ -77,8 +77,8 @@ final class Server implements Disposable
             keyStore.load(is, "password".toCharArray());
         }
 
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("NewSunX509");
-        keyManagerFactory.init(keyStore, "gehaim".toCharArray());
+        // KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("NewSunX509");
+        // keyManagerFactory.init(keyStore, "gehaim".toCharArray());
 
         KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
 
@@ -126,8 +126,9 @@ final class Server implements Disposable
 
         // @formatter:off
         TcpServer tcpServer = TcpServer.create()
-                .host("localhost")
-                .port(port)
+                //.host(inetSocketAddress.getHostName())
+                //.port(inetSocketAddress.getPort())
+                .bindAddress(() -> serverAddress)
                 .secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
                 .doOnUnbound(connection -> LOGGER.info("Unbound: {}", connection.channel()))
                 //.runOn(LoopResources.create("server-" + port, 2, 4, true), false)
@@ -139,8 +140,8 @@ final class Server implements Disposable
 
         SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
             String request = payload.getDataUtf8();
-            LOGGER.info("Server:{} got request {}", port, request);
-            return Mono.just(DefaultPayload.create("Client of Server:" + port + " response=" + request)).delayElement(Duration.ofMillis(100));
+            LOGGER.info("Server:{} got request {}", serverAddress, request);
+            return Mono.just(DefaultPayload.create("Client of Server:" + serverAddress + " response=" + request)).delayElement(Duration.ofMillis(100));
         });
 
         // @formatter:off
