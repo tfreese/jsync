@@ -154,6 +154,7 @@ public final class RSocketLoadBalancerDemo
                 .builder(serverProducer)
                 .connector(connector)
                 .roundRobinLoadbalanceStrategy()
+                //.weightedLoadbalanceStrategy()
                 .build()
                 ;
         // @formatter:on
