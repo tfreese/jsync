@@ -9,6 +9,8 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.ssl.TrustManagerFactory;
 
@@ -40,6 +42,33 @@ final class Server implements Disposable
     *
     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
+
+    /**
+     * @param serverAddresses {@link List}
+     * @return {@link List}
+     */
+    static final List<Disposable> startServer(final List<SocketAddress> serverAddresses)
+    {
+        List<Disposable> servers = new ArrayList<>();
+
+        for (SocketAddress serverAddress : serverAddresses)
+        {
+            Server server = new Server();
+
+            try
+            {
+                server.start(serverAddress);
+
+                servers.add(server);
+            }
+            catch (Exception ex)
+            {
+                LOGGER.error(null, ex);
+            }
+        }
+
+        return servers;
+    }
 
     /**
      *
@@ -116,18 +145,8 @@ final class Server implements Disposable
 //         // @formatter:on
 
         // @formatter:off
-        Resume resume = new Resume()
-                .sessionDuration(Duration.ofMinutes(5))
-                .retry(Retry.fixedDelay(10, Duration.ofSeconds(1))
-                        .doBeforeRetry(s -> LOGGER.info("Disconnected. Trying to resume..."))
-                )
-                ;
-        // @formatter:on
-
-        // @formatter:off
         TcpServer tcpServer = TcpServer.create()
-                //.host(inetSocketAddress.getHostName())
-                //.port(inetSocketAddress.getPort())
+                //.host(inetSocketAddress.getHostName()).port(inetSocketAddress.getPort())
                 .bindAddress(() -> serverAddress)
                 .secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
                 .doOnUnbound(connection -> LOGGER.info("Unbound: {}", connection.channel()))
@@ -141,8 +160,17 @@ final class Server implements Disposable
         SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
             String request = payload.getDataUtf8();
             LOGGER.info("Server:{} got request {}", serverAddress, request);
-            return Mono.just(DefaultPayload.create("Client of Server:" + serverAddress + " response=" + request)).delayElement(Duration.ofMillis(100));
+            return Mono.just(DefaultPayload.create("Client of Server:" + serverAddress + " response=" + request)).delayElement(Duration.ofMillis(300));
         });
+
+        // @formatter:off
+        Resume resume = new Resume()
+                .sessionDuration(Duration.ofMinutes(5))
+                .retry(Retry.fixedDelay(5, Duration.ofMillis(100))
+                        .doBeforeRetry(s -> LOGGER.info("Disconnected. Trying to resume..."))
+                )
+                ;
+        // @formatter:on
 
         // @formatter:off
         this.channel = RSocketServer.create()
