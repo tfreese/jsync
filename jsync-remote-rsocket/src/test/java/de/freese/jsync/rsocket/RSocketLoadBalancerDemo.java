@@ -86,6 +86,8 @@ public final class RSocketLoadBalancerDemo
             ;
         // @formatter:on
 
+        TimeUnit.SECONDS.sleep(1);
+
         for (int i = 0; i < 30; i++)
         {
             TimeUnit.MILLISECONDS.sleep(100);

@@ -130,7 +130,8 @@ final class Server implements Disposable
                         //.keyManager(keyManagerFactory) // Verursacht Fehler
                         .trustManager(trustManagerFactory)
                         .protocols("TLSv1.3")
-                        .sslProvider(SslProvider.JDK))
+                        .sslProvider(SslProvider.JDK)
+                )
                 ;
         // @formatter:on
 
@@ -140,7 +141,8 @@ final class Server implements Disposable
 //         ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
 //                 .configure(builder -> builder
 //                         .protocols("TLSv1.3")
-//                         .sslProvider(SslProvider.JDK))
+//                         .sslProvider(SslProvider.JDK)
+//                 )
 //                 ;
 //         // @formatter:on
 

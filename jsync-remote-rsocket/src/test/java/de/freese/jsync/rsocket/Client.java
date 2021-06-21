@@ -221,7 +221,8 @@ public class Client
                             //.trustManager(InsecureTrustManagerFactory.INSTANCE)
                             .trustManager(trustManagerFactory)
                             .protocols("TLSv1.3")
-                            .sslProvider(SslProvider.JDK))
+                            .sslProvider(SslProvider.JDK)
+                    )
                     ;
             // @formatter:on
 
