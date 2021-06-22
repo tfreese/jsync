@@ -6,13 +6,14 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.sender.AbstractSender;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.rsocket.filesystem.fileHandle.FileHandleFluxByteBuffer;
+import de.freese.jsync.rsocket.filesystem.filehandle.FileHandleFluxByteBuffer;
 import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -51,14 +52,6 @@ public class RemoteSenderRSocket extends AbstractSender
     *
     */
     private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
-
-    /**
-     * Erstellt ein neues {@link RemoteSenderRSocket} Object.
-     */
-    public RemoteSenderRSocket()
-    {
-        super();
-    }
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
@@ -206,22 +199,13 @@ public class RemoteSenderRSocket extends AbstractSender
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, relativeFile);
 
-        // @formatter:off
-        String checksum = this.client
-            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
-            //.map(payload -> {
-            //    String data = payload.getDataUtf8();
-            //    payload.release();
-            //    return data;
-            //})
-            .map(Payload::getDataUtf8)
-            .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(null, th))
-            .block()
-            ;
-        // @formatter:on
-
-        return checksum;
+        return this.client.requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+                // .map(payload -> {
+                // String data = payload.getDataUtf8();
+                // payload.release();
+                // return data;
+                // })
+                .map(Payload::getDataUtf8).doOnNext(getLogger()::debug).doOnError(th -> getLogger().error(null, th)).block();
     }
 
     // /**

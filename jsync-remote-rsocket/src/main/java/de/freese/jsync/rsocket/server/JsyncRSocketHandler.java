@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.NettyDataBuffer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
@@ -30,6 +32,7 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
+import de.freese.jsync.rsocket.utils.Pool;
 import de.freese.jsync.rsocket.utils.RSocketUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -47,35 +50,49 @@ public class JsyncRSocketHandler implements RSocket
     /**
     *
     */
+    private static final ByteBufAllocator BYTE_BUF_ALLOCATOR = ByteBufAllocator.DEFAULT;
+
+    /**
+    *
+    */
     private static final Logger LOGGER = LoggerFactory.getLogger(JsyncRSocketHandler.class);
 
     /**
     *
     */
-    private static final ThreadLocal<Receiver> THREAD_LOCAL_RECEIVER = ThreadLocal.withInitial(LocalhostReceiver::new);
-
-    /**
-        *
-        */
-    private static final ThreadLocal<Sender> THREAD_LOCAL_SENDER = ThreadLocal.withInitial(LocalhostSender::new);
+    // private static final ThreadLocal<Sender> THREAD_LOCAL_RECEIVER = ThreadLocal.withInitial(LocalhostReceiver::new);
+    private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true)
+    {
+        /**
+         * @see de.freese.jsync.rsocket.utils.Pool#create()
+         */
+        @Override
+        protected Receiver create()
+        {
+            return new LocalhostReceiver();
+        }
+    };
 
     /**
     *
     */
-    private final ByteBufAllocator byteBufAllocator = ByteBufAllocator.DEFAULT;
+    // private static final ThreadLocal<Sender> THREAD_LOCAL_SENDER = ThreadLocal.withInitial(LocalhostSender::new);
+    private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true)
+    {
+        /**
+         * @see de.freese.jsync.rsocket.utils.Pool#create()
+         */
+        @Override
+        protected Sender create()
+        {
+            return new LocalhostSender();
+        }
+    };
 
     /**
     *
     */
     private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
-
-    /**
-     * Erstellt ein neues {@link JsyncRSocketHandler} Object.
-     */
-    public JsyncRSocketHandler()
-    {
-        super();
-    }
 
     /**
      * Create the checksum.
@@ -194,7 +211,7 @@ public class JsyncRSocketHandler implements RSocket
      */
     private ByteBufAllocator getByteBufAllocator()
     {
-        return this.byteBufAllocator;
+        return BYTE_BUF_ALLOCATOR;
     }
 
     /**
@@ -261,9 +278,9 @@ public class JsyncRSocketHandler implements RSocket
         return flux
                 .cast(NettyDataBuffer.class)
                 .map(dataBuffer -> {
-                    Payload pl = ByteBufPayload.create(dataBuffer.getNativeBuffer());
+
                     //dataBuffer.retain();
-                    return pl;
+                    return ByteBufPayload.create(dataBuffer.getNativeBuffer());
                 })
                 //.doFinally(signalType -> dataBuffer.release())
                 ;
@@ -276,6 +293,9 @@ public class JsyncRSocketHandler implements RSocket
     @Override
     public Flux<Payload> requestChannel(final Publisher<Payload> payloads)
     {
+        // Receiver receiver = THREAD_LOCAL_RECEIVER.get();
+        Receiver receiver = POOL_RECEIVER.obtain();
+
         return Flux.from(payloads).switchOnFirst((firstSignal, flux) -> {
             try
             {
@@ -289,7 +309,7 @@ public class JsyncRSocketHandler implements RSocket
 
                 return switch (command)
                 {
-                    case TARGET_WRITE_FILE_HANDLE -> writeFileHandle(payload, flux.skip(1), THREAD_LOCAL_RECEIVER.get());
+                    case TARGET_WRITE_FILE_HANDLE -> writeFileHandle(payload, flux.skip(1), receiver);
 
                     default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
                 };
@@ -300,6 +320,11 @@ public class JsyncRSocketHandler implements RSocket
 
                 return Flux.error(ex);
             }
+            finally
+            {
+                // THREAD_LOCAL_RECEIVER.set(receiver);
+                POOL_RECEIVER.free(receiver);
+            }
         });
     }
 
@@ -309,6 +334,12 @@ public class JsyncRSocketHandler implements RSocket
     @Override
     public Mono<Payload> requestResponse(final Payload payload)
     {
+        // Sender sender = THREAD_LOCAL_SENDER.get();
+        // Receiver receiver = THREAD_LOCAL_RECEIVER.get()
+
+        Sender sender = POOL_SENDER.obtain();
+        Receiver receiver = POOL_RECEIVER.obtain();
+
         try
         {
             ByteBuf byteBufMeta = payload.metadata();
@@ -320,16 +351,16 @@ public class JsyncRSocketHandler implements RSocket
             {
                 case CONNECT -> connect();
                 case DISCONNECT -> disconnect();
-                case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, THREAD_LOCAL_SENDER.get());
-                case SOURCE_CHECKSUM -> checksum(payload, THREAD_LOCAL_SENDER.get());
-                // case SOURCE_READ_CHUNK -> readChunk(payload, THREAD_LOCAL_SENDER.get());
-                case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, THREAD_LOCAL_RECEIVER.get());
-                case TARGET_CHECKSUM -> checksum(payload, THREAD_LOCAL_RECEIVER.get());
-                case TARGET_CREATE_DIRECTORY -> createDirectory(payload, THREAD_LOCAL_RECEIVER.get());
-                case TARGET_DELETE -> delete(payload, THREAD_LOCAL_RECEIVER.get());
-                case TARGET_UPDATE -> update(payload, THREAD_LOCAL_RECEIVER.get());
-                case TARGET_VALIDATE_FILE -> validate(payload, THREAD_LOCAL_RECEIVER.get());
-                // case TARGET_WRITE_CHUNK -> writeChunk(payload, THREAD_LOCAL_RECEIVER.get());
+                case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
+                case SOURCE_CHECKSUM -> checksum(payload, sender);
+                // case SOURCE_READ_CHUNK -> readChunk(payload, sender);
+                case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
+                case TARGET_CHECKSUM -> checksum(payload, receiver);
+                case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
+                case TARGET_DELETE -> delete(payload, receiver);
+                case TARGET_UPDATE -> update(payload, receiver);
+                case TARGET_VALIDATE_FILE -> validate(payload, receiver);
+                // case TARGET_WRITE_CHUNK -> writeChunk(payload, receiver);
 
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
@@ -343,6 +374,11 @@ public class JsyncRSocketHandler implements RSocket
         finally
         {
             // RSocketUtils.release(payload);
+
+            // THREAD_LOCAL_SENDER.set(sender);
+            // THREAD_LOCAL_RECEIVER.set(receiver);
+            POOL_SENDER.free(sender);
+            POOL_RECEIVER.free(receiver);
         }
     }
 
@@ -352,6 +388,9 @@ public class JsyncRSocketHandler implements RSocket
     @Override
     public Flux<Payload> requestStream(final Payload payload)
     {
+        // Sender sender = THREAD_LOCAL_SENDER.get();
+        Sender sender = POOL_SENDER.obtain();
+
         try
         {
             ByteBuf byteBufMeta = payload.metadata();
@@ -361,7 +400,7 @@ public class JsyncRSocketHandler implements RSocket
 
             return switch (command)
             {
-                case SOURCE_READ_FILE_HANDLE -> readFileHandle(payload, THREAD_LOCAL_SENDER.get());
+                case SOURCE_READ_FILE_HANDLE -> readFileHandle(payload, sender);
 
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
@@ -375,6 +414,9 @@ public class JsyncRSocketHandler implements RSocket
         finally
         {
             // RSocketUtils.release(payload);
+
+            // THREAD_LOCAL_SENDER.set(sender);
+            POOL_SENDER.free(sender);
         }
     }
 

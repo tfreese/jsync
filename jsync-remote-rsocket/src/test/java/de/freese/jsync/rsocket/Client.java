@@ -55,9 +55,8 @@ public class Client
         RSocketConnector rSocketConnector = createRSocketConnector();
 
         Mono<RSocket> rSocket = rSocketConnector.connect(clientTransport);
-        RSocketClient client = RSocketClient.from(rSocket);
 
-        return client;
+        return RSocketClient.from(rSocket);
     }
 
     /**
@@ -98,17 +97,9 @@ public class Client
 
         RSocketConnector rSocketConnector = createRSocketConnector();
 
-        // @formatter:off
-        RSocketClient client = LoadbalanceRSocketClient
-                .builder(serverProducer)
-                .connector(rSocketConnector)
-                .roundRobinLoadbalanceStrategy()
-                //.weightedLoadbalanceStrategy()
-                .build()
-                ;
-        // @formatter:on
-
-        return client;
+        return LoadbalanceRSocketClient.builder(serverProducer).connector(rSocketConnector).roundRobinLoadbalanceStrategy()
+                // .weightedLoadbalanceStrategy()
+                .build();
     }
 
     /**
@@ -150,17 +141,9 @@ public class Client
 
         RSocketConnector rSocketConnector = createRSocketConnector();
 
-        // @formatter:off
-        RSocketClient client = LoadbalanceRSocketClient
-                .builder(serverProducer)
-                .connector(rSocketConnector)
-                .roundRobinLoadbalanceStrategy()
-                //.weightedLoadbalanceStrategy()
-                .build()
-                ;
-        // @formatter:on
-
-        return client;
+        return LoadbalanceRSocketClient.builder(serverProducer).connector(rSocketConnector).roundRobinLoadbalanceStrategy()
+                // .weightedLoadbalanceStrategy()
+                .build();
     }
 
     /**
@@ -181,10 +164,7 @@ public class Client
             );
         // @formatter:on
 
-        ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
-        // ClientTransport clientTransport = LocalClientTransport.create("test-local-" + port);
-
-        return clientTransport;
+        return TcpClientTransport.create(tcpClient);
     }
 
     /**
@@ -214,19 +194,10 @@ public class Client
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
             trustManagerFactory.init(keyStoreTrust);
 
-            // @formatter:off
-            ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
-                    .configure(builder -> builder
-                            //.keyManager(keyManagerFactory)
-                            //.trustManager(InsecureTrustManagerFactory.INSTANCE)
-                            .trustManager(trustManagerFactory)
-                            .protocols("TLSv1.3")
-                            .sslProvider(SslProvider.JDK)
-                    )
-                    ;
-            // @formatter:on
-
-            return protocolSslContextSpec;
+            return TcpSslContextSpec.forClient().configure(builder -> builder
+                    // .keyManager(keyManagerFactory)
+                    // .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                    .trustManager(trustManagerFactory).protocols("TLSv1.3").sslProvider(SslProvider.JDK));
         }
         catch (RuntimeException ex)
         {
@@ -256,15 +227,10 @@ public class Client
                 ;
         // @formatter:on
 
-        // @formatter:off
-        RSocketConnector connector = RSocketConnector.create()
+        return RSocketConnector.create()
                 // .payloadDecoder(PayloadDecoder.ZERO_COPY))
                 .reconnect(Retry.fixedDelay(5, Duration.ofMillis(100)))
                 // .reconnect(Retry.backoff(50, Duration.ofMillis(100)))
-                .resume(resume)
-                ;
-        // @formatter:on
-
-        return connector;
+                .resume(resume);
     }
 }

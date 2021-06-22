@@ -1,9 +1,10 @@
 // Created: 25.10.2020
-package de.freese.jsync.rsocket.filesystem.fileHandle;
+package de.freese.jsync.rsocket.filesystem.filehandle;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.Objects;
+
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import reactor.core.publisher.Flux;
 

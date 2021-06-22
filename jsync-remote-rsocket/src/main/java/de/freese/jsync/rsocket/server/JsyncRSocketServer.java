@@ -2,8 +2,10 @@
 package de.freese.jsync.rsocket.server;
 
 import java.time.Duration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
@@ -41,14 +43,6 @@ public class JsyncRSocketServer
      *
      */
     private Disposable server;
-
-    /**
-     * Erstellt ein neues {@link JsyncRSocketServer} Object.
-     */
-    public JsyncRSocketServer()
-    {
-        super();
-    }
 
     /**
      * @return {@link Logger}

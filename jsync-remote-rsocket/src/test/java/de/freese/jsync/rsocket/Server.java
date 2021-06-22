@@ -47,7 +47,7 @@ final class Server implements Disposable
      * @param serverAddresses {@link List}
      * @return {@link List}
      */
-    static final List<Disposable> startServer(final List<SocketAddress> serverAddresses)
+    static List<Disposable> startServer(final List<SocketAddress> serverAddresses)
     {
         List<Disposable> servers = new ArrayList<>();
 
