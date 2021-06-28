@@ -20,22 +20,16 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-
-                <!-- mvn exec:java; Ausführung in der gleichen Runtime-Instanz wie Maven. -->
                 <configuration>
-                    <mainClass>de.freese.jsync.javafx.JSyncJavaFxApplication</mainClass>
-                </configuration>
-
-                <!-- mvn exec:exec; Ausführung in einer separaten Runtime-Instanz. -->
-                <!--configuration>
                     <toolchain>jdk</toolchain>
                     <executable>java</executable>
+                    <classpathScope>runtime</classpathScope>
                     <arguments>
-                    <argument>-classpath</argument>
-                    <classpath />
-                    <argument>de.freese.jsync.javafx.JSyncJavaFxApplication</argument>
+                        <argument>-classpath</argument>
+                        <classpath />
+                        <argument>de.freese.jsync.javafx.JSyncJavaFxLauncher</argument>
                     </arguments>
-                    </configuration -->
+                </configuration>                
             </plugin>
             <plugin>
                 <!--
