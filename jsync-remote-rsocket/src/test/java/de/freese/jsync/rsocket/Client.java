@@ -97,9 +97,14 @@ final class Client
 
         RSocketConnector rSocketConnector = createRSocketConnector();
 
-        return LoadbalanceRSocketClient.builder(serverProducer).connector(rSocketConnector).roundRobinLoadbalanceStrategy()
+        // @formatter:off
+        return LoadbalanceRSocketClient.builder(serverProducer)
+                .connector(rSocketConnector)
+                .roundRobinLoadbalanceStrategy()
                 // .weightedLoadbalanceStrategy()
-                .build();
+                .build()
+                ;
+        // @formatter:on
     }
 
     /**
@@ -141,9 +146,14 @@ final class Client
 
         RSocketConnector rSocketConnector = createRSocketConnector();
 
-        return LoadbalanceRSocketClient.builder(serverProducer).connector(rSocketConnector).roundRobinLoadbalanceStrategy()
+        // @formatter:off
+        return LoadbalanceRSocketClient.builder(serverProducer)
+                .connector(rSocketConnector)
+                .roundRobinLoadbalanceStrategy()
                 // .weightedLoadbalanceStrategy()
-                .build();
+                .build()
+                ;
+        // @formatter:on
     }
 
     /**
@@ -165,9 +175,10 @@ final class Client
                 ;
         // @formatter:on
 
+        ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
         // ClientTransport clientTransport = LocalClientTransport.create("test-local-" + ((InetSocketAddress) serverAddress).getPort());
 
-        return TcpClientTransport.create(tcpClient);
+        return clientTransport;
     }
 
     /**
@@ -230,11 +241,14 @@ final class Client
                 ;
         // @formatter:on
 
+        // @formatter:off
         return RSocketConnector.create()
                 // .payloadDecoder(PayloadDecoder.ZERO_COPY))
                 .reconnect(Retry.fixedDelay(5, Duration.ofMillis(100)))
                 // .reconnect(Retry.backoff(50, Duration.ofMillis(100)))
-                .resume(resume);
+                .resume(resume)
+                ;
+        // @formatter:on
     }
 
     /**
