@@ -76,6 +76,14 @@ final class Server implements Disposable
     private Closeable channel;
 
     /**
+     * Erstellt ein neues {@link Server} Object.
+     */
+    private Server()
+    {
+        super();
+    }
+
+    /**
      * @see reactor.core.Disposable#dispose()
      */
     @Override
@@ -152,12 +160,13 @@ final class Server implements Disposable
                 .bindAddress(() -> serverAddress)
                 .secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
                 .doOnUnbound(connection -> LOGGER.info("Unbound: {}", connection.channel()))
-                //.runOn(LoopResources.create("server-" + port, 2, 4, true), false)
+                //.runOn(new NioEventLoopGroup(4, new JsyncThreadFactory("server-" + ((InetSocketAddress) serverAddress).getPort() + "-")))
+                // EpollEventLoopGroup geht nur auf Linux
                 ;
         // @formatter:on
 
         ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
-        // ServerTransport<Closeable> serverTransport = LocalServerTransport.create("test-local-" + port);
+        // ServerTransport<Closeable> serverTransport = LocalServerTransport.create("test-local-" + ((InetSocketAddress) serverAddress).getPort());
 
         SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
             String request = payload.getDataUtf8();

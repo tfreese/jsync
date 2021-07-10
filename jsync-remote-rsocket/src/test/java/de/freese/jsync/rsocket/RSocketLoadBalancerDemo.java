@@ -20,6 +20,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.netty.resources.LoopResources;
+import reactor.netty.tcp.TcpResources;
 
 /**
  * @author Thomas Freese
@@ -38,7 +40,8 @@ public final class RSocketLoadBalancerDemo
     public static void main(final String[] args) throws Exception
     {
         // Globale Default-Resourcen.
-        // TcpResources.set(LoopResources.create("rsocket"));
+        TcpResources.set(LoopResources.create("rsocket"));
+        // TcpResources.set(LoopResources.create("rsocket", 2, 8, true));
         // TcpResources.set(ConnectionProvider.create("rsocket-connectionPool", 16));
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.

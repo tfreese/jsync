@@ -35,7 +35,7 @@ import reactor.util.retry.Retry;
 /**
  * @author Thomas Freese
  */
-public class Client
+final class Client
 {
     /**
     *
@@ -159,10 +159,13 @@ public class Client
                 //.port(inetSocketAddress.getPort())
                 .remoteAddress(() -> serverAddress)
                 .secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
-                .doOnDisconnected(connection -> LOGGER.info("Disconnected: {}", connection.channel())
-                //.runOn(LoopResources.create("client-" + port, 2, true), false)
-            );
+                .doOnDisconnected(connection -> LOGGER.info("Disconnected: {}", connection.channel()))
+                //.runOn(new NioEventLoopGroup(4, new JsyncThreadFactory("client-" + ((InetSocketAddress) serverAddress).getPort() + "-")))
+                // EpollEventLoopGroup geht nur auf Linux
+                ;
         // @formatter:on
+
+        // ClientTransport clientTransport = LocalClientTransport.create("test-local-" + ((InetSocketAddress) serverAddress).getPort());
 
         return TcpClientTransport.create(tcpClient);
     }
@@ -232,5 +235,13 @@ public class Client
                 .reconnect(Retry.fixedDelay(5, Duration.ofMillis(100)))
                 // .reconnect(Retry.backoff(50, Duration.ofMillis(100)))
                 .resume(resume);
+    }
+
+    /**
+     * Erstellt ein neues {@link Client} Object.
+     */
+    private Client()
+    {
+        super();
     }
 }
