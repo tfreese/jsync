@@ -1,16 +1,17 @@
-// Created: 28.10.2020
-package de.freese.jsync.rsocket;
+// Created: 11.07.2021
+package de.freese.jsync.rsocket.server;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 import javax.net.ssl.TrustManagerFactory;
 
@@ -18,77 +19,48 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.handler.ssl.SslProvider;
-import io.rsocket.Closeable;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
+import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.ServerTransport;
 import io.rsocket.transport.netty.server.CloseableChannel;
 import io.rsocket.transport.netty.server.TcpServerTransport;
-import io.rsocket.util.DefaultPayload;
-import reactor.core.Disposable;
-import reactor.core.publisher.Mono;
 import reactor.netty.tcp.SslProvider.ProtocolSslContextSpec;
 import reactor.netty.tcp.TcpServer;
 import reactor.netty.tcp.TcpSslContextSpec;
 import reactor.util.retry.Retry;
 
 /**
+ * {@link RSocketServer} für Verwendung innerhalb einer Runtime.
+ *
  * @author Thomas Freese
  */
-final class Server implements Disposable
+public class MyRSocketServerRemote implements MyRSocketServer
 {
-    /**
-    *
-    */
-    private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
-
-    /**
-     * @param serverAddresses {@link List}
-     * @return {@link List}
-     */
-    static List<Disposable> startServer(final List<SocketAddress> serverAddresses)
-    {
-        List<Disposable> servers = new ArrayList<>();
-
-        for (SocketAddress serverAddress : serverAddresses)
-        {
-            Server server = new Server();
-
-            try
-            {
-                server.start(serverAddress);
-
-                servers.add(server);
-            }
-            catch (Exception ex)
-            {
-                LOGGER.error(null, ex);
-            }
-        }
-
-        return servers;
-    }
-
     /**
      *
      */
-    private Closeable channel;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MyRSocketServerRemote.class);
 
     /**
-     * Erstellt ein neues {@link Server} Object.
+     * @return {@link ProtocolSslContextSpec}
+     * @throws Exception Falls was schief geht.
      */
-    private Server()
+    static ProtocolSslContextSpec createProtocolSslContextSpec() throws Exception
     {
-        super();
+        // return createProtocolSslContextSpecCertificate();
+        // return createProtocolSslContextSpecSelfSigned();
+        return null;
     }
 
     /**
      * @return {@link ProtocolSslContextSpec}
      * @throws Exception Falls was schief geht.
      */
-    private ProtocolSslContextSpec createProtocolSslContextSpec() throws Exception
+    static ProtocolSslContextSpec createProtocolSslContextSpecCertificate() throws Exception
     {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
 
@@ -115,17 +87,6 @@ final class Server implements Disposable
         // KeyStore.Entry entry = keyStore.getEntry("server", new KeyStore.PasswordProtection("password".toCharArray()));
         // PrivateKey privateKey = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
 
-        // SelfSignedCertificate cert = new SelfSignedCertificate();
-        //
-//         // @formatter:off
-//         ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
-//                 .configure(builder -> builder
-//                         .protocols("TLSv1.3")
-//                         .sslProvider(SslProvider.JDK)
-//                 )
-//                 ;
-//         // @formatter:on
-
         // @formatter:off
         return TcpSslContextSpec.forServer(privateKey, (X509Certificate) certificate)
                 .configure(builder -> builder
@@ -133,17 +94,35 @@ final class Server implements Disposable
                         .trustManager(trustManagerFactory)
                         .protocols("TLSv1.3")
                         .sslProvider(SslProvider.JDK)
-                )
+                        )
                 ;
         // @formatter:on
     }
 
     /**
+     * @return {@link ProtocolSslContextSpec}
+     * @throws Exception Falls was schief geht.
+     */
+    static ProtocolSslContextSpec createProtocolSslContextSpecSelfSigned() throws Exception
+    {
+        SelfSignedCertificate cert = new SelfSignedCertificate();
+
+        // @formatter:off
+        return TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
+                .configure(builder -> builder
+                        .protocols("TLSv1.3")
+                        .sslProvider(SslProvider.JDK)
+                        )
+                 ;
+         // @formatter:on
+    }
+
+    /**
      * @param socketAcceptor {@link SocketAcceptor}
      * @param serverTransport {@link ServerTransport}
-     * @return {@link Closeable}
+     * @return {@link CloseableChannel}
      */
-    private Closeable createRSocketServer(final SocketAcceptor socketAcceptor, final ServerTransport<? extends Closeable> serverTransport)
+    static CloseableChannel createRSocketServer(final SocketAcceptor socketAcceptor, final ServerTransport<CloseableChannel> serverTransport)
     {
         // @formatter:off
         Resume resume = new Resume()
@@ -157,7 +136,7 @@ final class Server implements Disposable
         // @formatter:off
         return RSocketServer.create()
                 .acceptor(socketAcceptor)
-                //.payloadDecoder(PayloadDecoder.DEFAULT)
+                .payloadDecoder(PayloadDecoder.DEFAULT)
                 .resume(resume)
                 .bindNow(serverTransport)
                 ;
@@ -169,65 +148,108 @@ final class Server implements Disposable
      * @param protocolSslContextSpec {@link ProtocolSslContextSpec}
      * @return {@link RSocketClient}
      */
-    private TcpServer createTcpServer(final SocketAddress serverAddress, final ProtocolSslContextSpec protocolSslContextSpec)
+    static TcpServer createTcpServer(final SocketAddress serverAddress, final ProtocolSslContextSpec protocolSslContextSpec)
     {
         // @formatter:off
-        return TcpServer.create()
-                //.host(inetSocketAddress.getHostName()).port(inetSocketAddress.getPort())
+        TcpServer tcpServer = TcpServer.create()
+                //.host(getHost()).port(getPort())
                 .bindAddress(() -> serverAddress)
-                .secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
+                .doOnBound(connection -> {
+                    LOGGER.info("Bound: {}", connection.channel());
+                    })
                 .doOnUnbound(connection -> LOGGER.info("Unbound: {}", connection.channel()))
                 //.runOn(new NioEventLoopGroup(4, new JsyncThreadFactory("server-" + ((InetSocketAddress) serverAddress).getPort() + "-")))
                 // EpollEventLoopGroup geht nur auf Linux
                 ;
         // @formatter:on
-    }
 
-    /**
-     * @see reactor.core.Disposable#dispose()
-     */
-    @Override
-    public void dispose()
-    {
-        this.channel.dispose();
-    }
+        if (protocolSslContextSpec != null)
+        {
+            tcpServer = tcpServer.secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec));
+        }
 
-    /**
-     * @see reactor.core.Disposable#isDisposed()
-     */
-    @Override
-    public boolean isDisposed()
-    {
-        return this.channel.isDisposed();
-    }
-
-    /**
-     * @param serverAddress {@link SocketAddress}
-     * @throws Exception Falls was schief geht
-     */
-    public void start(final SocketAddress serverAddress) throws Exception
-    {
-        ProtocolSslContextSpec protocolSslContextSpec = createProtocolSslContextSpec();
-
-        TcpServer tcpServer = createTcpServer(serverAddress, protocolSslContextSpec);
-
-        ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
-        // ServerTransport<Closeable> serverTransport = LocalServerTransport.create("test-local-" + ((InetSocketAddress) serverAddress).getPort());
-
-        SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
-            String request = payload.getDataUtf8();
-            LOGGER.info("Server:{} got request {}", serverAddress, request);
-            return Mono.just(DefaultPayload.create("Client of Server:" + serverAddress + " response=" + request)).delayElement(Duration.ofMillis(300));
-        });
-
-        this.channel = createRSocketServer(socketAcceptor, serverTransport);
+        return tcpServer;
     }
 
     /**
      *
      */
+    private CloseableChannel server;
+
+    /**
+     *
+     */
+    private final Function<Integer, SocketAcceptor> socketAcceptor;
+
+    /**
+     *
+     */
+    private final InetSocketAddress socketAddress;
+
+    /**
+     * Erstellt ein neues {@link MyRSocketServerRemote} Object.
+     *
+     * @param socketAddress {@link InetSocketAddress}
+     * @param socketAcceptor {@link SocketAcceptor}
+     */
+    public MyRSocketServerRemote(final InetSocketAddress socketAddress, final Function<Integer, SocketAcceptor> socketAcceptor)
+    {
+        super();
+
+        this.socketAddress = Objects.requireNonNull(socketAddress, "socketAddress required");
+        this.socketAcceptor = Objects.requireNonNull(socketAcceptor, "socketAcceptor required");
+    }
+
+    /**
+     * Erstellt ein neues {@link MyRSocketServerRemote} Object.
+     *
+     * @param host String
+     * @param port int
+     * @param socketAcceptor {@link SocketAcceptor}
+     */
+    public MyRSocketServerRemote(final String host, final int port, final Function<Integer, SocketAcceptor> socketAcceptor)
+    {
+        this(new InetSocketAddress(host, port), socketAcceptor);
+    }
+
+    /**
+     * @see de.freese.jsync.rsocket.server.MyRSocketServer#getServer()
+     */
+    @Override
+    public CloseableChannel getServer()
+    {
+        return this.server;
+    }
+
+    /**
+     * @return {@link InetSocketAddress}
+     */
+    public InetSocketAddress getSocketAddress()
+    {
+        return getServer().address();
+    }
+
+    /**
+     * @see de.freese.jsync.rsocket.server.MyRSocketServer#start()
+     */
+    @Override
+    public void start() throws Exception
+    {
+        ProtocolSslContextSpec protocolSslContextSpec = createProtocolSslContextSpec();
+
+        TcpServer tcpServer = createTcpServer(this.socketAddress, protocolSslContextSpec);
+
+        ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
+
+        this.server = createRSocketServer(this.socketAcceptor.apply(this.socketAddress.getPort()), serverTransport);
+    }
+
+    /**
+     * @see de.freese.jsync.rsocket.server.MyRSocketServer#stop()
+     */
+    @Override
     public void stop()
     {
-        dispose();
+        getServer().dispose();
     }
 }

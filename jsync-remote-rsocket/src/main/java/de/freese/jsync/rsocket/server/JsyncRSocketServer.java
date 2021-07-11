@@ -59,10 +59,17 @@ public class JsyncRSocketServer
      */
     public void start(final int port, final int selectCount, final int workerCount)
     {
+        // Globale Default-Resourcen.
+        // TcpResources.set(LoopResources.create("jsync-server", 2, 4, true));
+        // TcpResources.set(ConnectionProvider.create("demo-connectionPool", 16));
+
         getLogger().info("starting jsync-rsocket server on port: {}", port);
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.
-        Hooks.onErrorDropped(th -> LOGGER.error(th.getMessage()));
+        // Nur einmalig definieren, sonst gibs mehrere Logs-Meldungen !!!
+        // Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
+        Hooks.onErrorDropped(th -> {
+        });
 
         // @formatter:off
         Resume resume = new Resume()
@@ -75,15 +82,12 @@ public class JsyncRSocketServer
                 ;
         // @formatter:on
 
-        // Globale Default-Resourcen.
-        // TcpResources.set(LoopResources.create("jsync-server", 2, 4, true));
-        // TcpResources.set(ConnectionProvider.create("demo-connectionPool", 16));
-
         // @formatter:off
         TcpServer tcpServer = TcpServer.create()
                 .host("localhost")
                 .port(port)
                 .runOn(LoopResources.create("jsync-server-", selectCount, workerCount, false))
+                .doOnUnbound(connection -> LOGGER.info("Unbound: {}", connection.channel()))
                 ;
         // @formatter:on
 
