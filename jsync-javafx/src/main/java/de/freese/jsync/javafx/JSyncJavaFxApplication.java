@@ -1,5 +1,8 @@
 package de.freese.jsync.javafx;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.application.Application;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
@@ -8,8 +11,6 @@ import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Geht momentan nicht aus der IDE, sondern nur per Console: mvn compile exec:java<br>
@@ -86,16 +87,14 @@ public class JSyncJavaFxApplication extends Application
      */
     public static void main(final String[] args)
     {
-        Thread.setDefaultUncaughtExceptionHandler((t, ex) ->
-        {
+        Thread.setDefaultUncaughtExceptionHandler((t, ex) -> {
             getLogger().error("***Default exception handler***");
             getLogger().error(null, ex);
 
             // new ErrorDialog().forThrowable(ex).showAndWait();
         });
 
-        Runnable task = () ->
-        {
+        Runnable task = () -> {
             launch(args);
             // LauncherImpl.launchApplication(JSyncJavaFxApplication.class, JSyncJavaFxApplicationPreloader.class, args);
         };

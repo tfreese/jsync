@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.generator.DefaultGenerator;
@@ -245,7 +246,7 @@ public class LocalhostReceiver extends AbstractReceiver
             {
                 getLogger().debug("building Checksum: {}/{}", baseDir, syncItem.getRelativePath());
 
-                String checksum = DigestUtils.sha256DigestAsHex(path, Options.DATABUFFER_SIZE);
+                String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE);
 
                 if (!checksum.equals(syncItem.getChecksum()))
                 {

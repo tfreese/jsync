@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
+
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
@@ -39,6 +40,7 @@ class CompareWorker extends AbstractWorker<Void, Void>
     /**
      * @param fileSystem {@link EFileSystem}
      * @param syncItem {@link SyncItem}
+     *
      * @return {@link RunnableFuture}
      */
     private RunnableFuture<?> createChecksumFuture(final EFileSystem fileSystem, final SyncItem syncItem)
@@ -60,6 +62,7 @@ class CompareWorker extends AbstractWorker<Void, Void>
 
     /**
      * @param fileSystem {@link EFileSystem}
+     *
      * @return {@link RunnableFuture}
      */
     private RunnableFuture<List<SyncItem>> createLoadSyncItemsFuture(final EFileSystem fileSystem)
@@ -90,7 +93,7 @@ class CompareWorker extends AbstractWorker<Void, Void>
         RunnableFuture<List<SyncItem>> futureSenderItem = createLoadSyncItemsFuture(EFileSystem.SENDER);
         RunnableFuture<List<SyncItem>> futureReceiverItem = createLoadSyncItemsFuture(EFileSystem.RECEIVER);
 
-        if (isParallelism())
+        if (isParallel())
         {
             getExecutorService().execute(futureSenderItem);
         }
@@ -128,7 +131,7 @@ class CompareWorker extends AbstractWorker<Void, Void>
 
             if (futureSenderChecksum != null)
             {
-                if (isParallelism())
+                if (isParallel())
                 {
                     getExecutorService().execute(futureSenderChecksum);
                 }

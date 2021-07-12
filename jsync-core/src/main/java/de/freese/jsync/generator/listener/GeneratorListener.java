@@ -19,20 +19,20 @@ public interface GeneratorListener extends EventListener
      *
      * @param bytesRead long
      */
-    public void checksum(long bytesRead);
+    void checksum(long bytesRead);
 
     /**
      * Verzeichniss / Datei, was aktuell bearbeitet wird.
      *
      * @param syncItem {@link SyncItem}
      */
-    public void currentItem(SyncItem syncItem);
+    void currentItem(SyncItem syncItem);
 
     /**
      * Anzahl zu verarbeitender Path-Objekte (Verzeichnisse, Dateien).
      *
-     * @param path      {@link Path}
+     * @param path {@link Path}
      * @param itemCount int
      */
-    public void itemCount(Path path, int itemCount);
+    void itemCount(Path path, int itemCount);
 }

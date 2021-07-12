@@ -61,7 +61,7 @@ public final class GroupSerializer implements ObjectSerializer<Group>
         int gid = adapter.readInt(source);
 
         // name
-        String name = StringSerializer.getInstance().readFrom(adapter, source);
+        String name = adapter.readString(source, getCharset());
 
         return new Group(name, gid);
     }
@@ -85,6 +85,6 @@ public final class GroupSerializer implements ObjectSerializer<Group>
         adapter.writeInt(sink, value.getGid());
 
         // name
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getName());
+        adapter.writeString(sink, value.getName(), getCharset());
     }
 }

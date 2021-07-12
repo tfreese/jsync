@@ -4,6 +4,7 @@ package de.freese.jsync.model.serializer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
@@ -12,7 +13,6 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
 import de.freese.jsync.model.serializer.objects.BooleanSerializer;
-import de.freese.jsync.model.serializer.objects.CharSequenceSerializer;
 import de.freese.jsync.model.serializer.objects.ExceptionSerializer;
 import de.freese.jsync.model.serializer.objects.GroupSerializer;
 import de.freese.jsync.model.serializer.objects.IntegerSerializer;
@@ -27,19 +27,19 @@ import de.freese.jsync.model.serializer.objects.UserSerializer;
 
 /**
  * @author Thomas Freese
+ *
  * @param <D> Type of Source/Sink
  */
 public final class DefaultSerializer<D> implements Serializer<D>
 {
     /**
      * @param adapter {@link DataAdapter}
+     *
      * @return {@link Serializer}
      */
     public static <D> Serializer<D> of(final DataAdapter<D> adapter)
     {
-        Serializer<D> serializer = new DefaultSerializer<>(adapter);
-
-        return serializer;
+        return new DefaultSerializer<>(adapter);
     }
 
     /**
@@ -63,7 +63,6 @@ public final class DefaultSerializer<D> implements Serializer<D>
 
         this.adapter = Objects.requireNonNull(adapter, "adapter required");
 
-        register(CharSequence.class, CharSequenceSerializer.getInstance());
         register(String.class, StringSerializer.getInstance());
 
         register(boolean.class, BooleanSerializer.getInstance());
@@ -88,6 +87,7 @@ public final class DefaultSerializer<D> implements Serializer<D>
     /**
      * @param <T> Type
      * @param type Class
+     *
      * @return {@link ObjectSerializer}
      */
     @SuppressWarnings("unchecked")

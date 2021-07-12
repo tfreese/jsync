@@ -51,9 +51,9 @@ public final class StackTraceElementSerializer implements ObjectSerializer<Stack
     @Override
     public <D> StackTraceElement readFrom(final DataAdapter<D> adapter, final D source)
     {
-        String clazzName = StringSerializer.getInstance().readFrom(adapter, source);
-        String methodName = StringSerializer.getInstance().readFrom(adapter, source);
-        String fileName = StringSerializer.getInstance().readFrom(adapter, source);
+        String clazzName = adapter.readString(source, getCharset());
+        String methodName = adapter.readString(source, getCharset());
+        String fileName = adapter.readString(source, getCharset());
         int lineNumber = adapter.readInt(source);
 
         return new StackTraceElement(clazzName, methodName, fileName, lineNumber);
@@ -66,9 +66,9 @@ public final class StackTraceElementSerializer implements ObjectSerializer<Stack
     @Override
     public <D> void writeTo(final DataAdapter<D> adapter, final D sink, final StackTraceElement value)
     {
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getClassName());
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getMethodName());
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getFileName());
+        adapter.writeString(sink, value.getClassName(), getCharset());
+        adapter.writeString(sink, value.getMethodName(), getCharset());
+        adapter.writeString(sink, value.getFileName(), getCharset());
         adapter.writeInt(sink, value.getLineNumber());
     }
 }

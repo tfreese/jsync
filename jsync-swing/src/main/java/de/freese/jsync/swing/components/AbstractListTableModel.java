@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+
 import javax.swing.table.AbstractTableModel;
 
 /**
  * TableModel das intern eine Liste verwendet.
  *
  * @author Thomas Freese
+ *
  * @param <T> Konkreter Typ der List-Objekte.
  */
 public abstract class AbstractListTableModel<T> extends AbstractTableModel
@@ -39,7 +41,7 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
      *
      * @param columnCount int
      */
-    public AbstractListTableModel(final int columnCount)
+    protected AbstractListTableModel(final int columnCount)
     {
         this(columnCount, new ArrayList<>());
     }
@@ -80,7 +82,7 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
      * @param columnNames {@link List}
      * @param list {@link List}
      */
-    public AbstractListTableModel(final List<String> columnNames, final List<T> list)
+    protected AbstractListTableModel(final List<String> columnNames, final List<T> list)
     {
         super();
 
@@ -189,6 +191,7 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
      * Liefert ein Objekt fuer einen Index einer Zeile.
      *
      * @param rowIndex int
+     *
      * @return Object
      */
     public final T getObjectAt(final int rowIndex)
@@ -216,6 +219,7 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
      * Liefert den ZeilenIndex fuer ein Objekt zurueck.
      *
      * @param object Object
+     *
      * @return int
      */
     public final int getRowOf(final T object)

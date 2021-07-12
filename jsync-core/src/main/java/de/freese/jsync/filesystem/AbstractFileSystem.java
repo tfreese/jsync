@@ -2,8 +2,10 @@
 package de.freese.jsync.filesystem;
 
 import java.nio.charset.Charset;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.Options;
 
 /**

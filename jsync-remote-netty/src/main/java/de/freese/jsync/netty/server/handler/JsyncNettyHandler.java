@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -46,14 +48,6 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
      *
      */
     private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
-
-    /**
-     * Erstellt ein neues {@link JsyncNettyHandler} Object.
-     */
-    public JsyncNettyHandler()
-    {
-        super();
-    }
 
     /**
      * @see io.netty.channel.ChannelInboundHandlerAdapter#channelActive(io.netty.channel.ChannelHandlerContext)
@@ -560,6 +554,7 @@ public class JsyncNettyHandler extends SimpleChannelInboundHandler<ByteBuf> // C
      * @param ctx {@link ChannelHandlerContext}
      * @param buf {@link ByteBuf}
      * @param receiver {@link Receiver}
+     *
      * @throws Exception Falls was schief geht.
      */
     protected void resourceWritable(final ChannelHandlerContext ctx, final ByteBuf buf, final Receiver receiver) throws Exception

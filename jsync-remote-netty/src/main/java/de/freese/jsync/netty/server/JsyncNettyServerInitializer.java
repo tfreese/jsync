@@ -13,14 +13,6 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 public class JsyncNettyServerInitializer extends ChannelInitializer<SocketChannel>
 {
     /**
-     * Erstellt ein neues {@link JsyncNettyServerInitializer} Object.
-     */
-    public JsyncNettyServerInitializer()
-    {
-        super();
-    }
-
-    /**
      * @see io.netty.channel.ChannelInitializer#initChannel(io.netty.channel.Channel)
      */
     @Override

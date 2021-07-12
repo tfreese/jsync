@@ -7,6 +7,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
+
 import de.freese.jsync.utils.RemoteUtils;
 
 /**
@@ -16,6 +17,7 @@ public final class JsyncServerResponse
 {
     /**
      * @param bufferBody {@link ByteBuffer}
+     *
      * @return {@link JsyncServerResponse}
      */
     public static JsyncServerResponse error(final ByteBuffer bufferBody)
@@ -25,6 +27,7 @@ public final class JsyncServerResponse
 
     /**
      * @param bufferBody {@link ByteBuffer}
+     *
      * @return {@link JsyncServerResponse}
      */
     public static JsyncServerResponse ok(final ByteBuffer bufferBody)
@@ -58,6 +61,7 @@ public final class JsyncServerResponse
 
     /**
      * @param selectionKey {@link SelectionKey}
+     *
      * @throws IOException Falls was schief geht.
      */
     public void write(final SelectionKey selectionKey) throws IOException
@@ -75,6 +79,7 @@ public final class JsyncServerResponse
     /**
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
+     *
      * @throws IOException @throws Exception Falls was schief geht
      */
     void write(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
@@ -87,6 +92,7 @@ public final class JsyncServerResponse
     /**
      * @param selectionKey {@link SelectionKey}
      * @param consumer {@link Consumer}
+     *
      * @throws IOException Falls was schief geht.
      */
     public void write(final SelectionKey selectionKey, final Consumer<ByteBuffer> consumer) throws IOException
@@ -112,6 +118,7 @@ public final class JsyncServerResponse
     /**
      * @param channel {@link SocketChannel}
      * @param buffer {@link ByteBuffer}
+     *
      * @throws IOException @throws Exception Falls was schief geht
      */
     void write(final SocketChannel channel, final ByteBuffer buffer) throws IOException

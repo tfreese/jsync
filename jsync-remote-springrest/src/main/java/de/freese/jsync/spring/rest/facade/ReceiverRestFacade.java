@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.fileHandle.FileHandleReadableByteChannel;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -61,14 +64,6 @@ public class ReceiverRestFacade
     private Serializer<DataBuffer> serializer;
 
     /**
-     * Erstellt ein neues {@link ReceiverRestFacade} Object.
-     */
-    public ReceiverRestFacade()
-    {
-        super();
-    }
-
-    /**
      * @return {@link ResponseEntity}
      */
     @GetMapping("/connect")
@@ -80,6 +75,7 @@ public class ReceiverRestFacade
     /**
      * @param baseDir String
      * @param relativePath String
+     *
      * @return {@link ResponseEntity}
      */
     @GetMapping("/createDirectory")
@@ -94,6 +90,7 @@ public class ReceiverRestFacade
      * @param baseDir String
      * @param relativePath String
      * @param followSymLinks boolean
+     *
      * @return {@link ResponseEntity}
      */
     @GetMapping("/delete")
@@ -119,6 +116,7 @@ public class ReceiverRestFacade
      * @param followSymLinks boolean
      * @param request {@link ServletRequest}
      * @param response {@link ServletResponse}
+     *
      * @return {@link ResponseEntity}
      */
     @GetMapping(path = "/syncItems", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -155,6 +153,7 @@ public class ReceiverRestFacade
     /**
      * @param baseDir String
      * @param relativeFile String
+     *
      * @return {@link ResponseEntity}
      */
     @GetMapping("/checksum")
@@ -239,6 +238,7 @@ public class ReceiverRestFacade
     /**
      * @param baseDir String
      * @param syncItemData {@link DataBuffer}
+     *
      * @return {@link ResponseEntity}
      */
     @PostMapping(path = "/update", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -264,6 +264,7 @@ public class ReceiverRestFacade
      * @param baseDir String
      * @param withChecksum boolean
      * @param syncItemData {@link DataBuffer}
+     *
      * @return {@link ResponseEntity}
      */
     @PostMapping(path = "/validate", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -364,6 +365,7 @@ public class ReceiverRestFacade
      * @param relativeFile String
      * @param sizeOfFile long
      * @param resource {@link Resource}
+     *
      * @return {@link ResponseEntity}
      */
     @PostMapping(path = "/writeFileHandle", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)

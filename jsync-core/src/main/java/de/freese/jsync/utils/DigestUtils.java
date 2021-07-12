@@ -12,6 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
@@ -29,10 +30,12 @@ public final class DigestUtils
      * SHA-256<br>
      *
      * @param algorithm String
+     *
      * @return {@link MessageDigest}
+     *
      * @throws RuntimeException Falls was schief geht.
      */
-    public static MessageDigest createMessageDigest(final String algorithm)
+    private static MessageDigest createMessageDigest(final String algorithm)
     {
         try
         {
@@ -47,7 +50,7 @@ public final class DigestUtils
     /**
      * @return {@link MessageDigest}
      */
-    public static MessageDigest createSha256Digest()
+    private static MessageDigest createSha256Digest()
     {
         return createMessageDigest("SHA-256");
     }
@@ -72,6 +75,7 @@ public final class DigestUtils
 
     /**
      * @param messageDigest {@link MessageDigest}
+     *
      * @return String
      */
     public static String digestAsHex(final MessageDigest messageDigest)
@@ -84,6 +88,7 @@ public final class DigestUtils
 
     /**
      * @param bytes byte[]
+     *
      * @return byte[]
      */
     public static byte[] sha256Digest(final byte[] bytes)
@@ -97,7 +102,9 @@ public final class DigestUtils
      * Der {@link InputStream} wird NICHT geschlossen !
      *
      * @param inputStream {@link InputStream}
+     *
      * @return byte[]
+     *
      * @throws IOException Falls was schief geht.
      */
     public static byte[] sha256Digest(final InputStream inputStream) throws IOException
@@ -122,10 +129,12 @@ public final class DigestUtils
      * @param readableByteChannel {@link ReadableByteChannel}
      * @param bufferSize int
      * @param consumerBytesRead {@link LongConsumer}; optional
+     *
      * @return byte[]
+     *
      * @throws IOException Falls was schief geht.
      */
-    public static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final int bufferSize, final LongConsumer consumerBytesRead)
+    private static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final int bufferSize, final LongConsumer consumerBytesRead)
         throws IOException
     {
         MessageDigest messageDigest = createSha256Digest();
@@ -133,7 +142,7 @@ public final class DigestUtils
 
         consumerBytesRead.accept(0);
 
-        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate(Options.DATABUFFER_SIZE);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate(bufferSize);
 
         try
         {
@@ -163,6 +172,7 @@ public final class DigestUtils
     /**
      * @param path {@link Path}
      * @param bufferSize int
+     *
      * @return String
      */
     public static String sha256DigestAsHex(final Path path, final int bufferSize)
@@ -176,6 +186,7 @@ public final class DigestUtils
      * @param path {@link Path}
      * @param bufferSize int
      * @param consumerBytesRead {@link LongConsumer}
+     *
      * @return String
      */
     public static String sha256DigestAsHex(final Path path, final int bufferSize, final LongConsumer consumerBytesRead)

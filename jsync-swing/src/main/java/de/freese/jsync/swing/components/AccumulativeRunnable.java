@@ -16,6 +16,7 @@ package de.freese.jsync.swing.components;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import javax.swing.SwingUtilities;
 
 /**
@@ -64,9 +65,12 @@ import javax.swing.SwingUtilities;
  * </pre>
  *
  * @param <T> the type this {@code Runnable} accumulates
+ *
  * @author Igor Kushnirskiy
  * @author Thomas Freese
+ *
  * @see "sun.swing.AccumulativeRunnable"
+ *
  * @since 1.6
  */
 public abstract class AccumulativeRunnable<T> implements Runnable

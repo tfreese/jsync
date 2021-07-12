@@ -2,6 +2,7 @@
 package de.freese.jsync.generator.listener;
 
 import java.nio.file.Path;
+
 import de.freese.jsync.model.SyncItem;
 
 /**

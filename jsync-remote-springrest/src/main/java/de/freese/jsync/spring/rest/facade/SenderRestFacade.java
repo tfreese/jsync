@@ -6,8 +6,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializer;
@@ -58,14 +61,6 @@ public class SenderRestFacade
     private Serializer<DataBuffer> serializer;
 
     /**
-     * Erstellt ein neues {@link SenderRestFacade} Object.
-     */
-    public SenderRestFacade()
-    {
-        super();
-    }
-
-    /**
      * @return {@link ResponseEntity}
      */
     @GetMapping("/connect")
@@ -90,6 +85,7 @@ public class SenderRestFacade
      * @param followSymLinks boolean
      * @param request {@link ServletRequest}
      * @param response {@link ServletResponse}
+     *
      * @return {@link ResponseEntity}
      */
     // @GetMapping("/syncItems/{baseDir}/{followSymLinks}")
@@ -151,6 +147,7 @@ public class SenderRestFacade
     /**
      * @param baseDir String
      * @param relativeFile String
+     *
      * @return {@link ResponseEntity}
      */
     // @GetMapping("/checksum/{baseDir}/{relativeFile}")
@@ -259,6 +256,7 @@ public class SenderRestFacade
      * @param baseDir String
      * @param relativeFile String
      * @param sizeOfFile long
+     *
      * @return {@link ResponseEntity}
      */
     // @GetMapping("/channel/{baseDir}/{relativeFile}/{position}/{size}")

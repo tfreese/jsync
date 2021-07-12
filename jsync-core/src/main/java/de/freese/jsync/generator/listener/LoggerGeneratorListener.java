@@ -4,9 +4,10 @@ package de.freese.jsync.generator.listener;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import de.freese.jsync.model.SyncItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.freese.jsync.model.SyncItem;
 
 /**
  * {@link Logger}-Implementierung des {@link GeneratorListener}.

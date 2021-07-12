@@ -7,6 +7,7 @@ import de.freese.jsync.model.serializer.objects.ObjectSerializer;
  * Interface für die API.
  *
  * @author Thomas Freese
+ *
  * @param <D> Type of Source/Sink
  */
 public interface Serializer<D>
@@ -14,15 +15,16 @@ public interface Serializer<D>
     /**
      * @param source Object
      * @param type Class
+     *
      * @return Object
      */
-    public <T> T readFrom(final D source, final Class<T> type);
+    <T> T readFrom(final D source, final Class<T> type);
 
     /**
      * @param type Class
      * @param serializer {@link ObjectSerializer}
      */
-    public <T> void register(final Class<T> type, final ObjectSerializer<? super T> serializer);
+    <T> void register(final Class<T> type, final ObjectSerializer<? super T> serializer);
 
     /**
      * @param <T> Type
@@ -30,7 +32,7 @@ public interface Serializer<D>
      * @param value Object
      */
     @SuppressWarnings("unchecked")
-    public default <T> void writeTo(final D sink, final T value)
+    default <T> void writeTo(final D sink, final T value)
     {
         writeTo(sink, value, (Class<T>) value.getClass());
     }
@@ -41,5 +43,5 @@ public interface Serializer<D>
      * @param value Object
      * @param type Class
      */
-    public <T> void writeTo(final D sink, final T value, final Class<T> type);
+    <T> void writeTo(final D sink, final T value, final Class<T> type);
 }

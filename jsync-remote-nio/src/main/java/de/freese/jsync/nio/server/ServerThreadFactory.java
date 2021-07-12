@@ -2,6 +2,7 @@
 package de.freese.jsync.nio.server;
 
 import java.util.Objects;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,9 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ServerThreadFactory implements ThreadFactory
 {
     /**
-     *
-     */
-    private final ThreadGroup group;
+    *
+    */
+    private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
 
     /**
      *
@@ -34,9 +35,6 @@ public class ServerThreadFactory implements ThreadFactory
     {
         super();
 
-        SecurityManager s = System.getSecurityManager();
-        this.group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-
         this.namePrefix = Objects.requireNonNull(namePrefix, "namePrefix required");
     }
 
@@ -46,11 +44,14 @@ public class ServerThreadFactory implements ThreadFactory
     @Override
     public Thread newThread(final Runnable r)
     {
-        Thread t = new Thread(this.group, r, this.namePrefix + this.threadNumber.getAndIncrement(), 0);
+        Thread thread = this.defaultThreadFactory.newThread(r);
 
-        t.setDaemon(true);
-        t.setPriority(Thread.NORM_PRIORITY);
+        String threadName = this.namePrefix + this.threadNumber.getAndIncrement();
+        thread.setName(threadName);
 
-        return t;
+        thread.setDaemon(true);
+        thread.setPriority(Thread.NORM_PRIORITY);
+
+        return thread;
     }
 }

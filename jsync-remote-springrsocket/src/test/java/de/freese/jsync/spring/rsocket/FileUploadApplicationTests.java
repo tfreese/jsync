@@ -54,7 +54,7 @@ class FileUploadApplicationTests
         // DataBufferFactory dataBufferFactory = new DefaultDataBufferFactory();
         DataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
 
-        Flux<DataBuffer> readFlux = DataBufferUtils.read(resource, dataBufferFactory, Options.DATABUFFER_SIZE).doOnNext(s -> System.out.println("Sent"));
+        Flux<DataBuffer> readFlux = DataBufferUtils.read(resource, dataBufferFactory, Options.BUFFER_SIZE).doOnNext(s -> System.out.println("Sent"));
 
         // @formatter:off
 //        this.rSocketRequester

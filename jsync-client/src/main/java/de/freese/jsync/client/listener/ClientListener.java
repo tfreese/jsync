@@ -18,33 +18,33 @@ public interface ClientListener extends EventListener
     /**
      * Wird nur aufgerufen, wenn DRY-RUN = false ist.
      *
-     * @param options          {@link Options}
-     * @param syncItem         {@link SyncItem}
+     * @param options {@link Options}
+     * @param syncItem {@link SyncItem}
      * @param bytesTransferred long
      */
-    public void copyProgress(Options options, final SyncItem syncItem, long bytesTransferred);
+    void copyProgress(Options options, final SyncItem syncItem, long bytesTransferred);
 
     /**
-     * @param options  {@link Options}
+     * @param options {@link Options}
      * @param syncItem {@link SyncItem}
      */
-    public void delete(Options options, SyncItem syncItem);
+    void delete(Options options, SyncItem syncItem);
 
     /**
      * @param message String
-     * @param th      {@link Throwable}
+     * @param th {@link Throwable}
      */
-    public void error(String message, Throwable th);
+    void error(String message, Throwable th);
 
     /**
-     * @param options  {@link Options}
+     * @param options {@link Options}
      * @param syncItem {@link SyncItem}
      */
-    public void update(Options options, final SyncItem syncItem);
+    void update(Options options, final SyncItem syncItem);
 
     /**
-     * @param options  {@link Options}
+     * @param options {@link Options}
      * @param syncItem {@linkSyncItem}
      */
-    public void validate(Options options, final SyncItem syncItem);
+    void validate(Options options, final SyncItem syncItem);
 }

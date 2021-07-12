@@ -5,6 +5,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +15,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.sender.AbstractSender;
@@ -48,14 +50,6 @@ public class RemoteSenderWebFluxClient extends AbstractSender
      *
      */
     private WebClient webClient;
-
-    /**
-     * Erstellt ein neues {@link RemoteSenderWebFluxClient} Object.
-     */
-    public RemoteSenderWebFluxClient()
-    {
-        super();
-    }
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
@@ -121,7 +115,7 @@ public class RemoteSenderWebFluxClient extends AbstractSender
                 .clientConnector(clientHttpConnector)
                 .codecs(configurer-> {
                     configurer.registerDefaults(true);
-                    configurer.defaultCodecs().maxInMemorySize(Options.DATABUFFER_SIZE);
+                    configurer.defaultCodecs().maxInMemorySize(Options.BUFFER_SIZE);
                     //CodecConfigurer.CustomCodecs customCodecs = configurer.customCodecs();
 
                     //customCodecs.register(new DataBufferEncoder());

@@ -51,7 +51,7 @@ public final class BooleanSerializer implements ObjectSerializer<Boolean>
     @Override
     public <D> Boolean readFrom(final DataAdapter<D> adapter, final D source)
     {
-        return adapter.readByte(source) == 1;
+        return adapter.readBoolean(source);
     }
 
     /**
@@ -61,7 +61,7 @@ public final class BooleanSerializer implements ObjectSerializer<Boolean>
     @Override
     public <D> void writeTo(final DataAdapter<D> adapter, final D sink, final Boolean value)
     {
-        adapter.writeByte(sink, (byte) (Boolean.TRUE.equals(value) ? 1 : 0));
+        adapter.writeBoolean(sink, value);
     }
 
 }

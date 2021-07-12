@@ -10,14 +10,15 @@ import java.util.concurrent.ExecutorService;
 
 import javax.swing.SwingWorker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.swing.JSyncSwingApplication;
 import de.freese.jsync.swing.view.SyncView;
 import de.freese.jsync.utils.JSyncUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @param <T> Result-Type
@@ -48,11 +49,11 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     /**
      *
      */
-    public final Logger logger = LoggerFactory.getLogger(getClass());
+    private final JsyncController controller;
     /**
      *
      */
-    private final JsyncController controller;
+    public final Logger logger = LoggerFactory.getLogger(getClass());
     /**
      *
      */
@@ -60,7 +61,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     /**
      *
      */
-    private final boolean parallelism;
+    private final boolean parallel;
 
     /**
      * Erstellt ein neues {@link AbstractWorker} Object.
@@ -79,68 +80,20 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
 
         controller.createNewClient(this.options, senderUri, receiverUri);
 
-        this.parallelism = determineParallel(senderUri, receiverUri);
-    }
-
-    /**
-     * @return {@link Client}
-     */
-    protected Client getClient()
-    {
-        return this.controller.getClient();
-    }
-
-    /**
-     * @return {@link JsyncController}
-     */
-    protected JsyncController getController()
-    {
-        return this.controller;
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
-     * @return {@link Options}
-     */
-    protected Options getOptions()
-    {
-        return this.options;
-    }
-
-    /**
-     * @return {@link SyncView}
-     */
-    protected SyncView getSyncView()
-    {
-        return this.controller.getSyncView();
-    }
-
-    /**
-     * @return boolean
-     */
-    protected boolean isParallelism()
-    {
-        return this.parallelism;
+        // this.parallel = determineParallel(senderUri, receiverUri);
+        this.parallel = this.options.isParallel();
     }
 
     /**
      * Parallel-Verabeitung aktivieren, wenn<br>
-     * - Sender und Receiver nicht auf dem gleichen File-Device laufen
-     * - Sender und Receiver nicht auf dem gleichen Server laufen
+     * - Sender und Receiver nicht auf dem gleichen File-Device laufen - Sender und Receiver nicht auf dem gleichen Server laufen
      *
-     * @param senderUri   {@link URI}
+     * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
      *
      * @return boolean
      */
-    private boolean determineParallel(URI senderUri, URI receiverUri)
+    boolean determineParallel(final URI senderUri, final URI receiverUri)
     {
         boolean parallel = false;
 
@@ -188,5 +141,53 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
         getLogger().info("Parallelism = {}", parallel);
 
         return parallel;
+    }
+
+    /**
+     * @return {@link Client}
+     */
+    protected Client getClient()
+    {
+        return this.controller.getClient();
+    }
+
+    /**
+     * @return {@link JsyncController}
+     */
+    protected JsyncController getController()
+    {
+        return this.controller;
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
+    }
+
+    /**
+     * @return {@link Options}
+     */
+    protected Options getOptions()
+    {
+        return this.options;
+    }
+
+    /**
+     * @return {@link SyncView}
+     */
+    protected SyncView getSyncView()
+    {
+        return this.controller.getSyncView();
+    }
+
+    /**
+     * @return boolean
+     */
+    protected boolean isParallel()
+    {
+        return this.parallel;
     }
 }

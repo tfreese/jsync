@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,6 +122,7 @@ public abstract class AbstractNioProcessor implements Runnable
 
     /**
      * @param readyChannels int
+     *
      * @return boolean
      */
     protected boolean exitCondition(final int readyChannels)

@@ -2,6 +2,7 @@
 package de.freese.jsync.swing.controller;
 
 import java.util.List;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -55,33 +56,6 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     }
 
     /**
-     * @see de.freese.jsync.client.listener.ClientListener#error(java.lang.String, java.lang.Throwable)
-     */
-    @Override
-    public void error(final String message, final Throwable th)
-    {
-        getLogger().error(message, th);
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void update(final Options options, final SyncItem syncItem)
-    {
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.update") + ": " + syncItem.getRelativePath());
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#validate(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void validate(final Options options, final SyncItem syncItem)
-    {
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
-    }
-
-    /**
      * @see javax.swing.SwingWorker#doInBackground()
      */
     @Override
@@ -115,5 +89,32 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         getSyncView().doOnCompare(button -> button.setEnabled(true));
         getSyncView().doOnSyncronize(button -> button.setEnabled(true));
         getClient().disconnectFileSystems();
+    }
+
+    /**
+     * @see de.freese.jsync.client.listener.ClientListener#error(java.lang.String, java.lang.Throwable)
+     */
+    @Override
+    public void error(final String message, final Throwable th)
+    {
+        getLogger().error(message, th);
+    }
+
+    /**
+     * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
+     */
+    @Override
+    public void update(final Options options, final SyncItem syncItem)
+    {
+        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.update") + ": " + syncItem.getRelativePath());
+    }
+
+    /**
+     * @see de.freese.jsync.client.listener.ClientListener#validate(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
+     */
+    @Override
+    public void validate(final Options options, final SyncItem syncItem)
+    {
+        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
     }
 }

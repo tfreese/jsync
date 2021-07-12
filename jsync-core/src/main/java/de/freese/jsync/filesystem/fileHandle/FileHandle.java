@@ -15,12 +15,12 @@ public interface FileHandle extends AutoCloseable
      *
      * @return Object
      */
-    public <T> T getHandle();
+    <T> T getHandle();
 
     /**
      * @param writableByteChannel {@link WritableByteChannel}
      * @param sizeOfFile long
      * @throws Exception Falls was schief geht.
      */
-    public void writeTo(final WritableByteChannel writableByteChannel, final long sizeOfFile) throws Exception;
+    void writeTo(final WritableByteChannel writableByteChannel, final long sizeOfFile) throws Exception;
 }

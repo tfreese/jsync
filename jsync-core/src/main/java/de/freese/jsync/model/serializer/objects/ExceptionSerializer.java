@@ -2,6 +2,7 @@
 package de.freese.jsync.model.serializer.objects;
 
 import java.lang.reflect.Constructor;
+
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
 
 /**
@@ -53,8 +54,8 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception>
     @Override
     public <D> Exception readFrom(final DataAdapter<D> adapter, final D source)
     {
-        String clazzName = StringSerializer.getInstance().readFrom(adapter, source);
-        String message = StringSerializer.getInstance().readFrom(adapter, source);
+        String clazzName = adapter.readString(source, getCharset());
+        String message = adapter.readString(source, getCharset());
         int stackTraceLength = adapter.readInt(source);
 
         StackTraceElement[] stackTrace = new StackTraceElement[stackTraceLength];
@@ -90,8 +91,8 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception>
     @Override
     public <D> void writeTo(final DataAdapter<D> adapter, final D sink, final Exception value)
     {
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getClass().getName());
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getMessage());
+        adapter.writeString(sink, value.getClass().getName(), getCharset());
+        adapter.writeString(sink, value.getMessage(), getCharset());
 
         StackTraceElement[] stackTrace = value.getStackTrace();
         adapter.writeInt(sink, stackTrace.length);

@@ -41,6 +41,7 @@ public final class Options
 
         /**
          * @param checksum boolean
+         *
          * @return {@link Builder}
          */
         public Builder checksum(final boolean checksum)
@@ -51,6 +52,7 @@ public final class Options
 
         /**
          * @param delete boolean
+         *
          * @return {@link Builder}
          */
         public Builder delete(final boolean delete)
@@ -61,6 +63,7 @@ public final class Options
 
         /**
          * @param dryRun boolean
+         *
          * @return {@link Builder}
          */
         public Builder dryRun(final boolean dryRun)
@@ -71,6 +74,7 @@ public final class Options
 
         /**
          * @param followSymLinks boolean
+         *
          * @return {@link Builder}
          */
         public Builder followSymLinks(final boolean followSymLinks)
@@ -79,31 +83,27 @@ public final class Options
             return this;
         }
 
-        // /**
-        // * @param parallelism boolean
-        // * @return {@link Builder}
-        // */
-        // public Builder parallelism(final boolean parallelism)
-        // {
-        // this.options.parallelism = parallelism;
-        // return this;
-        // }
+        /**
+         * @param parallel boolean
+         *
+         * @return {@link Builder}
+         */
+        public Builder parallel(final boolean parallel)
+        {
+            this.options.parallel = parallel;
+            return this;
+        }
     }
 
     /**
-     * Default: 8 kB
+     * Default: 4 MB
      */
-    public static final int BUFFER_SIZE = 1024 * 8;
+    public static final int BUFFER_SIZE = 1024 * 1024 * 4;
 
     /**
      * Default: UTF-8
      */
     public static final Charset CHARSET = StandardCharsets.UTF_8;
-
-    /**
-     * Default: 4 MB
-     */
-    public static final int DATABUFFER_SIZE = 1024 * 1024 * 4;
 
     /**
      *
@@ -140,10 +140,10 @@ public final class Options
      */
     private boolean followSymLinks = true;
 
-    // /**
-    // *
-    // */
-    // private boolean parallelism;
+    /**
+    *
+    */
+    private boolean parallel;
 
     /**
      * Erzeugt eine neue Instanz von {@link Options}
@@ -185,11 +185,11 @@ public final class Options
         return this.followSymLinks;
     }
 
-    // /**
-    // * @return boolean
-    // */
-    // public boolean isParallelism()
-    // {
-    // return this.parallelism;
-    // }
+    /**
+     * @return boolean
+     */
+    public boolean isParallel()
+    {
+        return this.parallel;
+    }
 }

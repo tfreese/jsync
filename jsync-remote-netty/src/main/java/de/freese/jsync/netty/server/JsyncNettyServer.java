@@ -3,8 +3,10 @@ package de.freese.jsync.netty.server;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.utils.JsyncThreadFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -18,7 +20,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 /**
  * @author Thomas Freese
  */
-public class JsyncNettyServer
+public final class JsyncNettyServer
 {
     /**
      *
@@ -49,14 +51,6 @@ public class JsyncNettyServer
     *
     */
     private EventLoopGroup workerGroup;
-
-    /**
-     * Erstellt ein neues {@link JsyncNettyServer} Object.
-     */
-    public JsyncNettyServer()
-    {
-        super();
-    }
 
     /**
      * @return {@link Logger}

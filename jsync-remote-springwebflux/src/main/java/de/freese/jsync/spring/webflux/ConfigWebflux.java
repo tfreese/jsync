@@ -9,6 +9,7 @@ import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
 import de.freese.jsync.filesystem.sender.LocalhostSender;
@@ -31,7 +32,7 @@ public class ConfigWebflux implements WebFluxConfigurer
     public void configureHttpMessageCodecs(final ServerCodecConfigurer configurer)
     {
         configurer.registerDefaults(true);
-        configurer.defaultCodecs().maxInMemorySize(Options.DATABUFFER_SIZE);
+        configurer.defaultCodecs().maxInMemorySize(Options.BUFFER_SIZE);
     }
 
     /**

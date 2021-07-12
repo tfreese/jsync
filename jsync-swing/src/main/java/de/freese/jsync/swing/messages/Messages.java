@@ -1,4 +1,4 @@
-//Created: 12.07.2020
+// Created: 12.07.2020
 package de.freese.jsync.swing.messages;
 
 import java.util.Collections;
@@ -26,14 +26,6 @@ public class Messages
      *
      */
     private Map<String, String> messageMap = Collections.emptyMap();
-
-    /**
-     * Erstellt ein neues {@link Messages} Object.
-     */
-    public Messages()
-    {
-        super();
-    }
 
     /**
      * @param key String

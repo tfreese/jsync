@@ -9,14 +9,6 @@ import java.nio.ByteBuffer;
 public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
 {
     /**
-     * Erstellt ein neues {@link ByteBufferAdapter} Object.
-     */
-    public ByteBufferAdapter()
-    {
-        super();
-    }
-
-    /**
      * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readByte(java.lang.Object)
      */
     @Override

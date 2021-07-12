@@ -7,11 +7,13 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Thomas Freese
+ *
  * @param <T> Type
  */
 public abstract class AbstractPool<T>
@@ -24,7 +26,7 @@ public abstract class AbstractPool<T>
     /**
     *
     */
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
     *
@@ -104,7 +106,7 @@ public abstract class AbstractPool<T>
      */
     protected Logger getLogger()
     {
-        return this.LOGGER;
+        return this.logger;
     }
 
     /**

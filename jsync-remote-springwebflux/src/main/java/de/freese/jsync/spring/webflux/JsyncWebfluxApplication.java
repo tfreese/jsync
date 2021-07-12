@@ -28,6 +28,7 @@ public class JsyncWebfluxApplication // extends AbstractReactiveWebInitializer
      * Konfiguriert die SpringApplication.
      *
      * @param builder {@link SpringApplicationBuilder}
+     *
      * @return {@link SpringApplicationBuilder}
      */
     private static SpringApplicationBuilder configureApplication(final SpringApplicationBuilder builder)
@@ -55,14 +56,6 @@ public class JsyncWebfluxApplication // extends AbstractReactiveWebInitializer
      *
      */
     private ConfigurableApplicationContext context;
-
-    /**
-     * Erstellt ein neues {@link JsyncWebfluxApplication} Object.
-     */
-    public JsyncWebfluxApplication()
-    {
-        super();
-    }
 
     // /**
     // * @see org.springframework.web.server.adapter.AbstractReactiveWebInitializer#getConfigClasses()

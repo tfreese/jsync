@@ -8,6 +8,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -15,6 +16,7 @@ import org.springframework.util.Assert;
 
 /**
  * @author Thomas Freese
+ *
  * @see org.springframework.core.io.buffer.DefaultDataBufferFactory
  */
 public class DefaultPooledDataBufferFactory implements DataBufferFactory
@@ -144,6 +146,7 @@ public class DefaultPooledDataBufferFactory implements DataBufferFactory
 
     /**
      * @param initialCapacity int
+     *
      * @return {@link DefaultPooledDataBuffer}
      */
     DefaultPooledDataBuffer get(final int initialCapacity)

@@ -12,8 +12,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.nio.server.dispatcher.Dispatcher;
 import de.freese.jsync.nio.server.dispatcher.DispatcherPool;
 import de.freese.jsync.nio.server.handler.IoHandler;
@@ -26,7 +28,7 @@ import de.freese.jsync.nio.server.handler.IoHandler;
  *
  * @author Thomas Freese
  */
-public class JSyncNioServer implements Runnable
+public final class JSyncNioServer implements Runnable
 {
     /**
      *
@@ -71,6 +73,7 @@ public class JSyncNioServer implements Runnable
      * @param port int
      * @param numOfDispatcher int
      * @param numOfWorker int
+     *
      * @throws IOException Falls was schief geht.
      */
     public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker) throws IOException
@@ -85,6 +88,7 @@ public class JSyncNioServer implements Runnable
      * @param numOfDispatcher int
      * @param numOfWorker int
      * @param selectorProvider {@link SelectorProvider}
+     *
      * @throws IOException Falls was schief geht.
      */
     public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker, final SelectorProvider selectorProvider) throws IOException

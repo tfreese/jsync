@@ -6,6 +6,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.fileHandle.FileHandleReadableByteChannel;
 import de.freese.jsync.filesystem.sender.AbstractSender;
@@ -25,14 +26,6 @@ public class RemoteSenderNio extends AbstractSender implements RemoteSupport
      *
      */
     private SocketChannelPool channelPool;
-
-    /**
-     * Erstellt ein neues {@link RemoteSenderNio} Object.
-     */
-    public RemoteSenderNio()
-    {
-        super();
-    }
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)

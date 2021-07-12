@@ -39,7 +39,7 @@ public class Group
      * Erstellt ein neues {@link Group} Object.
      *
      * @param name String
-     * @param gid  int
+     * @param gid int
      */
     public Group(final String name, final int gid)
     {
@@ -60,36 +60,12 @@ public class Group
             return true;
         }
 
-        if (obj == null)
+        if (!(obj instanceof Group other))
         {
             return false;
         }
 
-        if (!(obj instanceof Group))
-        {
-            return false;
-        }
-
-        Group other = (Group) obj;
-
-        if (this.gid != other.gid)
-        {
-            return false;
-        }
-
-        if (this.name == null)
-        {
-            if (other.name != null)
-            {
-                return false;
-            }
-        }
-        else if (!this.name.equals(other.name))
-        {
-            return false;
-        }
-
-        return true;
+        return (this.gid == other.gid) && Objects.equals(this.name, other.name);
     }
 
     /**
@@ -114,13 +90,7 @@ public class Group
     @Override
     public int hashCode()
     {
-        final int prime = 31;
-        int result = 1;
-
-        result = (prime * result) + this.gid;
-        result = (prime * result) + ((this.name == null) ? 0 : this.name.hashCode());
-
-        return result;
+        return Objects.hash(this.gid, this.name);
     }
 
     /**

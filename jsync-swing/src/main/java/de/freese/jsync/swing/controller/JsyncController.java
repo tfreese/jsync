@@ -2,9 +2,12 @@
 package de.freese.jsync.swing.controller;
 
 import java.net.URI;
+
 import javax.swing.SwingUtilities;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
@@ -19,50 +22,17 @@ public class JsyncController
     /**
      *
      */
-    public final Logger logger = LoggerFactory.getLogger(getClass());
-
-    /**
-     *
-     */
     private Client client;
 
     /**
      *
      */
-    private SyncView syncView;
-
-    /**
-     * Erstellt ein neues {@link JsyncController} Object.
-     */
-    public JsyncController()
-    {
-        super();
-    }
-
-    /**
-     * @param syncView {@link SyncView}
-     */
-    public void init(final SyncView syncView)
-    {
-        this.syncView = syncView;
-
-        syncView.doOnCompare(button -> button.addActionListener(event -> compare()));
-        syncView.doOnSyncronize(button -> button.addActionListener(event -> synchronize()));
-    }
+    public final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      *
      */
-    public void shutdown()
-    {
-        getLogger().info("shutdown");
-
-        if (this.client != null)
-        {
-            this.client.disconnectFileSystems();
-            this.client = null;
-        }
-    }
+    private SyncView syncView;
 
     /**
      *
@@ -72,25 +42,6 @@ public class JsyncController
         CompareWorker worker = new CompareWorker(this);
 
         worker.execute();
-    }
-
-    /**
-     *
-     */
-    private void synchronize()
-    {
-        // JOptionPane.showMessageDialog(JSyncSwingApplication.getInstance().getMainFrame(), "Not implemented !", "Error", JOptionPane.ERROR_MESSAGE);
-        SynchronizeWorker worker = new SynchronizeWorker(this);
-
-        worker.execute();
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
     }
 
     /**
@@ -119,7 +70,16 @@ public class JsyncController
     }
 
     /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
+    }
+
+    /**
      * @param key String
+     *
      * @return String
      */
     String getMessage(final String key)
@@ -136,6 +96,17 @@ public class JsyncController
     }
 
     /**
+     * @param syncView {@link SyncView}
+     */
+    public void init(final SyncView syncView)
+    {
+        this.syncView = syncView;
+
+        syncView.doOnCompare(button -> button.addActionListener(event -> compare()));
+        syncView.doOnSyncronize(button -> button.addActionListener(event -> synchronize()));
+    }
+
+    /**
      * @param runnable {@link Runnable}
      */
     void runInEdt(final Runnable runnable)
@@ -148,5 +119,30 @@ public class JsyncController
         {
             SwingUtilities.invokeLater(runnable);
         }
+    }
+
+    /**
+     *
+     */
+    public void shutdown()
+    {
+        getLogger().info("shutdown");
+
+        if (this.client != null)
+        {
+            this.client.disconnectFileSystems();
+            this.client = null;
+        }
+    }
+
+    /**
+     *
+     */
+    private void synchronize()
+    {
+        // JOptionPane.showMessageDialog(JSyncSwingApplication.getInstance().getMainFrame(), "Not implemented !", "Error", JOptionPane.ERROR_MESSAGE);
+        SynchronizeWorker worker = new SynchronizeWorker(this);
+
+        worker.execute();
     }
 }

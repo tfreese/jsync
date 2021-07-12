@@ -7,8 +7,10 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -306,7 +308,8 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
-                .forEach(pair -> copyFile(pair.getSenderItem(), clientListener));
+                .forEach(pair -> copyFile(pair.getSenderItem(), clientListener))
+                ;
         //@formatter:on
     }
 
@@ -327,7 +330,8 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isDirectory).and(isOnlyInTarget).and(isEmpty))
-                .forEach(pair -> createDirectory(pair.getSenderItem(), clientListener));
+                .forEach(pair -> createDirectory(pair.getSenderItem(), clientListener))
+                ;
         // @formatter:on
     }
 
@@ -395,7 +399,8 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isDirectory).and(isOnlyInTarget))
-                .forEach(pair -> delete(pair.getReceiverItem(), clientListener));
+                .forEach(pair -> delete(pair.getReceiverItem(), clientListener))
+                ;
         // @formatter:on
     }
 
@@ -415,7 +420,8 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInTarget))
-                .forEach(pair -> delete(pair.getReceiverItem(), clientListener));
+                .forEach(pair -> delete(pair.getReceiverItem(), clientListener))
+                ;
         // @formatter:on
     }
 
@@ -595,7 +601,8 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isDirectory).and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> update(pair.getSenderItem(), clientListener));
+                .forEach(pair -> update(pair.getSenderItem(), clientListener))
+                ;
         // @formatter:on
     }
 
@@ -623,7 +630,8 @@ public abstract class AbstractClient implements Client
         // @formatter:off
         syncList.stream()
                 .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
-                .forEach(pair -> update(pair.getSenderItem(), clientListener));
+                .forEach(pair -> update(pair.getSenderItem(), clientListener))
+                ;
         // @formatter:on
     }
 }

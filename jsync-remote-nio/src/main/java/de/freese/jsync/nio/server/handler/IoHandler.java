@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
  * Verarbeitet den Request und Response.
  *
  * @author Thomas Freese
+ *
  * @param <T> <T> Type
  */
 public interface IoHandler<T>
@@ -15,12 +16,12 @@ public interface IoHandler<T>
     /**
      *
      */
-    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     /**
      * @return {@link Charset}
      */
-    public default Charset getCharset()
+    default Charset getCharset()
     {
         return DEFAULT_CHARSET;
     }
@@ -30,12 +31,12 @@ public interface IoHandler<T>
      *
      * @param input Object
      */
-    public void read(final T input);
+    void read(final T input);
 
     /**
      * Verarbeitet den Response.
      *
      * @param outpuT Object
      */
-    public void write(final T outpuT);
+    void write(final T outpuT);
 }

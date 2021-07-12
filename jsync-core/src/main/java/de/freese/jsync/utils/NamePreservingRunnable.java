@@ -32,7 +32,7 @@ public class NamePreservingRunnable implements Runnable
     /**
      * Erstellt ein neues {@link NamePreservingRunnable} Object.
      *
-     * @param runnable     {@link Runnable}
+     * @param runnable {@link Runnable}
      * @param runnableName String
      */
     public NamePreservingRunnable(final Runnable runnable, final String runnableName)
@@ -69,7 +69,7 @@ public class NamePreservingRunnable implements Runnable
      * Eine auftretende {@link SecurityException} wird als Warning geloggt.
      *
      * @param thread {@link Thread}
-     * @param name   String
+     * @param name String
      */
     private void setName(final Thread thread, final String name)
     {

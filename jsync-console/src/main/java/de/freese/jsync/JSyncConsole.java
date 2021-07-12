@@ -6,8 +6,10 @@ package de.freese.jsync;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.arguments.ArgumentParser;
 import de.freese.jsync.arguments.ArgumentParserApacheCommonsCli;
@@ -24,7 +26,7 @@ import de.freese.jsync.model.SyncPair;
  *
  * @author Thomas Freese
  */
-public class JSyncConsole
+public final class JSyncConsole
 {
     /**
     *
@@ -33,6 +35,7 @@ public class JSyncConsole
 
     /**
      * @param args String[]
+     *
      * @throws Exception Falls was schief geht.
      */
     public static void main(final String[] args) throws Exception
@@ -81,15 +84,8 @@ public class JSyncConsole
     }
 
     /**
-     * Erstellt ein neues {@link JSyncConsole} Object.
-     */
-    public JSyncConsole()
-    {
-        super();
-    }
-
-    /**
      * @param argumentParser {@link ArgumentParser}
+     *
      * @throws Exception Falls was schief geht.
      */
     public void run(final ArgumentParser argumentParser) throws Exception
@@ -115,6 +111,7 @@ public class JSyncConsole
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
      * @param clientListener {@link ClientListener}
+     *
      * @throws Exception Falls was schief geht.
      */
     public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener) throws Exception

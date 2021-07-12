@@ -6,6 +6,7 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
@@ -29,6 +30,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.fileHandle.FileHandleReadableByteChannel;
@@ -73,14 +75,6 @@ public class RemoteSenderRestClient extends AbstractSender
     *
     */
     private final Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
-
-    /**
-     * Erstellt ein neues {@link RemoteSenderRestClient} Object.
-     */
-    public RemoteSenderRestClient()
-    {
-        super();
-    }
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)

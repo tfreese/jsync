@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.client.listener.EmptyClientListener;
@@ -59,7 +60,8 @@ public class DefaultClient extends AbstractClient
         // @formatter:off
         List<SyncPair> fileList = syncItemsSender.stream()
                 .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+                ;
         // @formatter:on
 
         // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).

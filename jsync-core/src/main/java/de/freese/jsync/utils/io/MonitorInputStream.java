@@ -6,12 +6,14 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.LongConsumer;
+
 import javax.swing.ProgressMonitorInputStream;
 
 /**
  * {@link InputStream} mit der Möglichkeit zur Überwachung durch einen Monitor.<br>
  *
  * @see ProgressMonitorInputStream
+ *
  * @author Thomas Freese
  */
 public class MonitorInputStream extends InputStream

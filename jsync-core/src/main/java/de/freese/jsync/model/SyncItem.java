@@ -15,51 +15,31 @@ public interface SyncItem
     /**
      * @return String
      */
-    public String getChecksum();
-
-    /**
-     * @param checksum String
-     */
-    public void setChecksum(final String checksum);
+    String getChecksum();
 
     /**
      * @return {@link Group}
      */
-    public Group getGroup();
-
-    /**
-     * @param group {@link Group}
-     */
-    public void setGroup(final Group group);
+    Group getGroup();
 
     /**
      * @return long
      */
-    public long getLastModifiedTime();
-
-    /**
-     * @param lastModifiedTime long
-     */
-    public void setLastModifiedTime(final long lastModifiedTime);
+    long getLastModifiedTime();
 
     /**
      * Können unter Windows oder Netzlaufwerken null sein.
      *
      * @return Set<PosixFilePermission>
      */
-    public Set<PosixFilePermission> getPermissions();
-
-    /**
-     * @param permissions Set<PosixFilePermission>
-     */
-    public void setPermissions(final Set<PosixFilePermission> permissions);
+    Set<PosixFilePermission> getPermissions();
 
     /**
      * Können unter Windows oder Netzlaufwerken null sein.
      *
      * @return {@link Set}
      */
-    public default String getPermissionsToString()
+    default String getPermissionsToString()
     {
         if ((getPermissions() == null) || getPermissions().isEmpty())
         {
@@ -74,7 +54,7 @@ public interface SyncItem
      *
      * @return String
      */
-    public String getRelativePath();
+    String getRelativePath();
 
     /**
      * Verzeichnis: Anzahl der 1st-Level Childs<br>
@@ -82,30 +62,17 @@ public interface SyncItem
      *
      * @return long
      */
-    public long getSize();
-
-    /**
-     * Verzeichnis: Anzahl der 1st-Level Childs<br>
-     * Datei: Größe
-     *
-     * @param size long
-     */
-    public void setSize(final long size);
+    long getSize();
 
     /**
      * @return {@link User}
      */
-    public User getUser();
-
-    /**
-     * @param user {@link User}
-     */
-    public void setUser(final User user);
+    User getUser();
 
     /**
      * @return boolean
      */
-    public default boolean isDirectory()
+    default boolean isDirectory()
     {
         return !isFile();
     }
@@ -113,10 +80,43 @@ public interface SyncItem
     /**
      * @return boolean
      */
-    public boolean isFile();
+    boolean isFile();
+
+    /**
+     * @param checksum String
+     */
+    void setChecksum(final String checksum);
 
     /**
      * @param isFile boolean
      */
-    public void setFile(final boolean isFile);
+    void setFile(final boolean isFile);
+
+    /**
+     * @param group {@link Group}
+     */
+    void setGroup(final Group group);
+
+    /**
+     * @param lastModifiedTime long
+     */
+    void setLastModifiedTime(final long lastModifiedTime);
+
+    /**
+     * @param permissions Set<PosixFilePermission>
+     */
+    void setPermissions(final Set<PosixFilePermission> permissions);
+
+    /**
+     * Verzeichnis: Anzahl der 1st-Level Childs<br>
+     * Datei: Größe
+     *
+     * @param size long
+     */
+    void setSize(final long size);
+
+    /**
+     * @param user {@link User}
+     */
+    void setUser(final User user);
 }

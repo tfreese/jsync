@@ -16,13 +16,14 @@ import io.rsocket.transport.netty.server.TcpServerTransport;
 import reactor.core.Disposable;
 import reactor.core.publisher.Hooks;
 import reactor.netty.resources.LoopResources;
+import reactor.netty.tcp.TcpResources;
 import reactor.netty.tcp.TcpServer;
 import reactor.util.retry.Retry;
 
 /**
  * @author Thomas Freese
  */
-public class JsyncRSocketServer
+public final class JsyncRSocketServer
 {
     /**
     *
@@ -60,6 +61,7 @@ public class JsyncRSocketServer
     public void start(final int port, final int selectCount, final int workerCount)
     {
         // Globale Default-Resourcen.
+        TcpResources.set(LoopResources.create("jsync-server"));
         // TcpResources.set(LoopResources.create("jsync-server", 2, 4, true));
         // TcpResources.set(ConnectionProvider.create("demo-connectionPool", 16));
 

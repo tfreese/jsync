@@ -5,6 +5,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -17,6 +18,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
@@ -46,11 +48,6 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
     */
     private final DataBufferFactory dataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
 
-    // /**
-    // *
-    // */
-    // private final ExecutorService executorService;
-
     /**
     *
     */
@@ -60,16 +57,6 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
     *
     */
     private WebClient webClient;
-
-    /**
-     * Erstellt ein neues {@link RemoteReceiverWebFluxClient} Object.
-     */
-    public RemoteReceiverWebFluxClient()
-    {
-        super();
-
-        // this.executorService = Executors.newSingleThreadExecutor(new JsyncThreadFactory("pipe-"));
-    }
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
@@ -103,7 +90,7 @@ public class RemoteReceiverWebFluxClient extends AbstractReceiver
                 .clientConnector(clientHttpConnector)
                 .codecs(configurer-> {
                     configurer.registerDefaults(true);
-                    configurer.defaultCodecs().maxInMemorySize(Options.DATABUFFER_SIZE);
+                    configurer.defaultCodecs().maxInMemorySize(Options.BUFFER_SIZE);
                  })
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

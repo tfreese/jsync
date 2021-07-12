@@ -9,7 +9,9 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import org.slf4j.Logger;
+
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
@@ -28,12 +30,12 @@ public interface RemoteSupport
     /**
     *
     */
-    static final Serializer<ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
+    Serializer<ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * @param channel {@link SocketChannel}
      */
-    public default void connect(final SocketChannel channel)
+    default void connect(final SocketChannel channel)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
@@ -72,7 +74,7 @@ public interface RemoteSupport
      * @param baseDir String
      * @param relativePath String
      */
-    public default void createDirectory(final SocketChannel channel, final String baseDir, final String relativePath)
+    default void createDirectory(final SocketChannel channel, final String baseDir, final String relativePath)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
@@ -110,7 +112,7 @@ public interface RemoteSupport
      * @param relativePath String
      * @param followSymLinks boolean
      */
-    public default void delete(final SocketChannel channel, final String baseDir, final String relativePath, final boolean followSymLinks)
+    default void delete(final SocketChannel channel, final String baseDir, final String relativePath, final boolean followSymLinks)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
@@ -147,7 +149,7 @@ public interface RemoteSupport
      * @param channel {@link SocketChannel}
      * @param logger {@link Logger}
      */
-    public default void disconnect(final SocketChannel channel, final Logger logger)
+    default void disconnect(final SocketChannel channel, final Logger logger)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
@@ -179,8 +181,7 @@ public interface RemoteSupport
      * @param followSymLinks boolean
      * @param consumerSyncItem {@link Consumer}
      */
-    public default void generateSyncItems(final SocketChannel channel, final String baseDir, final boolean followSymLinks,
-                                          final Consumer<SyncItem> consumerSyncItem)
+    default void generateSyncItems(final SocketChannel channel, final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
@@ -227,9 +228,10 @@ public interface RemoteSupport
      * @param baseDir String
      * @param relativeFile String
      * @param consumerBytesRead {@link LongConsumer}
+     *
      * @return String
      */
-    public default String getChecksum(final SocketChannel channel, final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
+    default String getChecksum(final SocketChannel channel, final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
@@ -274,10 +276,11 @@ public interface RemoteSupport
      * @param baseDir String
      * @param relativeFile String
      * @param sizeOfFile long
+     *
      * @return {@link ReadableByteChannel}
      */
-    public default ReadableByteChannel getReadableChannel(final SocketChannel channel, final Consumer<SocketChannel> channelReleaser, final String baseDir,
-                                                          final String relativeFile, final long sizeOfFile)
+    default ReadableByteChannel getReadableChannel(final SocketChannel channel, final Consumer<SocketChannel> channelReleaser, final String baseDir,
+                                                   final String relativeFile, final long sizeOfFile)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
@@ -315,7 +318,7 @@ public interface RemoteSupport
     /**
      * @return {@link Serializer}
      */
-    public default Serializer<ByteBuffer> getSerializer()
+    default Serializer<ByteBuffer> getSerializer()
     {
         return SERIALIZER;
     }
@@ -416,10 +419,12 @@ public interface RemoteSupport
      * @param buffer {@link ByteBuffer}
      * @param channel {@link SocketChannel}
      * @param contentLength long
+     *
      * @return int
+     *
      * @throws Exception Falls was schief geht.
      */
-    public default int readResponseBody(final ByteBuffer buffer, final SocketChannel channel, final long contentLength) throws Exception
+    default int readResponseBody(final ByteBuffer buffer, final SocketChannel channel, final long contentLength) throws Exception
     {
         buffer.clear();
 
@@ -440,10 +445,12 @@ public interface RemoteSupport
      *
      * @param byteBuffer {@link ByteBuffer}
      * @param channel {@link SocketChannel}
+     *
      * @return long
+     *
      * @throws Exception Falls was schief geht.
      */
-    public default long readResponseHeader(final ByteBuffer byteBuffer, final SocketChannel channel) throws Exception
+    default long readResponseHeader(final ByteBuffer byteBuffer, final SocketChannel channel) throws Exception
     {
         byteBuffer.clear();
 
@@ -484,7 +491,7 @@ public interface RemoteSupport
      * @param baseDir String
      * @param syncItem {@link SyncItem}
      */
-    public default void update(final SocketChannel channel, final String baseDir, final SyncItem syncItem)
+    default void update(final SocketChannel channel, final String baseDir, final SyncItem syncItem)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
@@ -522,7 +529,7 @@ public interface RemoteSupport
      * @param syncItem {@link SyncItem}
      * @param withChecksum boolean
      */
-    public default void validateFile(final SocketChannel channel, final String baseDir, final SyncItem syncItem, final boolean withChecksum)
+    default void validateFile(final SocketChannel channel, final String baseDir, final SyncItem syncItem, final boolean withChecksum)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 
@@ -558,7 +565,9 @@ public interface RemoteSupport
     /**
      * @param channel {@link AsynchronousSocketChannel}
      * @param byteBuffer {@link ByteBuffer}
+     *
      * @return int, Bytes written
+     *
      * @throws Exception Falls was schief geht.
      */
     default int write(final AsynchronousSocketChannel channel, final ByteBuffer byteBuffer) throws Exception
@@ -578,10 +587,12 @@ public interface RemoteSupport
     /**
      * @param channel {@link SocketChannel}
      * @param byteBuffer {@link ByteBuffer}
+     *
      * @throws Exception Falls was schief geht.
+     *
      * @return int, Bytes written
      */
-    public default int write(final SocketChannel channel, final ByteBuffer byteBuffer) throws Exception
+    default int write(final SocketChannel channel, final ByteBuffer byteBuffer) throws Exception
     {
         if (byteBuffer.position() > 0)
         {
@@ -664,8 +675,8 @@ public interface RemoteSupport
      * @param fileHandle {@link FileHandle}
      * @param bytesWrittenConsumer {@link LongConsumer}
      */
-    public default void writeFileHandle(final SocketChannel channel, final String baseDir, final String relativeFile, final long sizeOfFile,
-                                        final FileHandle fileHandle, final LongConsumer bytesWrittenConsumer)
+    default void writeFileHandle(final SocketChannel channel, final String baseDir, final String relativeFile, final long sizeOfFile,
+                                 final FileHandle fileHandle, final LongConsumer bytesWrittenConsumer)
     {
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
 

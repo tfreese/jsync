@@ -3,6 +3,7 @@ package de.freese.jsync.utils.pool;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
 import de.freese.jsync.Options;
 
 /**
@@ -58,17 +59,18 @@ public final class ByteBufferPool extends AbstractPool<ByteBuffer>
     }
 
     /**
-     * capacity = {@link Options#DATABUFFER_SIZE}
+     * capacity = {@link Options#BUFFER_SIZE}
      *
      * @return {@link ByteBuffer}
      */
     public ByteBuffer allocate()
     {
-        return allocate(Options.DATABUFFER_SIZE);
+        return allocate(Options.BUFFER_SIZE);
     }
 
     /**
      * @param capacity int
+     *
      * @return {@link ByteBuffer}
      */
     public ByteBuffer allocate(final int capacity)
@@ -102,7 +104,9 @@ public final class ByteBufferPool extends AbstractPool<ByteBuffer>
      * Calculate the capacity of the buffer.
      *
      * @param neededCapacity int
+     *
      * @return int
+     *
      * @see io.netty.buffer.AbstractByteBufAllocator#calculateNewCapacity(int, int)
      */
     @SuppressWarnings("javadoc")
@@ -160,6 +164,7 @@ public final class ByteBufferPool extends AbstractPool<ByteBuffer>
     /**
      * @param byteBuffer {@link ByteBuffer}
      * @param newCapacity int
+     *
      * @return {@link ByteBuffer}
      */
     private ByteBuffer createNewBuffer(final ByteBuffer byteBuffer, final int newCapacity)
@@ -187,7 +192,7 @@ public final class ByteBufferPool extends AbstractPool<ByteBuffer>
     @Override
     protected ByteBuffer createObject()
     {
-        return allocate(Options.DATABUFFER_SIZE);
+        return allocate(Options.BUFFER_SIZE);
     }
 
     /**
@@ -203,6 +208,7 @@ public final class ByteBufferPool extends AbstractPool<ByteBuffer>
     /**
      * @param byteBuffer {@link ByteBuffer}
      * @param capacity int
+     *
      * @return {@link ByteBuffer}
      */
     private ByteBuffer ensureCapacity(final ByteBuffer byteBuffer, final int capacity)

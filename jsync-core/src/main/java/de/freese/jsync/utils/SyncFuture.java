@@ -11,6 +11,7 @@ import java.util.concurrent.TimeoutException;
  * Die {@link #get()}-Methode blockiert so lange bis {@link #setResponse(Object)} aufgerufen wird.
  *
  * @author Thomas Freese
+ *
  * @param <T> Type of Response
  */
 public class SyncFuture<T> implements Future<T>
@@ -29,14 +30,6 @@ public class SyncFuture<T> implements Future<T>
      *
      */
     private final long startTime = System.currentTimeMillis();
-
-    /**
-     * Erstellt ein neues {@link SyncFuture} Object.
-     */
-    public SyncFuture()
-    {
-        super();
-    }
 
     /**
      * @see java.util.concurrent.Future#cancel(boolean)

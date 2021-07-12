@@ -20,6 +20,7 @@ public class JsyncRSocketApplication
      * Konfiguriert die SpringApplication.
      *
      * @param builder {@link SpringApplicationBuilder}
+     *
      * @return {@link SpringApplicationBuilder}
      */
     private static SpringApplicationBuilder configureApplication(final SpringApplicationBuilder builder)
@@ -47,14 +48,6 @@ public class JsyncRSocketApplication
      *
      */
     private ConfigurableApplicationContext context;
-
-    /**
-     * Erstellt ein neues {@link JsyncRSocketApplication} Object.
-     */
-    public JsyncRSocketApplication()
-    {
-        super();
-    }
 
     /**
      *

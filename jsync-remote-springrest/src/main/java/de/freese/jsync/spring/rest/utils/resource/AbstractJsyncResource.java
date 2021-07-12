@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+
 import org.springframework.core.io.Resource;
 
 /**
@@ -31,7 +32,7 @@ public abstract class AbstractJsyncResource implements Resource
      * @param fileName String
      * @param fileSize long
      */
-    public AbstractJsyncResource(final String fileName, final long fileSize)
+    protected AbstractJsyncResource(final String fileName, final long fileSize)
     {
         super();
 

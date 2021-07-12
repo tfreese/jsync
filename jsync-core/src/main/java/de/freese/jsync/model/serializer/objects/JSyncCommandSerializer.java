@@ -52,7 +52,7 @@ public final class JSyncCommandSerializer implements ObjectSerializer<JSyncComma
     @Override
     public <D> JSyncCommand readFrom(final DataAdapter<D> adapter, final D source)
     {
-        String name = StringSerializer.getInstance().readFrom(adapter, source);
+        String name = adapter.readString(source, getCharset());
 
         if ((name == null) || name.isBlank())
         {
@@ -69,6 +69,6 @@ public final class JSyncCommandSerializer implements ObjectSerializer<JSyncComma
     @Override
     public <D> void writeTo(final DataAdapter<D> adapter, final D sink, final JSyncCommand value)
     {
-        StringSerializer.getInstance().writeTo(adapter, sink, value.name());
+        adapter.writeString(sink, value.name(), getCharset());
     }
 }

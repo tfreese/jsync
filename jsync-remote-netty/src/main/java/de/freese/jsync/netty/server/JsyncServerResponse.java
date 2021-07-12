@@ -4,6 +4,7 @@ package de.freese.jsync.netty.server;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
+
 import de.freese.jsync.utils.RemoteUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,6 +16,7 @@ public final class JsyncServerResponse
 {
     /**
      * @param bufferBody {@link ByteBuf}
+     *
      * @return {@link JsyncServerResponse}
      */
     public static JsyncServerResponse error(final ByteBuf bufferBody)
@@ -24,6 +26,7 @@ public final class JsyncServerResponse
 
     /**
      * @param bufferBody {@link ByteBuf}
+     *
      * @return {@link JsyncServerResponse}
      */
     public static JsyncServerResponse ok(final ByteBuf bufferBody)
@@ -57,6 +60,7 @@ public final class JsyncServerResponse
 
     /**
      * @param ctx {@link ChannelHandlerContext}
+     *
      * @throws IOException Falls was schief geht.
      */
     public void write(final ChannelHandlerContext ctx) throws IOException
@@ -72,6 +76,7 @@ public final class JsyncServerResponse
     /**
      * @param ctx {@link ChannelHandlerContext}
      * @param consumer {@link Consumer}
+     *
      * @throws IOException Falls was schief geht.
      */
     public void write(final ChannelHandlerContext ctx, final Consumer<ByteBuf> consumer) throws IOException

@@ -1,11 +1,10 @@
-/**
- * Created: 14.03.2020
- */
+// Created: 14.03.2020
 package de.freese.jsync.arguments;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;

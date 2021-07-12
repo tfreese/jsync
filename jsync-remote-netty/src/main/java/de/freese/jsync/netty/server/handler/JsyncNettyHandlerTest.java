@@ -2,8 +2,10 @@
 package de.freese.jsync.netty.server.handler;
 
 import java.nio.charset.StandardCharsets;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -17,14 +19,6 @@ public class JsyncNettyHandlerTest extends SimpleChannelInboundHandler<ByteBuf> 
      *
      */
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    /**
-     * Erstellt ein neues {@link JsyncNettyHandlerTest} Object.
-     */
-    public JsyncNettyHandlerTest()
-    {
-        super();
-    }
 
     /**
      * @see io.netty.channel.ChannelInboundHandlerAdapter#channelActive(io.netty.channel.ChannelHandlerContext)

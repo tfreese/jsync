@@ -5,6 +5,7 @@ import java.net.URI;
 import java.nio.channels.Channels;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
@@ -29,6 +30,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
@@ -54,11 +56,6 @@ public class RemoteReceiverRestClient extends AbstractReceiver
     */
     private final DataBufferFactory dataBufferFactory = DefaultPooledDataBufferFactory.getInstance();
 
-    // /**
-    // *
-    // */
-    // private final ExecutorService executorService;
-
     /**
     *
     */
@@ -78,16 +75,6 @@ public class RemoteReceiverRestClient extends AbstractReceiver
     *
     */
     private final Serializer<DataBuffer> serializer = DefaultSerializer.of(new DataBufferAdapter());
-
-    /**
-     * Erstellt ein neues {@link RemoteReceiverRestClient} Object.
-     */
-    public RemoteReceiverRestClient()
-    {
-        super();
-
-        // this.executorService = Executors.newSingleThreadExecutor(new JsyncThreadFactory("pipe-"));
-    }
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)

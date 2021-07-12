@@ -40,6 +40,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
      *
      * @param sink {@link FluxSink}
      * @param path {@link Path}
+     *
      * @throws IOException Falls was schief geht.
      */
     public WritableByteChannelSubscriber(final FluxSink<ByteBuffer> sink, final Path path) throws IOException

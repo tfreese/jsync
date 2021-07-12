@@ -4,6 +4,7 @@ package de.freese.jsync.filesystem;
 import java.net.URI;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.model.SyncItem;
 
 /**
@@ -16,12 +17,12 @@ public interface FileSystem
      *
      * @param uri {@link URI}
      */
-    public void connect(final URI uri);
+    void connect(final URI uri);
 
     /**
      * Trennt die Verbindung zum Dateisystem.
      */
-    public void disconnect();
+    void disconnect();
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses<br>
@@ -30,7 +31,7 @@ public interface FileSystem
      * @param followSymLinks boolean
      * @param consumerSyncItem {@link Consumer}
      */
-    public void generateSyncItems(String baseDir, boolean followSymLinks, Consumer<SyncItem> consumerSyncItem);
+    void generateSyncItems(String baseDir, boolean followSymLinks, Consumer<SyncItem> consumerSyncItem);
 
     /**
      * Liefert die Prüfsumme einer Datei.<br>
@@ -40,7 +41,7 @@ public interface FileSystem
      * @param consumerBytesRead {@link LongConsumer}; optional
      * @return String
      */
-    public String getChecksum(String baseDir, String relativeFile, LongConsumer consumerBytesRead);
+    String getChecksum(String baseDir, String relativeFile, LongConsumer consumerBytesRead);
 
     // /**
     // * Liefert die {@link Resource} zur Datei.
@@ -50,5 +51,5 @@ public interface FileSystem
     // * @param sizeOfFile long
     // * @return {@link Resource}
     // */
-    // public Resource getResource(String baseDir, final String relativeFile, long sizeOfFile);
+    // Resource getResource(String baseDir, final String relativeFile, long sizeOfFile);
 }

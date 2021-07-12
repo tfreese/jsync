@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.function.IntPredicate;
+
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.PooledDataBuffer;
@@ -17,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * @author Thomas Freese
+ *
  * @see org.springframework.core.io.buffer.DefaultDataBuffer
  */
 public class DefaultPooledDataBuffer implements PooledDataBuffer
@@ -215,6 +217,7 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
     /**
      * @param capacity int
      * @param direct boolean
+     *
      * @return {@link ByteBuffer}
      */
     private ByteBuffer allocate(final int capacity, final boolean direct)
@@ -295,7 +298,9 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
      * Calculate the capacity of the buffer.
      *
      * @param neededCapacity int
+     *
      * @return int
+     *
      * @see io.netty.buffer.AbstractByteBufAllocator#calculateNewCapacity(int, int)
      */
     @SuppressWarnings("javadoc")
@@ -443,12 +448,10 @@ public class DefaultPooledDataBuffer implements PooledDataBuffer
             return true;
         }
 
-        if (!(other instanceof DefaultPooledDataBuffer))
+        if (!(other instanceof DefaultPooledDataBuffer otherBuffer))
         {
             return false;
         }
-
-        DefaultPooledDataBuffer otherBuffer = (DefaultPooledDataBuffer) other;
 
         return ((this.readPosition == otherBuffer.readPosition) && (this.writePosition == otherBuffer.writePosition)
                 && this.byteBuffer.equals(otherBuffer.byteBuffer));

@@ -10,14 +10,6 @@ import java.util.Optional;
 public class SyncPairComparator implements Comparator<SyncPair>
 {
     /**
-     * Erstellt ein neues {@link SyncPairComparator} Object.
-     */
-    public SyncPairComparator()
-    {
-        super();
-    }
-
-    /**
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      */
     @Override

@@ -14,5 +14,5 @@ public interface Dispatcher
     /**
      * @param socketChannel {@link SocketChannel}
      */
-    public void register(final SocketChannel socketChannel);
+    void register(final SocketChannel socketChannel);
 }

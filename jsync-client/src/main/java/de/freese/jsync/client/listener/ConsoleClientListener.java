@@ -5,6 +5,7 @@ package de.freese.jsync.client.listener;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.model.SyncItem;
 
@@ -100,6 +101,22 @@ public class ConsoleClientListener extends AbstractClientListener
     }
 
     /**
+     * @return {@link PrintStream}
+     */
+    protected PrintStream getPrintStream()
+    {
+        return this.printStream;
+    }
+
+    /**
+     * @return {@link PrintStream}
+     */
+    protected PrintStream getPrintStreamError()
+    {
+        return this.printStreamError;
+    }
+
+    /**
      * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
@@ -123,21 +140,5 @@ public class ConsoleClientListener extends AbstractClientListener
         message = "\t" + message;
 
         getPrintStream().println(message);
-    }
-
-    /**
-     * @return {@link PrintStream}
-     */
-    protected PrintStream getPrintStream()
-    {
-        return this.printStream;
-    }
-
-    /**
-     * @return {@link PrintStream}
-     */
-    protected PrintStream getPrintStreamError()
-    {
-        return this.printStreamError;
     }
 }

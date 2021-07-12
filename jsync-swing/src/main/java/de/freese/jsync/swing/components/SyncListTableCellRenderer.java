@@ -25,7 +25,8 @@ public class SyncListTableCellRenderer extends DefaultTableCellRenderer
      * @see DefaultTableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
      */
     @Override
-    public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column)
+    public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row,
+                                                   final int column)
     {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
@@ -39,10 +40,10 @@ public class SyncListTableCellRenderer extends DefaultTableCellRenderer
             default -> setHorizontalAlignment(SwingConstants.LEFT);
         }
 
-//        if (syncStatus == null)
-//        {
-//            return this;
-//        }
+        // if (syncStatus == null)
+        // {
+        // return this;
+        // }
 
         switch (syncStatus)
         {
@@ -51,18 +52,18 @@ public class SyncListTableCellRenderer extends DefaultTableCellRenderer
             default -> setForeground(Color.ORANGE.darker());
         }
 
-//        if (SyncStatus.SYNCHRONIZED.equals(syncStatus))
-//        {
-//            setForeground(Color.BLACK);
-//        }
-//        else if (SyncStatus.ONLY_IN_TARGET.equals(syncStatus))
-//        {
-//            setForeground(Color.RED);
-//        }
-//        else
-//        {
-//            setForeground(Color.ORANGE.darker());
-//        }
+        // if (SyncStatus.SYNCHRONIZED.equals(syncStatus))
+        // {
+        // setForeground(Color.BLACK);
+        // }
+        // else if (SyncStatus.ONLY_IN_TARGET.equals(syncStatus))
+        // {
+        // setForeground(Color.RED);
+        // }
+        // else
+        // {
+        // setForeground(Color.ORANGE.darker());
+        // }
 
         return this;
     }

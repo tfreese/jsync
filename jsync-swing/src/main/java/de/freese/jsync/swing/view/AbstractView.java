@@ -5,11 +5,14 @@ import java.awt.Dimension;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.concurrent.ScheduledExecutorService;
+
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.swing.JSyncSwingApplication;
 
 /**
@@ -19,6 +22,7 @@ public abstract class AbstractView
 {
     /**
      * @param key String
+     *
      * @return String
      */
     protected static String getMessage(final String key)
@@ -72,6 +76,7 @@ public abstract class AbstractView
 
     /**
      * @param selectedFolder String
+     *
      * @return {@link File}
      */
     protected File selectFolder(final String selectedFolder)

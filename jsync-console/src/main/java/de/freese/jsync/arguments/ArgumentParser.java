@@ -1,6 +1,4 @@
-/**
- * Created: 14.03.2020
- */
+// Created: 14.03.2020
 package de.freese.jsync.arguments;
 
 import java.io.PrintStream;
@@ -15,52 +13,52 @@ public interface ArgumentParser
      *
      * @return boolean
      */
-    public boolean checksum();
+    boolean checksum();
 
     /**
      * Option: --delete
      *
      * @return boolean
      */
-    public boolean delete();
+    boolean delete();
 
     /**
      * Option: -n; --dry-run
      *
      * @return boolean
      */
-    public boolean dryRun();
+    boolean dryRun();
 
     /**
      * Option: -f; --follow-symlinks
      *
      * @return boolean
      */
-    public boolean followSymlinks();
+    boolean followSymlinks();
 
     /**
      * Sind Argumente vorhanden ?
      *
      * @return boolean
      */
-    public boolean hasArgs();
+    boolean hasArgs();
 
     /**
      * @param printStream {@link PrintStream}
      */
-    public void printHelp(PrintStream printStream);
+    void printHelp(PrintStream printStream);
 
     /**
      * Option: -r; --receiver
      *
      * @return String
      */
-    public String receiver();
+    String receiver();
 
     /**
      * Option: -s; --sender
      *
      * @return String
      */
-    public String sender();
+    String sender();
 }

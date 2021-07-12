@@ -43,7 +43,9 @@ public class RSocketDemo
      * Remote
      *
      * @param socketAcceptor {@link Function}
+     *
      * @return {@link Tuple2}
+     *
      * @throws Exception Falls was schief geht.
      */
     static Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
@@ -61,7 +63,9 @@ public class RSocketDemo
      * Remote mit Client-LoadBalancer.
      *
      * @param socketAcceptor {@link Function}
+     *
      * @return {@link Tuple2}
+     *
      * @throws Exception Falls was schief geht.
      */
     static Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor)
@@ -83,7 +87,9 @@ public class RSocketDemo
      * Remote mit Client-LoadBalancer und Service-Discovery.
      *
      * @param socketAcceptor {@link Function}
+     *
      * @return {@link Tuple2}
+     *
      * @throws Exception Falls was schief geht.
      */
     static Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor)
@@ -109,7 +115,9 @@ public class RSocketDemo
      * Client und Server in der gleichen Runtime ohne Network-Stack.
      *
      * @param socketAcceptor {@link Function}
+     *
      * @return {@link Tuple2}
+     *
      * @throws Exception Falls was schief geht.
      */
     static Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
@@ -125,6 +133,7 @@ public class RSocketDemo
 
     /**
      * @param args String[]
+     *
      * @throws Exception Falls was schief geht.
      */
     public static void main(final String[] args) throws Exception
@@ -139,6 +148,9 @@ public class RSocketDemo
         // Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
         Hooks.onErrorDropped(th -> {
         });
+
+        // Debug einschalten.
+        Hooks.onOperatorDebug();
 
         Function<Integer, SocketAcceptor> socketAcceptor = port -> SocketAcceptor.forRequestResponse(payload -> {
             String request = payload.getDataUtf8();

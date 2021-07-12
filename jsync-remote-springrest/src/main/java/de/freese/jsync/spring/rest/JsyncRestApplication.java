@@ -28,6 +28,7 @@ public class JsyncRestApplication extends SpringBootServletInitializer
      * Konfiguriert die SpringApplication.
      *
      * @param builder {@link SpringApplicationBuilder}
+     *
      * @return {@link SpringApplicationBuilder}
      */
     private static SpringApplicationBuilder configureApplication(final SpringApplicationBuilder builder)
@@ -55,14 +56,6 @@ public class JsyncRestApplication extends SpringBootServletInitializer
      *
      */
     private ConfigurableApplicationContext context;
-
-    /**
-     * Erstellt ein neues {@link JsyncRestApplication} Object.
-     */
-    public JsyncRestApplication()
-    {
-        super();
-    }
 
     /**
      * POM:<br>

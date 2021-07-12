@@ -14,8 +14,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
@@ -36,6 +38,7 @@ import de.freese.jsync.utils.pool.ByteBufferPool;
  * Sync-Implementierung des {@link IoHandler}.
  *
  * @author Thomas Freese
+ *
  * @see IoHandler
  */
 public class JSyncIoHandler implements IoHandler<SelectionKey>
@@ -58,6 +61,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
+     *
      * @throws IOException @throws Exception Falls was schief geht
      */
     protected static void writeBuffer(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
@@ -70,6 +74,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
      * @param channel {@link SocketChannel}
      * @param buffer {@link ByteBuffer}
+     *
      * @throws IOException @throws Exception Falls was schief geht
      */
     protected static void writeBuffer(final SocketChannel channel, final ByteBuffer buffer) throws IOException
@@ -84,14 +89,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      *
      */
     private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
-
-    /**
-     * Erstellt ein neues {@link JSyncIoHandler} Object.
-     */
-    public JSyncIoHandler()
-    {
-        super();
-    }
 
     /**
      * Create the checksum.
@@ -253,6 +250,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
     /**
      * @param selectionKey SelectionKey
+     *
      * @return String
      */
     protected String getRemoteAddress(final SelectionKey selectionKey)
@@ -456,6 +454,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param sender {@link Sender}
+     *
      * @throws Exception Falls was schief geht.
      */
     protected void readFileHandle(final SelectionKey selectionKey, final ByteBuffer buffer, final Sender sender) throws Exception
@@ -631,6 +630,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param selectionKey {@link SelectionKey}
      * @param buffer {@link ByteBuffer}
      * @param receiver {@link Receiver}
+     *
      * @throws Exception Falls was schief geht.
      */
     protected void writeFileHandle(final SelectionKey selectionKey, final ByteBuffer buffer, final Receiver receiver) throws Exception

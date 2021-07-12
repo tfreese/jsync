@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -24,6 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -201,13 +203,13 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
         panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 0).anchorWest());
 
-        // this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallelism"), false);
-        // panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 1).anchorWest());
-
         this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), true);
         panelOptions.add(this.checkBoxDelete, new GbcBuilder(0, 1).anchorWest());
         this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), true);
         panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(1, 1).anchorWest().gridwidth(2));
+
+        this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallel"), false);
+        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 2).gridwidth(2));
 
         confiPanel.add(panelOptions, new GbcBuilder(1, 0));
 
@@ -237,6 +239,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
     /**
      * @param fileSystem {@link EFileSystem}
+     *
      * @return {@link AccumulativeRunnable}<Object[]>
      */
     private AccumulativeRunnable<Object[]> getAccumulatorProgressBarMinMaxText(final EFileSystem fileSystem)
@@ -264,6 +267,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
     /**
      * @param fileSystem {@link EFileSystem}
+     *
      * @return {@link AccumulativeRunnable}<String>
      */
     private AccumulativeRunnable<String> getAccumulatorProgressBarText(final EFileSystem fileSystem)
@@ -286,6 +290,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
     /**
      * @param fileSystem {@link EFileSystem}
+     *
      * @return {@link AccumulativeRunnable}<Integer>
      */
     private AccumulativeRunnable<Integer> getAccumulatorProgressBarValue(final EFileSystem fileSystem)
@@ -369,7 +374,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         // @formatter:off
         return new Builder()
                 .checksum(this.checkBoxChecksum.isSelected())
-                //.parallelism(this.checkBoxParallelism.isSelected())
+                .parallel(this.checkBoxParallelism.isSelected())
                 .delete(this.checkBoxDelete.isSelected())
                 .followSymLinks(this.checkBoxFollowSymLinks.isSelected())
                 .dryRun(this.checkBoxDryRun.isSelected())
@@ -517,9 +522,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public URI getUri(final EFileSystem fileSystem)
     {
-        // URI senderUri = URI.create(pathSender); // Erzeugt Fehler bei Leerzeichen
-        // URI receiverUri = URI.create(pathReceiver);
-
         JTextField textField = EFileSystem.SENDER.equals(fileSystem) ? getTextFieldSenderPath() : getTextFieldReceiverPath();
 
         String path = textField.getText();

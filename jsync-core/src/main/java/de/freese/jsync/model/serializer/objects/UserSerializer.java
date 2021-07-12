@@ -61,7 +61,7 @@ public final class UserSerializer implements ObjectSerializer<User>
         int uid = adapter.readInt(source);
 
         // name
-        String name = StringSerializer.getInstance().readFrom(adapter, source);
+        String name = adapter.readString(source, getCharset());
 
         return new User(name, uid);
     }
@@ -85,6 +85,6 @@ public final class UserSerializer implements ObjectSerializer<User>
         adapter.writeInt(sink, value.getUid());
 
         // name
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getName());
+        adapter.writeString(sink, value.getName(), getCharset());
     }
 }

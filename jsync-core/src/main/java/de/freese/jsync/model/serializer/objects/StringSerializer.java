@@ -51,14 +51,7 @@ public final class StringSerializer implements ObjectSerializer<String>
     @Override
     public <D> String readFrom(final DataAdapter<D> adapter, final D source)
     {
-        CharSequence cs = CharSequenceSerializer.getInstance().readFrom(adapter, source);
-
-        if (cs == null)
-        {
-            return null;
-        }
-
-        return cs.toString();
+        return adapter.readString(source, getCharset());
     }
 
     /**
@@ -68,6 +61,6 @@ public final class StringSerializer implements ObjectSerializer<String>
     @Override
     public <D> void writeTo(final DataAdapter<D> adapter, final D sink, final String value)
     {
-        CharSequenceSerializer.getInstance().writeTo(adapter, sink, value);
+        adapter.writeString(sink, value, getCharset());
     }
 }

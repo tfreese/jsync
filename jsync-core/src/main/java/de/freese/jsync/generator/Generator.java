@@ -17,20 +17,19 @@ public interface Generator
     /**
      * Erzeugt die Prüfsumme einer Datei.<br>
      *
-     * @param baseDir           String
-     * @param relativeFile      String
+     * @param baseDir String
+     * @param relativeFile String
      * @param consumerBytesRead {@link LongConsumer}; optional
-     *
      * @return String
      */
-    public String generateChecksum(final String baseDir, String relativeFile, final LongConsumer consumerBytesRead);
+    String generateChecksum(final String baseDir, String relativeFile, final LongConsumer consumerBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      *
-     * @param baseDir          String
-     * @param followSymLinks   boolean
+     * @param baseDir String
+     * @param followSymLinks boolean
      * @param consumerSyncItem {@link Consumer}
      */
-    public void generateItems(final String baseDir, boolean followSymLinks, Consumer<SyncItem> consumerSyncItem);
+    void generateItems(final String baseDir, boolean followSymLinks, Consumer<SyncItem> consumerSyncItem);
 }

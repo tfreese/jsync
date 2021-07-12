@@ -10,14 +10,6 @@ import de.freese.jsync.model.SyncItem;
 public class EmptyClientListener implements ClientListener
 {
     /**
-     * Erstellt ein neues {@link EmptyClientListener} Object.
-     */
-    public EmptyClientListener()
-    {
-        super();
-    }
-
-    /**
      * @see de.freese.jsync.client.listener.ClientListener#copyProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
      */
     @Override

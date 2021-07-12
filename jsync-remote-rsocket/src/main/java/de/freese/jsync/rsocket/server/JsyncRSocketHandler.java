@@ -99,6 +99,7 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @param payload {@link Payload}
      * @param fileSystem {@link FileSystem}
+     *
      * @return {@link Mono}
      */
     private Mono<Payload> checksum(final Payload payload, final FileSystem fileSystem)
@@ -129,6 +130,7 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @param payload {@link Payload}
      * @param receiver {@link Receiver}
+     *
      * @return {@link Mono}
      */
     private Mono<Payload> createDirectory(final Payload payload, final Receiver receiver)
@@ -148,6 +150,7 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @param payload {@link Payload}
      * @param receiver {@link Receiver}
+     *
      * @return {@link Mono}
      */
     private Mono<Payload> delete(final Payload payload, final Receiver receiver)
@@ -178,6 +181,7 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @param payload {@link Payload}
      * @param fileSystem {@link FileSystem}
+     *
      * @return {@link Mono}
      */
     private Mono<Payload> generateSyncItems(final Payload payload, final FileSystem fileSystem)
@@ -259,6 +263,7 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @param payload {@link Payload}
      * @param sender {@link Sender}
+     *
      * @return {@link Flux}
      */
     private Flux<Payload> readFileHandle(final Payload payload, final Sender sender)
@@ -272,16 +277,12 @@ public class JsyncRSocketHandler implements RSocket
         FileHandle fileHandle = sender.readFileHandle(baseDir, relativeFile, sizeOfFile);
 
         Flux<DataBuffer> flux =
-                DataBufferUtils.readByteChannel(fileHandle::getHandle, new NettyDataBufferFactory(getByteBufAllocator()), Options.DATABUFFER_SIZE);
+                DataBufferUtils.readByteChannel(fileHandle::getHandle, new NettyDataBufferFactory(getByteBufAllocator()), Options.BUFFER_SIZE);
 
         // @formatter:off
         return flux
                 .cast(NettyDataBuffer.class)
-                .map(dataBuffer -> {
-
-                    //dataBuffer.retain();
-                    return ByteBufPayload.create(dataBuffer.getNativeBuffer());
-                })
+                .map(dataBuffer -> ByteBufPayload.create(dataBuffer.getNativeBuffer()))
                 //.doFinally(signalType -> dataBuffer.release())
                 ;
         // @formatter:on
@@ -425,6 +426,7 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @param payload {@link Payload}
      * @param receiver {@link Receiver}
+     *
      * @return {@link Mono}
      */
     private Mono<Payload> update(final Payload payload, final Receiver receiver)
@@ -444,6 +446,7 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @param payload {@link Payload}
      * @param receiver {@link Receiver}
+     *
      * @return {@link Mono}
      */
     private Mono<Payload> validate(final Payload payload, final Receiver receiver)
@@ -465,6 +468,7 @@ public class JsyncRSocketHandler implements RSocket
      * @param payload {@link Payload}
      * @param flux {@link Flux}
      * @param receiver {@link Receiver}
+     *
      * @return {@link Flux}
      */
     private Flux<Payload> writeFileHandle(final Payload payload, final Flux<Payload> flux, final Receiver receiver)

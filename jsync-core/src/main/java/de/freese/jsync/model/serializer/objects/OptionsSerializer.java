@@ -57,16 +57,16 @@ public final class OptionsSerializer implements ObjectSerializer<Options>
         // int bufferSize = adapter.readInt(source);
 
         // checksum
-        boolean checksum = BooleanSerializer.getInstance().readFrom(adapter, source);
+        boolean checksum = adapter.readBoolean(source);
 
         // delete
-        boolean delete = BooleanSerializer.getInstance().readFrom(adapter, source);
+        boolean delete = adapter.readBoolean(source);
 
         // dryRun
-        boolean dryRun = BooleanSerializer.getInstance().readFrom(adapter, source);
+        boolean dryRun = adapter.readBoolean(source);
 
         // followSymLinks
-        boolean followSymLinks = BooleanSerializer.getInstance().readFrom(adapter, source);
+        boolean followSymLinks = adapter.readBoolean(source);
 
         // @formatter:off
         Options options = new Builder()
@@ -93,15 +93,15 @@ public final class OptionsSerializer implements ObjectSerializer<Options>
         // adapter.writeInt(sink, value.getBufferSize());
 
         // checksum
-        BooleanSerializer.getInstance().writeTo(adapter, sink, value.isChecksum());
+        adapter.writeBoolean(sink, value.isChecksum());
 
         // delete
-        BooleanSerializer.getInstance().writeTo(adapter, sink, value.isDelete());
+        adapter.writeBoolean(sink, value.isDelete());
 
         // dryRun
-        BooleanSerializer.getInstance().writeTo(adapter, sink, value.isDryRun());
+        adapter.writeBoolean(sink, value.isDryRun());
 
         // followSymLinks
-        BooleanSerializer.getInstance().writeTo(adapter, sink, value.isFollowSymLinks());
+        adapter.writeBoolean(sink, value.isFollowSymLinks());
     }
 }

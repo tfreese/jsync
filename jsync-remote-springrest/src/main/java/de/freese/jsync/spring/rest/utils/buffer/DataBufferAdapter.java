@@ -2,6 +2,7 @@
 package de.freese.jsync.spring.rest.utils.buffer;
 
 import org.springframework.core.io.buffer.DataBuffer;
+
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
 
 /**
@@ -9,14 +10,6 @@ import de.freese.jsync.model.serializer.adapter.DataAdapter;
  */
 public class DataBufferAdapter implements DataAdapter<DataBuffer>
 {
-    /**
-     * Erstellt ein neues {@link DataBufferAdapter} Object.
-     */
-    public DataBufferAdapter()
-    {
-        super();
-    }
-
     /**
      * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readByte(java.lang.Object)
      */

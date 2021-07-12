@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
@@ -36,14 +37,6 @@ import de.freese.jsync.utils.JSyncUtils;
 public class DefaultGenerator extends AbstractGenerator
 {
     /**
-     * Erzeugt eine neue Instanz von {@link DefaultGenerator}.
-     */
-    public DefaultGenerator()
-    {
-        super();
-    }
-
-    /**
      * @see de.freese.jsync.generator.Generator#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
@@ -51,7 +44,7 @@ public class DefaultGenerator extends AbstractGenerator
     {
         Path path = Paths.get(baseDir, relativeFile);
 
-        String checksum = DigestUtils.sha256DigestAsHex(path, Options.DATABUFFER_SIZE, consumerBytesRead);
+        String checksum = DigestUtils.sha256DigestAsHex(path, Options.BUFFER_SIZE, consumerBytesRead);
 
         return checksum;
     }

@@ -5,12 +5,14 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
 import javax.swing.SwingUtilities;
 
 /**
  * Zeitgesteuerter {@link AccumulativeRunnable}, der nach einer Zeitspanne die gesammelten Daten ausführt.
  *
  * @param <T> Type
+ *
  * @author Thomas Freese
  */
 public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>

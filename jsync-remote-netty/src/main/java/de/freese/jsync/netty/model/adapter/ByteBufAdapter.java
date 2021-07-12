@@ -10,14 +10,6 @@ import io.netty.buffer.ByteBuf;
 public class ByteBufAdapter implements DataAdapter<ByteBuf>
 {
     /**
-     * Erstellt ein neues {@link ByteBufAdapter} Object.
-     */
-    public ByteBufAdapter()
-    {
-        super();
-    }
-
-    /**
      * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readByte(java.lang.Object)
      */
     @Override

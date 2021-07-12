@@ -39,7 +39,7 @@ public class User
      * Erstellt ein neues {@link User} Object.
      *
      * @param name String
-     * @param uid  int
+     * @param uid int
      */
     public User(final String name, final int uid)
     {
@@ -60,36 +60,12 @@ public class User
             return true;
         }
 
-        if (obj == null)
+        if (!(obj instanceof User other))
         {
             return false;
         }
 
-        if (!(obj instanceof User))
-        {
-            return false;
-        }
-
-        User other = (User) obj;
-
-        if (this.name == null)
-        {
-            if (other.name != null)
-            {
-                return false;
-            }
-        }
-        else if (!this.name.equals(other.name))
-        {
-            return false;
-        }
-
-        if (this.uid != other.uid)
-        {
-            return false;
-        }
-
-        return true;
+        return Objects.equals(this.name, other.name) && (this.uid == other.uid);
     }
 
     /**
@@ -114,13 +90,7 @@ public class User
     @Override
     public int hashCode()
     {
-        final int prime = 31;
-        int result = 1;
-
-        result = (prime * result) + ((this.name == null) ? 0 : this.name.hashCode());
-        result = (prime * result) + this.uid;
-
-        return result;
+        return Objects.hash(this.name, this.uid);
     }
 
     /**

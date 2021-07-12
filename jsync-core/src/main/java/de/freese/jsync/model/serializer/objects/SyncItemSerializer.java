@@ -2,6 +2,7 @@
 package de.freese.jsync.model.serializer.objects;
 
 import java.nio.file.attribute.PosixFilePermissions;
+
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
@@ -55,12 +56,12 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
     public <D> SyncItem readFrom(final DataAdapter<D> adapter, final D source)
     {
         // relativePath
-        String relativePath = StringSerializer.getInstance().readFrom(adapter, source);
+        String relativePath = adapter.readString(source, getCharset());
 
         SyncItem syncItem = new DefaultSyncItem(relativePath);
 
         // is File / Directory
-        syncItem.setFile(BooleanSerializer.getInstance().readFrom(adapter, source));
+        syncItem.setFile(adapter.readBoolean(source));
 
         // size
         syncItem.setSize(adapter.readLong(source));
@@ -69,7 +70,7 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
         syncItem.setLastModifiedTime(adapter.readLong(source));
 
         // permissions
-        String permissions = StringSerializer.getInstance().readFrom(adapter, source);
+        String permissions = adapter.readString(source, getCharset());
 
         if (permissions != null)
         {
@@ -83,7 +84,7 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
         syncItem.setUser(UserSerializer.getInstance().readFrom(adapter, source));
 
         // checksum
-        syncItem.setChecksum(StringSerializer.getInstance().readFrom(adapter, source));
+        syncItem.setChecksum(adapter.readString(source, getCharset()));
 
         return syncItem;
     }
@@ -96,10 +97,10 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
     public <D> void writeTo(final DataAdapter<D> adapter, final D sink, final SyncItem value)
     {
         // relativePath
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getRelativePath());
+        adapter.writeString(sink, value.getRelativePath(), getCharset());
 
         // is File / Directory
-        BooleanSerializer.getInstance().writeTo(adapter, sink, value.isFile());
+        adapter.writeBoolean(sink, value.isFile());
 
         // size
         adapter.writeLong(sink, value.getSize());
@@ -108,7 +109,7 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
         adapter.writeLong(sink, value.getLastModifiedTime());
 
         // permissions
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getPermissionsToString());
+        adapter.writeString(sink, value.getPermissionsToString(), getCharset());
 
         // group
         GroupSerializer.getInstance().writeTo(adapter, sink, value.getGroup());
@@ -117,6 +118,6 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
         UserSerializer.getInstance().writeTo(adapter, sink, value.getUser());
 
         // checksum
-        StringSerializer.getInstance().writeTo(adapter, sink, value.getChecksum());
+        adapter.writeString(sink, value.getChecksum(), getCharset());
     }
 }

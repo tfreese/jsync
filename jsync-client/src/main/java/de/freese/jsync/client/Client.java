@@ -21,29 +21,29 @@ public interface Client
     /**
      * Stellt die Verbindung zu den Dateisystemen her.
      */
-    public void connectFileSystems();
+    void connectFileSystems();
 
     /**
      * Trennt die Verbindung zu den Dateisystemen.
      */
-    public void disconnectFileSystems();
+    void disconnectFileSystems();
 
     /**
-     * Erzeugt die Prüfsumme einer Datei.<br>
+     * Erzeugt die Prüfsumme einer Datei und speichert diese im {@link SyncItem}.<br>
      *
-     * @param fileSystem        {@link EFileSystem}
-     * @param syncItem          {@link SyncItem}
+     * @param fileSystem {@link EFileSystem}
+     * @param syncItem {@link SyncItem}
      * @param consumerBytesRead {@link LongConsumer}; optional
      */
-    public void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerBytesRead);
+    void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
      *
-     * @param fileSystem       {@link EFileSystem}
+     * @param fileSystem {@link EFileSystem}
      * @param consumerSyncItem {@link Consumer}
      */
-    public void generateSyncItems(EFileSystem fileSystem, Consumer<SyncItem> consumerSyncItem);
+    void generateSyncItems(EFileSystem fileSystem, Consumer<SyncItem> consumerSyncItem);
 
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
@@ -51,18 +51,17 @@ public interface Client
      * Ist ein Item im Receiver nicht enthalten, muss er kopiert werden.<br>
      * Ist ein Item nur Receiver enthalten, muss er dort gelöscht werden.<br>
      *
-     * @param syncItemsSender   {@link List}
+     * @param syncItemsSender {@link List}
      * @param syncItemsReceiver {@link List}
-     *
      * @return {@link List}
      */
-    public List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver);
+    List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver);
 
     /**
      * Synchronisiert das Ziel-Verzeichnis mit der Quelle.
      *
-     * @param syncList       {@link List}
+     * @param syncList {@link List}
      * @param clientListener {@link ClientListener}
      */
-    public void syncReceiver(List<SyncPair> syncList, ClientListener clientListener);
+    void syncReceiver(List<SyncPair> syncList, ClientListener clientListener);
 }

@@ -5,6 +5,7 @@ import java.net.URI;
 import java.nio.channels.SocketChannel;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.filesystem.receiver.AbstractReceiver;
 import de.freese.jsync.filesystem.receiver.Receiver;
@@ -23,14 +24,6 @@ public class RemoteReceiverNio extends AbstractReceiver implements RemoteSupport
      *
      */
     private SocketChannelPool channelPool;
-
-    /**
-     * Erzeugt eine neue Instanz von {@link RemoteReceiverNio}.
-     */
-    public RemoteReceiverNio()
-    {
-        super();
-    }
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
@@ -209,8 +202,8 @@ public class RemoteReceiverNio extends AbstractReceiver implements RemoteSupport
     // }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long, de.freese.jsync.filesystem.fileHandle.FileHandle,
-     *      java.util.function.LongConsumer)
+     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFileHandle(java.lang.String, java.lang.String, long,
+     *      de.freese.jsync.filesystem.fileHandle.FileHandle, java.util.function.LongConsumer)
      */
     @Override
     public void writeFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile, final FileHandle fileHandle,

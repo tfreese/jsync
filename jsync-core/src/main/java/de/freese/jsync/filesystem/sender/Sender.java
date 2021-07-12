@@ -30,5 +30,5 @@ public interface Sender extends FileSystem
      * @param sizeOfFile long
      * @return {@link FileHandle}
      */
-    public FileHandle readFileHandle(String baseDir, final String relativeFile, long sizeOfFile);
+    FileHandle readFileHandle(String baseDir, final String relativeFile, long sizeOfFile);
 }

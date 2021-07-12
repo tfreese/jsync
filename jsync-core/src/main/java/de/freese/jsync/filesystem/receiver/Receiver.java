@@ -2,6 +2,7 @@
 package de.freese.jsync.filesystem.receiver;
 
 import java.util.function.LongConsumer;
+
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.model.SyncItem;
@@ -19,7 +20,7 @@ public interface Receiver extends FileSystem
      * @param baseDir String
      * @param relativePath String
      */
-    public void createDirectory(String baseDir, String relativePath);
+    void createDirectory(String baseDir, String relativePath);
 
     /**
      * Löscht ein Verzeichnis/Datei.
@@ -28,7 +29,7 @@ public interface Receiver extends FileSystem
      * @param relativePath String
      * @param followSymLinks boolean
      */
-    public void delete(String baseDir, String relativePath, boolean followSymLinks);
+    void delete(String baseDir, String relativePath, boolean followSymLinks);
 
     // /**
     // * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
@@ -42,7 +43,7 @@ public interface Receiver extends FileSystem
      * @param baseDir String
      * @param syncItem {@link SyncItem}
      */
-    public void update(String baseDir, SyncItem syncItem);
+    void update(String baseDir, SyncItem syncItem);
 
     /**
      * Überprüfung der Datei auf Größe und Prüfsumme.
@@ -51,7 +52,7 @@ public interface Receiver extends FileSystem
      * @param syncItem {@link SyncItem}
      * @param withChecksum boolean
      */
-    public void validateFile(String baseDir, final SyncItem syncItem, boolean withChecksum);
+    void validateFile(String baseDir, final SyncItem syncItem, boolean withChecksum);
 
     // /**
     // * Schreibt nur einen bestimmten Bereich in eine Datei.
@@ -73,5 +74,5 @@ public interface Receiver extends FileSystem
      * @param fileHandle {@link FileHandle}
      * @param bytesWrittenConsumer {@link LongConsumer}
      */
-    public void writeFileHandle(String baseDir, final String relativeFile, long sizeOfFile, FileHandle fileHandle, LongConsumer bytesWrittenConsumer);
+    void writeFileHandle(String baseDir, final String relativeFile, long sizeOfFile, FileHandle fileHandle, LongConsumer bytesWrittenConsumer);
 }

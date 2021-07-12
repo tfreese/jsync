@@ -17,6 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author Nathan Sweet
  * @author Martin Grotzke
  * @author Thomas Freese
+ *
  * @param <T> Type
  */
 public abstract class Pool<T>
@@ -37,6 +38,7 @@ public abstract class Pool<T>
      *
      * @author Martin Grotzke
      * @author Thomas Freese
+     *
      * @param <T> Type
      */
     static class SoftReferenceQueue<T> implements Queue<T>

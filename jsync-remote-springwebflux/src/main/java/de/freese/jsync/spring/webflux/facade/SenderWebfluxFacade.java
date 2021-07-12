@@ -4,6 +4,7 @@ package de.freese.jsync.spring.webflux.facade;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.Serializer;
@@ -54,14 +56,6 @@ public class SenderWebfluxFacade
     private Serializer<DataBuffer> serializer;
 
     /**
-     * Erstellt ein neues {@link SenderWebfluxFacade} Object.
-     */
-    public SenderWebfluxFacade()
-    {
-        super();
-    }
-
-    /**
      * @return {@link Publisher}
      */
     @GetMapping("/connect")
@@ -84,6 +78,7 @@ public class SenderWebfluxFacade
      * @param baseDir String
      * @param followSymLinks boolean
      * @param request {@link ServerRequest}
+     *
      * @return {@link Publisher}
      */
     @GetMapping(path = "/syncItems", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -130,6 +125,7 @@ public class SenderWebfluxFacade
     /**
      * @param baseDir String
      * @param relativeFile String
+     *
      * @return {@link Publisher}
      */
     @GetMapping("/checksum")

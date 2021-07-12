@@ -14,13 +14,13 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
+
 import de.freese.jsync.Options;
 
 /**
@@ -31,12 +31,12 @@ public final class JSyncUtils
     /**
      * @see Files#walk(Path, FileVisitOption...)
      */
-    private static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = new FileVisitOption[0];
+    private static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = {};
 
     /**
      * @see Files#walk(Path, FileVisitOption...)
      */
-    private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = new FileVisitOption[]
+    private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS =
     {
             FileVisitOption.FOLLOW_LINKS
     };
@@ -56,7 +56,7 @@ public final class JSyncUtils
      * @see Files#getLastModifiedTime(Path, LinkOption...)
      * @see Files#readAttributes(Path, String, LinkOption...)
      */
-    private static final LinkOption[] LINKOPTION_NO_SYMLINKS = new LinkOption[]
+    private static final LinkOption[] LINKOPTION_NO_SYMLINKS =
     {
             LinkOption.NOFOLLOW_LINKS
     };
@@ -68,14 +68,14 @@ public final class JSyncUtils
      * @see Files#getLastModifiedTime(Path, LinkOption...)
      * @see Files#readAttributes(Path, String, LinkOption...)
      */
-    private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = new LinkOption[0];
+    private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = {};
 
     /**
      *
      */
-    private static final String[] SIZE_UNITS = new String[]
+    private static final String[] SIZE_UNITS =
     {
-            "B", "KB", "MB", "GB", "TB"
+            "B", "KB", "MB", "GB", "TB", "PB", "EB"
     };
 
     /**
@@ -84,6 +84,7 @@ public final class JSyncUtils
      * String hex = String.format("%02x", element);<br>
      *
      * @param bytes byte[]
+     *
      * @return String
      */
     public static String bytesToHex(final byte[] bytes)
@@ -129,6 +130,7 @@ public final class JSyncUtils
      *
      * @param path {@link Path}
      * @param followSymLinks boolean
+     *
      * @throws IOException Falls was schief geht.
      */
     public static void delete(final Path path, final boolean followSymLinks) throws IOException
@@ -182,6 +184,7 @@ public final class JSyncUtils
 
     /**
      * @param followSymLinks boolean
+     *
      * @return {@link FileVisitOption}
      */
     public static FileVisitOption[] getFileVisitOptions(final boolean followSymLinks)
@@ -191,6 +194,7 @@ public final class JSyncUtils
 
     /**
      * @param followSymLinks boolean
+     *
      * @return {@link LinkOption}
      */
     public static LinkOption[] getLinkOptions(final boolean followSymLinks)
@@ -211,6 +215,7 @@ public final class JSyncUtils
      *
      * @param value long
      * @param max long
+     *
      * @return float 0.0 - 100.0
      */
     public static float getPercent(final long value, final long max)
@@ -224,6 +229,7 @@ public final class JSyncUtils
     /**
      * @param value long
      * @param max long
+     *
      * @return float 0.0 - 1.0
      */
     public static float getProgress(final long value, final long max)
@@ -245,6 +251,7 @@ public final class JSyncUtils
 
     /**
      * @param hexString {@link CharSequence}
+     *
      * @return byte[]
      */
     public static byte[] hexToBytes(final CharSequence hexString)
@@ -306,6 +313,7 @@ public final class JSyncUtils
      * Normalisiert den {@link URI#getPath()} je nach Betriebssystem.
      *
      * @param uri {@link URI}
+     *
      * @return String
      */
     public static String normalizedPath(final URI uri)
@@ -340,6 +348,7 @@ public final class JSyncUtils
      * Entfernt führende '//' und das abschließende '/'.
      *
      * @param uri {@link URI}
+     *
      * @return String
      */
     public static String normalizePath(final URI uri)
@@ -348,7 +357,7 @@ public final class JSyncUtils
 
         if (path.startsWith("//"))
         {
-            path = path.substring(1, path.length());
+            path = path.substring(1);
         }
 
         if (path.endsWith("/"))
@@ -497,6 +506,7 @@ public final class JSyncUtils
 
     /**
      * @param size long
+     *
      * @return String, z.B. '___,___ MB'
      */
     public static String toHumanReadableSize(final long size)
@@ -515,24 +525,61 @@ public final class JSyncUtils
         String readableSize = String.format("%.0f %s", size / unitValue, SIZE_UNITS[unitIndex]);
 
         return readableSize;
-        
-        
-//        double value = Math.abs(size);
-//
-//        if (value < 1024)
-//        {
-//            return size + " B";
-//        }
-//
-//        CharacterIterator ci = new StringCharacterIterator("KMGTPE");
-//
-//        while (value > 1024)
-//        {
-//            value /= 1024;
-//            ci.next();
-//        }
-//
-//        return String.format("%.1f %cB", value, ci.previous());        
+
+        // Variante 2: Micrometer
+        // io.micrometer.core.instrument.logging.LoggingMeterRegistry.Printer.humanReadableByteCount(double)
+        // int unit = 1024;
+        // if (bytes < unit || Double.isNaN(bytes)) return decimalOrNan(bytes) + " B";
+        // int exp = (int) (Math.log(bytes) / Math.log(unit));
+        // String pre = "KMGTPE".charAt(exp - 1) + "i";
+        // return decimalOrNan(bytes / Math.pow(unit, exp)) + " " + pre + "B";
+
+        // Variante 3:
+        // double divider = 1D;
+        // String unit = "";
+        //
+        // if (size < 1024)
+        // {
+        // divider = 1D;
+        // unit = "B";
+        // }
+        // else if (size < 1_048_576)
+        // {
+        // divider = 1024D;
+        // unit = "KB";
+        // }
+        // else if (size < 1_073_741_824)
+        // {
+        // divider = 1_048_576D;
+        // unit = "MB";
+        // }
+        // else if (size < (1_048_576 * 1_048_576))
+        // {
+        // divider = 1_073_741_824D;
+        // unit = "GB";
+        // }
+        //
+        // String readableSize = String.format("%.1f %s", size / divider, unit);
+        //
+        // return readableSize;
+
+        // Variante 4:
+        // double value = Math.abs(size);
+        //
+        // if (value < 1024D)
+        // {
+        // return size + " B";
+        // }
+        //
+        // CharacterIterator ci = new StringCharacterIterator("KMGTPE");
+        //
+        // while (value > 1024D)
+        // {
+        // value /= 1024;
+        // ci.next();
+        // }
+        //
+        // return String.format("%.1f %cB", value, ci.previous());
     }
 
     /**
