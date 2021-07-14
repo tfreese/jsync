@@ -31,6 +31,24 @@ public class ByteBufAdapter implements DataAdapter<ByteBuf>
     }
 
     /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterRead#readDouble(java.lang.Object)
+     */
+    @Override
+    public double readDouble(final ByteBuf source)
+    {
+        return source.readDouble();
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterRead#readFloat(java.lang.Object)
+     */
+    @Override
+    public float readFloat(final ByteBuf source)
+    {
+        return source.readFloat();
+    }
+
+    /**
      * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readInt(java.lang.Object)
      */
     @Override
@@ -64,6 +82,24 @@ public class ByteBufAdapter implements DataAdapter<ByteBuf>
     public void writeBytes(final ByteBuf sink, final byte[] bytes)
     {
         sink.writeBytes(bytes);
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterWrite#writeDouble(java.lang.Object, double)
+     */
+    @Override
+    public void writeDouble(final ByteBuf sink, final double value)
+    {
+        sink.writeDouble(value);
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterWrite#writeFloat(java.lang.Object, float)
+     */
+    @Override
+    public void writeFloat(final ByteBuf sink, final float value)
+    {
+        sink.writeFloat(value);
     }
 
     /**

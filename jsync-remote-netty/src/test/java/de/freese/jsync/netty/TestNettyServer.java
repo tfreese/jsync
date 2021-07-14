@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.ByteBufferAdapter;
+import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.netty.server.JsyncNettyServer;
 import de.freese.jsync.utils.JsyncThreadFactory;
 import io.netty.bootstrap.Bootstrap;

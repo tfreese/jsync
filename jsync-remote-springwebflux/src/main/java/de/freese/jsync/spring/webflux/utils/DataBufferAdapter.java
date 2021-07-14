@@ -32,6 +32,28 @@ public class DataBufferAdapter implements DataAdapter<DataBuffer>
     }
 
     /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterRead#readDouble(java.lang.Object)
+     */
+    @Override
+    public double readDouble(final DataBuffer source)
+    {
+        long longValue = readLong(source);
+
+        return Double.longBitsToDouble(longValue);
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterRead#readFloat(java.lang.Object)
+     */
+    @Override
+    public float readFloat(final DataBuffer source)
+    {
+        int intValue = readInt(source);
+
+        return Float.intBitsToFloat(intValue);
+    }
+
+    /**
      * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readInt(java.lang.Object)
      */
     @Override
@@ -89,6 +111,28 @@ public class DataBufferAdapter implements DataAdapter<DataBuffer>
     public void writeBytes(final DataBuffer sink, final byte[] bytes)
     {
         sink.write(bytes);
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterWrite#writeDouble(java.lang.Object, double)
+     */
+    @Override
+    public void writeDouble(final DataBuffer sink, final double value)
+    {
+        long longValue = Double.doubleToRawLongBits(value);
+
+        writeLong(sink, longValue);
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterWrite#writeFloat(java.lang.Object, float)
+     */
+    @Override
+    public void writeFloat(final DataBuffer sink, final float value)
+    {
+        int intValue = Float.floatToRawIntBits(value);
+
+        writeInt(sink, intValue);
     }
 
     /**

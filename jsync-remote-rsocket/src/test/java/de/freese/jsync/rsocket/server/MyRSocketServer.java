@@ -5,6 +5,8 @@ import io.rsocket.Closeable;
 
 /**
  * @author Thomas Freese
+ *
+ * @see org.springframework.boot.rsocket.netty.NettyRSocketServer
  */
 public interface MyRSocketServer
 {

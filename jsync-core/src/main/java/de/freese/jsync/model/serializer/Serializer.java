@@ -1,7 +1,7 @@
 // Created: 24.09.2020
 package de.freese.jsync.model.serializer;
 
-import de.freese.jsync.model.serializer.objects.ObjectSerializer;
+import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 
 /**
  * Interface für die API.

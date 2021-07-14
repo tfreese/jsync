@@ -12,25 +12,25 @@ import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
-import de.freese.jsync.model.serializer.objects.BooleanSerializer;
-import de.freese.jsync.model.serializer.objects.ExceptionSerializer;
-import de.freese.jsync.model.serializer.objects.GroupSerializer;
-import de.freese.jsync.model.serializer.objects.IntegerSerializer;
-import de.freese.jsync.model.serializer.objects.JSyncCommandSerializer;
-import de.freese.jsync.model.serializer.objects.LongSerializer;
-import de.freese.jsync.model.serializer.objects.ObjectSerializer;
-import de.freese.jsync.model.serializer.objects.OptionsSerializer;
-import de.freese.jsync.model.serializer.objects.StackTraceElementSerializer;
-import de.freese.jsync.model.serializer.objects.StringSerializer;
-import de.freese.jsync.model.serializer.objects.SyncItemSerializer;
-import de.freese.jsync.model.serializer.objects.UserSerializer;
+import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.BooleanSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.ExceptionSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.GroupSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.IntegerSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.JSyncCommandSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.LongSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.OptionsSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.StackTraceElementSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.StringSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.SyncItemSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.UserSerializer;
 
 /**
  * @author Thomas Freese
  *
  * @param <D> Type of Source/Sink
  */
-public final class DefaultSerializer<D> implements Serializer<D>
+public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegistry
 {
     /**
      * @param adapter {@link DataAdapter}
@@ -63,35 +63,33 @@ public final class DefaultSerializer<D> implements Serializer<D>
 
         this.adapter = Objects.requireNonNull(adapter, "adapter required");
 
-        register(String.class, StringSerializer.getInstance());
+        register(String.class, new StringSerializer());
 
-        register(boolean.class, BooleanSerializer.getInstance());
-        register(Boolean.class, BooleanSerializer.getInstance());
+        register(boolean.class, new BooleanSerializer());
+        register(Boolean.class, getSerializer(boolean.class));
 
-        register(int.class, IntegerSerializer.getInstance());
-        register(Integer.class, IntegerSerializer.getInstance());
+        register(int.class, new IntegerSerializer());
+        register(Integer.class, getSerializer(int.class));
 
-        register(long.class, LongSerializer.getInstance());
-        register(Long.class, LongSerializer.getInstance());
+        register(long.class, new LongSerializer());
+        register(Long.class, getSerializer(long.class));
 
-        register(JSyncCommand.class, JSyncCommandSerializer.getInstance());
-        register(User.class, UserSerializer.getInstance());
-        register(Group.class, GroupSerializer.getInstance());
-        register(SyncItem.class, SyncItemSerializer.getInstance());
-        register(DefaultSyncItem.class, SyncItemSerializer.getInstance());
-        register(Options.class, OptionsSerializer.getInstance());
-        register(StackTraceElement.class, StackTraceElementSerializer.getInstance());
-        register(Exception.class, ExceptionSerializer.getInstance());
+        register(JSyncCommand.class, new JSyncCommandSerializer());
+        register(User.class, new UserSerializer());
+        register(Group.class, new GroupSerializer());
+        register(SyncItem.class, new SyncItemSerializer());
+        register(DefaultSyncItem.class, new SyncItemSerializer());
+        register(Options.class, new OptionsSerializer());
+        register(StackTraceElement.class, new StackTraceElementSerializer());
+        register(Exception.class, new ExceptionSerializer());
     }
 
     /**
-     * @param <T> Type
-     * @param type Class
-     *
-     * @return {@link ObjectSerializer}
+     * @see de.freese.jsync.model.serializer.SerializerRegistry#getSerializer(java.lang.Class)
      */
     @SuppressWarnings("unchecked")
-    private <T> ObjectSerializer<T> getSerializer(final Class<T> type)
+    @Override
+    public <T> ObjectSerializer<T> getSerializer(final Class<T> type)
     {
         return (ObjectSerializer<T>) this.serializerMap.get(type);
     }
@@ -104,13 +102,13 @@ public final class DefaultSerializer<D> implements Serializer<D>
     {
         ObjectSerializer<T> serializer = getSerializer(type);
 
-        T value = serializer.readFrom(this.adapter, source);
+        T value = serializer.readFrom(this, this.adapter, source);
 
         return value;
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.Serializer#register(java.lang.Class, de.freese.jsync.model.serializer.objects.ObjectSerializer)
+     * @see de.freese.jsync.model.serializer.Serializer#register(java.lang.Class, de.freese.jsync.model.serializer.objectserializer.ObjectSerializer)
      */
     @Override
     public <T> void register(final Class<T> type, final ObjectSerializer<? super T> serializer)
@@ -126,6 +124,6 @@ public final class DefaultSerializer<D> implements Serializer<D>
     {
         ObjectSerializer<T> serializer = getSerializer(type);
 
-        serializer.writeTo(this.adapter, sink, value);
+        serializer.writeTo(this, this.adapter, sink, value);
     }
 }

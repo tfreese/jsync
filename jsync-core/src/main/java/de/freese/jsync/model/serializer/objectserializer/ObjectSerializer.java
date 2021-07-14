@@ -1,9 +1,10 @@
 // Created: 28.04.2020
-package de.freese.jsync.model.serializer.objects;
+package de.freese.jsync.model.serializer.objectserializer;
 
 import java.nio.charset.Charset;
 
 import de.freese.jsync.Options;
+import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
 
 /**
@@ -24,17 +25,19 @@ public interface ObjectSerializer<T>
     }
 
     /**
+     * @param registry {@link SerializerRegistry}
      * @param adapter {@link DataAdapter}
      * @param source Object
      *
      * @return Object
      */
-    <D> T readFrom(final DataAdapter<D> adapter, D source);
+    <D> T readFrom(SerializerRegistry registry, final DataAdapter<D> adapter, D source);
 
     /**
+     * @param registry {@link SerializerRegistry}
      * @param adapter {@link DataAdapter}
      * @param sink Object
      * @param value Object
      */
-    <D> void writeTo(final DataAdapter<D> adapter, D sink, final T value);
+    <D> void writeTo(SerializerRegistry registry, final DataAdapter<D> adapter, D sink, final T value);
 }

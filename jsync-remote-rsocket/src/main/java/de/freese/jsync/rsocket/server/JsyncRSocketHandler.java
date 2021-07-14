@@ -276,8 +276,7 @@ public class JsyncRSocketHandler implements RSocket
 
         FileHandle fileHandle = sender.readFileHandle(baseDir, relativeFile, sizeOfFile);
 
-        Flux<DataBuffer> flux =
-                DataBufferUtils.readByteChannel(fileHandle::getHandle, new NettyDataBufferFactory(getByteBufAllocator()), Options.BUFFER_SIZE);
+        Flux<DataBuffer> flux = DataBufferUtils.readByteChannel(fileHandle::getHandle, new NettyDataBufferFactory(getByteBufAllocator()), Options.BUFFER_SIZE);
 
         // @formatter:off
         return flux
@@ -519,6 +518,7 @@ public class JsyncRSocketHandler implements RSocket
                 Files.createFile(path);
             }
 
+            // Receiver wird hier nicht verwendet.
             final FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
             // @formatter:off
@@ -529,50 +529,6 @@ public class JsyncRSocketHandler implements RSocket
                     .doFinally(signalType -> RSocketUtils.close(fileChannel))
                     ;
             // @formatter:on
-
-//            // @formatter:off
-//            response = Flux.from(flux)
-//                    .map(pl -> {
-//                        int bytesWritten = RSocketUtils.write(pl, fileChannel);
-//                        return bytesWritten;
-//                    })
-//                    .map(bytesWritten -> ByteBufPayload.create("CHUNK_COMPLETED: bytesWritten = " + bytesWritten))
-//                    .doOnError(th -> ByteBufPayload.create(th.getMessage()))
-//                    .doFinally(signalType -> {
-//                        RSocketUtils.close(fileChannel);
-//                    })
-//                    ;
-//            // @formatter:on
-
-//            // @formatter:off
-//             response = flux
-//                     .map(Payload::getData)
-//                     .map(byteBuffer -> {
-//                         int bytesWritten = 0;
-//
-//                         try
-//                            {
-//                                 while (byteBuffer.hasRemaining())
-//                                 {
-//                                     bytesWritten += fileChannel.write(byteBuffer);
-//                                 }
-//                            }
-//                            catch (IOException ex)
-//                            {
-//                                throw new UncheckedIOException(ex);
-//                            }
-//
-//
-//                         return bytesWritten;
-//                     })
-//                     .map(bytesWritten -> ByteBufPayload.create("CHUNK_COMPLETED: bytesWritten = " + bytesWritten))
-//                     .doOnError(th -> ByteBufPayload.create(th.getMessage()))
-//                     .doFinally(signalType -> {
-//                         fileChannel.force(false);
-//                         RSocketUtils.close(fileChannel);
-//                     })
-//                     ;
-//             // @formatter:on
         }
         catch (IOException ex)
         {

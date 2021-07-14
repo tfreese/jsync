@@ -1,7 +1,9 @@
 // Created: 22.09.2020
-package de.freese.jsync.model.serializer.adapter;
+package de.freese.jsync.model.serializer.adapter.impl;
 
 import java.nio.ByteBuffer;
+
+import de.freese.jsync.model.serializer.adapter.DataAdapter;
 
 /**
  * @author Thomas Freese
@@ -27,6 +29,24 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
         source.get(bytes);
 
         return bytes;
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterRead#readDouble(java.lang.Object)
+     */
+    @Override
+    public double readDouble(final ByteBuffer source)
+    {
+        return source.getDouble();
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterRead#readFloat(java.lang.Object)
+     */
+    @Override
+    public float readFloat(final ByteBuffer source)
+    {
+        return source.getFloat();
     }
 
     /**
@@ -63,6 +83,24 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     public void writeBytes(final ByteBuffer sink, final byte[] bytes)
     {
         sink.put(bytes);
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterWrite#writeDouble(java.lang.Object, double)
+     */
+    @Override
+    public void writeDouble(final ByteBuffer sink, final double value)
+    {
+        sink.putDouble(value);
+    }
+
+    /**
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapterWrite#writeFloat(java.lang.Object, float)
+     */
+    @Override
+    public void writeFloat(final ByteBuffer sink, final float value)
+    {
+        sink.putFloat(value);
     }
 
     /**

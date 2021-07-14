@@ -1,57 +1,23 @@
 // Created: 24.09.2020
-package de.freese.jsync.model.serializer.objects;
+package de.freese.jsync.model.serializer.objectserializer.impl;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
+import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
+import de.freese.jsync.model.serializer.objectserializer.AbstractObjectSerializer;
 
 /**
  * @author Thomas Freese
  */
-public final class OptionsSerializer implements ObjectSerializer<Options>
+public final class OptionsSerializer extends AbstractObjectSerializer<Options>
 {
     /**
-     * ThreadSafe Singleton-Pattern.
-     *
-     * @author Thomas Freese
-     */
-    private static final class OptionsSerializerHolder
-    {
-        /**
-         *
-         */
-        private static final OptionsSerializer INSTANCE = new OptionsSerializer();
-
-        /**
-         * Erstellt ein neues {@link OptionsSerializerHolder} Object.
-         */
-        private OptionsSerializerHolder()
-        {
-            super();
-        }
-    }
-
-    /**
-     * @return {@link OptionsSerializer}
-     */
-    public static OptionsSerializer getInstance()
-    {
-        return OptionsSerializerHolder.INSTANCE;
-    }
-
-    /**
-     * Erstellt ein neues {@link OptionsSerializer} Object.
-     */
-    private OptionsSerializer()
-    {
-        super();
-    }
-
-    /**
-     * @see de.freese.jsync.model.serializer.objects.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
+     * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.SerializerRegistry,
+     *      de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> Options readFrom(final DataAdapter<D> adapter, final D source)
+    public <D> Options readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
     {
         // bufferSize
         // int bufferSize = adapter.readInt(source);
@@ -83,11 +49,11 @@ public final class OptionsSerializer implements ObjectSerializer<Options>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.objects.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object,
-     *      java.lang.Object)
+     * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.SerializerRegistry,
+     *      de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final DataAdapter<D> adapter, final D sink, final Options value)
+    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Options value)
     {
         // bufferSize
         // adapter.writeInt(sink, value.getBufferSize());
