@@ -26,16 +26,10 @@
 
     <modules>
         <module>jsync-core</module>
-        <module>jsync-remote-nio</module>
         <module>jsync-remote-rsocket</module>
-        <!--module>jsync-remote-springrest</module--> 
-        <!--module>jsync-remote-springwebflux</module>
-        <module>jsync-remote-springrsocket</module> 
-        <module>jsync-remote-netty</module-->    
         <module>jsync-client</module>
         <module>jsync-console</module>
         <module>jsync-swing</module>
-        <module>jsync-javafx</module>
     </modules>
 
 </project>
