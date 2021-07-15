@@ -345,103 +345,13 @@ public class LocalhostReceiver extends AbstractReceiver
         {
             throw new UncheckedIOException(ex);
         }
+        catch (RuntimeException ex)
+        {
+            throw ex;
+        }
         catch (Exception ex)
         {
-            if (ex instanceof RuntimeException)
-            {
-                throw (RuntimeException) ex;
-            }
-
             throw new RuntimeException(ex);
         }
-        // try (FileChannel fileChannelReceiver =
-        // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))
-        // {
-        // MonitoringWritableByteChannel monitoringWritableByteChannel =
-        // new MonitoringWritableByteChannel(fileChannelReceiver, bytesWrittenConsumer, false);
-        //
-        // if (fileHandle.getReadableByteChannel() instanceof FileChannel)
-        // {
-        // // Lokales Kopieren
-        // FileChannel fileChannelSender = (FileChannel) fileHandle.getReadableByteChannel();
-        //
-        // // original - apparently has trouble copying large files on Windows
-        // // fileChannelSender.transferTo(0, fileChannelSender.size(), resourceReceiver.writableChannel());
-        //
-        // // Magic number for Windows: (64Mb - 32Kb)
-        // // Größere Blöcke kann Windows nicht kopieren, sonst gibs Fehler.
-        // long maxWindowsBlockSize = (64L * 1024 * 1024) - (32L * 1024);
-        //
-        // long count = sizeOfFile;
-        //
-        // if ((count > maxWindowsBlockSize) && JSyncUtils.isWindows())
-        // {
-        // count = maxWindowsBlockSize;
-        // }
-        //
-        // long position = 0;
-        //
-        // while (position < sizeOfFile)
-        // {
-        // if ((sizeOfFile - position) < count)
-        // {
-        // count = sizeOfFile - position;
-        // }
-        //
-        // long transfered = fileChannelSender.transferTo(position, count, monitoringWritableByteChannel);
-        //
-        // position += transfered;
-        // }
-        // }
-        // else if (fileHandle.getReadableByteChannel() != null)
-        // {
-        // DataBuffer dataBuffer = JSyncUtils.getDataBufferFactory().allocateBuffer(Options.DATABUFFER_SIZE);
-        // ByteBuffer byteBuffer = dataBuffer.asByteBuffer(0, dataBuffer.capacity());
-        // long totalRead = 0;
-        //
-        // while (totalRead < sizeOfFile)
-        // {
-        // byteBuffer.clear();
-        // int bytesRead = fileHandle.getReadableByteChannel().read(byteBuffer);
-        // byteBuffer.flip();
-        //
-        // totalRead += bytesRead;
-        //
-        // while (byteBuffer.hasRemaining())
-        // {
-        // monitoringWritableByteChannel.write(byteBuffer);
-        // }
-        // }
-        //
-        // DataBufferUtils.release(dataBuffer);
-        // }
-        // else if (fileHandle.getFluxDataBuffer() != null)
-        // {
-        // DataBufferUtils.write(fileHandle.getFluxDataBuffer(), monitoringWritableByteChannel).blockLast();
-        // }
-        // else if (fileHandle.getFluxByteBuffer() != null)
-        // {
-//                    // @formatter:off
-//                    fileHandle.getFluxByteBuffer()
-//                        //.publishOn(Schedulers.elastic()) // Siehe JavaDoc von Schedulers
-//                        .doOnNext(byteBuffer -> {
-//                            try
-//                            {
-//                                monitoringWritableByteChannel.write(byteBuffer);
-//                            }
-//                            catch (IOException ex)
-//                            {
-//                                throw new UncheckedIOException(ex);
-//                            }
-//                        })
-//                        .subscribe()
-//                        .dispose();
-//                        ;
-//                    // @formatter:on
-        // }
-        //
-        // fileChannelReceiver.force(false);
-        // }
-
     }
 }

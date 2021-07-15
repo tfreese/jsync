@@ -285,6 +285,15 @@ public class JsyncRSocketHandler implements RSocket
                 //.doFinally(signalType -> dataBuffer.release())
                 ;
         // @formatter:on
+
+        // Flux<ByteBuffer> flux = RSocketUtils.readByteChannel(fileHandle::getHandle, null, Options.BUFFER_SIZE);
+        //
+//        // @formatter:off
+//        return flux
+//                .map(DefaultPayload::create)
+//                //.doFinally(signalType -> dataBuffer.release())
+//                ;
+//        // @formatter:on
     }
 
     /**
