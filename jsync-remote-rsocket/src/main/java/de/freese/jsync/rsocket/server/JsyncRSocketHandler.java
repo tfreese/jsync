@@ -32,8 +32,8 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
-import de.freese.jsync.rsocket.utils.Pool;
 import de.freese.jsync.rsocket.utils.RSocketUtils;
+import de.freese.jsync.utils.pool.Pool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.rsocket.Payload;
@@ -64,7 +64,7 @@ public class JsyncRSocketHandler implements RSocket
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true)
     {
         /**
-         * @see de.freese.jsync.rsocket.utils.Pool#create()
+         * @see de.freese.jsync.utils.pool.Pool#create()
          */
         @Override
         protected Receiver create()
@@ -80,7 +80,7 @@ public class JsyncRSocketHandler implements RSocket
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true)
     {
         /**
-         * @see de.freese.jsync.rsocket.utils.Pool#create()
+         * @see de.freese.jsync.utils.pool.Pool#create()
          */
         @Override
         protected Sender create()

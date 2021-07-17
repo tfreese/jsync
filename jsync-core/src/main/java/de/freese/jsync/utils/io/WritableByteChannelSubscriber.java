@@ -1,5 +1,5 @@
 // Created: 20.10.2020
-package de.freese.jsync.rsocket.utils;
+package de.freese.jsync.utils.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

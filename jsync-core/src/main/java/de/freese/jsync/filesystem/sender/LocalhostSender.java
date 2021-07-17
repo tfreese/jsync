@@ -4,19 +4,20 @@ package de.freese.jsync.filesystem.sender;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
-import de.freese.jsync.filesystem.fileHandle.FileHandle;
-import de.freese.jsync.filesystem.fileHandle.FileHandleFileChannel;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.SyncItem;
+import de.freese.jsync.utils.ReactiveUtils;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * {@link Sender} für Localhost-Filesysteme.
@@ -59,94 +60,33 @@ public class LocalhostSender extends AbstractSender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, java.util.function.Consumer)
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean)
      */
     @Override
-    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
+    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
     {
+
         getLogger().debug("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
-        this.generator.generateItems(baseDir, followSymLinks, consumerSyncItem);
+        return this.generator.generateItems(baseDir, followSymLinks);
     }
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
+    public Mono<String> getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
         getLogger().debug("create checksum: {}/{}", baseDir, relativeFile);
 
-        String checksum = this.generator.generateChecksum(baseDir, relativeFile, consumerBytesRead);
-
-        return checksum;
+        return this.generator.generateChecksum(baseDir, relativeFile, consumerBytesRead);
     }
 
-    // /**
-    // * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
-    // */
-    // @Override
-    // public Resource getResource(final String baseDir, final String relativeFile, final long sizeOfFile)
-    // {
-    // getLogger().debug("get resource: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
-    //
-    // Path path = Paths.get(baseDir, relativeFile);
-    //
-    // if (!Files.exists(path))
-    // {
-    // String message = String.format("file doesn't exist anymore: %s", path);
-    // getLogger().warn(message);
-    //
-    // return null;
-    // }
-    //
-    // // Files.newByteChannel(path, StandardOpenOption.READ);
-    // // FileChannel.open(path, , StandardOpenOption.READ);
-    //
-    // // return new PathResource(path);
-    // return new FileSystemResource(path); // Liefert FileChannel
-    // }
-
-    // /**
-    // * @see de.freese.jsync.filesystem.sender.Sender#readChunk(java.lang.String, java.lang.String, long, long, java.nio.ByteBuffer)
-    // */
-    // @Override
-    // public void readChunk(final String baseDir, final String relativeFile, final long position, final long sizeOfChunk, final ByteBuffer buffer)
-    // {
-    // getLogger().debug("read chunk: {}/{}, position={}, sizeOfChunk={}", baseDir, relativeFile, position, sizeOfChunk);
-    //
-    // if (sizeOfChunk > buffer.capacity())
-    // {
-    // throw new IllegalArgumentException("size > buffer.capacity()");
-    // }
-    //
-    // Path path = Paths.get(baseDir, relativeFile);
-    //
-    // buffer.clear();
-    //
-    // try
-    // {
-    // // try (RandomAccessFile randomAccessFile = new RandomAccessFile(path.toFile(), "r"))
-    // // {
-    // // FileChannel fileChannel = randomAccessFile.getChannel();
-    // try (FileChannel fileChannel = (FileChannel) Files.newByteChannel(path, StandardOpenOption.READ))
-    // {
-    // MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, position, sizeOfChunk);
-    //
-    // buffer.put(mappedByteBuffer);
-    // }
-    // }
-    // catch (IOException ex)
-    // {
-    // throw new UncheckedIOException(ex);
-    // }
-    // }
-
     /**
-     * @see de.freese.jsync.filesystem.sender.Sender#readFileHandle(java.lang.String, java.lang.String, long)
+     * @see de.freese.jsync.filesystem.sender.Sender#readFile(java.lang.String, java.lang.String, long)
      */
     @Override
-    public FileHandle readFileHandle(final String baseDir, final String relativeFile, final long sizeOfFile)
+    public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
         getLogger().debug("read fileHandle: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
@@ -156,15 +96,14 @@ public class LocalhostSender extends AbstractSender
         {
             String message = String.format("file doesn't exist anymore: %s", path);
             getLogger().warn(message);
-            return null;
+            return Flux.empty();
         }
 
         try
         {
             FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.READ);
 
-            // return new FileHandle().readableByteChannel(fileChannel);
-            return new FileHandleFileChannel(fileChannel);
+            return ReactiveUtils.readByteChannel(() -> fileChannel);
         }
         catch (IOException ex)
         {

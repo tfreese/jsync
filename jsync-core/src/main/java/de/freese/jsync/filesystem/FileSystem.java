@@ -2,10 +2,11 @@
 package de.freese.jsync.filesystem;
 
 import java.net.URI;
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.model.SyncItem;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * @author Thomas Freese
@@ -29,9 +30,10 @@ public interface FileSystem
      *
      * @param baseDir String
      * @param followSymLinks boolean
-     * @param consumerSyncItem {@link Consumer}
+     *
+     * @return {@link Flux}
      */
-    void generateSyncItems(String baseDir, boolean followSymLinks, Consumer<SyncItem> consumerSyncItem);
+    Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks);
 
     /**
      * Liefert die Prüfsumme einer Datei.<br>
@@ -39,17 +41,8 @@ public interface FileSystem
      * @param baseDir String
      * @param relativeFile String
      * @param consumerBytesRead {@link LongConsumer}; optional
-     * @return String
+     *
+     * @return {@link Mono}
      */
-    String getChecksum(String baseDir, String relativeFile, LongConsumer consumerBytesRead);
-
-    // /**
-    // * Liefert die {@link Resource} zur Datei.
-    // *
-    // * @param baseDir String
-    // * @param relativeFile String
-    // * @param sizeOfFile long
-    // * @return {@link Resource}
-    // */
-    // Resource getResource(String baseDir, final String relativeFile, long sizeOfFile);
+    Mono<String> getChecksum(String baseDir, String relativeFile, LongConsumer consumerBytesRead);
 }

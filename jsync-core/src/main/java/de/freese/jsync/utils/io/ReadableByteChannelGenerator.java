@@ -1,33 +1,23 @@
 // Created: 15.07.2021
-package de.freese.jsync.rsocket.utils;
+package de.freese.jsync.utils.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import de.freese.jsync.utils.pool.ByteBufferPool;
-import io.netty.buffer.ByteBufAllocator;
 import reactor.core.publisher.SynchronousSink;
 
 /**
  * @author Thomas Freese
  *
- * @see org.springframework.core.io.buffer.DataBufferUtils.ReadableByteChannelGenerator
+ * @see de.freese.jsync.utils.io.springframework.core.io.buffer.DataBufferUtils.ReadableByteChannelGenerator
  */
 @SuppressWarnings("javadoc")
 public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<ByteBuffer>>
 {
-    /**
-     *
-     */
-    private final int bufferSize;
-
-    /**
-     *
-     */
-    private final ByteBufAllocator byteBufAllocator;
-
     /**
      *
      */
@@ -37,15 +27,10 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
      * Erstellt ein neues {@link ReadableByteChannelGenerator} Object.
      *
      * @param channel {@link ReadableByteChannel}
-     * @param byteBufAllocator {@link ByteBufAllocator}
-     * @param bufferSize int
      */
-    public ReadableByteChannelGenerator(final ReadableByteChannel channel, final ByteBufAllocator byteBufAllocator, final int bufferSize)
+    public ReadableByteChannelGenerator(final ReadableByteChannel channel)
     {
-
-        this.channel = channel;
-        this.byteBufAllocator = byteBufAllocator;
-        this.bufferSize = bufferSize;
+        this.channel = Objects.requireNonNull(channel, "channel requried");
     }
 
     /**
@@ -55,7 +40,7 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
     public void accept(final SynchronousSink<ByteBuffer> sink)
     {
         boolean release = true;
-        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate();
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().obtain();
 
         try
         {
@@ -78,7 +63,7 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
         {
             if (release)
             {
-                ByteBufferPool.getInstance().release(byteBuffer);
+                ByteBufferPool.getInstance().free(byteBuffer);
             }
         }
     }

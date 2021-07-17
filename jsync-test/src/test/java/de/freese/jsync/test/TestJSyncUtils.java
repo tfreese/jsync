@@ -1,15 +1,17 @@
-/**
- * Created: 22.10.2016
- */
-
-package de.freese.jsync.utils;
+// Created: 22.10.2016
+package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+
+import de.freese.jsync.utils.DigestUtils;
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
@@ -37,8 +39,8 @@ class TestJSyncUtils
     {
         Path path = Paths.get("pom.xml");
 
-        String checksum1 = DigestUtils.sha256DigestAsHex(path, 16);
-        String checksum2 = DigestUtils.sha256DigestAsHex(path, 32);
+        String checksum1 = DigestUtils.sha256DigestAsHex(path);
+        String checksum2 = DigestUtils.sha256DigestAsHex(path);
 
         assertEquals(checksum1, checksum2);
     }

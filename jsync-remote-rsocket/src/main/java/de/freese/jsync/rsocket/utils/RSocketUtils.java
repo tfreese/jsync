@@ -19,6 +19,8 @@ import org.springframework.core.io.buffer.PooledDataBuffer;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import de.freese.jsync.utils.io.ReadableByteChannelGenerator;
+import de.freese.jsync.utils.io.WritableByteChannelSubscriber;
 import io.netty.buffer.ByteBufAllocator;
 import io.rsocket.Payload;
 import reactor.core.publisher.Flux;

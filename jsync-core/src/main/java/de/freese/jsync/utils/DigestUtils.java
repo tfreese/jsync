@@ -127,22 +127,20 @@ public final class DigestUtils
 
     /**
      * @param readableByteChannel {@link ReadableByteChannel}
-     * @param bufferSize int
      * @param consumerBytesRead {@link LongConsumer}; optional
      *
      * @return byte[]
      *
      * @throws IOException Falls was schief geht.
      */
-    private static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final int bufferSize, final LongConsumer consumerBytesRead)
-        throws IOException
+    private static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final LongConsumer consumerBytesRead) throws IOException
     {
         MessageDigest messageDigest = createSha256Digest();
         byte[] bytes = null;
 
         consumerBytesRead.accept(0);
 
-        ByteBuffer byteBuffer = ByteBufferPool.getInstance().allocate(bufferSize);
+        ByteBuffer byteBuffer = ByteBufferPool.getInstance().obtain();
 
         try
         {
@@ -163,7 +161,7 @@ public final class DigestUtils
         }
         finally
         {
-            ByteBufferPool.getInstance().release(byteBuffer);
+            ByteBufferPool.getInstance().free(byteBuffer);
         }
 
         return bytes;
@@ -171,29 +169,27 @@ public final class DigestUtils
 
     /**
      * @param path {@link Path}
-     * @param bufferSize int
      *
      * @return String
      */
-    public static String sha256DigestAsHex(final Path path, final int bufferSize)
+    public static String sha256DigestAsHex(final Path path)
     {
-        return sha256DigestAsHex(path, bufferSize, i -> {
+        return sha256DigestAsHex(path, i -> {
             // Empty
         });
     }
 
     /**
      * @param path {@link Path}
-     * @param bufferSize int
      * @param consumerBytesRead {@link LongConsumer}
      *
      * @return String
      */
-    public static String sha256DigestAsHex(final Path path, final int bufferSize, final LongConsumer consumerBytesRead)
+    public static String sha256DigestAsHex(final Path path, final LongConsumer consumerBytesRead)
     {
         try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
         {
-            byte[] bytes = sha256Digest(channel, bufferSize, consumerBytesRead);
+            byte[] bytes = sha256Digest(channel, consumerBytesRead);
 
             String hex = JSyncUtils.bytesToHex(bytes);
 

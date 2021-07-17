@@ -1,11 +1,11 @@
 // Created: 28.04.2020
 package de.freese.jsync.filesystem.receiver;
 
-import java.util.function.LongConsumer;
+import java.nio.ByteBuffer;
 
 import de.freese.jsync.filesystem.FileSystem;
-import de.freese.jsync.filesystem.fileHandle.FileHandle;
 import de.freese.jsync.model.SyncItem;
+import reactor.core.publisher.Flux;
 
 /**
  * Datensenke.
@@ -31,12 +31,6 @@ public interface Receiver extends FileSystem
      */
     void delete(String baseDir, String relativePath, boolean followSymLinks);
 
-    // /**
-    // * @see de.freese.jsync.filesystem.FileSystem#getResource(java.lang.String, java.lang.String, long)
-    // */
-    // @Override
-    // public WritableResource getResource(String baseDir, String relativeFile, long sizeOfFile);
-
     /**
      * Aktualisiert ein {@link SyncItem}.
      *
@@ -54,25 +48,13 @@ public interface Receiver extends FileSystem
      */
     void validateFile(String baseDir, final SyncItem syncItem, boolean withChecksum);
 
-    // /**
-    // * Schreibt nur einen bestimmten Bereich in eine Datei.
-    // *
-    // * @param baseDir String
-    // * @param relativeFile String
-    // * @param position long
-    // * @param sizeOfChunk long
-    // * @param byteBuffer {@link ByteBuffer}
-    // */
-    // public void writeChunk(String baseDir, String relativeFile, long position, final long sizeOfChunk, ByteBuffer byteBuffer);
-
     /**
-     * Schreibt den {@link FileHandle} in die Datei.
+     * Schreibt den {@link Flux} in die Datei.
      *
      * @param baseDir String
      * @param relativeFile String
      * @param sizeOfFile long
-     * @param fileHandle {@link FileHandle}
-     * @param bytesWrittenConsumer {@link LongConsumer}
+     * @param fileFlux {@link Flux}
      */
-    void writeFileHandle(String baseDir, final String relativeFile, long sizeOfFile, FileHandle fileHandle, LongConsumer bytesWrittenConsumer);
+    void writeFile(String baseDir, final String relativeFile, long sizeOfFile, Flux<ByteBuffer> fileFlux);
 }

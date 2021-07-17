@@ -1,31 +1,32 @@
-/**
- * Created: 22.10.2016
- */
-
-package de.freese.jsync.generator;
+// Created: 22.10.2016
+package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import de.freese.jsync.AbstractJSyncTest;
+
 import de.freese.jsync.Options;
+import de.freese.jsync.generator.DefaultGenerator;
+import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
+import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-class TestJSyncGenerator extends AbstractJSyncTest
+class TestJSyncGenerator extends AbstractJSyncIoTest
 {
     /**
      * @throws Exception Falls was schief geht.
@@ -39,10 +40,24 @@ class TestJSyncGenerator extends AbstractJSyncTest
         System.out.printf("Quelle: %s%n", base);
 
         Generator generator = new DefaultGenerator();
-        List<SyncItem> syncItems = new ArrayList<>();
-        generator.generateItems(base.toString(), false, syncItems::add);
 
-        assertNotNull(syncItems);
+        Flux<SyncItem> fluxSyncItems = generator.generateItems(base.toString(), false);
+
+        // long size = fluxSyncItems.count().block();
+        // System.out.printf("Anzahl SyncItems: %d%n", size);
+        // assertEquals(5, size);
+        //
+        // fluxSyncItems.subscribe(syncItem -> LOGGER.info("{}", syncItem));
+        //
+//        // @formatter:off
+//        fluxSyncItems.as(StepVerifier::create)
+//            .consumeNextWith(syncItem -> LOGGER.info("{}", syncItem))
+//            .expectNextCount(4)
+//            .verifyComplete()
+//            ;
+//        // @formatter:on
+
+        List<SyncItem> syncItems = fluxSyncItems.collectList().block();
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 
@@ -63,10 +78,9 @@ class TestJSyncGenerator extends AbstractJSyncTest
         System.out.printf("Ziel: %s%n", base);
 
         Generator generator = new DefaultGenerator();
-        List<SyncItem> syncItems = new ArrayList<>();
-        generator.generateItems(base.toString(), false, syncItems::add);
+        Flux<SyncItem> fluxSyncItems = generator.generateItems(base.toString(), false);
 
-        assertNotNull(syncItems);
+        List<SyncItem> syncItems = fluxSyncItems.collectList().block();
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 

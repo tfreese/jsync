@@ -15,10 +15,6 @@
     <name>${project.groupId} - ${project.artifactId}</name>
     <description>A Java rsync clone: Core Module</description>
 
-    <properties>
-        <skipTest>false</skipTest>
-    </properties>
-
     <dependencies>
         <!-- compile scope -->
         <dependency>
@@ -38,18 +34,7 @@
         </dependency>
 
         <!-- provided scope -->
-
         <!-- test scope -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <scope>test</scope>
-        </dependency>
 
     </dependencies>
 

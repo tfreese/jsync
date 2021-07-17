@@ -1,7 +1,6 @@
 package de.freese.jsync.client;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.client.listener.ClientListener;
@@ -10,6 +9,7 @@ import de.freese.jsync.filesystem.receiver.Receiver;
 import de.freese.jsync.filesystem.sender.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import reactor.core.publisher.Flux;
 
 /**
  * Koordiniert den Abgleich zwischen {@link Sender} und {@link Receiver}.
@@ -41,9 +41,23 @@ public interface Client
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
      *
      * @param fileSystem {@link EFileSystem}
-     * @param consumerSyncItem {@link Consumer}
+     *
+     * @return {@link Flux}
      */
-    void generateSyncItems(EFileSystem fileSystem, Consumer<SyncItem> consumerSyncItem);
+    Flux<SyncItem> generateSyncItems(EFileSystem fileSystem);
+
+    /**
+     * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
+     * Die Einträge des Senders sind die Referenz.<br>
+     * Ist ein Item im Receiver nicht enthalten, muss er kopiert werden.<br>
+     * Ist ein Item nur Receiver enthalten, muss er dort gelöscht werden.<br>
+     *
+     * @param syncItemsSender {@link Flux}
+     * @param syncItemsReceiver {@link Flux}
+     *
+     * @return {@link Flux}
+     */
+    Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver);
 
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
@@ -53,6 +67,7 @@ public interface Client
      *
      * @param syncItemsSender {@link List}
      * @param syncItemsReceiver {@link List}
+     *
      * @return {@link List}
      */
     List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver);
@@ -60,8 +75,8 @@ public interface Client
     /**
      * Synchronisiert das Ziel-Verzeichnis mit der Quelle.
      *
-     * @param syncList {@link List}
+     * @param syncFlux {@link Flux}
      * @param clientListener {@link ClientListener}
      */
-    void syncReceiver(List<SyncPair> syncList, ClientListener clientListener);
+    void syncReceiver(Flux<SyncPair> syncFlux, ClientListener clientListener);
 }

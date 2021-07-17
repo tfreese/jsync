@@ -4,9 +4,7 @@ package de.freese.jsync.client;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
@@ -15,6 +13,7 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncPairComparator;
 import de.freese.jsync.model.SyncStatus;
+import reactor.core.publisher.Flux;
 
 /**
  * Default-Implementierung des {@link Client}.
@@ -49,18 +48,19 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @see de.freese.jsync.client.Client#mergeSyncItems(java.util.List, java.util.List)
+     * @see de.freese.jsync.client.Client#mergeSyncItems(reactor.core.publisher.Flux, reactor.core.publisher.Flux)
      */
     @Override
-    public List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver)
+    public Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver)
     {
         // Map der ReceiverItems bauen.
-        Map<String, SyncItem> mapReceiver = syncItemsReceiver.stream().collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
+        Map<String, SyncItem> mapReceiver = syncItemsReceiver.collectMap(SyncItem::getRelativePath).block();
 
         // @formatter:off
-        List<SyncPair> fileList = syncItemsSender.stream()
+        List<SyncPair> fileList = syncItemsSender
                 .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
-                .collect(Collectors.toList())
+                .collectList()
+                .block()
                 ;
         // @formatter:on
 
@@ -69,38 +69,47 @@ public class DefaultClient extends AbstractClient
 
         fileList.sort(new SyncPairComparator());
 
-        return fileList;
+        return Flux.fromIterable(fileList);
     }
 
     /**
-     * @see de.freese.jsync.client.Client#syncReceiver(java.util.List, de.freese.jsync.client.listener.ClientListener)
+     * @see de.freese.jsync.client.Client#mergeSyncItems(java.util.List, java.util.List)
      */
     @Override
-    public void syncReceiver(final List<SyncPair> syncList, final ClientListener clientListener)
+    public List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver)
+    {
+        return mergeSyncItems(Flux.fromIterable(syncItemsSender), Flux.fromIterable(syncItemsReceiver)).collectList().block();
+    }
+
+    /**
+     * @see de.freese.jsync.client.Client#syncReceiver(reactor.core.publisher.Flux, de.freese.jsync.client.listener.ClientListener)
+     */
+    @Override
+    public void syncReceiver(final Flux<SyncPair> syncFlux, final ClientListener clientListener)
     {
         ClientListener cl = clientListener != null ? clientListener : new EmptyClientListener();
 
         // Alles rausfiltern was bereits synchronized ist.
         Predicate<SyncPair> isSynchronised = p -> SyncStatus.SYNCHRONIZED.equals(p.getStatus());
-        List<SyncPair> list = syncList.stream().filter(isSynchronised.negate()).collect(Collectors.toList());
+        Flux<SyncPair> sync = syncFlux.filter(isSynchronised.negate());
 
         // Löschen
         if (getOptions().isDelete())
         {
-            deleteFiles(list, cl);
-            deleteDirectories(list, cl);
+            deleteFiles(sync, cl);
+            deleteDirectories(sync, cl);
         }
 
         // Neue oder geänderte Dateien kopieren.
-        copyFiles(list, cl);
+        copyFiles(sync, cl);
 
         // Aktualisieren von Datei-Attributen.
-        updateFiles(list, cl);
+        updateFiles(sync, cl);
 
         // Neue leere Verzeichnisse
-        createDirectories(syncList, clientListener);
+        createDirectories(sync, clientListener);
 
         // Aktualisieren von Verzeichniss-Attributen.
-        updateDirectories(list, cl);
+        updateDirectories(sync, cl);
     }
 }

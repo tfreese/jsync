@@ -1,24 +1,30 @@
-package de.freese.jsync.model.serializer;
+// Created: 06.04.2018
+package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.nio.ByteBuffer;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
+import de.freese.jsync.model.serializer.DefaultSerializer;
+import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 
 /**
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-class TestSerializers
+class TestJsyncSerializers
 {
     /**
      * 8 kb
