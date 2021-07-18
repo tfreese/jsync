@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,6 @@ import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
@@ -67,18 +68,21 @@ class TestJsyncClient extends AbstractJSyncIoTest
         Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
-        Flux<SyncItem> syncItemsSender = client.generateSyncItems(EFileSystem.SENDER, i -> {
+        List<SyncItem> syncItemsSender = new ArrayList<>();
+        client.generateSyncItems(EFileSystem.SENDER, syncItemsSender::add, i -> {
             // System.out.println("Sender Bytes read: " + i);
         });
-        Flux<SyncItem> syncItemsReceiver = client.generateSyncItems(EFileSystem.RECEIVER, i -> {
-            // System.out.println("Receiver Bytes read: " + i);
+
+        List<SyncItem> syncItemsReceiver = new ArrayList<>();
+        client.generateSyncItems(EFileSystem.RECEIVER, syncItemsReceiver::add, i -> {
+            // System.out.println("Sender Bytes read: " + i);
         });
 
-        Flux<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
+        List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
 
-        syncList.subscribe(SyncPair::validateStatus);
+        syncPairs.forEach(SyncPair::validateStatus);
 
-        client.syncReceiver(syncList, new TestClientListener());
+        client.syncReceiver(syncPairs, new TestClientListener());
 
         client.disconnectFileSystems();
     }

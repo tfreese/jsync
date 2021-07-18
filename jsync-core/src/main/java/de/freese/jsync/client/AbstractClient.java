@@ -3,8 +3,10 @@ package de.freese.jsync.client;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 
@@ -123,12 +125,12 @@ public abstract class AbstractClient implements Client
 
         try
         {
-            Flux<ByteBuffer> fileFlux = getSender().readFile(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
+            Flux<ByteBuffer> fileList = getSender().readFile(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
 
             AtomicLong bytesTransferred = new AtomicLong(0);
-            fileFlux = fileFlux.doOnNext(byteBuffer -> clientListener.copyProgress(getOptions(), syncItem, bytesTransferred.addAndGet(byteBuffer.limit())));
+            fileList = fileList.doOnNext(byteBuffer -> clientListener.copyProgress(getOptions(), syncItem, bytesTransferred.addAndGet(byteBuffer.limit())));
 
-            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileFlux).subscribe(ReactiveUtils.releaseConsumer());
+            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).subscribe(ReactiveUtils.releaseConsumer());
         }
         catch (Exception ex)
         {
@@ -156,10 +158,10 @@ public abstract class AbstractClient implements Client
      * {@link SyncStatus#DIFFERENT_SIZE}<br>
      * {@link SyncStatus#DIFFERENT_CHECKSUM}<br>
      *
-     * @param syncFlux {@link Flux}
+     * @param syncPairs {@link List}
      * @param clientListener {@link ClientListener}
      */
-    protected void copyFiles(final Flux<SyncPair> syncFlux, final ClientListener clientListener)
+    protected void copyFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isFile = p -> p.getSenderItem().isFile();
@@ -178,9 +180,9 @@ public abstract class AbstractClient implements Client
                 )
                 ;
 
-        syncFlux
+        syncPairs.stream()
             .filter(filter)
-            .subscribe(pair -> copyFile(pair.getSenderItem(), clientListener))
+            .forEach(pair -> copyFile(pair.getSenderItem(), clientListener))
             ;
         //@formatter:on
     }
@@ -189,10 +191,10 @@ public abstract class AbstractClient implements Client
      * Erstellen von leeren Verzeichnissen mit relativem Pfad zum Basis-Verzeichnis.<br>
      * {@link SyncStatus#ONLY_IN_SOURCE}<br>
      *
-     * @param syncFlux {@link Flux}
+     * @param syncPairs {@link List}
      * @param clientListener {@link ClientListener}
      */
-    protected void createDirectories(final Flux<SyncPair> syncFlux, final ClientListener clientListener)
+    protected void createDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isDirectory = p -> p.getSenderItem().isDirectory();
@@ -206,9 +208,9 @@ public abstract class AbstractClient implements Client
                 .and(isEmpty)
                 ;
 
-        syncFlux
+        syncPairs.stream()
             .filter(filter)
-            .subscribe(pair -> createDirectory(pair.getSenderItem(), clientListener))
+            .forEach(pair -> createDirectory(pair.getSenderItem(), clientListener))
             ;
         // @formatter:on
     }
@@ -265,10 +267,10 @@ public abstract class AbstractClient implements Client
      * Löschen der Verzeichnisse und Dateien mit relativem Pfad zum Basis-Verzeichnis.<br>
      * {@link SyncStatus#ONLY_IN_TARGET}<br>
      *
-     * @param syncFlux {@link Flux}
+     * @param syncPairs {@link List}
      * @param clientListener {@link ClientListener}
      */
-    protected void deleteDirectories(final Flux<SyncPair> syncFlux, final ClientListener clientListener)
+    protected void deleteDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getReceiverItem() != null;
         Predicate<SyncPair> isDirectory = p -> p.getReceiverItem().isDirectory();
@@ -280,9 +282,9 @@ public abstract class AbstractClient implements Client
                 .and(isOnlyInTarget)
                 ;
 
-        syncFlux
+        syncPairs.stream()
             .filter(filter)
-            .subscribe(pair -> delete(pair.getReceiverItem(), clientListener))
+            .forEach(pair -> delete(pair.getReceiverItem(), clientListener))
             ;
         // @formatter:on
     }
@@ -291,10 +293,10 @@ public abstract class AbstractClient implements Client
      * Löschen der Dateien mit relativem Pfad zum Basis-Verzeichnis.<br>
      * {@link SyncStatus#ONLY_IN_TARGET}<br>
      *
-     * @param syncFlux {@link Flux}
+     * @param syncPairs {@link List}
      * @param clientListener {@link ClientListener}
      */
-    protected void deleteFiles(final Flux<SyncPair> syncFlux, final ClientListener clientListener)
+    protected void deleteFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getReceiverItem() != null;
         Predicate<SyncPair> isFile = p -> p.getReceiverItem().isFile();
@@ -306,9 +308,9 @@ public abstract class AbstractClient implements Client
                 .and(isOnlyInTarget)
                 ;
 
-        syncFlux
+        syncPairs.stream()
             .filter(filter)
-            .subscribe(pair -> delete(pair.getReceiverItem(), clientListener))
+            .forEach(pair -> delete(pair.getReceiverItem(), clientListener))
             ;
         // @formatter:on
     }
@@ -324,10 +326,11 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.LongConsumer)
+     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.Consumer,
+     *      java.util.function.LongConsumer)
      */
     @Override
-    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem, final LongConsumer consumerBytesRead)
+    public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem, final LongConsumer consumerBytesRead)
     {
         FileSystem fs = null;
         String baseDir = null;
@@ -343,7 +346,7 @@ public abstract class AbstractClient implements Client
             baseDir = getReceiverPath();
         }
 
-        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), getOptions().isChecksum(), consumerBytesRead);
+        fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), getOptions().isChecksum(), consumerSyncItem, consumerBytesRead);
     }
 
     /**
@@ -443,10 +446,10 @@ public abstract class AbstractClient implements Client
      * {@link SyncStatus#DIFFERENT_USER}<br>
      * {@link SyncStatus#DIFFERENT_GROUP}<br>
      *
-     * @param syncFlux {@link Flux}
+     * @param syncPairs {@link List}
      * @param clientListener {@link ClientListener}
      */
-    protected void updateDirectories(final Flux<SyncPair> syncFlux, final ClientListener clientListener)
+    protected void updateDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isDirectory = p -> p.getSenderItem().isDirectory();
@@ -467,9 +470,9 @@ public abstract class AbstractClient implements Client
                 )
                 ;
 
-        syncFlux
+        syncPairs.stream()
             .filter(filter)
-            .subscribe(pair -> update(pair.getSenderItem(), clientListener))
+            .forEach(pair -> update(pair.getSenderItem(), clientListener))
             ;
         // @formatter:on
     }
@@ -482,10 +485,10 @@ public abstract class AbstractClient implements Client
      * {@link SyncStatus#DIFFERENT_USER}<br>
      * {@link SyncStatus#DIFFERENT_GROUP}<br>
      *
-     * @param syncFlux {@link Flux}
+     * @param syncPairs {@link List}
      * @param clientListener {@link ClientListener}
      */
-    protected void updateFiles(final Flux<SyncPair> syncFlux, final ClientListener clientListener)
+    protected void updateFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isFile = p -> p.getSenderItem().isFile();
@@ -506,9 +509,9 @@ public abstract class AbstractClient implements Client
                 )
                 ;
 
-        syncFlux
+        syncPairs.stream()
             .filter(filter)
-            .subscribe(pair -> update(pair.getSenderItem(), clientListener))
+            .forEach(pair -> update(pair.getSenderItem(), clientListener))
             ;
         // @formatter:on
     }

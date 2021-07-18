@@ -2,10 +2,10 @@
 package de.freese.jsync.filesystem;
 
 import java.net.URI;
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.model.SyncItem;
-import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
@@ -30,9 +30,9 @@ public interface FileSystem
      * @param baseDir String
      * @param followSymLinks boolean
      * @param withChecksum boolean
+     * @param consumerSyncItem {@link Consumer}
      * @param consumerBytesRead {@link LongConsumer}
-     *
-     * @return {@link Flux}
      */
-    Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks, boolean withChecksum, LongConsumer consumerBytesRead);
+    void generateSyncItems(String baseDir, boolean followSymLinks, boolean withChecksum, final Consumer<SyncItem> consumerSyncItem,
+                           LongConsumer consumerBytesRead);
 }

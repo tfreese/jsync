@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.MethodOrderer;
@@ -20,7 +21,6 @@ import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
-import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
@@ -40,24 +40,9 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
         System.out.printf("Quelle: %s%n", base);
 
         Generator generator = new DefaultGenerator();
+        List<SyncItem> syncItems = new ArrayList<>();
 
-        Flux<SyncItem> fluxSyncItems = generator.generateItems(base.toString(), false);
-
-        // long size = fluxSyncItems.count().block();
-        // System.out.printf("Anzahl SyncItems: %d%n", size);
-        // assertEquals(5, size);
-        //
-        // fluxSyncItems.subscribe(System.out::println);
-        //
-//        // @formatter:off
-//        fluxSyncItems.as(StepVerifier::create)
-//            .consumeNextWith(System.out::println)
-//            .expectNextCount(4)
-//            .verifyComplete()
-//            ;
-//        // @formatter:on
-
-        List<SyncItem> syncItems = fluxSyncItems.collectList().block();
+        generator.generateItems(base.toString(), false, syncItems::add);
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 
@@ -78,9 +63,9 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
         System.out.printf("Ziel: %s%n", base);
 
         Generator generator = new DefaultGenerator();
-        Flux<SyncItem> fluxSyncItems = generator.generateItems(base.toString(), false);
+        List<SyncItem> syncItems = new ArrayList<>();
 
-        List<SyncItem> syncItems = fluxSyncItems.collectList().block();
+        generator.generateItems(base.toString(), false, syncItems::add);
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 

@@ -2,10 +2,10 @@
 package de.freese.jsync.generator;
 
 import java.nio.file.Path;
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.model.SyncItem;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -24,15 +24,14 @@ public interface Generator
      *
      * @return {@link Mono}
      */
-    Mono<String> generateChecksum(final String baseDir, String relativeFile, final LongConsumer consumerBytesRead);
+    String generateChecksum(final String baseDir, String relativeFile, final LongConsumer consumerBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      *
      * @param baseDir String
      * @param followSymLinks boolean
-     *
-     * @return {@link Flux}
+     * @param consumerSyncItem {@link Consumer}
      */
-    Flux<SyncItem> generateItems(final String baseDir, boolean followSymLinks);
+    void generateItems(final String baseDir, boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem);
 }

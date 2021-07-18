@@ -8,7 +8,6 @@ import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
@@ -62,9 +61,9 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     @Override
     protected Void doInBackground() throws Exception
     {
-        List<SyncPair> syncList = getSyncView().getSyncList();
+        List<SyncPair> syncPairs = getSyncView().getSyncList();
 
-        getClient().syncReceiver(Flux.fromIterable(syncList), this);
+        getClient().syncReceiver(syncPairs, this);
 
         return null;
     }

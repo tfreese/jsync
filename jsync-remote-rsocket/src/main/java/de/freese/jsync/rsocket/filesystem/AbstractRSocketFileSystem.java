@@ -3,8 +3,7 @@ package de.freese.jsync.rsocket.filesystem;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.LongConsumer;
 
@@ -25,9 +24,7 @@ import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.ByteBufPayload;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import reactor.netty.tcp.TcpClient;
 import reactor.util.retry.Retry;
 
@@ -124,13 +121,12 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      * @param baseDir String
      * @param followSymLinks boolean
      * @param withChecksum boolean
+     * @param consumerSyncItem {@link Consumer}
      * @param consumerBytesRead {@link LongConsumer}
      * @param command {@link JSyncCommand}
-     *
-     * @return {@link Flux}
      */
-    protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final boolean withChecksum,
-                                               final LongConsumer consumerBytesRead, final JSyncCommand command)
+    protected void generateSyncItems(final String baseDir, final boolean followSymLinks, final boolean withChecksum, final Consumer<SyncItem> consumerSyncItem,
+                                     final LongConsumer consumerBytesRead, final JSyncCommand command)
     {
         ByteBuf byteBufMeta = getByteBufAllocator().buffer();
         getSerializer().writeTo(byteBufMeta, command);
@@ -140,39 +136,26 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         getSerializer().writeTo(byteBufData, followSymLinks);
         getSerializer().writeTo(byteBufData, withChecksum);
 
-        // Sinks.Many<SyncItem> latestChange = Sinks.many().replay().all();
-        // latestChange.asFlux().publishOn(Schedulers.boundedElastic()).subscribe(LOGGER::info);
-        // latestChange.tryEmitNext("--");
-
         // @formatter:off
-        return getClient()
+        getClient()
             .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
-            // Die weitere Verarbeitung soll in einem separaten Thread erfolgen.
-            // Da der Consumer die Methode getChecksum aufruft, befindet sich dieser im gleichen reactivem-Thread.
-            // Dort sind die #block-Methoden verboten -> "block()/blockFirst()/blockLast() are blocking, which is not supported in thread ..."
-            //
-            // Siehe JavaDoc von Schedulers
-            // #boundedElastic(): Optimized for longer executions, an alternative for blocking tasks where the number of active tasks (and threads) is capped
-            .publishOn(Schedulers.boundedElastic())
-            .flatMapMany(payload -> {
+            .doOnNext(payload -> {
                 ByteBuf byteBuf = payload.data();
 
                 int itemCount = getSerializer().readFrom(byteBuf, int.class);
-                List<SyncItem> syncItems = new ArrayList<>();
 
                 for (int i = 0; i < itemCount; i++)
                 {
                     SyncItem syncItem = getSerializer().readFrom(byteBuf, SyncItem.class);
 
-                    syncItems.add(syncItem);
+                    consumerSyncItem.accept(syncItem);
                 }
 
                 //payload.release();
                 //byteBuf.release();
-
-                return Flux.fromIterable(syncItems);
             })
             .doOnError(th -> getLogger().error(null, th))
+            .subscribe()
             ;
         // @formatter:on
     }

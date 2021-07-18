@@ -16,6 +16,7 @@ import java.nio.file.attribute.UserPrincipal;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -27,8 +28,6 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
 import de.freese.jsync.utils.DigestUtils;
 import de.freese.jsync.utils.JSyncUtils;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Default-Implementierung des {@link Generator}.
@@ -41,13 +40,11 @@ public class DefaultGenerator extends AbstractGenerator
      * @see de.freese.jsync.generator.Generator#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public Mono<String> generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
+    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
     {
-        return Mono.fromCallable(() -> {
-            Path path = Paths.get(baseDir, relativeFile);
+        Path path = Paths.get(baseDir, relativeFile);
 
-            return DigestUtils.sha256DigestAsHex(path, consumerBytesRead);
-        });
+        return DigestUtils.sha256DigestAsHex(path, consumerBytesRead);
     }
 
     /**
@@ -68,16 +65,16 @@ public class DefaultGenerator extends AbstractGenerator
     }
 
     /**
-     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean)
+     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean, java.util.function.Consumer)
      */
     @Override
-    public Flux<SyncItem> generateItems(final String baseDir, final boolean followSymLinks)
+    public void generateItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
     {
         Path base = Paths.get(baseDir);
 
         if (Files.notExists(base))
         {
-            return Flux.empty();
+            return;
         }
 
         FileVisitOption[] visitOptions = JSyncUtils.getFileVisitOptions(followSymLinks);
@@ -85,7 +82,7 @@ public class DefaultGenerator extends AbstractGenerator
         LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
 
         // @formatter:off
-        return getPathsAsFlux(base, visitOptions)
+         getPaths(base, visitOptions).stream()
             .map(path -> {
                 String relativePath = base.relativize(path).toString();
 
@@ -93,6 +90,7 @@ public class DefaultGenerator extends AbstractGenerator
 
                 return syncItem;
             })
+            .forEach(consumerSyncItem)
             ;
         // @formatter:on
     }

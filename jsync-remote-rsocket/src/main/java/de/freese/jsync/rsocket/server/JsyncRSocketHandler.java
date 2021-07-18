@@ -2,6 +2,7 @@
 package de.freese.jsync.rsocket.server;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.reactivestreams.Publisher;
@@ -156,15 +157,14 @@ public class JsyncRSocketHandler implements RSocket
         boolean followSymLinks = getSerializer().readFrom(byteBufData, Boolean.class);
         boolean withChecksum = getSerializer().readFrom(byteBufData, Boolean.class);
 
-        Flux<SyncItem> syncItemsFlux = fileSystem.generateSyncItems(baseDir, followSymLinks, withChecksum, i -> {
+        List<SyncItem> syncItems = new ArrayList<>();
+        fileSystem.generateSyncItems(baseDir, followSymLinks, withChecksum, syncItems::add, i -> {
         });
 
-        List<SyncItem> syncItemsList = syncItemsFlux.collectList().block();
-
         ByteBuf byteBuf = getByteBufAllocator().buffer();
-        getSerializer().writeTo(byteBuf, syncItemsList.size());
+        getSerializer().writeTo(byteBuf, syncItems.size());
 
-        syncItemsList.forEach(syncItem -> getSerializer().writeTo(byteBuf, syncItem));
+        syncItems.forEach(syncItem -> getSerializer().writeTo(byteBuf, syncItem));
 
         return Mono.just(ByteBufPayload.create(byteBuf));// .doFinally(signalType -> byteBuf.release());
     }
@@ -236,8 +236,6 @@ public class JsyncRSocketHandler implements RSocket
                 JSyncCommand command = getSerializer().readFrom(byteBufMeta, JSyncCommand.class);
                 getLogger().debug("read command: {}", command);
 
-                // RSocketUtils.release(payload);
-
                 return switch (command)
                 {
                     case TARGET_WRITE_FILE -> writeFile(payload, flux.skip(1), receiver);
@@ -264,9 +262,6 @@ public class JsyncRSocketHandler implements RSocket
     @Override
     public Mono<Payload> requestResponse(final Payload payload)
     {
-        // Sender sender = THREAD_LOCAL_SENDER.get();
-        // Receiver receiver = THREAD_LOCAL_RECEIVER.get()
-
         Sender sender = POOL_SENDER.obtain();
         Receiver receiver = POOL_RECEIVER.obtain();
 
@@ -301,8 +296,6 @@ public class JsyncRSocketHandler implements RSocket
         {
             // RSocketUtils.release(payload);
 
-            // THREAD_LOCAL_SENDER.set(sender);
-            // THREAD_LOCAL_RECEIVER.set(receiver);
             POOL_SENDER.free(sender);
             POOL_RECEIVER.free(receiver);
         }
