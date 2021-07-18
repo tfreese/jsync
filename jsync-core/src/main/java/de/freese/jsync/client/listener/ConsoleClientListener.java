@@ -38,11 +38,11 @@ public class ConsoleClientListener extends AbstractClientListener
         //
         // if (console != null)
         // {
-        // printStream = console.writer();
+        // this.printStream = console.writer();
         // }
         // else
         // {
-        // printStream = System.out;
+        // this.printStream = System.out;
         // }
 
         this.printStream = System.out;
@@ -56,6 +56,11 @@ public class ConsoleClientListener extends AbstractClientListener
     @Override
     public void copyProgress(final Options options, final SyncItem syncItem, final long bytesTransferred)
     {
+        if (bytesTransferred == 0)
+        {
+            return;
+        }
+
         String message = copyProgressMessage(options, syncItem, bytesTransferred);
 
         if (message == null)
@@ -63,14 +68,13 @@ public class ConsoleClientListener extends AbstractClientListener
             return;
         }
 
-        message = "\r\t" + message;
+        // getPrintStream().printf("\t%s%n", message);
+        getPrintStream().println(message);
 
-        getPrintStream().print(message);
-
-        if (syncItem.getSize() == bytesTransferred)
-        {
-            getPrintStream().println();
-        }
+        // if (syncItem.getSize() == bytesTransferred)
+        // {
+        // getPrintStream().println();
+        // }
     }
 
     /**
@@ -124,8 +128,6 @@ public class ConsoleClientListener extends AbstractClientListener
     {
         String message = updateMessage(options, syncItem);
 
-        message = "\t" + message;
-
         getPrintStream().println(message);
     }
 
@@ -136,8 +138,6 @@ public class ConsoleClientListener extends AbstractClientListener
     public void validate(final Options options, final SyncItem syncItem)
     {
         String message = validateMessage(options, syncItem);
-
-        message = "\t" + message;
 
         getPrintStream().println(message);
     }

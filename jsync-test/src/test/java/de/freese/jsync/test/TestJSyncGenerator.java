@@ -47,11 +47,11 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
         // System.out.printf("Anzahl SyncItems: %d%n", size);
         // assertEquals(5, size);
         //
-        // fluxSyncItems.subscribe(syncItem -> LOGGER.info("{}", syncItem));
+        // fluxSyncItems.subscribe(System.out::println);
         //
 //        // @formatter:off
 //        fluxSyncItems.as(StepVerifier::create)
-//            .consumeNextWith(syncItem -> LOGGER.info("{}", syncItem))
+//            .consumeNextWith(System.out::println)
 //            .expectNextCount(4)
 //            .verifyComplete()
 //            ;

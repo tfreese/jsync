@@ -4,6 +4,7 @@ package de.freese.jsync.client;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 
@@ -14,16 +15,16 @@ import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filesystem.FileSystem;
-import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
-import de.freese.jsync.filesystem.receiver.Receiver;
-import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.filesystem.sender.Sender;
+import de.freese.jsync.filesystem.Receiver;
+import de.freese.jsync.filesystem.Sender;
+import de.freese.jsync.filesystem.local.LocalhostReceiver;
+import de.freese.jsync.filesystem.local.LocalhostSender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
 import de.freese.jsync.utils.JSyncUtils;
+import de.freese.jsync.utils.ReactiveUtils;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Basis-Implementierung des {@link Client}.
@@ -32,29 +33,6 @@ import reactor.core.publisher.Mono;
  */
 public abstract class AbstractClient implements Client
 {
-    /**
-     * @author Thomas Freese
-     */
-    public enum RemoteMode
-    {
-        /**
-         *
-         */
-        NIO,
-        /**
-        *
-        */
-        RSOCKET,
-        /**
-         *
-         */
-        SPRING_REST_TEMPLATE,
-        /**
-        *
-        */
-        SPRING_WEB_CLIENT;
-    }
-
     /**
      *
      */
@@ -83,11 +61,6 @@ public abstract class AbstractClient implements Client
     /**
      *
      */
-    private final RemoteMode remoteMode;
-
-    /**
-     *
-     */
     private final Sender sender;
 
     /**
@@ -109,60 +82,15 @@ public abstract class AbstractClient implements Client
      */
     protected AbstractClient(final Options options, final URI senderUri, final URI receiverUri)
     {
-        this(options, senderUri, receiverUri, RemoteMode.NIO);
-    }
-
-    /**
-     * Erzeugt eine neue Instanz von {@link AbstractClient}.
-     *
-     * @param options {@link Options}
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     * @param remoteMode {@link RemoteMode}
-     */
-    protected AbstractClient(final Options options, final URI senderUri, final URI receiverUri, final RemoteMode remoteMode)
-    {
         this.options = Objects.requireNonNull(options, "options required");
         this.senderUri = Objects.requireNonNull(senderUri, "senderUri required");
         this.receiverUri = Objects.requireNonNull(receiverUri, "receiverUri required");
-        this.remoteMode = remoteMode;
 
         this.senderPath = JSyncUtils.normalizePath(senderUri);
         this.receiverPath = JSyncUtils.normalizePath(receiverUri);
 
-        // if ((senderUri.getScheme() != null) && senderUri.getScheme().startsWith("jsync"))
-        // {
-        // this.sender = switch (this.remoteMode)
-        // {
-        // case NIO -> new RemoteSenderNio();
-        // case RSOCKET -> new RemoteSenderRSocket();
-        // case SPRING_REST_TEMPLATE -> new RemoteSenderRestClient();
-        // // case SPRING_WEB_CLIENT -> new RemoteSenderWebFluxClient();
-        //
-        // default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
-        // };
-        // }
-        // else
-        // {
         this.sender = new LocalhostSender();
-        // }
-
-        // if ((receiverUri.getScheme() != null) && receiverUri.getScheme().startsWith("jsync"))
-        // {
-        // this.receiver = switch (this.remoteMode)
-        // {
-        // case NIO -> new RemoteReceiverNio();
-        // case RSOCKET -> new RemoteReceiverRSocket();
-        // case SPRING_REST_TEMPLATE -> new RemoteReceiverRestClient();
-        // // case SPRING_WEB_CLIENT -> new RemoteReceiverWebFluxClient();
-        //
-        // default -> throw new IllegalArgumentException("Unexpected remote mode: " + this.remoteMode);
-        // };
-        // }
-        // else
-        // {
         this.receiver = new LocalhostReceiver();
-        // }
     }
 
     /**
@@ -197,7 +125,10 @@ public abstract class AbstractClient implements Client
         {
             Flux<ByteBuffer> fileFlux = getSender().readFile(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
 
-            getReceiver().writeFile(this.senderPath, this.receiverPath, sizeOfFile, fileFlux);
+            AtomicLong bytesTransferred = new AtomicLong(0);
+            fileFlux = fileFlux.doOnNext(byteBuffer -> clientListener.copyProgress(getOptions(), syncItem, bytesTransferred.addAndGet(byteBuffer.limit())));
+
+            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileFlux).subscribe(ReactiveUtils.releaseConsumer());
         }
         catch (Exception ex)
         {
@@ -238,8 +169,17 @@ public abstract class AbstractClient implements Client
         Predicate<SyncPair> isDifferentChecksum = p -> SyncStatus.DIFFERENT_CHECKSUM.equals(p.getStatus());
 
         // @formatter:off
+        Predicate<SyncPair> filter = isExisting
+                .and(isFile)
+                .and(isOnlyInSource
+                        .or(isDifferentTimestamp)
+                        .or(isDifferentSize)
+                        .or(isDifferentChecksum)
+                )
+                ;
+
         syncFlux
-            .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentTimestamp).or(isDifferentSize).or(isDifferentChecksum)))
+            .filter(filter)
             .subscribe(pair -> copyFile(pair.getSenderItem(), clientListener))
             ;
         //@formatter:on
@@ -260,8 +200,14 @@ public abstract class AbstractClient implements Client
         Predicate<SyncPair> isEmpty = p -> p.getSenderItem().getSize() == 0;
 
         // @formatter:off
+        Predicate<SyncPair> filter = isExisting
+                .and(isDirectory)
+                .and(isOnlyInTarget)
+                .and(isEmpty)
+                ;
+
         syncFlux
-            .filter(isExisting.and(isDirectory).and(isOnlyInTarget).and(isEmpty))
+            .filter(filter)
             .subscribe(pair -> createDirectory(pair.getSenderItem(), clientListener))
             ;
         // @formatter:on
@@ -329,8 +275,13 @@ public abstract class AbstractClient implements Client
         Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_TARGET.equals(p.getStatus());
 
         // @formatter:off
+        Predicate<SyncPair> filter = isExisting
+                .and(isDirectory)
+                .and(isOnlyInTarget)
+                ;
+
         syncFlux
-            .filter(isExisting.and(isDirectory).and(isOnlyInTarget))
+            .filter(filter)
             .subscribe(pair -> delete(pair.getReceiverItem(), clientListener))
             ;
         // @formatter:on
@@ -350,8 +301,13 @@ public abstract class AbstractClient implements Client
         Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_TARGET.equals(p.getStatus());
 
         // @formatter:off
+        Predicate<SyncPair> filter = isExisting
+                .and(isFile)
+                .and(isOnlyInTarget)
+                ;
+
         syncFlux
-            .filter(isExisting.and(isFile).and(isOnlyInTarget))
+            .filter(filter)
             .subscribe(pair -> delete(pair.getReceiverItem(), clientListener))
             ;
         // @formatter:on
@@ -368,40 +324,10 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
-     *      java.util.function.LongConsumer)
+     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.LongConsumer)
      */
     @Override
-    public void generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer consumerBytesRead)
-    {
-        if (!getOptions().isChecksum() || !syncItem.isFile())
-        {
-            return;
-        }
-
-        FileSystem fs = null;
-        String baseDir = null;
-
-        if (EFileSystem.SENDER.equals(fileSystem))
-        {
-            fs = getSender();
-            baseDir = getSenderPath();
-        }
-        else
-        {
-            fs = getReceiver();
-            baseDir = getReceiverPath();
-        }
-
-        Mono<String> checksum = fs.getChecksum(baseDir, syncItem.getRelativePath(), consumerBytesRead);
-        syncItem.setChecksum(checksum.block());
-    }
-
-    /**
-     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem)
-     */
-    @Override
-    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem)
+    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem, final LongConsumer consumerBytesRead)
     {
         FileSystem fs = null;
         String baseDir = null;
@@ -417,7 +343,7 @@ public abstract class AbstractClient implements Client
             baseDir = getReceiverPath();
         }
 
-        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks());
+        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), getOptions().isChecksum(), consumerBytesRead);
     }
 
     /**
@@ -531,8 +457,18 @@ public abstract class AbstractClient implements Client
         Predicate<SyncPair> isDifferentGroup = p -> SyncStatus.DIFFERENT_GROUP.equals(p.getStatus());
 
         // @formatter:off
+        Predicate<SyncPair> filter = isExisting
+                .and(isDirectory)
+                .and(isOnlyInSource
+                        .or(isDifferentPermission)
+                        .or(isDifferentTimestamp)
+                        .or(isDifferentUser)
+                        .or(isDifferentGroup)
+                )
+                ;
+
         syncFlux
-            .filter(isExisting.and(isDirectory).and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
+            .filter(filter)
             .subscribe(pair -> update(pair.getSenderItem(), clientListener))
             ;
         // @formatter:on
@@ -560,8 +496,18 @@ public abstract class AbstractClient implements Client
         Predicate<SyncPair> isDifferentGroup = p -> SyncStatus.DIFFERENT_GROUP.equals(p.getStatus());
 
         // @formatter:off
+        Predicate<SyncPair> filter = isExisting
+                .and(isFile)
+                .and(isOnlyInSource
+                        .or(isDifferentPermission)
+                        .or(isDifferentTimestamp)
+                        .or(isDifferentUser)
+                        .or(isDifferentGroup)
+                )
+                ;
+
         syncFlux
-            .filter(isExisting.and(isFile).and(isOnlyInSource.or(isDifferentPermission).or(isDifferentTimestamp).or(isDifferentUser).or(isDifferentGroup)))
+            .filter(filter)
             .subscribe(pair -> update(pair.getSenderItem(), clientListener))
             ;
         // @formatter:on

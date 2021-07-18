@@ -6,7 +6,6 @@ import java.util.function.LongConsumer;
 
 import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * @author Thomas Freese
@@ -30,19 +29,10 @@ public interface FileSystem
      *
      * @param baseDir String
      * @param followSymLinks boolean
+     * @param withChecksum boolean
+     * @param consumerBytesRead {@link LongConsumer}
      *
      * @return {@link Flux}
      */
-    Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks);
-
-    /**
-     * Liefert die Prüfsumme einer Datei.<br>
-     *
-     * @param baseDir String
-     * @param relativeFile String
-     * @param consumerBytesRead {@link LongConsumer}; optional
-     *
-     * @return {@link Mono}
-     */
-    Mono<String> getChecksum(String baseDir, String relativeFile, LongConsumer consumerBytesRead);
+    Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks, boolean withChecksum, LongConsumer consumerBytesRead);
 }

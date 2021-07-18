@@ -35,19 +35,6 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * Erzeugt eine neue Instanz von {@link DefaultClient}.
-     *
-     * @param options {@link Options}
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     * @param remoteMode {@link de.freese.jsync.client.AbstractClient.RemoteMode}
-     */
-    public DefaultClient(final Options options, final URI senderUri, final URI receiverUri, final RemoteMode remoteMode)
-    {
-        super(options, senderUri, receiverUri, remoteMode);
-    }
-
-    /**
      * @see de.freese.jsync.client.Client#mergeSyncItems(reactor.core.publisher.Flux, reactor.core.publisher.Flux)
      */
     @Override
@@ -70,15 +57,6 @@ public class DefaultClient extends AbstractClient
         fileList.sort(new SyncPairComparator());
 
         return Flux.fromIterable(fileList);
-    }
-
-    /**
-     * @see de.freese.jsync.client.Client#mergeSyncItems(java.util.List, java.util.List)
-     */
-    @Override
-    public List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver)
-    {
-        return mergeSyncItems(Flux.fromIterable(syncItemsSender), Flux.fromIterable(syncItemsReceiver)).collectList().block();
     }
 
     /**

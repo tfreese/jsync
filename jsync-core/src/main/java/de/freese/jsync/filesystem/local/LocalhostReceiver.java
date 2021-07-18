@@ -1,5 +1,5 @@
 // Created: 05.04.2018
-package de.freese.jsync.filesystem.receiver;
+package de.freese.jsync.filesystem.local;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -20,40 +20,22 @@ import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.LongConsumer;
 
 import de.freese.jsync.Options;
-import de.freese.jsync.generator.DefaultGenerator;
-import de.freese.jsync.generator.Generator;
+import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.utils.DigestUtils;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.ReactiveUtils;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * {@link Receiver} für Localhost-Filesysteme.
  *
  * @author Thomas Freese
  */
-public class LocalhostReceiver extends AbstractReceiver
+public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiver
 {
-    /**
-    *
-    */
-    private final Generator generator;
-
-    /**
-     * Erzeugt eine neue Instanz von {@link LocalhostReceiver}.
-     */
-    public LocalhostReceiver()
-    {
-        super();
-
-        this.generator = new DefaultGenerator();
-    }
-
     /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
      */
@@ -64,7 +46,7 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#createDirectory(java.lang.String, java.lang.String)
+     * @see de.freese.jsync.filesystem.Receiver#createDirectory(java.lang.String, java.lang.String)
      */
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
@@ -87,7 +69,7 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#delete(java.lang.String, java.lang.String, boolean)
+     * @see de.freese.jsync.filesystem.Receiver#delete(java.lang.String, java.lang.String, boolean)
      */
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
@@ -107,7 +89,7 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#disconnect()
+     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
      */
     @Override
     public void disconnect()
@@ -116,29 +98,7 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean)
-     */
-    @Override
-    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
-    {
-        getLogger().debug("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
-
-        return this.generator.generateItems(baseDir, followSymLinks);
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#getChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
-     */
-    @Override
-    public Mono<String> getChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
-    {
-        getLogger().debug("create checksum: {}/{}", baseDir, relativeFile);
-
-        return this.generator.generateChecksum(baseDir, relativeFile, consumerBytesRead);
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
+     * @see de.freese.jsync.filesystem.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
      */
     @SuppressWarnings("resource")
     @Override
@@ -189,7 +149,7 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean)
+     * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean)
      */
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
@@ -226,12 +186,12 @@ public class LocalhostReceiver extends AbstractReceiver
     }
 
     /**
-     * @see de.freese.jsync.filesystem.receiver.Receiver#writeFile(java.lang.String, java.lang.String, long, reactor.core.publisher.Flux)
+     * @see de.freese.jsync.filesystem.Receiver#writeFile(java.lang.String, java.lang.String, long, reactor.core.publisher.Flux)
      */
     @Override
-    public void writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
+    public Flux<ByteBuffer> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
-        getLogger().info("write fileHandle: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+        getLogger().info("write file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
         Path path = Paths.get(baseDir, relativeFile);
         Path parentPath = path.getParent();
@@ -248,25 +208,30 @@ public class LocalhostReceiver extends AbstractReceiver
                 Files.createFile(path);
             }
 
-            try (FileChannel fileChannelReceiver =
-                    FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))
-            {
-                ReactiveUtils.write(fileFlux, fileChannelReceiver).subscribe(ReactiveUtils.releaseConsumer());
+            // try (FileChannel fileChannelReceiver =
+            // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))
+            // {
+            // ReactiveUtils.write(fileFlux, fileChannelReceiver).subscribe(ReactiveUtils.releaseConsumer());
+            //
+            // fileChannelReceiver.force(false);
+            // }
 
-                fileChannelReceiver.force(false);
-            }
+            FileChannel fileChannelReceiver = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            return ReactiveUtils.write(fileFlux, fileChannelReceiver).doFinally(type -> {
+                try
+                {
+                    fileChannelReceiver.force(false);
+                }
+                catch (IOException ex)
+                {
+                    throw new UncheckedIOException(ex);
+                }
+            });
         }
         catch (IOException ex)
         {
             throw new UncheckedIOException(ex);
-        }
-        catch (RuntimeException ex)
-        {
-            throw ex;
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
         }
     }
 }

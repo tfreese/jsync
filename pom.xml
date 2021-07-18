@@ -27,7 +27,6 @@
     <modules>
         <module>jsync-core</module>
         <module>jsync-remote-rsocket</module>
-        <module>jsync-console</module>
         <module>jsync-swing</module>
         <module>jsync-test</module>
     </modules>

@@ -27,12 +27,6 @@
         </dependency>
 
         <!-- runtime scope -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
         <!-- provided scope -->
         <!-- test scope -->
 

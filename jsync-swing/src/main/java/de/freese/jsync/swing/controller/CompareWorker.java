@@ -1,15 +1,14 @@
 // Created: 16.08.2020
 package de.freese.jsync.swing.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * @author Thomas Freese
@@ -39,48 +38,22 @@ class CompareWorker extends AbstractWorker<Void, Void>
 
     /**
      * @param fileSystem {@link EFileSystem}
-     * @param syncItem {@link SyncItem}
      *
      * @return {@link RunnableFuture}
      */
-    private RunnableFuture<?> createChecksumFuture(final EFileSystem fileSystem, final SyncItem syncItem)
+    private Flux<SyncItem> createLoadSyncItemsFuture(final EFileSystem fileSystem)
     {
-        if ((syncItem == null) || !syncItem.isFile())
-        {
-            return null;
-        }
+        AtomicInteger counter = new AtomicInteger(0);
 
-        Runnable runnable = () -> {
-            getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
-                    getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
+        // @formatter:off
+        Flux<SyncItem> flux = getClient().generateSyncItems(fileSystem, i -> {})
+                .doOnNext(syncItem -> getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + counter.addAndGet(1)))
+                .doFinally(signal -> getSyncView().setProgressBarIndeterminate(fileSystem, false))
+                ;
+        // @formatter:on
 
-            getClient().generateChecksum(fileSystem, syncItem, bytesRead -> getSyncView().addProgressBarValue(fileSystem, (int) bytesRead));
-        };
+        return flux;
 
-        return new FutureTask<>(runnable, null);
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link RunnableFuture}
-     */
-    private RunnableFuture<List<SyncItem>> createLoadSyncItemsFuture(final EFileSystem fileSystem)
-    {
-        Callable<List<SyncItem>> callable = () -> {
-            List<SyncItem> syncItems = new ArrayList<>();
-
-            getClient().generateSyncItems(fileSystem, syncItem -> {
-                syncItems.add(syncItem);
-                getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + syncItems.size());
-            });
-
-            getSyncView().setProgressBarIndeterminate(fileSystem, false);
-
-            return syncItems;
-        };
-
-        return new FutureTask<>(callable);
     }
 
     /**
@@ -90,69 +63,24 @@ class CompareWorker extends AbstractWorker<Void, Void>
     protected Void doInBackground() throws Exception
     {
         // Dateien laden
-        RunnableFuture<List<SyncItem>> futureSenderItem = createLoadSyncItemsFuture(EFileSystem.SENDER);
-        RunnableFuture<List<SyncItem>> futureReceiverItem = createLoadSyncItemsFuture(EFileSystem.RECEIVER);
+        Flux<SyncItem> senderItems = createLoadSyncItemsFuture(EFileSystem.SENDER);
+        Flux<SyncItem> receiverItems = createLoadSyncItemsFuture(EFileSystem.RECEIVER);
 
         if (isParallel())
         {
-            getExecutorService().execute(futureSenderItem);
+            receiverItems = receiverItems.publishOn(Schedulers.boundedElastic());
         }
-        else
-        {
-            futureSenderItem.run();
-        }
-
-        futureReceiverItem.run();
-
-        List<SyncItem> syncItemsSender = futureSenderItem.get();
-        List<SyncItem> syncItemsReceiver = futureReceiverItem.get();
 
         // Merge
-        List<SyncPair> syncList = getClient().mergeSyncItems(syncItemsSender, syncItemsReceiver);
-        getSyncView().setProgressBarFiles(syncList.size());
+        Flux<SyncPair> syncList = getClient().mergeSyncItems(senderItems, receiverItems);
 
-        if (!getOptions().isChecksum())
-        {
-            syncList.forEach(syncPair -> {
-                syncPair.validateStatus();
-                getSyncView().addSyncPair(syncPair);
-            });
+        long count = syncList.count().block();
+        getSyncView().setProgressBarFiles((int) count);
 
-            return null;
-        }
-
-        // Checksum
-        for (SyncPair syncPair : syncList)
-        {
-            getSyncView().addSyncPair(syncPair);
-
-            RunnableFuture<?> futureSenderChecksum = createChecksumFuture(EFileSystem.SENDER, syncPair.getSenderItem());
-            RunnableFuture<?> futureReceiverChecksum = createChecksumFuture(EFileSystem.RECEIVER, syncPair.getReceiverItem());
-
-            if (futureSenderChecksum != null)
-            {
-                if (isParallel())
-                {
-                    getExecutorService().execute(futureSenderChecksum);
-                }
-                else
-                {
-                    futureSenderChecksum.run();
-                }
-            }
-
-            if (futureReceiverChecksum != null)
-            {
-                futureReceiverChecksum.run();
-            }
-
-            if (futureSenderChecksum != null)
-            {
-                futureSenderChecksum.get();
-            }
-
+        syncList.subscribe(syncPair -> {
             syncPair.validateStatus();
-        }
+            getSyncView().addSyncPair(syncPair);
+        });
 
         getSyncView().updateLastEntry();
 

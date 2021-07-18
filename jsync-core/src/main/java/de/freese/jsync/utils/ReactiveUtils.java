@@ -72,16 +72,12 @@ public final class ReactiveUtils
 
     /**
      * @param byteBuffer {@link ByteBuffer}
-     *
-     * @return boolean
      */
-    public static boolean release(final ByteBuffer byteBuffer)
+    public static void release(final ByteBuffer byteBuffer)
     {
         Objects.requireNonNull(byteBuffer, "byteBuffer required");
 
         ByteBufferPool.getInstance().free(byteBuffer);
-
-        return false;
     }
 
     /**

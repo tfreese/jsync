@@ -1,12 +1,11 @@
 package de.freese.jsync.client;
 
-import java.util.List;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
-import de.freese.jsync.filesystem.receiver.Receiver;
-import de.freese.jsync.filesystem.sender.Sender;
+import de.freese.jsync.filesystem.Receiver;
+import de.freese.jsync.filesystem.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import reactor.core.publisher.Flux;
@@ -29,22 +28,14 @@ public interface Client
     void disconnectFileSystems();
 
     /**
-     * Erzeugt die Prüfsumme einer Datei und speichert diese im {@link SyncItem}.<br>
-     *
-     * @param fileSystem {@link EFileSystem}
-     * @param syncItem {@link SyncItem}
-     * @param consumerBytesRead {@link LongConsumer}; optional
-     */
-    void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerBytesRead);
-
-    /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
      *
      * @param fileSystem {@link EFileSystem}
+     * @param consumerBytesRead {@link LongConsumer}
      *
      * @return {@link Flux}
      */
-    Flux<SyncItem> generateSyncItems(EFileSystem fileSystem);
+    Flux<SyncItem> generateSyncItems(EFileSystem fileSystem, final LongConsumer consumerBytesRead);
 
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
@@ -58,19 +49,6 @@ public interface Client
      * @return {@link Flux}
      */
     Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver);
-
-    /**
-     * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
-     * Die Einträge des Senders sind die Referenz.<br>
-     * Ist ein Item im Receiver nicht enthalten, muss er kopiert werden.<br>
-     * Ist ein Item nur Receiver enthalten, muss er dort gelöscht werden.<br>
-     *
-     * @param syncItemsSender {@link List}
-     * @param syncItemsReceiver {@link List}
-     *
-     * @return {@link List}
-     */
-    List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver);
 
     /**
      * Synchronisiert das Ziel-Verzeichnis mit der Quelle.

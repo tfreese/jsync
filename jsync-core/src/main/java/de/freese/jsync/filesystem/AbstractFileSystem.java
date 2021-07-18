@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.freese.jsync.Options;
+import de.freese.jsync.generator.DefaultGenerator;
+import de.freese.jsync.generator.Generator;
 
 /**
  * Basis-Implementierung des {@link FileSystem}.
@@ -15,6 +17,11 @@ import de.freese.jsync.Options;
  */
 public abstract class AbstractFileSystem implements FileSystem
 {
+    /**
+    *
+    */
+    private final Generator generator = new DefaultGenerator();
+
     /**
      *
      */
@@ -26,6 +33,14 @@ public abstract class AbstractFileSystem implements FileSystem
     protected Charset getCharset()
     {
         return Options.CHARSET;
+    }
+
+    /**
+     * @return {@link Generator}
+     */
+    protected Generator getGenerator()
+    {
+        return this.generator;
     }
 
     /**

@@ -77,7 +77,7 @@ public class DefaultGenerator extends AbstractGenerator
 
         if (Files.notExists(base))
         {
-            Flux.empty();
+            return Flux.empty();
         }
 
         FileVisitOption[] visitOptions = JSyncUtils.getFileVisitOptions(followSymLinks);
@@ -148,9 +148,9 @@ public class DefaultGenerator extends AbstractGenerator
                 // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
             }
         }
-        catch (IOException ioex)
+        catch (IOException ex)
         {
-            throw new UncheckedIOException(ioex);
+            throw new UncheckedIOException(ex);
         }
 
         return syncItem;
@@ -208,9 +208,9 @@ public class DefaultGenerator extends AbstractGenerator
                 // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
             }
         }
-        catch (IOException ioex)
+        catch (IOException ex)
         {
-            throw new UncheckedIOException(ioex);
+            throw new UncheckedIOException(ex);
         }
 
         return syncItem;

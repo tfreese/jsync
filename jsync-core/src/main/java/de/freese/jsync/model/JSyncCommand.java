@@ -21,27 +21,12 @@ public enum JSyncCommand
     /**
      *
      */
-    SOURCE_CHECKSUM,
-
-    /**
-     *
-     */
     SOURCE_CREATE_SYNC_ITEMS,
 
     /**
-    *
-    */
-    SOURCE_READ_CHUNK,
-
-    /**
      *
      */
-    SOURCE_READ_FILE_HANDLE,
-
-    /**
-     *
-     */
-    TARGET_CHECKSUM,
+    SOURCE_READ_FILE,
 
     /**
      *
@@ -69,12 +54,7 @@ public enum JSyncCommand
     TARGET_VALIDATE_FILE,
 
     /**
-    *
-    */
-    TARGET_WRITE_CHUNK,
-
-    /**
      *
      */
-    TARGET_WRITE_FILE_HANDLE
+    TARGET_WRITE_FILE
 }

@@ -1,9 +1,8 @@
 // Created: 28.04.2020
-package de.freese.jsync.filesystem.sender;
+package de.freese.jsync.filesystem;
 
 import java.nio.ByteBuffer;
 
-import de.freese.jsync.filesystem.FileSystem;
 import reactor.core.publisher.Flux;
 
 /**

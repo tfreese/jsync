@@ -1,9 +1,8 @@
 // Created: 28.04.2020
-package de.freese.jsync.filesystem.receiver;
+package de.freese.jsync.filesystem;
 
 import java.nio.ByteBuffer;
 
-import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
 
@@ -55,6 +54,8 @@ public interface Receiver extends FileSystem
      * @param relativeFile String
      * @param sizeOfFile long
      * @param fileFlux {@link Flux}
+     *
+     * @return {@link Flux}
      */
-    void writeFile(String baseDir, final String relativeFile, long sizeOfFile, Flux<ByteBuffer> fileFlux);
+    Flux<ByteBuffer> writeFile(String baseDir, final String relativeFile, long sizeOfFile, Flux<ByteBuffer> fileFlux);
 }

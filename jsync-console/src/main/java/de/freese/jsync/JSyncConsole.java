@@ -4,8 +4,6 @@
 package de.freese.jsync;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +18,7 @@ import de.freese.jsync.client.listener.ConsoleClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import reactor.core.publisher.Flux;
 
 /**
  * Consolen-Anwendung für jsync.<br>
@@ -46,7 +45,7 @@ public final class JSyncConsole
         {
             args2 = new String[]
             {
-                    "--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync/target"
+                    "--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync-console"
             };
             // args2 = new String[]
             // {
@@ -83,6 +82,19 @@ public final class JSyncConsole
         jSync.run(argumentParser);
     }
 
+    // /**
+    // *
+    // */
+    // private static void disableLogging()
+    // {
+    // // ch.qos.logback.classic.Logger Logger rootLogger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    // // rootLogger.setLevel(Level.OFF);
+    // //
+    // // LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+    // // Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
+    // // rootLogger.setLevel(Level.INFO);
+    // }
+
     /**
      * @param argumentParser {@link ArgumentParser}
      *
@@ -103,7 +115,9 @@ public final class JSyncConsole
         URI senderUri = new URI(argumentParser.sender());
         URI receiverUri = new URI(argumentParser.receiver());
 
+        System.out.println("Start syncronisation");
         syncDirectories(options, senderUri, receiverUri, new ConsoleClientListener());
+        System.out.println("Syncronisation finished");
     }
 
     /**
@@ -119,21 +133,14 @@ public final class JSyncConsole
         Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
-        List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
-            syncItemsSender.add(syncItem);
-            client.generateChecksum(EFileSystem.SENDER, syncItem, null);
+        Flux<SyncItem> syncItemsSender = client.generateSyncItems(EFileSystem.SENDER, i -> {
+        });
+        Flux<SyncItem> syncItemsReceiver = client.generateSyncItems(EFileSystem.RECEIVER, i -> {
         });
 
-        List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
-            syncItemsReceiver.add(syncItem);
-            client.generateChecksum(EFileSystem.RECEIVER, syncItem, null);
-        });
+        Flux<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
 
-        List<SyncPair> syncList = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
-
-        syncList.stream().forEach(SyncPair::validateStatus);
+        syncList.subscribe(SyncPair::validateStatus);
 
         client.syncReceiver(syncList, clientListener);
 

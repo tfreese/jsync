@@ -1,44 +1,31 @@
 // Created: 19.10.2020
 package de.freese.jsync.rsocket.server;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.NettyDataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 
-import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.FileSystem;
-import de.freese.jsync.filesystem.fileHandle.FileHandle;
-import de.freese.jsync.filesystem.receiver.LocalhostReceiver;
-import de.freese.jsync.filesystem.receiver.Receiver;
-import de.freese.jsync.filesystem.sender.LocalhostSender;
-import de.freese.jsync.filesystem.sender.Sender;
+import de.freese.jsync.filesystem.Receiver;
+import de.freese.jsync.filesystem.Sender;
+import de.freese.jsync.filesystem.local.LocalhostReceiver;
+import de.freese.jsync.filesystem.local.LocalhostSender;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
-import de.freese.jsync.rsocket.utils.RSocketUtils;
+import de.freese.jsync.utils.ReactiveUtils;
 import de.freese.jsync.utils.pool.Pool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.util.ByteBufPayload;
+import io.rsocket.util.DefaultPayload;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -60,7 +47,6 @@ public class JsyncRSocketHandler implements RSocket
     /**
     *
     */
-    // private static final ThreadLocal<Sender> THREAD_LOCAL_RECEIVER = ThreadLocal.withInitial(LocalhostReceiver::new);
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true)
     {
         /**
@@ -76,7 +62,6 @@ public class JsyncRSocketHandler implements RSocket
     /**
     *
     */
-    // private static final ThreadLocal<Sender> THREAD_LOCAL_SENDER = ThreadLocal.withInitial(LocalhostSender::new);
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true)
     {
         /**
@@ -93,27 +78,6 @@ public class JsyncRSocketHandler implements RSocket
     *
     */
     private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
-
-    /**
-     * Create the checksum.
-     *
-     * @param payload {@link Payload}
-     * @param fileSystem {@link FileSystem}
-     *
-     * @return {@link Mono}
-     */
-    private Mono<Payload> checksum(final Payload payload, final FileSystem fileSystem)
-    {
-        ByteBuf byteBufData = payload.data();
-
-        String baseDir = getSerializer().readFrom(byteBufData, String.class);
-        String relativeFile = getSerializer().readFrom(byteBufData, String.class);
-
-        String checksum = fileSystem.getChecksum(baseDir, relativeFile, i -> {
-        });
-
-        return Mono.just(ByteBufPayload.create(checksum));
-    }
 
     /**
      * @return {@link Mono}
@@ -190,22 +154,17 @@ public class JsyncRSocketHandler implements RSocket
 
         String baseDir = getSerializer().readFrom(byteBufData, String.class);
         boolean followSymLinks = getSerializer().readFrom(byteBufData, Boolean.class);
+        boolean withChecksum = getSerializer().readFrom(byteBufData, Boolean.class);
 
-        List<SyncItem> syncItems = new ArrayList<>(128);
-
-        fileSystem.generateSyncItems(baseDir, followSymLinks, syncItem -> {
-            getLogger().debug("SyncItem generated: {}", syncItem);
-
-            syncItems.add(syncItem);
+        Flux<SyncItem> syncItemsFlux = fileSystem.generateSyncItems(baseDir, followSymLinks, withChecksum, i -> {
         });
 
-        ByteBuf byteBuf = getByteBufAllocator().buffer();
-        getSerializer().writeTo(byteBuf, syncItems.size());
+        List<SyncItem> syncItemsList = syncItemsFlux.collectList().block();
 
-        for (SyncItem syncItem : syncItems)
-        {
-            getSerializer().writeTo(byteBuf, syncItem);
-        }
+        ByteBuf byteBuf = getByteBufAllocator().buffer();
+        getSerializer().writeTo(byteBuf, syncItemsList.size());
+
+        syncItemsList.forEach(syncItem -> getSerializer().writeTo(byteBuf, syncItem));
 
         return Mono.just(ByteBufPayload.create(byteBuf));// .doFinally(signalType -> byteBuf.release());
     }
@@ -234,30 +193,6 @@ public class JsyncRSocketHandler implements RSocket
         return this.serializer;
     }
 
-    // /**
-    // * Read File-Chunk from Sender.
-    // *
-    // * @param payload {@link Payload}
-    // * @param sender {@link Sender}
-    // * @return {@link Mono}
-    // */
-    // private Mono<Payload> readChunk(final Payload payload, final Sender sender)
-    // {
-    // ByteBuf byteBufData = payload.data();
-    //
-    // String baseDir = getSerializer().readFrom(byteBufData, String.class);
-    // String relativeFile = getSerializer().readFrom(byteBufData, String.class);
-    // long position = getSerializer().readFrom(byteBufData, Long.class);
-    // long sizeOfChunk = getSerializer().readFrom(byteBufData, Long.class);
-    //
-    // ByteBuf byteBuf = getByteBufAllocator().buffer((int) sizeOfChunk);
-    // ByteBuffer byteBuffer = byteBuf.nioBuffer(0, (int) sizeOfChunk);
-    //
-    // sender.readChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
-    //
-    // return Mono.just(ByteBufPayload.create(byteBuf));
-    // }
-
     /**
      * Die Daten werden zum Client gesendet.
      *
@@ -266,7 +201,7 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @return {@link Flux}
      */
-    private Flux<Payload> readFileHandle(final Payload payload, final Sender sender)
+    private Flux<Payload> readFile(final Payload payload, final Sender sender)
     {
         ByteBuf byteBufData = payload.data();
 
@@ -274,26 +209,14 @@ public class JsyncRSocketHandler implements RSocket
         String relativeFile = getSerializer().readFrom(byteBufData, String.class);
         long sizeOfFile = getSerializer().readFrom(byteBufData, Long.class);
 
-        FileHandle fileHandle = sender.readFileHandle(baseDir, relativeFile, sizeOfFile);
-
-        Flux<DataBuffer> flux = DataBufferUtils.readByteChannel(fileHandle::getHandle, new NettyDataBufferFactory(getByteBufAllocator()), Options.BUFFER_SIZE);
+        Flux<ByteBuffer> fileFlux = sender.readFile(baseDir, relativeFile, sizeOfFile);
 
         // @formatter:off
-        return flux
-                .cast(NettyDataBuffer.class)
-                .map(dataBuffer -> ByteBufPayload.create(dataBuffer.getNativeBuffer()))
+        return fileFlux
+                .map(DefaultPayload::create)
                 //.doFinally(signalType -> dataBuffer.release())
                 ;
         // @formatter:on
-
-        // Flux<ByteBuffer> flux = RSocketUtils.readByteChannel(fileHandle::getHandle, null, Options.BUFFER_SIZE);
-        //
-//        // @formatter:off
-//        return flux
-//                .map(DefaultPayload::create)
-//                //.doFinally(signalType -> dataBuffer.release())
-//                ;
-//        // @formatter:on
     }
 
     /**
@@ -302,7 +225,6 @@ public class JsyncRSocketHandler implements RSocket
     @Override
     public Flux<Payload> requestChannel(final Publisher<Payload> payloads)
     {
-        // Receiver receiver = THREAD_LOCAL_RECEIVER.get();
         Receiver receiver = POOL_RECEIVER.obtain();
 
         return Flux.from(payloads).switchOnFirst((firstSignal, flux) -> {
@@ -318,7 +240,7 @@ public class JsyncRSocketHandler implements RSocket
 
                 return switch (command)
                 {
-                    case TARGET_WRITE_FILE_HANDLE -> writeFileHandle(payload, flux.skip(1), receiver);
+                    case TARGET_WRITE_FILE -> writeFile(payload, flux.skip(1), receiver);
 
                     default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
                 };
@@ -331,7 +253,6 @@ public class JsyncRSocketHandler implements RSocket
             }
             finally
             {
-                // THREAD_LOCAL_RECEIVER.set(receiver);
                 POOL_RECEIVER.free(receiver);
             }
         });
@@ -361,15 +282,11 @@ public class JsyncRSocketHandler implements RSocket
                 case CONNECT -> connect();
                 case DISCONNECT -> disconnect();
                 case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
-                case SOURCE_CHECKSUM -> checksum(payload, sender);
-                // case SOURCE_READ_CHUNK -> readChunk(payload, sender);
                 case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
-                case TARGET_CHECKSUM -> checksum(payload, receiver);
                 case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
                 case TARGET_DELETE -> delete(payload, receiver);
                 case TARGET_UPDATE -> update(payload, receiver);
                 case TARGET_VALIDATE_FILE -> validate(payload, receiver);
-                // case TARGET_WRITE_CHUNK -> writeChunk(payload, receiver);
 
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
@@ -397,7 +314,6 @@ public class JsyncRSocketHandler implements RSocket
     @Override
     public Flux<Payload> requestStream(final Payload payload)
     {
-        // Sender sender = THREAD_LOCAL_SENDER.get();
         Sender sender = POOL_SENDER.obtain();
 
         try
@@ -409,7 +325,7 @@ public class JsyncRSocketHandler implements RSocket
 
             return switch (command)
             {
-                case SOURCE_READ_FILE_HANDLE -> readFileHandle(payload, sender);
+                case SOURCE_READ_FILE -> readFile(payload, sender);
 
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
@@ -424,7 +340,6 @@ public class JsyncRSocketHandler implements RSocket
         {
             // RSocketUtils.release(payload);
 
-            // THREAD_LOCAL_SENDER.set(sender);
             POOL_SENDER.free(sender);
         }
     }
@@ -479,106 +394,28 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @return {@link Flux}
      */
-    private Flux<Payload> writeFileHandle(final Payload payload, final Flux<Payload> flux, final Receiver receiver)
+    private Flux<Payload> writeFile(final Payload payload, final Flux<Payload> flux, final Receiver receiver)
     {
         ByteBuf byteBufData = payload.data();
 
         String baseDir = getSerializer().readFrom(byteBufData, String.class);
         String relativeFile = getSerializer().readFrom(byteBufData, String.class);
-        // long sizeOfFile = getSerializer().readFrom(byteBufData, Long.class);
-
-        Path path = Paths.get(baseDir, relativeFile);
-        Path parentPath = path.getParent();
-
-        final Flux<Payload> response;
-
-        // FileHandleFluxByteBuffer fileHandle = new FileHandleFluxByteBuffer(flux.map(Payload::getData));
-
-        try
-        {
-            // FileHandle fileHandle = new FileHandle()
-            // {
-            // /**
-            // * @see de.freese.jsync.filesystem.fileHandle.FileHandle#writeTo(java.nio.channels.WritableByteChannel, long)
-            // */
-            // @Override
-            // public <T> T writeTo(final WritableByteChannel writableByteChannel, final long sizeOfFile) throws Exception
-            // {
-            // response = RSocketUtils.write(flux.map(Payload::getData), writableByteChannel).map(ByteBuffer::position)
-            // .map(bytesWritten -> ByteBufPayload.create("CHUNK_COMPLETED: bytesWritten = " + bytesWritten))
-            // .doOnError(th -> ByteBufPayload.create(th.getMessage())).doFinally(signalType -> {
-            // RSocketUtils.close(writableByteChannel);
-            // });
-            //
-            // return null;
-            // }
-            // };
-            //
-            // receiver.writeFileHandle(baseDir, relativeFile, sizeOfFile, fileHandle, bytesWritten -> {
-            // });
-
-            if (Files.notExists(parentPath))
-            {
-                Files.createDirectories(parentPath);
-            }
-
-            if (Files.notExists(path))
-            {
-                Files.createFile(path);
-            }
-
-            // Receiver wird hier nicht verwendet.
-            final FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            // @formatter:off
-            response = RSocketUtils.write(flux.map(Payload::getData), fileChannel)
-                    .map(ByteBuffer::position)
-                    .map(bytesWritten -> ByteBufPayload.create("CHUNK_COMPLETED: bytesWritten = " + bytesWritten))
-                    .doOnError(th -> ByteBufPayload.create(th.getMessage()))
-                    .doFinally(signalType -> RSocketUtils.close(fileChannel))
-                    ;
-            // @formatter:on
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
+        long sizeOfFile = getSerializer().readFrom(byteBufData, Long.class);
 
         // @formatter:off
-        return Flux.concat(response, Mono.just(ByteBufPayload.create("TRANSFER COMPLETED")));
+        Flux<Payload> response = receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
+                .map(byteBuffer -> {
+                    int bytesWritten = byteBuffer.position();
+                    ReactiveUtils.release(byteBuffer);
+                    return bytesWritten;
+                })
+                .map(bytesWritten -> ByteBufPayload.create("CHUNK_COMPLETED: bytesWritten = " + bytesWritten))
+                .doOnError(th -> ByteBufPayload.create(th.getMessage()))
+                ;
         // @formatter:on
 
+        return Flux.concat(response, Mono.just(ByteBufPayload.create("TRANSFER COMPLETED")));
+
         // return Flux.concat(response, Mono.just(DefaultPayload.create("TRANSFER COMPLETED"))).onErrorReturn(DefaultPayload.create("FAILED"));
-        //
-//        // @formatter:off
-//        return Flux.concat(response, Mono.just(ByteBufPayload.create("TRANSFER COMPLETED")))
-//                .doOnError(th -> ByteBufPayload.create(th.getMessage()))
-//                .doOnEach(signal -> RSocketUtils.release(signal.get()))
-//                ;
-
-//        return Flux.just(ByteBufPayload.create("OK"));
     }
-
-//    /**
-//     * Write File-Chunk to Receiver.
-//     *
-//     * @param payload {@link Payload}
-//     * @param receiver {@link Receiver}
-//     * @return {@link Mono}
-//     */
-//    private Mono<Payload> writeChunk(final Payload payload, final Receiver receiver)
-//    {
-//        ByteBuf byteBufData = payload.data();
-//
-//        String baseDir = getSerializer().readFrom(byteBufData, String.class);
-//        String relativeFile = getSerializer().readFrom(byteBufData, String.class);
-//        long position = getSerializer().readFrom(byteBufData, Long.class);
-//        long sizeOfChunk = getSerializer().readFrom(byteBufData, Long.class);
-//
-//        ByteBuffer byteBuffer = byteBufData.nioBuffer();
-//
-//        receiver.writeChunk(baseDir, relativeFile, position, sizeOfChunk, byteBuffer);
-//
-//        return Mono.just(ByteBufPayload.create("OK"));
-//    }
 }

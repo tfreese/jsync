@@ -6,6 +6,7 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -393,10 +394,7 @@ public abstract class Pool<T>
      */
     public void free(final T object)
     {
-        if (object == null)
-        {
-            throw new IllegalArgumentException("object cannot be null.");
-        }
+        Objects.requireNonNull(object, "object required");
 
         reset(object);
 
