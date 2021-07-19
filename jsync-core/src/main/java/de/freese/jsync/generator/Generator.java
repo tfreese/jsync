@@ -20,11 +20,11 @@ public interface Generator
      *
      * @param baseDir String
      * @param relativeFile String
-     * @param consumerBytesRead {@link LongConsumer}; optional
+     * @param checksumBytesReadConsumer {@link LongConsumer}; optional
      *
      * @return {@link Mono}
      */
-    String generateChecksum(final String baseDir, String relativeFile, final LongConsumer consumerBytesRead);
+    String generateChecksum(final String baseDir, String relativeFile, final LongConsumer checksumBytesReadConsumer);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>

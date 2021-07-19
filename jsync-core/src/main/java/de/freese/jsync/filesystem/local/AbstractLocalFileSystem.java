@@ -16,25 +16,27 @@ import de.freese.jsync.model.SyncItem;
 public abstract class AbstractLocalFileSystem extends AbstractFileSystem
 {
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, boolean, java.util.function.Consumer,
-     *      java.util.function.LongConsumer)
+     * @see de.freese.jsync.filesystem.FileSystem#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final boolean withChecksum, final Consumer<SyncItem> consumerSyncItem,
-                                  final LongConsumer consumerBytesRead)
+    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer checksumBytesReadConsumer)
     {
-        getLogger().debug("generate SyncItems: {}, followSymLinks={}, withChecksum={}", baseDir, followSymLinks, withChecksum);
+        getLogger().debug("create checksum: {}/{}", baseDir, relativeFile);
 
-        getGenerator().generateItems(baseDir, followSymLinks, syncItem -> {
-            if (withChecksum && syncItem.isFile())
-            {
-                getLogger().debug("generate checksum: {}/{}", baseDir, syncItem.getRelativePath());
+        String checksum = getGenerator().generateChecksum(baseDir, relativeFile, checksumBytesReadConsumer);
 
-                String checksum = getGenerator().generateChecksum(baseDir, syncItem.getRelativePath(), consumerBytesRead);
-                syncItem.setChecksum(checksum);
-            }
-
-            consumerSyncItem.accept(syncItem);
-        });
+        return checksum;
     }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, java.util.function.Consumer)
+     */
+    @Override
+    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
+    {
+        getLogger().debug("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
+
+        getGenerator().generateItems(baseDir, followSymLinks, consumerSyncItem);
+    }
+
 }

@@ -31,14 +31,21 @@ public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Se
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, boolean, java.util.function.Consumer,
-     *      java.util.function.LongConsumer)
+     * @see de.freese.jsync.filesystem.FileSystem#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final boolean withChecksum, final Consumer<SyncItem> consumerSyncItem,
-                                  final LongConsumer consumerBytesRead)
+    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer checksumBytesReadConsumer)
     {
-        generateSyncItems(baseDir, followSymLinks, withChecksum, consumerSyncItem, consumerBytesRead, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+        return generateChecksum(baseDir, relativeFile, checksumBytesReadConsumer, JSyncCommand.SOURCE_CHECKSUM);
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, java.util.function.Consumer)
+     */
+    @Override
+    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
+    {
+        generateSyncItems(baseDir, followSymLinks, consumerSyncItem, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
     }
 
     /**

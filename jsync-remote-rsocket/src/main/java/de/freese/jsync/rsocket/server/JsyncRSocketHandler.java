@@ -81,6 +81,26 @@ public class JsyncRSocketHandler implements RSocket
     private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
 
     /**
+     * Create the checksum.
+     *
+     * @param payload {@link Payload}
+     * @param fileSystem {@link FileSystem}
+     *
+     * @return {@link Mono}
+     */
+    private Mono<Payload> checksum(final Payload payload, final FileSystem fileSystem)
+    {
+        ByteBuf byteBufData = payload.data();
+
+        String baseDir = getSerializer().readFrom(byteBufData, String.class);
+        String relativeFile = getSerializer().readFrom(byteBufData, String.class);
+
+        String checksum = fileSystem.generateChecksum(baseDir, relativeFile, null);
+
+        return Mono.just(ByteBufPayload.create(checksum));
+    }
+
+    /**
      * @return {@link Mono}
      */
     private Mono<Payload> connect()
@@ -155,11 +175,9 @@ public class JsyncRSocketHandler implements RSocket
 
         String baseDir = getSerializer().readFrom(byteBufData, String.class);
         boolean followSymLinks = getSerializer().readFrom(byteBufData, Boolean.class);
-        boolean withChecksum = getSerializer().readFrom(byteBufData, Boolean.class);
 
         List<SyncItem> syncItems = new ArrayList<>();
-        fileSystem.generateSyncItems(baseDir, followSymLinks, withChecksum, syncItems::add, i -> {
-        });
+        fileSystem.generateSyncItems(baseDir, followSymLinks, syncItems::add);
 
         ByteBuf byteBuf = getByteBufAllocator().buffer();
         getSerializer().writeTo(byteBuf, syncItems.size());
@@ -276,7 +294,9 @@ public class JsyncRSocketHandler implements RSocket
             {
                 case CONNECT -> connect();
                 case DISCONNECT -> disconnect();
+                case SOURCE_CHECKSUM -> checksum(payload, sender);
                 case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
+                case TARGET_CHECKSUM -> checksum(payload, receiver);
                 case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
                 case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
                 case TARGET_DELETE -> delete(payload, receiver);

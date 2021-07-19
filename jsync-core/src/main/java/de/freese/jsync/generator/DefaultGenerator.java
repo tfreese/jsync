@@ -40,11 +40,11 @@ public class DefaultGenerator extends AbstractGenerator
      * @see de.freese.jsync.generator.Generator#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerBytesRead)
+    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer checksumBytesReadConsumer)
     {
         Path path = Paths.get(baseDir, relativeFile);
 
-        return DigestUtils.sha256DigestAsHex(path, consumerBytesRead);
+        return DigestUtils.sha256DigestAsHex(path, checksumBytesReadConsumer);
     }
 
     /**

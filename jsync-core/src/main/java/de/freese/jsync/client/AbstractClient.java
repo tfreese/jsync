@@ -326,11 +326,40 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.Consumer,
+     * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
      *      java.util.function.LongConsumer)
      */
     @Override
-    public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem, final LongConsumer consumerBytesRead)
+    public void generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer checksumBytesReadConsumer)
+    {
+        if (!getOptions().isChecksum() || !syncItem.isFile())
+        {
+            return;
+        }
+
+        FileSystem fs = null;
+        String baseDir = null;
+
+        if (EFileSystem.SENDER.equals(fileSystem))
+        {
+            fs = getSender();
+            baseDir = getSenderPath();
+        }
+        else
+        {
+            fs = getReceiver();
+            baseDir = getReceiverPath();
+        }
+
+        String checksum = fs.generateChecksum(baseDir, syncItem.getRelativePath(), checksumBytesReadConsumer);
+        syncItem.setChecksum(checksum);
+    }
+
+    /**
+     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.Consumer)
+     */
+    @Override
+    public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem)
     {
         FileSystem fs = null;
         String baseDir = null;
@@ -346,7 +375,7 @@ public abstract class AbstractClient implements Client
             baseDir = getReceiverPath();
         }
 
-        fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), getOptions().isChecksum(), consumerSyncItem, consumerBytesRead);
+        fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), consumerSyncItem);
     }
 
     /**

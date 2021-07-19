@@ -39,6 +39,29 @@ class CompareWorker extends AbstractWorker<Void, Void>
 
     /**
      * @param fileSystem {@link EFileSystem}
+     * @param syncItem {@link SyncItem}
+     *
+     * @return {@link RunnableFuture}
+     */
+    private RunnableFuture<Void> createChecksumFuture(final EFileSystem fileSystem, final SyncItem syncItem)
+    {
+        if ((syncItem == null) || !syncItem.isFile())
+        {
+            return new FutureTask<>(() -> null);
+        }
+
+        Runnable runnable = () -> {
+            getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
+                    getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
+
+            getClient().generateChecksum(fileSystem, syncItem, bytesRead -> getSyncView().addProgressBarValue(fileSystem, (int) bytesRead));
+        };
+
+        return new FutureTask<>(runnable, null);
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
      *
      * @return {@link RunnableFuture}
      */
@@ -50,7 +73,6 @@ class CompareWorker extends AbstractWorker<Void, Void>
             getClient().generateSyncItems(fileSystem, syncItem -> {
                 syncItems.add(syncItem);
                 getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + syncItems.size());
-            }, i -> {
             });
 
             getSyncView().setProgressBarIndeterminate(fileSystem, false);
@@ -90,10 +112,39 @@ class CompareWorker extends AbstractWorker<Void, Void>
 
         getSyncView().setProgressBarFiles(syncPairs.size());
 
-        syncPairs.forEach(syncPair -> {
-            syncPair.validateStatus();
+        if (!getOptions().isChecksum())
+        {
+            syncPairs.forEach(syncPair -> {
+                syncPair.validateStatus();
+                getSyncView().addSyncPair(syncPair);
+            });
+
+            return null;
+        }
+
+        // Checksum
+        for (SyncPair syncPair : syncPairs)
+        {
             getSyncView().addSyncPair(syncPair);
-        });
+
+            RunnableFuture<Void> futureSenderChecksum = createChecksumFuture(EFileSystem.SENDER, syncPair.getSenderItem());
+            RunnableFuture<Void> futureReceiverChecksum = createChecksumFuture(EFileSystem.RECEIVER, syncPair.getReceiverItem());
+
+            if (isParallel())
+            {
+                getExecutorService().execute(futureSenderChecksum);
+            }
+            else
+            {
+                futureSenderChecksum.run();
+            }
+
+            futureReceiverChecksum.run();
+            futureReceiverChecksum.get();
+            futureSenderChecksum.get();
+
+            syncPair.validateStatus();
+        }
 
         getSyncView().updateLastEntry();
 

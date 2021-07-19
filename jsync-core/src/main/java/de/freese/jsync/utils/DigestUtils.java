@@ -138,7 +138,10 @@ public final class DigestUtils
         MessageDigest messageDigest = createSha256Digest();
         byte[] bytes = null;
 
-        consumerBytesRead.accept(0);
+        if (consumerBytesRead != null)
+        {
+            consumerBytesRead.accept(0);
+        }
 
         ByteBuffer byteBuffer = ByteBufferPool.getInstance().obtain();
 
@@ -150,7 +153,10 @@ public final class DigestUtils
             {
                 bytesRead += byteBuffer.position();
 
-                consumerBytesRead.accept(bytesRead);
+                if (consumerBytesRead != null)
+                {
+                    consumerBytesRead.accept(bytesRead);
+                }
 
                 byteBuffer.flip();
                 messageDigest.update(byteBuffer);

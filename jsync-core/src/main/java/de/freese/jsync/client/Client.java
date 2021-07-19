@@ -29,13 +29,21 @@ public interface Client
     void disconnectFileSystems();
 
     /**
+     * Erzeugt die Prüfsumme einer Datei und speichert diese im {@link SyncItem}.<br>
+     *
+     * @param fileSystem {@link EFileSystem}
+     * @param syncItem {@link SyncItem}
+     * @param checksumBytesReadConsumer {@link LongConsumer}; optional
+     */
+    void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer checksumBytesReadConsumer);
+
+    /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
      *
      * @param fileSystem {@link EFileSystem}
      * @param consumerSyncItem {@link Consumer}
-     * @param consumerBytesRead {@link LongConsumer}
      */
-    void generateSyncItems(EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem, final LongConsumer consumerBytesRead);
+    void generateSyncItems(EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem);
 
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>

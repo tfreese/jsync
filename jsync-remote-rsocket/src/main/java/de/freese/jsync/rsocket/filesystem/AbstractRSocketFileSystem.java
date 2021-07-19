@@ -25,6 +25,7 @@ import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.ByteBufPayload;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.netty.tcp.TcpClient;
 import reactor.util.retry.Retry;
 
@@ -119,14 +120,39 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 
     /**
      * @param baseDir String
+     * @param relativeFile relativeFile
+     * @param checksumBytesReadConsumer checksumBytesReadConsumer
+     * @param command {@link JSyncCommand}
+     *
+     * @return String
+     */
+    protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer checksumBytesReadConsumer, final JSyncCommand command)
+    {
+        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        getSerializer().writeTo(byteBufMeta, command);
+
+        ByteBuf byteBufData = getByteBufAllocator().buffer();
+        getSerializer().writeTo(byteBufData, baseDir);
+        getSerializer().writeTo(byteBufData, relativeFile);
+
+        // @formatter:off
+        return getClient()
+                .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+                .map(Payload::getDataUtf8)
+                .doOnNext(getLogger()::debug)
+                .doOnError(th -> getLogger().error(null, th))
+                .block()
+                ;
+        // @formatter:on
+    }
+
+    /**
+     * @param baseDir String
      * @param followSymLinks boolean
-     * @param withChecksum boolean
      * @param consumerSyncItem {@link Consumer}
-     * @param consumerBytesRead {@link LongConsumer}
      * @param command {@link JSyncCommand}
      */
-    protected void generateSyncItems(final String baseDir, final boolean followSymLinks, final boolean withChecksum, final Consumer<SyncItem> consumerSyncItem,
-                                     final LongConsumer consumerBytesRead, final JSyncCommand command)
+    protected void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem, final JSyncCommand command)
     {
         ByteBuf byteBufMeta = getByteBufAllocator().buffer();
         getSerializer().writeTo(byteBufMeta, command);
@@ -134,11 +160,11 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         ByteBuf byteBufData = getByteBufAllocator().buffer();
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, followSymLinks);
-        getSerializer().writeTo(byteBufData, withChecksum);
 
         // @formatter:off
         getClient()
             .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+            .publishOn(Schedulers.boundedElastic())
             .doOnNext(payload -> {
                 ByteBuf byteBuf = payload.data();
 
@@ -155,7 +181,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
                 //byteBuf.release();
             })
             .doOnError(th -> getLogger().error(null, th))
-            .subscribe()
+            .block()
             ;
         // @formatter:on
     }
@@ -183,5 +209,4 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     {
         return this.serializer;
     }
-
 }

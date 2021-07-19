@@ -25,14 +25,22 @@ public interface FileSystem
     void disconnect();
 
     /**
+     * Liefert die Prüfsumme einer Datei.<br>
+     *
+     * @param baseDir String
+     * @param relativeFile String
+     * @param checksumBytesReadConsumer {@link LongConsumer}; optional
+     *
+     * @return String
+     */
+    String generateChecksum(String baseDir, String relativeFile, LongConsumer checksumBytesReadConsumer);
+
+    /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses<br>
      *
      * @param baseDir String
      * @param followSymLinks boolean
-     * @param withChecksum boolean
      * @param consumerSyncItem {@link Consumer}
-     * @param consumerBytesRead {@link LongConsumer}
      */
-    void generateSyncItems(String baseDir, boolean followSymLinks, boolean withChecksum, final Consumer<SyncItem> consumerSyncItem,
-                           LongConsumer consumerBytesRead);
+    void generateSyncItems(String baseDir, boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem);
 }

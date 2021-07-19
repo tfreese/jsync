@@ -135,13 +135,19 @@ public final class JSyncConsole
         client.connectFileSystems();
 
         List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.SENDER, syncItemsSender::add, i -> {
-            // System.out.println("Sender Bytes read: " + i);
+        client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
+            syncItemsSender.add(syncItem);
+            client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+                // System.out.println("Sender Bytes read: " + i);
+            });
         });
 
         List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.RECEIVER, syncItemsReceiver::add, i -> {
-            // System.out.println("Sender Bytes read: " + i);
+        client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
+            syncItemsReceiver.add(syncItem);
+            client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+                // System.out.println("Sender Bytes read: " + i);
+            });
         });
 
         List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
