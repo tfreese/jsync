@@ -139,8 +139,8 @@ public class RSocketDemo
     public static void main(final String[] args) throws Exception
     {
         // Globale Default-Resourcen.
-        TcpResources.set(LoopResources.create("rsocket"));
-        // TcpResources.set(LoopResources.create("rsocket", 2, 8, true));
+        // TcpResources.set(LoopResources.create("rsocket"));
+        TcpResources.set(LoopResources.create("rsocket", 2, 8, true));
         // TcpResources.set(ConnectionProvider.create("rsocket-connectionPool", 16));
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.

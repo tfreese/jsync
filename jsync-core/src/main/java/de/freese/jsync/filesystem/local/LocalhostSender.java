@@ -46,7 +46,7 @@ public class LocalhostSender extends AbstractLocalFileSystem implements Sender
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        getLogger().debug("read file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+        getLogger().info("read file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
         Path path = Paths.get(baseDir, relativeFile);
 

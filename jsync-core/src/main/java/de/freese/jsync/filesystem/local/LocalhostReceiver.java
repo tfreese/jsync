@@ -154,7 +154,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
     {
-        getLogger().debug("validate file: {}/{}, withChecksum={}", baseDir, syncItem.getRelativePath(), withChecksum);
+        getLogger().info("validate file: {}/{}, withChecksum={}", baseDir, syncItem.getRelativePath(), withChecksum);
 
         Path path = Paths.get(baseDir, syncItem.getRelativePath());
 

@@ -36,6 +36,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
+            <scope>runtime</scope>
         </dependency>        
         <!-- provided scope -->
         <!-- test scope -->

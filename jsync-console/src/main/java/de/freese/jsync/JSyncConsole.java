@@ -126,10 +126,8 @@ public final class JSyncConsole
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
      * @param clientListener {@link ClientListener}
-     *
-     * @throws Exception Falls was schief geht.
      */
-    public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener) throws Exception
+    public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener)
     {
         Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();

@@ -130,7 +130,7 @@ public abstract class AbstractClient implements Client
             AtomicLong bytesTransferred = new AtomicLong(0);
             fileList = fileList.doOnNext(byteBuffer -> clientListener.copyProgress(getOptions(), syncItem, bytesTransferred.addAndGet(byteBuffer.limit())));
 
-            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).subscribe(ReactiveUtils.releaseConsumer());
+            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).subscribe(ReactiveUtils.releaseConsumer()).dispose();
         }
         catch (Exception ex)
         {

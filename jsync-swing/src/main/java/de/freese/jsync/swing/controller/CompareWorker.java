@@ -125,8 +125,6 @@ class CompareWorker extends AbstractWorker<Void, Void>
         // Checksum
         for (SyncPair syncPair : syncPairs)
         {
-            getSyncView().addSyncPair(syncPair);
-
             RunnableFuture<Void> futureSenderChecksum = createChecksumFuture(EFileSystem.SENDER, syncPair.getSenderItem());
             RunnableFuture<Void> futureReceiverChecksum = createChecksumFuture(EFileSystem.RECEIVER, syncPair.getReceiverItem());
 
@@ -144,6 +142,7 @@ class CompareWorker extends AbstractWorker<Void, Void>
             futureSenderChecksum.get();
 
             syncPair.validateStatus();
+            getSyncView().addSyncPair(syncPair);
         }
 
         getSyncView().updateLastEntry();
