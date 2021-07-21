@@ -1,11 +1,9 @@
-// Created: 20.07.2021
+// Created: 21.07.2021
 package de.freese.jsync.filesystem;
 
 import java.net.URI;
 import java.util.Objects;
-
-import de.freese.jsync.filesystem.local.LocalhostReceiver;
-import de.freese.jsync.filesystem.local.LocalhostSender;
+import java.util.ServiceLoader;
 
 /**
  * @author Thomas Freese
@@ -13,57 +11,38 @@ import de.freese.jsync.filesystem.local.LocalhostSender;
 public final class FileSystemFactory
 {
     /**
-     * @param fileSystem {@link EFileSystem}
-     * @param uri {@link URI}
+     * ThreadSafe Singleton-Pattern.
      *
-     * @return {@link FileSystem}
+     * @author Thomas Freese
      */
-    public static FileSystem createFileSystem(final EFileSystem fileSystem, final URI uri)
+    private static final class FileSystemFactoryHolder
     {
-        Objects.requireNonNull(fileSystem, "fileSystem required");
-        Objects.requireNonNull(uri, "uri required");
+        /**
+         *
+         */
+        private static final FileSystemFactory INSTANCE = new FileSystemFactory();
 
-        if (EFileSystem.SENDER.equals(fileSystem))
+        /**
+         * Erstellt ein neues {@link FileSystemFactoryHolder} Object.
+         */
+        private FileSystemFactoryHolder()
         {
-            if ("file".equals(uri.getScheme()))
-            {
-                return new LocalhostSender();
-            }
-
-            throw new IllegalArgumentException("unsupported uri scheme: " + uri);
+            super();
         }
-        else if (EFileSystem.RECEIVER.equals(fileSystem))
-        {
-            if ("file".equals(uri.getScheme()))
-            {
-                return new LocalhostReceiver();
-            }
-
-            throw new IllegalArgumentException("unsupported uri  scheme: " + uri);
-        }
-
-        throw new IllegalArgumentException("unsupported filesystem: " + fileSystem);
     }
 
     /**
-     * @param uri {@link URI}
-     *
-     * @return {@link Receiver}
+     * @return {@link FileSystemFactory}
      */
-    public static Receiver createReceiver(final URI uri)
+    public static FileSystemFactory getInstance()
     {
-        return (Receiver) createFileSystem(EFileSystem.RECEIVER, uri);
+        return FileSystemFactoryHolder.INSTANCE;
     }
 
     /**
-     * @param uri {@link URI}
-     *
-     * @return {@link Sender}
-     */
-    public static Sender createSender(final URI uri)
-    {
-        return (Sender) createFileSystem(EFileSystem.SENDER, uri);
-    }
+    *
+    */
+    private final ServiceLoader<FileSystemProvider> serviceLoader = ServiceLoader.load(FileSystemProvider.class);
 
     /**
      * Erstellt ein neues {@link FileSystemFactory} Object.
@@ -71,5 +50,45 @@ public final class FileSystemFactory
     private FileSystemFactory()
     {
         super();
+    }
+
+    /**
+     * @param uri {@link URI}
+     *
+     * @return {@link FileSystem}
+     */
+    public Receiver createReceiver(final URI uri)
+    {
+        Objects.requireNonNull(uri, "uri required");
+
+        for (FileSystemProvider provider : this.serviceLoader)
+        {
+            if (provider.supportsProtocol(uri))
+            {
+                return provider.createReceiver(uri);
+            }
+        }
+
+        throw new IllegalArgumentException("unsupported protocol: " + uri.getScheme());
+    }
+
+    /**
+     * @param uri {@link URI}
+     *
+     * @return {@link FileSystem}
+     */
+    public Sender createSender(final URI uri)
+    {
+        Objects.requireNonNull(uri, "uri required");
+
+        for (FileSystemProvider provider : this.serviceLoader)
+        {
+            if (provider.supportsProtocol(uri))
+            {
+                return provider.createSender(uri);
+            }
+        }
+
+        throw new IllegalArgumentException("unsupported protocol:" + uri.getScheme());
     }
 }

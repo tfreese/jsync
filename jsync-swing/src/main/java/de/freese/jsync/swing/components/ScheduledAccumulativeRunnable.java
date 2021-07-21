@@ -40,7 +40,7 @@ public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>
      */
     public ScheduledAccumulativeRunnable(final ScheduledExecutorService scheduledExecutor)
     {
-        this(scheduledExecutor, 100);
+        this(scheduledExecutor, 200);
     }
 
     /**

@@ -17,10 +17,9 @@ import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filesystem.FileSystem;
+import de.freese.jsync.filesystem.FileSystemFactory;
 import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.filesystem.Sender;
-import de.freese.jsync.filesystem.local.LocalhostReceiver;
-import de.freese.jsync.filesystem.local.LocalhostSender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
@@ -91,8 +90,8 @@ public abstract class AbstractClient implements Client
         this.senderPath = JSyncUtils.normalizePath(senderUri);
         this.receiverPath = JSyncUtils.normalizePath(receiverUri);
 
-        this.sender = new LocalhostSender();
-        this.receiver = new LocalhostReceiver();
+        this.sender = FileSystemFactory.getInstance().createSender(senderUri);
+        this.receiver = FileSystemFactory.getInstance().createReceiver(receiverUri);
     }
 
     /**
