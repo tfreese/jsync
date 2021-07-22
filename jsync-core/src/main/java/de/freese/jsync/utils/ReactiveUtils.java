@@ -92,14 +92,15 @@ public final class ReactiveUtils
 
     /**
      * Schreibt den source-Publisher in den Channel, dieser wird danach <strong>nicht</strong> geschlossen.<br>
-     * Sollen die {@link ByteBuffer} freigegeben werden, muss der return-Flux mit {@link #releaseConsumer()} subscribed werden.
+     * Geliefert wird ein Flux mit den geschriebenen Bytes pro ByteBuffer/Chunk.<br>
+     * Die {@link ByteBuffer} werden im {@link WritableByteChannelSubscriber} wieder freigegeben.
      *
      * @param source {@link Publisher}
      * @param channel {@link WritableByteChannel}
      *
      * @return {@link Flux}
      */
-    public static Flux<ByteBuffer> write(final Publisher<ByteBuffer> source, final WritableByteChannel channel)
+    public static Flux<Long> write(final Publisher<ByteBuffer> source, final WritableByteChannel channel)
     {
         Flux<ByteBuffer> flux = Flux.from(source);
 

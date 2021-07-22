@@ -19,7 +19,6 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
-import de.freese.jsync.utils.ReactiveUtils;
 import de.freese.jsync.utils.pool.Pool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -232,7 +231,6 @@ public class JsyncRSocketHandler implements RSocket
         // @formatter:off
         return fileFlux
                 .map(DefaultPayload::create)
-                //.doFinally(signalType -> dataBuffer.release())
                 ;
         // @formatter:on
     }
@@ -417,17 +415,15 @@ public class JsyncRSocketHandler implements RSocket
 
         // @formatter:off
         Flux<Payload> response = receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
-                .map(byteBuffer -> {
-                    int bytesWritten = byteBuffer.position();
-                    ReactiveUtils.release(byteBuffer);
-                    return bytesWritten;
+                .map(bytesWritten -> {
+                    ByteBuf data = getByteBufAllocator().buffer().writeLong(bytesWritten);
+                    return ByteBufPayload.create(data);
                 })
-                .map(bytesWritten -> ByteBufPayload.create("CHUNK_COMPLETED: bytesWritten = " + bytesWritten))
                 .doOnError(th -> ByteBufPayload.create(th.getMessage()))
                 ;
         // @formatter:on
 
-        return Flux.concat(response, Mono.just(ByteBufPayload.create("TRANSFER COMPLETED")));
+        return response;
 
         // return Flux.concat(response, Mono.just(DefaultPayload.create("TRANSFER COMPLETED"))).onErrorReturn(DefaultPayload.create("FAILED"));
     }

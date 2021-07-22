@@ -150,7 +150,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
      * @see de.freese.jsync.filesystem.Receiver#writeFile(java.lang.String, java.lang.String, long, reactor.core.publisher.Flux)
      */
     @Override
-    public Flux<ByteBuffer> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
+    public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
         ByteBuf byteBufMeta = getByteBufAllocator().buffer();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.TARGET_WRITE_FILE);
@@ -166,8 +166,11 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
         return getClient()
           .requestChannel(flux)
           .map(payload -> {
-              getLogger().debug(payload.getDataUtf8());
-              return payload.getData();
+              long bytesWritten = Long.parseLong(payload.getDataUtf8());
+
+              getLogger().debug("CHUNK_COMPLETED: bytesWritten = {}",bytesWritten);
+
+              return bytesWritten;
           })
           .doOnError(th -> getLogger().error(null, th))
           ;

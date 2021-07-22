@@ -1,5 +1,6 @@
 package de.freese.jsync.swing.components;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
@@ -18,9 +19,9 @@ import javax.swing.SwingUtilities;
 public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>
 {
     /**
-     * MilliSeconds
+     *
      */
-    private final int delay;
+    private final Duration delay;
 
     /**
      *
@@ -34,27 +35,28 @@ public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>
     };
 
     /**
-     * Erstellt ein neues {@link ScheduledAccumulativeRunnable} Object.
+     * Erstellt ein neues {@link ScheduledAccumulativeRunnable} Object.<br>
+     * Default delay = 250 ms
      *
      * @param scheduledExecutor {@link ScheduledExecutorService}; optional
      */
     public ScheduledAccumulativeRunnable(final ScheduledExecutorService scheduledExecutor)
     {
-        this(scheduledExecutor, 200);
+        this(scheduledExecutor, Duration.ofMillis(250));
     }
 
     /**
      * Erstellt ein neues {@link ScheduledAccumulativeRunnable} Object.
      *
      * @param scheduledExecutor {@link ScheduledExecutorService}; optional
-     * @param delay int; MilliSeconds
+     * @param delay {@link Duration}
      */
-    public ScheduledAccumulativeRunnable(final ScheduledExecutorService scheduledExecutor, final int delay)
+    public ScheduledAccumulativeRunnable(final ScheduledExecutorService scheduledExecutor, final Duration delay)
     {
         super();
 
         this.scheduledExecutor = Objects.requireNonNull(scheduledExecutor, "scheduledExecutor required");
-        this.delay = delay;
+        this.delay = Objects.requireNonNull(delay, "delay required");
     }
 
     /**
@@ -80,12 +82,12 @@ public class ScheduledAccumulativeRunnable<T> extends AccumulativeRunnable<T>
     @Override
     protected final void submit()
     {
-        this.scheduledExecutor.schedule(() -> SwingUtilities.invokeLater(this), this.delay, TimeUnit.MILLISECONDS);
+        this.scheduledExecutor.schedule(() -> SwingUtilities.invokeLater(this), this.delay.toMillis(), TimeUnit.MILLISECONDS);
 
         // LoggerFactory.getLogger(getClass()).info("ActiveCount: {}", ((ScheduledThreadPoolExecutor) this.scheduledExecutor).getActiveCount());
         // LoggerFactory.getLogger(getClass()).info("PoolSize: {}", ((ScheduledThreadPoolExecutor) this.scheduledExecutor).getPoolSize());
 
-        // Timer timer = new Timer(this.delay, event -> SwingUtilities.invokeLater(this));
+        // Timer timer = new Timer((int) this.delay.toMillis(), event -> SwingUtilities.invokeLater(this));
         // timer.setRepeats(false);
         // timer.start();
     }

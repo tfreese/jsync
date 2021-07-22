@@ -24,7 +24,6 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
 import de.freese.jsync.utils.JSyncUtils;
-import de.freese.jsync.utils.ReactiveUtils;
 import reactor.core.publisher.Flux;
 
 /**
@@ -127,9 +126,14 @@ public abstract class AbstractClient implements Client
             Flux<ByteBuffer> fileList = getSender().readFile(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
 
             AtomicLong bytesTransferred = new AtomicLong(0);
-            fileList = fileList.doOnNext(byteBuffer -> clientListener.copyProgress(getOptions(), syncItem, bytesTransferred.addAndGet(byteBuffer.limit())));
 
-            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).subscribe(ReactiveUtils.releaseConsumer()).dispose();
+            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).subscribe(bytesWritten -> {
+                getLogger().debug("CHUNK_COMPLETED: bytesWritten = {}", bytesWritten);
+
+                long writtenBytesSum = bytesTransferred.addAndGet(bytesWritten);
+                clientListener.copyProgress(getOptions(), syncItem, writtenBytesSum);
+            });
+            // .dispose() // Sorgt für Verzögerungen nach dem Kopiervorgang.
         }
         catch (Exception ex)
         {

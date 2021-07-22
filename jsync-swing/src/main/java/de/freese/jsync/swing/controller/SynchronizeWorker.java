@@ -8,6 +8,7 @@ import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * @author Thomas Freese
@@ -74,6 +75,9 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     @Override
     protected void done()
     {
+        ByteBufferPool pool = ByteBufferPool.getInstance();
+        System.err.printf("ByteBufferPool: created=%d, free=%d, peak=%d%n", pool.getCreated(), pool.getFree(), pool.getPeak());
+
         try
         {
             get();

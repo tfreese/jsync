@@ -261,6 +261,11 @@ public abstract class Pool<T>
     }
 
     /**
+    *
+    */
+    private int created;
+
+    /**
      *
      */
     private final Queue<T> freeObjects;
@@ -409,6 +414,16 @@ public abstract class Pool<T>
     }
 
     /**
+     * The number of created objects.
+     *
+     * @return int
+     */
+    public int getCreated()
+    {
+        return this.created;
+    }
+
+    /**
      * The number of objects available to be obtained.
      * <p>
      * If using soft references, this number may include objects that have been garbage collected. {@link #clean()} may be used first to remove empty soft
@@ -443,7 +458,14 @@ public abstract class Pool<T>
     {
         T object = this.freeObjects.poll();
 
-        return object != null ? object : create();
+        if (object == null)
+        {
+            object = create();
+
+            this.created++;
+        }
+
+        return object;
     }
 
     /**

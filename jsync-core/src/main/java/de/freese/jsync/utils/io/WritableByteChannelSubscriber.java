@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 
 import org.reactivestreams.Subscription;
 
+import de.freese.jsync.utils.pool.ByteBufferPool;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.FluxSink;
 
@@ -28,7 +29,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     /**
      *
      */
-    private final FluxSink<ByteBuffer> sink;
+    private final FluxSink<Long> sink;
 
     // /**
     // *
@@ -38,12 +39,12 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     /**
      * Erstellt ein neues {@link WritableByteChannelSubscriber} Object.
      *
-     * @param sink {@link FluxSink}
+     * @param sink {@link FluxSink} Geschriebene Bytes pro ByteBuffer/Chunk
      * @param path {@link Path}
      *
      * @throws IOException Falls was schief geht.
      */
-    public WritableByteChannelSubscriber(final FluxSink<ByteBuffer> sink, final Path path) throws IOException
+    public WritableByteChannelSubscriber(final FluxSink<Long> sink, final Path path) throws IOException
     {
         this(sink, Files.newByteChannel(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE));
     }
@@ -51,10 +52,10 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     /**
      * Erstellt ein neues {@link WritableByteChannelSubscriber} Object.
      *
-     * @param sink {@link FluxSink}
+     * @param sink {@link FluxSink} Geschriebene Bytes pro ByteBuffer/Chunk
      * @param channel {@link WritableByteChannel}
      */
-    public WritableByteChannelSubscriber(final FluxSink<ByteBuffer> sink, final WritableByteChannel channel)
+    public WritableByteChannelSubscriber(final FluxSink<Long> sink, final WritableByteChannel channel)
     {
         super();
 
@@ -140,17 +141,21 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     {
         try
         {
+            long limit = byteBuffer.limit();
+
             while (byteBuffer.hasRemaining())
             {
                 this.channel.write(byteBuffer);
             }
 
-            this.sink.next(byteBuffer);
+            ByteBufferPool.getInstance().free(byteBuffer);
+
+            this.sink.next(limit);
             request(1);
         }
         catch (IOException ex)
         {
-            this.sink.next(byteBuffer);
+            this.sink.next(0L);
             this.sink.error(ex);
         }
     }

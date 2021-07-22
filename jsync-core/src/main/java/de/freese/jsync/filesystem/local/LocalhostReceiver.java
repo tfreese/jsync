@@ -189,7 +189,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
      * @see de.freese.jsync.filesystem.Receiver#writeFile(java.lang.String, java.lang.String, long, reactor.core.publisher.Flux)
      */
     @Override
-    public Flux<ByteBuffer> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
+    public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
         getLogger().info("write file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
@@ -208,20 +208,13 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
                 Files.createFile(path);
             }
 
-            // try (FileChannel fileChannelReceiver =
-            // FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))
-            // {
-            // ReactiveUtils.write(fileFlux, fileChannelReceiver).subscribe(ReactiveUtils.releaseConsumer());
-            //
-            // fileChannelReceiver.force(false);
-            // }
-
             FileChannel fileChannelReceiver = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
             return ReactiveUtils.write(fileFlux, fileChannelReceiver).doFinally(type -> {
                 try
                 {
                     fileChannelReceiver.force(false);
+                    fileChannelReceiver.close();
                 }
                 catch (IOException ex)
                 {

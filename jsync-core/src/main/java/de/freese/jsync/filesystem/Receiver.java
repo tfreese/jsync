@@ -48,7 +48,8 @@ public interface Receiver extends FileSystem
     void validateFile(String baseDir, final SyncItem syncItem, boolean withChecksum);
 
     /**
-     * Schreibt den {@link Flux} in die Datei.
+     * Schreibt den {@link Flux} in die Datei.<br>
+     * Geliefert wird ein Flux mit den geschriebenen Bytes pro ByteBuffer/Chunk.
      *
      * @param baseDir String
      * @param relativeFile String
@@ -57,5 +58,5 @@ public interface Receiver extends FileSystem
      *
      * @return {@link Flux}
      */
-    Flux<ByteBuffer> writeFile(String baseDir, final String relativeFile, long sizeOfFile, Flux<ByteBuffer> fileFlux);
+    Flux<Long> writeFile(String baseDir, final String relativeFile, long sizeOfFile, Flux<ByteBuffer> fileFlux);
 }

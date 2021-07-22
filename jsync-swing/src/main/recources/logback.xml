@@ -68,6 +68,7 @@
     </appender>
 
     <logger name="de.freese.jsync" level="INFO" />
+    <logger name="de.freese.jsync.client" level="DEBUG" />
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
