@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -256,6 +257,11 @@ public class DefaultSyncView extends AbstractView implements SyncView
                 progressBar.setMinimum((int) chunk[0]);
                 progressBar.setMaximum((int) chunk[1]);
                 progressBar.setString((String) chunk[2]);
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("getAccumulatorProgressBarMinMaxText - {}: {}", fileSystem, Arrays.toString(chunk));
+                }
             });
 
             this.accumulatorProgressBarMinMaxText.put(fileSystem, sar);
@@ -279,7 +285,16 @@ public class DefaultSyncView extends AbstractView implements SyncView
             ScheduledAccumulativeRunnable<String> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
             final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
 
-            sar.doOnSubmit(chunks -> progressBar.setString(chunks.get(chunks.size() - 1)));
+            sar.doOnSubmit(chunks -> {
+                String value = chunks.get(chunks.size() - 1);
+
+                progressBar.setString(value);
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("getAccumulatorProgressBarText - {}: {}", fileSystem, value);
+                }
+            });
 
             this.accumulatorProgressBarText.put(fileSystem, sar);
             accumulator = sar;
@@ -302,7 +317,16 @@ public class DefaultSyncView extends AbstractView implements SyncView
             ScheduledAccumulativeRunnable<Integer> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
             final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
 
-            sar.doOnSubmit(chunks -> progressBar.setValue(chunks.get(chunks.size() - 1)));
+            sar.doOnSubmit(chunks -> {
+                int value = chunks.get(chunks.size() - 1);
+
+                progressBar.setValue(value);
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("getAccumulatorProgressBarValue - {}: {}", fileSystem, value);
+                }
+            });
 
             this.accumulatorProgressBarValue.put(fileSystem, sar);
             accumulator = sar;

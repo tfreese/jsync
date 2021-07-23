@@ -2,6 +2,7 @@
 package de.freese.jsync.rsocket.filesystem;
 
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -12,10 +13,8 @@ import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
+import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.core.RSocketClient;
@@ -23,7 +22,7 @@ import io.rsocket.core.RSocketConnector;
 import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import io.rsocket.util.ByteBufPayload;
+import io.rsocket.util.DefaultPayload;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.tcp.TcpClient;
@@ -34,10 +33,15 @@ import reactor.util.retry.Retry;
  */
 public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 {
+    // /**
+    // *
+    // */
+    // private final ByteBufAllocator byteBufAllocator = ByteBufAllocator.DEFAULT;
+
     /**
-    *
-    */
-    private final ByteBufAllocator byteBufAllocator = ByteBufAllocator.DEFAULT;
+     *
+     */
+    private final ByteBufferPool byteBufferPool = ByteBufferPool.getInstance();
 
     /**
     *
@@ -47,7 +51,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     /**
     *
     */
-    private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
+    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * @param uri {@link URI}
@@ -69,7 +73,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 
         // @formatter:off
         RSocketConnector connector = RSocketConnector.create()
-                .payloadDecoder(PayloadDecoder.DEFAULT)
+                .payloadDecoder(PayloadDecoder.ZERO_COPY)
                 .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
                 // .reconnect(Retry.backoff(50, Duration.ofMillis(500)))
                 ;
@@ -80,12 +84,13 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         this.client = RSocketClient.from(rSocket);
 
         // Connect an den Server schicken.
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
+
         getSerializer().writeTo(byteBufMeta, JSyncCommand.CONNECT);
 
         // @formatter:off
         this.client
-            .requestResponse(Mono.just(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, byteBufMeta)).doOnSubscribe(subscription -> getByteBufferPool().free(byteBufMeta)))
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -101,12 +106,12 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     @Override
     public void disconnect()
     {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.DISCONNECT);
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(ByteBufPayload.create(Unpooled.EMPTY_BUFFER, byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, byteBufMeta)).doOnSubscribe(subscription -> getByteBufferPool().free(byteBufMeta)))
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -128,16 +133,20 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer checksumBytesReadConsumer, final JSyncCommand command)
     {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufMeta, command);
 
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
+        ByteBuffer byteBufData = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, relativeFile);
 
         // @formatter:off
         return getClient()
-                .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+                .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+                    getByteBufferPool().free(byteBufMeta);
+                    getByteBufferPool().free(byteBufData);
+                    })
+                )
                 .map(Payload::getDataUtf8)
                 .doOnNext(getLogger()::debug)
                 .doOnError(th -> getLogger().error(null, th))
@@ -154,19 +163,23 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem, final JSyncCommand command)
     {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufMeta, command);
 
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
+        ByteBuffer byteBufData = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, followSymLinks);
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+                getByteBufferPool().free(byteBufMeta);
+                getByteBufferPool().free(byteBufData);
+                })
+            )
             .publishOn(Schedulers.boundedElastic())
             .doOnNext(payload -> {
-                ByteBuf byteBuf = payload.data();
+                ByteBuffer byteBuf = payload.getData();
 
                 int itemCount = getSerializer().readFrom(byteBuf, int.class);
 
@@ -187,11 +200,11 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     }
 
     /**
-     * @return {@link ByteBufAllocator}
+     * @return {@link ByteBufferPool}
      */
-    protected ByteBufAllocator getByteBufAllocator()
+    protected ByteBufferPool getByteBufferPool()
     {
-        return this.byteBufAllocator;
+        return this.byteBufferPool;
     }
 
     /**
@@ -203,9 +216,9 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     }
 
     /**
-     * @return {@link Serializer}<ByteBuf>
+     * @return {@link Serializer}
      */
-    protected Serializer<ByteBuf> getSerializer()
+    protected Serializer<ByteBuffer> getSerializer()
     {
         return this.serializer;
     }

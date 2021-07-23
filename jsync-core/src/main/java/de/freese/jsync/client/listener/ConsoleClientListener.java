@@ -51,6 +51,27 @@ public class ConsoleClientListener extends AbstractClientListener
     }
 
     /**
+     * @see de.freese.jsync.client.listener.ClientListener#checksumProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
+     */
+    @Override
+    public void checksumProgress(final Options options, final SyncItem syncItem, final long bytesRead)
+    {
+        if (bytesRead == 0)
+        {
+            return;
+        }
+
+        String message = checksumProgressMessage(options, syncItem, bytesRead);
+
+        if (message == null)
+        {
+            return;
+        }
+
+        getPrintStream().println(message);
+    }
+
+    /**
      * @see de.freese.jsync.client.listener.ClientListener#copyProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
      */
     @Override

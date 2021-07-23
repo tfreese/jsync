@@ -68,7 +68,8 @@
     </appender>
 
     <logger name="de.freese.jsync" level="INFO" />
-    <logger name="de.freese.jsync.client" level="DEBUG" />
+    <logger name="de.freese.jsync.client" level="INFO" />
+    <logger name="de.freese.jsync.swing.view.DefaultSyncView" level="INFO" />
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

@@ -16,8 +16,13 @@ import de.freese.jsync.model.SyncItem;
 public interface ClientListener extends EventListener
 {
     /**
-     * Wird nur aufgerufen, wenn DRY-RUN = false ist.
-     *
+     * @param options {@link Options}
+     * @param syncItem {@link SyncItem}
+     * @param bytesRead long
+     */
+    void checksumProgress(Options options, final SyncItem syncItem, long bytesRead);
+
+    /**
      * @param options {@link Options}
      * @param syncItem {@link SyncItem}
      * @param bytesTransferred long

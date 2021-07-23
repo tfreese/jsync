@@ -9,9 +9,8 @@ import java.util.function.LongConsumer;
 import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
-import io.netty.buffer.ByteBuf;
 import io.rsocket.Payload;
-import io.rsocket.util.ByteBufPayload;
+import io.rsocket.util.DefaultPayload;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.LoopResources;
@@ -36,16 +35,20 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.TARGET_CREATE_DIRECTORY);
 
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
+        ByteBuffer byteBufData = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, relativePath);
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+                getByteBufferPool().free(byteBufMeta);
+                getByteBufferPool().free(byteBufData);
+                })
+            )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -60,17 +63,21 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.TARGET_DELETE);
 
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
+        ByteBuffer byteBufData = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, relativePath);
         getSerializer().writeTo(byteBufData, followSymLinks);
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+                getByteBufferPool().free(byteBufMeta);
+                getByteBufferPool().free(byteBufData);
+                })
+            )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -103,16 +110,20 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.TARGET_UPDATE);
 
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
+        ByteBuffer byteBufData = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, syncItem);
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+                getByteBufferPool().free(byteBufMeta);
+                getByteBufferPool().free(byteBufData);
+                })
+            )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -122,22 +133,26 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     }
 
     /**
-     * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean)
+     * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean, java.util.function.LongConsumer)
      */
     @Override
-    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
+    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer checksumBytesReadConsumer)
     {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.TARGET_VALIDATE_FILE);
 
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
+        ByteBuffer byteBufData = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, syncItem);
         getSerializer().writeTo(byteBufData, withChecksum);
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+                getByteBufferPool().free(byteBufMeta);
+                getByteBufferPool().free(byteBufData);
+                })
+            )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -152,26 +167,23 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.TARGET_WRITE_FILE);
 
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
+        ByteBuffer byteBufData = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, relativeFile);
         getSerializer().writeTo(byteBufData, sizeOfFile);
 
-        Flux<Payload> flux = Flux.concat(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)), fileFlux.map(ByteBufPayload::create));
+        Flux<Payload> flux = Flux.concat(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+            getByteBufferPool().free(byteBufMeta);
+            getByteBufferPool().free(byteBufData);
+        }), fileFlux.map(DefaultPayload::create));
 
         // @formatter:off
         return getClient()
           .requestChannel(flux)
-          .map(payload -> {
-              long bytesWritten = Long.parseLong(payload.getDataUtf8());
-
-              getLogger().debug("CHUNK_COMPLETED: bytesWritten = {}",bytesWritten);
-
-              return bytesWritten;
-          })
+          .map(payload -> Long.parseLong(payload.getDataUtf8()))
           .doOnError(th -> getLogger().error(null, th))
           ;
       // @formatter:on

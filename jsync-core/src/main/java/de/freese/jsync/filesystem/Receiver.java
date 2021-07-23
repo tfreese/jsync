@@ -2,6 +2,7 @@
 package de.freese.jsync.filesystem;
 
 import java.nio.ByteBuffer;
+import java.util.function.LongConsumer;
 
 import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
@@ -44,8 +45,9 @@ public interface Receiver extends FileSystem
      * @param baseDir String
      * @param syncItem {@link SyncItem}
      * @param withChecksum boolean
+     * @param checksumBytesReadConsumer {@link LongConsumer}
      */
-    void validateFile(String baseDir, final SyncItem syncItem, boolean withChecksum);
+    void validateFile(String baseDir, final SyncItem syncItem, boolean withChecksum, final LongConsumer checksumBytesReadConsumer);
 
     /**
      * Schreibt den {@link Flux} in die Datei.<br>

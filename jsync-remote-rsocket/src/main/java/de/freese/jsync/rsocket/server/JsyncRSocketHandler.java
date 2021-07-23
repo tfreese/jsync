@@ -391,7 +391,7 @@ public class JsyncRSocketHandler implements RSocket
         SyncItem syncItem = getSerializer().readFrom(byteBufData, SyncItem.class);
         boolean withChecksum = getSerializer().readFrom(byteBufData, Boolean.class);
 
-        receiver.validateFile(baseDir, syncItem, withChecksum);
+        receiver.validateFile(baseDir, syncItem, withChecksum, null);
 
         return Mono.just(ByteBufPayload.create("OK"));
     }

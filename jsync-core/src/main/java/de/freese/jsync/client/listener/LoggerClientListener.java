@@ -20,6 +20,22 @@ public class LoggerClientListener extends AbstractClientListener
     private final Logger logger = LoggerFactory.getLogger("Client");
 
     /**
+     * @see de.freese.jsync.client.listener.ClientListener#checksumProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
+     */
+    @Override
+    public void checksumProgress(final Options options, final SyncItem syncItem, final long bytesRead)
+    {
+        String message = checksumProgressMessage(options, syncItem, bytesRead);
+
+        if (message == null)
+        {
+            return;
+        }
+
+        getLogger().info(message);
+    }
+
+    /**
      * @see de.freese.jsync.client.listener.ClientListener#copyProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
      */
     @Override

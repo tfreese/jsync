@@ -29,7 +29,7 @@ public interface FileSystem
      *
      * @param baseDir String
      * @param relativeFile String
-     * @param checksumBytesReadConsumer {@link LongConsumer}; optional
+     * @param checksumBytesReadConsumer {@link LongConsumer}
      *
      * @return String
      */

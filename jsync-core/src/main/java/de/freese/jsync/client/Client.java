@@ -33,7 +33,7 @@ public interface Client
      *
      * @param fileSystem {@link EFileSystem}
      * @param syncItem {@link SyncItem}
-     * @param checksumBytesReadConsumer {@link LongConsumer}; optional
+     * @param checksumBytesReadConsumer {@link LongConsumer}
      */
     void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer checksumBytesReadConsumer);
 

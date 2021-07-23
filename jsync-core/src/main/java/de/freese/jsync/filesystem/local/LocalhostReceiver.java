@@ -20,6 +20,7 @@ import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongConsumer;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.Receiver;
@@ -149,10 +150,10 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
     }
 
     /**
-     * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean)
+     * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean, java.util.function.LongConsumer)
      */
     @Override
-    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum)
+    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer checksumBytesReadConsumer)
     {
         getLogger().info("validate file: {}/{}, withChecksum={}", baseDir, syncItem.getRelativePath(), withChecksum);
 
@@ -170,7 +171,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
             {
                 getLogger().debug("building Checksum: {}/{}", baseDir, syncItem.getRelativePath());
 
-                String checksum = DigestUtils.sha256DigestAsHex(path);
+                String checksum = DigestUtils.sha256DigestAsHex(path, checksumBytesReadConsumer);
 
                 if (!checksum.equals(syncItem.getChecksum()))
                 {
@@ -210,17 +211,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
 
             FileChannel fileChannelReceiver = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            return ReactiveUtils.write(fileFlux, fileChannelReceiver).doFinally(type -> {
-                try
-                {
-                    fileChannelReceiver.force(false);
-                    fileChannelReceiver.close();
-                }
-                catch (IOException ex)
-                {
-                    throw new UncheckedIOException(ex);
-                }
-            });
+            return ReactiveUtils.write(fileFlux, fileChannelReceiver).doFinally(type -> JSyncUtils.close(fileChannelReceiver));
         }
         catch (IOException ex)
         {

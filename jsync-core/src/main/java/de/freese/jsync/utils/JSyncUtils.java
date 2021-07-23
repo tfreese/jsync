@@ -4,8 +4,11 @@ package de.freese.jsync.utils;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.channels.AsynchronousChannelGroup;
+import java.nio.channels.Channel;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
@@ -103,6 +106,31 @@ public final class JSyncUtils
         }
 
         return sbuf.toString().toUpperCase();
+    }
+
+    /**
+     * SocketChannels werden NICHT geschlossen !
+     *
+     * @param channel {@link Channel}
+     */
+    public static void close(final Channel channel)
+    {
+        if ((channel != null) && channel.isOpen())
+        {
+            try
+            {
+                if (channel instanceof FileChannel)
+                {
+                    ((FileChannel) channel).force(false);
+                }
+
+                channel.close();
+            }
+            catch (IOException ex)
+            {
+                throw new UncheckedIOException(ex);
+            }
+        }
     }
 
     /**

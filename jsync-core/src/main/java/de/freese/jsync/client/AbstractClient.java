@@ -132,8 +132,7 @@ public abstract class AbstractClient implements Client
 
                 long writtenBytesSum = bytesTransferred.addAndGet(bytesWritten);
                 clientListener.copyProgress(getOptions(), syncItem, writtenBytesSum);
-            });
-            // .dispose() // Sorgt für Verzögerungen nach dem Kopiervorgang.
+            }).dispose();
         }
         catch (Exception ex)
         {
@@ -146,7 +145,8 @@ public abstract class AbstractClient implements Client
         {
             // Datei überprüfen.
             clientListener.validate(getOptions(), syncItem);
-            getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum());
+            getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum(),
+                    bytesRead -> clientListener.checksumProgress(getOptions(), syncItem, bytesRead));
         }
         catch (Exception ex)
         {

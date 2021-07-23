@@ -102,7 +102,7 @@ public final class JsyncRSocketServer
          this.server = RSocketServer.create()
                 .acceptor(socketAcceptor)
                 .resume(resume)
-                .payloadDecoder(PayloadDecoder.DEFAULT)
+                .payloadDecoder(PayloadDecoder.ZERO_COPY)
                 .bindNow(serverTransport)
                 ;
         // @formatter:on

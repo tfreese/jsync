@@ -9,9 +9,8 @@ import java.util.function.LongConsumer;
 import de.freese.jsync.filesystem.Sender;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
-import io.netty.buffer.ByteBuf;
 import io.rsocket.Payload;
-import io.rsocket.util.ByteBufPayload;
+import io.rsocket.util.DefaultPayload;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.resources.LoopResources;
@@ -54,17 +53,21 @@ public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Se
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        ByteBuf byteBufMeta = getByteBufAllocator().buffer();
+        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufMeta, JSyncCommand.SOURCE_READ_FILE);
 
-        ByteBuf byteBufData = getByteBufAllocator().buffer();
+        ByteBuffer byteBufData = getByteBufferPool().obtain();
         getSerializer().writeTo(byteBufData, baseDir);
         getSerializer().writeTo(byteBufData, relativeFile);
         getSerializer().writeTo(byteBufData, sizeOfFile);
 
         // @formatter:off
         return getClient()
-            .requestStream(Mono.just(ByteBufPayload.create(byteBufData, byteBufMeta)))
+            .requestStream(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+                getByteBufferPool().free(byteBufMeta);
+                getByteBufferPool().free(byteBufData);
+                })
+            )
             .map(Payload::getData)
             .doOnError(th -> getLogger().error(null, th))
             ;
