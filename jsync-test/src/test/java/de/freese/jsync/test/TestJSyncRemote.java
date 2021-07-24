@@ -29,6 +29,8 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.rsocket.server.JsyncRSocketServer;
 import de.freese.jsync.utils.pool.ByteBufferPool;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 
 /***
  * @author Thomas Freese
@@ -92,6 +94,11 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     @BeforeAll
     static void beforeAll() throws Exception
     {
+        // https://netty.io/wiki/reference-counted-objects.html
+        // io.netty.util.ResourceLeakDetector
+        // System.setProperty("io.netty.leakDetection.level", "PARANOID");
+        ResourceLeakDetector.setLevel(Level.ADVANCED);
+
         options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
     }
 
