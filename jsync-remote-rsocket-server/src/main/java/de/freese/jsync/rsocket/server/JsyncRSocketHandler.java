@@ -2,8 +2,7 @@
 package de.freese.jsync.rsocket.server;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Consumer;
 
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -19,6 +18,7 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
+import de.freese.jsync.rsocket.utils.RSocketUtils;
 import de.freese.jsync.utils.pool.Pool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -27,6 +27,7 @@ import io.rsocket.RSocket;
 import io.rsocket.util.ByteBufPayload;
 import io.rsocket.util.DefaultPayload;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 /**
@@ -96,7 +97,9 @@ public class JsyncRSocketHandler implements RSocket
 
         String checksum = fileSystem.generateChecksum(baseDir, relativeFile, null);
 
-        return Mono.just(ByteBufPayload.create(checksum));
+        Payload responsePayload = ByteBufPayload.create(checksum);
+
+        return Mono.just(responsePayload).doFinally(signalType -> RSocketUtils.release(responsePayload));
     }
 
     /**
@@ -106,7 +109,7 @@ public class JsyncRSocketHandler implements RSocket
     {
         Payload responsePayload = ByteBufPayload.create("OK");
 
-        return Mono.just(responsePayload);// .doFinally(signalType -> RSocketUtils.release(responsePayload));
+        return Mono.just(responsePayload).doFinally(signalType -> RSocketUtils.release(responsePayload));
     }
 
     /**
@@ -126,7 +129,9 @@ public class JsyncRSocketHandler implements RSocket
 
         receiver.createDirectory(baseDir, relativePath);
 
-        return Mono.just(ByteBufPayload.create("OK"));
+        Payload responsePayload = ByteBufPayload.create("OK");
+
+        return Mono.just(responsePayload).doFinally(signalType -> RSocketUtils.release(responsePayload));
     }
 
     /**
@@ -147,7 +152,9 @@ public class JsyncRSocketHandler implements RSocket
 
         receiver.delete(baseDir, relativePath, followSymLinks);
 
-        return Mono.just(ByteBufPayload.create("OK"));
+        Payload responsePayload = ByteBufPayload.create("OK");
+
+        return Mono.just(responsePayload).doFinally(signalType -> RSocketUtils.release(responsePayload));
     }
 
     /**
@@ -157,7 +164,7 @@ public class JsyncRSocketHandler implements RSocket
     {
         Payload responsePayload = ByteBufPayload.create("OK");
 
-        return Mono.just(responsePayload);// .doFinally(signalType -> RSocketUtils.release(responsePayload));
+        return Mono.just(responsePayload).doFinally(signalType -> RSocketUtils.release(responsePayload));
     }
 
     /**
@@ -168,22 +175,23 @@ public class JsyncRSocketHandler implements RSocket
      *
      * @return {@link Mono}
      */
-    private Mono<Payload> generateSyncItems(final Payload payload, final FileSystem fileSystem)
+    private Flux<Payload> generateSyncItems(final Payload payload, final FileSystem fileSystem)
     {
         ByteBuf byteBufData = payload.data();
 
         String baseDir = getSerializer().readFrom(byteBufData, String.class);
         boolean followSymLinks = getSerializer().readFrom(byteBufData, Boolean.class);
 
-        List<SyncItem> syncItems = new ArrayList<>();
-        fileSystem.generateSyncItems(baseDir, followSymLinks, syncItems::add);
+        Consumer<FluxSink<SyncItem>> syncItemConsumer = sink -> {
+            fileSystem.generateSyncItems(baseDir, followSymLinks, sink::next);
+            sink.complete();
+        };
 
-        ByteBuf byteBuf = getByteBufAllocator().buffer();
-        getSerializer().writeTo(byteBuf, syncItems.size());
-
-        syncItems.forEach(syncItem -> getSerializer().writeTo(byteBuf, syncItem));
-
-        return Mono.just(ByteBufPayload.create(byteBuf));// .doFinally(signalType -> byteBuf.release());
+        return Flux.create(syncItemConsumer).map(syncItem -> {
+            ByteBuf byteBuf = getByteBufAllocator().buffer();
+            getSerializer().writeTo(byteBuf, syncItem);
+            return byteBuf;
+        }).map(ByteBufPayload::create);
     }
 
     /**
@@ -251,6 +259,7 @@ public class JsyncRSocketHandler implements RSocket
 
                 JSyncCommand command = getSerializer().readFrom(byteBufMeta, JSyncCommand.class);
                 getLogger().debug("read command: {}", command);
+                RSocketUtils.release(payload);
 
                 return switch (command)
                 {
@@ -283,7 +292,7 @@ public class JsyncRSocketHandler implements RSocket
 
         try
         {
-            ByteBuf byteBufMeta = payload.metadata();
+            ByteBuf byteBufMeta = payload.metadata().resetReaderIndex();
 
             JSyncCommand command = getSerializer().readFrom(byteBufMeta, JSyncCommand.class);
             getLogger().debug("read command: {}", command);
@@ -293,9 +302,7 @@ public class JsyncRSocketHandler implements RSocket
                 case CONNECT -> connect();
                 case DISCONNECT -> disconnect();
                 case SOURCE_CHECKSUM -> checksum(payload, sender);
-                case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
                 case TARGET_CHECKSUM -> checksum(payload, receiver);
-                case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
                 case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
                 case TARGET_DELETE -> delete(payload, receiver);
                 case TARGET_UPDATE -> update(payload, receiver);
@@ -312,7 +319,7 @@ public class JsyncRSocketHandler implements RSocket
         }
         finally
         {
-            // RSocketUtils.release(payload);
+            RSocketUtils.release(payload);
 
             POOL_SENDER.free(sender);
             POOL_RECEIVER.free(receiver);
@@ -326,6 +333,7 @@ public class JsyncRSocketHandler implements RSocket
     public Flux<Payload> requestStream(final Payload payload)
     {
         Sender sender = POOL_SENDER.obtain();
+        Receiver receiver = POOL_RECEIVER.obtain();
 
         try
         {
@@ -336,7 +344,9 @@ public class JsyncRSocketHandler implements RSocket
 
             return switch (command)
             {
+                case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
                 case SOURCE_READ_FILE -> readFile(payload, sender);
+                case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
 
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
@@ -349,9 +359,10 @@ public class JsyncRSocketHandler implements RSocket
         }
         finally
         {
-            // RSocketUtils.release(payload);
+            RSocketUtils.release(payload);
 
             POOL_SENDER.free(sender);
+            POOL_RECEIVER.free(receiver);
         }
     }
 
@@ -372,7 +383,9 @@ public class JsyncRSocketHandler implements RSocket
 
         receiver.update(baseDir, syncItem);
 
-        return Mono.just(ByteBufPayload.create("OK"));
+        Payload responsePayload = ByteBufPayload.create("OK");
+
+        return Mono.just(responsePayload).doFinally(signalType -> RSocketUtils.release(responsePayload));
     }
 
     /**
@@ -393,7 +406,9 @@ public class JsyncRSocketHandler implements RSocket
 
         receiver.validateFile(baseDir, syncItem, withChecksum, null);
 
-        return Mono.just(ByteBufPayload.create("OK"));
+        Payload responsePayload = ByteBufPayload.create("OK");
+
+        return Mono.just(responsePayload).doFinally(signalType -> RSocketUtils.release(responsePayload));
     }
 
     /**

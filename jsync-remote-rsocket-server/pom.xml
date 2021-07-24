@@ -9,24 +9,23 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jsync-remote-rsocket</artifactId>
+    <artifactId>jsync-remote-rsocket-server</artifactId>
     <packaging>jar</packaging>
 
     <name>${project.groupId} - ${project.artifactId}</name>
-    <description>A Java rsync clone: RSocket Module</description>
+    <description>A Java rsync clone: RSocket-Server Module</description>
 
     <dependencies>
         <!-- compile scope -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jsync-core</artifactId>
+            <artifactId>jsync-remote-rsocket</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.rsocket</groupId>
             <artifactId>rsocket-transport-netty</artifactId>
-        </dependency>         
-                      
+        </dependency>                          
 
         <!-- runtime scope -->
         <dependency>

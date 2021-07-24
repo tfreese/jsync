@@ -210,6 +210,12 @@ public class DefaultSyncItem implements SyncItem
         StringBuilder sb = new StringBuilder();
         sb.append("SyncItem [");
         sb.append("relativePath=").append(getRelativePath());
+
+        if (isFile())
+        {
+            sb.append(", size=").append(getSize());
+        }
+
         sb.append("]");
 
         return sb.toString();

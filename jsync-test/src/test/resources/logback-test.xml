@@ -31,18 +31,13 @@
         </filter>
     </appender>
 
-    <logger name="de.freese.jsync" level="DEBUG" />
-    <logger name="de.freese.jsync.nio" level="INFO" />
-    <logger name="de.freese.jsync.netty" level="INFO" />
+    <logger name="de.freese.jsync" level="INFO" />
     
-    <logger name="org.apache.http" level="INFO" />
-    <logger name="org.springframework" level="INFO" />
-    <logger name="io.netty" level="INFO" />
-    <logger name="io.rsocket.FrameLogger" level="INFO" />
+    <!--logger name="io.rsocket.FrameLogger" level="INFO" />
     <logger name="reactor" level="INFO" />
-    <logger name="reactor.netty.tcp.TcpServer" level="INFO" />
+    <logger name="reactor.netty.tcp.TcpServer" level="INFO" /-->
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="STDERR" />
     </root>

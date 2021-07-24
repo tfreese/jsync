@@ -61,8 +61,8 @@ public final class JsyncRSocketServer
     public void start(final int port, final int selectCount, final int workerCount)
     {
         // Globale Default-Resourcen.
-        TcpResources.set(LoopResources.create("jsync-server"));
-        // TcpResources.set(LoopResources.create("jsync-server", 2, 4, true));
+        // TcpResources.set(LoopResources.create("jsync-server"));
+        TcpResources.set(LoopResources.create("jsync-server", selectCount, workerCount, true));
         // TcpResources.set(ConnectionProvider.create("demo-connectionPool", 16));
 
         getLogger().info("starting jsync-rsocket server on port: {}", port);
@@ -88,7 +88,7 @@ public final class JsyncRSocketServer
         TcpServer tcpServer = TcpServer.create()
                 .host("localhost")
                 .port(port)
-                .runOn(LoopResources.create("jsync-server-", selectCount, workerCount, false))
+                //.runOn(LoopResources.create("jsync-server", selectCount, workerCount, false))
                 .doOnUnbound(connection -> LOGGER.info("Unbound: {}", connection.channel()))
                 ;
         // @formatter:on

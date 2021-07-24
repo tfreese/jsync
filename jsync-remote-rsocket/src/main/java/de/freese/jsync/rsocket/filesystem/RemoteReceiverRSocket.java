@@ -26,7 +26,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void connect(final URI uri)
     {
-        connect(uri, tcpClient -> tcpClient.runOn(LoopResources.create("jsync-client-receiver-", 3, true)));
+        connect(uri, tcpClient -> tcpClient.runOn(LoopResources.create("jsync-client-receiver", 3, true)));
     }
 
     /**
@@ -44,7 +44,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+            .requestResponse(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
                 getByteBufferPool().free(byteBufMeta);
                 getByteBufferPool().free(byteBufData);
                 })
@@ -73,7 +73,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+            .requestResponse(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
                 getByteBufferPool().free(byteBufMeta);
                 getByteBufferPool().free(byteBufData);
                 })
@@ -119,7 +119,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+            .requestResponse(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
                 getByteBufferPool().free(byteBufMeta);
                 getByteBufferPool().free(byteBufData);
                 })
@@ -148,7 +148,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+            .requestResponse(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
                 getByteBufferPool().free(byteBufMeta);
                 getByteBufferPool().free(byteBufData);
                 })
@@ -175,7 +175,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
         getSerializer().writeTo(byteBufData, relativeFile);
         getSerializer().writeTo(byteBufData, sizeOfFile);
 
-        Flux<Payload> flux = Flux.concat(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+        Flux<Payload> flux = Flux.concat(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
             getByteBufferPool().free(byteBufMeta);
             getByteBufferPool().free(byteBufData);
         }), fileFlux.map(DefaultPayload::create));
@@ -183,9 +183,9 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
         // @formatter:off
         return getClient()
           .requestChannel(flux)
-          .map(payload -> Long.parseLong(payload.getDataUtf8()))
+          .map(payload -> payload.data().readLong())
           .doOnError(th -> getLogger().error(null, th))
           ;
-      // @formatter:on
+       // @formatter:on
     }
 }

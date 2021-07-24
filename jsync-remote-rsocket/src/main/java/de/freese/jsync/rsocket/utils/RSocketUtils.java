@@ -6,12 +6,6 @@ import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.PooledDataBuffer;
-import org.springframework.lang.Nullable;
-
 import io.rsocket.Payload;
 
 /**
@@ -19,42 +13,6 @@ import io.rsocket.Payload;
  */
 public final class RSocketUtils
 {
-    /**
-     *
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(RSocketUtils.class);
-
-    /**
-     * Release the given data buffer, if it is a {@link PooledDataBuffer} and has been {@linkplain PooledDataBuffer#isAllocated() allocated}.
-     *
-     * @param dataBuffer the data buffer to release
-     *
-     * @return {@code true} if the buffer was released; {@code false} otherwise.
-     */
-    public static boolean release(@Nullable final DataBuffer dataBuffer)
-    {
-        if (dataBuffer instanceof PooledDataBuffer pooledDataBuffer)
-        {
-            if (pooledDataBuffer.isAllocated())
-            {
-                try
-                {
-                    return pooledDataBuffer.release();
-                }
-                catch (IllegalStateException ex)
-                {
-                    // Avoid dependency on Netty: IllegalReferenceCountException
-                    if (LOGGER.isDebugEnabled())
-                    {
-                        LOGGER.debug("Failed to release PooledDataBuffer: " + dataBuffer, ex);
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
     /**
      * @param payload {@link Payload}
      */

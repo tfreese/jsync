@@ -33,11 +33,6 @@ import reactor.util.retry.Retry;
  */
 public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 {
-    // /**
-    // *
-    // */
-    // private final ByteBufAllocator byteBufAllocator = ByteBufAllocator.DEFAULT;
-
     /**
      *
      */
@@ -90,7 +85,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 
         // @formatter:off
         this.client
-            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, byteBufMeta)).doOnSubscribe(subscription -> getByteBufferPool().free(byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, byteBufMeta.flip())).doOnSubscribe(subscription -> getByteBufferPool().free(byteBufMeta)))
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -111,7 +106,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, byteBufMeta)).doOnSubscribe(subscription -> getByteBufferPool().free(byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, byteBufMeta.flip())).doOnSubscribe(subscription -> getByteBufferPool().free(byteBufMeta)))
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -142,7 +137,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 
         // @formatter:off
         return getClient()
-                .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+                .requestResponse(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
                     getByteBufferPool().free(byteBufMeta);
                     getByteBufferPool().free(byteBufData);
                     })
@@ -172,29 +167,19 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+            .requestStream(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
                 getByteBufferPool().free(byteBufMeta);
                 getByteBufferPool().free(byteBufData);
                 })
             )
-            .publishOn(Schedulers.boundedElastic())
+            .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf -> in anderen Thread auslagern sonst knallts !
+            .doOnError(th -> getLogger().error(null, th))
             .doOnNext(payload -> {
                 ByteBuffer byteBuf = payload.getData();
-
-                int itemCount = getSerializer().readFrom(byteBuf, int.class);
-
-                for (int i = 0; i < itemCount; i++)
-                {
-                    SyncItem syncItem = getSerializer().readFrom(byteBuf, SyncItem.class);
-
-                    consumerSyncItem.accept(syncItem);
-                }
-
-                //payload.release();
-                //byteBuf.release();
+                SyncItem syncItem = getSerializer().readFrom(byteBuf, SyncItem.class);
+                consumerSyncItem.accept(syncItem);
             })
-            .doOnError(th -> getLogger().error(null, th))
-            .block()
+            .blockLast()
             ;
         // @formatter:on
     }

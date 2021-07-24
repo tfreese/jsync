@@ -26,7 +26,7 @@ public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Se
     @Override
     public void connect(final URI uri)
     {
-        connect(uri, tcpClient -> tcpClient.runOn(LoopResources.create("jsync-client-sender-", 3, true)));
+        connect(uri, tcpClient -> tcpClient.runOn(LoopResources.create("jsync-client-sender", 3, true)));
     }
 
     /**
@@ -63,7 +63,7 @@ public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Se
 
         // @formatter:off
         return getClient()
-            .requestStream(Mono.just(DefaultPayload.create(byteBufData, byteBufMeta)).doOnSubscribe(subscription -> {
+            .requestStream(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
                 getByteBufferPool().free(byteBufMeta);
                 getByteBufferPool().free(byteBufData);
                 })
