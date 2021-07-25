@@ -1,11 +1,16 @@
 // Created: 12.07.2020
 package de.freese.jsync.swing.view;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -34,6 +39,52 @@ public abstract class AbstractView
      *
      */
     public final Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
+     * Malt einen Rahmen um jede {@link Component}.
+     *
+     * @param component {@link Component}
+     */
+    public void enableDebug(final Component component)
+    {
+        // System.out.printf("%s - %s%n", component.getName(), component.getClass().getSimpleName());
+
+        if (component instanceof JComponent)
+        {
+            try
+            {
+                ((JComponent) component).setBorder(BorderFactory.createLineBorder(Color.MAGENTA));
+            }
+            catch (Exception ex)
+            {
+                // Ignore
+            }
+        }
+    }
+
+    /**
+     * Malt einen Rahmen um jede {@link Component}.
+     *
+     * @param container {@link Container}
+     */
+    public void enableDebug(final Container container)
+    {
+        enableDebug((Component) container);
+
+        for (int i = 0; i < container.getComponentCount(); i++)
+        {
+            Component child = container.getComponent(i);
+
+            if (child instanceof Container)
+            {
+                enableDebug((Container) child);
+            }
+            else
+            {
+                enableDebug(child);
+            }
+        }
+    }
 
     /**
      * @return {@link Logger}

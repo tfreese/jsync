@@ -80,14 +80,14 @@ public interface SyncView
     URI getUri(EFileSystem fileSystem);
 
     /**
-     *
+     * Aufbau der GUI.
      */
     void initGUI();
 
     /**
      * @param max int
      */
-    void setProgressBarFiles(int max);
+    void setProgressBarFilesMax(int max);
 
     /**
      * @param fileSystem {@link EFileSystem}

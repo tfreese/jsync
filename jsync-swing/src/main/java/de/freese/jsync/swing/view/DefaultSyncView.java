@@ -4,6 +4,7 @@ package de.freese.jsync.swing.view;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
@@ -13,10 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -116,12 +116,12 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
      *
      */
-    private JTextField textFieldReceiverPath;
+    private UriView uriViewReceiver;
 
     /**
      *
      */
-    private JTextField textFieldSenderPath;
+    private UriView uriViewSender;
 
     /**
      * Erstellt ein neues {@link DefaultSyncView} Object.
@@ -182,13 +182,101 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * Konfiguration der GUI.
+     */
+    private void configGui()
+    {
+        JComboBox<String> comboboxSender = getComboBox(EFileSystem.SENDER);
+        JComboBox<String> comboboxReceiver = getComboBox(EFileSystem.RECEIVER);
+
+        JTextField textFieldSender = getTextField(EFileSystem.SENDER);
+        JTextField textFieldReceiver = getTextField(EFileSystem.RECEIVER);
+
+        JButton buttonOpenSender = getButtonOpen(EFileSystem.SENDER);
+        JButton buttonOpenReceiver = getButtonOpen(EFileSystem.RECEIVER);
+
+        comboboxSender.addItemListener(event -> {
+            if (event.getStateChange() != ItemEvent.SELECTED)
+            {
+                return;
+            }
+
+            String protocol = (String) event.getItem();
+
+            buttonOpenSender.setVisible("file".equals(protocol));
+        });
+
+        comboboxReceiver.addItemListener(event -> {
+            if (event.getStateChange() != ItemEvent.SELECTED)
+            {
+                return;
+            }
+
+            String protocol = (String) event.getItem();
+
+            buttonOpenReceiver.setVisible("file".equals(protocol));
+        });
+
+        buttonOpenSender.addActionListener(event -> {
+            File folder = selectFolder(textFieldSender.getText());
+
+            if (folder != null)
+            {
+                textFieldSender.setText(folder.toString());
+            }
+            else
+            {
+                textFieldSender.setText(null);
+            }
+        });
+
+        buttonOpenReceiver.addActionListener(event -> {
+            File folder = selectFolder(textFieldReceiver.getText());
+
+            if (folder != null)
+            {
+                textFieldReceiver.setText(folder.toString());
+            }
+            else
+            {
+                textFieldReceiver.setText(null);
+            }
+        });
+
+        // Compare-Button steuern
+        textFieldSender.getDocument().addDocumentListener(new DocumentListenerAdapter()
+        {
+            /**
+             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
+             */
+            @Override
+            public void insertUpdate(final DocumentEvent event)
+            {
+                getButtonCompare().setEnabled(!textFieldSender.getText().isBlank() && !textFieldReceiver.getText().isBlank());
+            }
+        });
+
+        textFieldReceiver.getDocument().addDocumentListener(new DocumentListenerAdapter()
+        {
+            /**
+             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
+             */
+            @Override
+            public void insertUpdate(final DocumentEvent event)
+            {
+                getButtonCompare().setEnabled(!textFieldSender.getText().isBlank() && !textFieldReceiver.getText().isBlank());
+            }
+        });
+    }
+
+    /**
      * @return {@link JPanel}
      */
     private JPanel createConfigPanel()
     {
         JPanel confiPanel = new JPanel();
+        confiPanel.setName("confiPanel");
         confiPanel.setLayout(new GridBagLayout());
-        // confiPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 
         // Button Compare
         confiPanel.add(getButtonCompare(), new GbcBuilder(0, 0).insets(5, 5, 5, 20));
@@ -200,16 +288,23 @@ public class DefaultSyncView extends AbstractView implements SyncView
         confiPanel.add(panelOptions, new GbcBuilder(1, 0).anchorWest());
 
         this.checkBoxChecksum = new JCheckBox(getMessage("jsync.options.checksum"), false);
+        this.checkBoxChecksum.setName("jsync.options.checksum");
         panelOptions.add(this.checkBoxChecksum, new GbcBuilder(0, 0).anchorWest());
+
         this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
+        this.checkBoxDryRun.setName("jsync.options.dryrun");
         panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 0).anchorWest());
 
         this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), true);
+        this.checkBoxDelete.setName("jsync.options.delete");
         panelOptions.add(this.checkBoxDelete, new GbcBuilder(0, 1).anchorWest());
+
         this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), true);
+        this.checkBoxFollowSymLinks.setName("jsync.options.followSymLinks");
         panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(1, 1).anchorWest().gridwidth(2));
 
         this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallel"), false);
+        this.checkBoxParallelism.setName("jsync.options.parallel");
         panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 2).gridwidth(2));
 
         confiPanel.add(panelOptions, new GbcBuilder(1, 0));
@@ -369,10 +464,21 @@ public class DefaultSyncView extends AbstractView implements SyncView
         if (this.buttonCompare == null)
         {
             this.buttonCompare = new JButton(getMessage("jsync.compare"));
+            this.buttonCompare.setName("buttonCompare");
             this.buttonCompare.setEnabled(false);
         }
 
         return this.buttonCompare;
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     *
+     * @return {@link JButton}
+     */
+    private JButton getButtonOpen(final EFileSystem fileSystem)
+    {
+        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getButtonOpen() : this.uriViewReceiver.getButtonOpen();
     }
 
     /**
@@ -383,10 +489,21 @@ public class DefaultSyncView extends AbstractView implements SyncView
         if (this.buttonSyncronize == null)
         {
             this.buttonSyncronize = new JButton(getMessage("jsync.synchronize"));
+            this.buttonSyncronize.setName("buttonSyncronize");
             this.buttonSyncronize.setEnabled(false);
         }
 
         return this.buttonSyncronize;
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     *
+     * @return {@link JComboBox}
+     */
+    private JComboBox<String> getComboBox(final EFileSystem fileSystem)
+    {
+        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getComboBox() : this.uriViewReceiver.getComboBox();
     }
 
     /**
@@ -424,6 +541,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         if (this.progressBarFiles == null)
         {
             this.progressBarFiles = new JProgressBar();
+            this.progressBarFiles.setName("progressBarFiles");
             this.progressBarFiles.setStringPainted(true);
             this.progressBarFiles.setPreferredSize(new Dimension(210, 20));
         }
@@ -439,6 +557,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         if (this.progressBarReceiver == null)
         {
             this.progressBarReceiver = new JProgressBar();
+            this.progressBarReceiver.setName("progressBarReceiver");
             this.progressBarReceiver.setStringPainted(true);
         }
 
@@ -453,6 +572,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         if (this.progressBarSender == null)
         {
             this.progressBarSender = new JProgressBar();
+            this.progressBarSender.setName("progressBarSender");
             this.progressBarSender.setStringPainted(true);
         }
 
@@ -476,6 +596,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         if (this.table == null)
         {
             this.table = new JTable();
+            this.table.setName("table");
             this.table.setModel(new SyncListTableModel());
 
             // Sender
@@ -513,31 +634,13 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * @param fileSystem {@link EFileSystem}
+     *
      * @return {@link JTextField}
      */
-    private JTextField getTextFieldReceiverPath()
+    private JTextField getTextField(final EFileSystem fileSystem)
     {
-        if (this.textFieldReceiverPath == null)
-        {
-            this.textFieldReceiverPath = new JTextField();
-            this.textFieldReceiverPath.setEditable(true);
-        }
-
-        return this.textFieldReceiverPath;
-    }
-
-    /**
-     * @return {@link JTextField}
-     */
-    private JTextField getTextFieldSenderPath()
-    {
-        if (this.textFieldSenderPath == null)
-        {
-            this.textFieldSenderPath = new JTextField();
-            this.textFieldSenderPath.setEditable(false);
-        }
-
-        return this.textFieldSenderPath;
+        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextField() : this.uriViewReceiver.getTextField();
     }
 
     /**
@@ -546,8 +649,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public URI getUri(final EFileSystem fileSystem)
     {
-        JTextField textField = EFileSystem.SENDER.equals(fileSystem) ? getTextFieldSenderPath() : getTextFieldReceiverPath();
+        JComboBox<String> comboBox = getComboBox(fileSystem);
+        JTextField textField = getTextField(fileSystem);
 
+        String protocol = (String) comboBox.getSelectedItem();
         String path = textField.getText();
 
         if ((path == null) || path.isBlank())
@@ -555,9 +660,20 @@ public class DefaultSyncView extends AbstractView implements SyncView
             return null;
         }
 
-        URI uri = Paths.get(path).toUri();
+        if ("file".equals(protocol))
+        {
+            return Paths.get(path).toUri();
+        }
+        else if ("rsocket".equals(protocol))
+        {
+            String[] splits = path.split("[\\/]", 2);
+            String host = splits[0];
+            String p = splits[1];
 
-        return uri;
+            return URI.create("rsocket://" + host + "/" + p.replace(" ", "%20"));
+        }
+
+        throw new IllegalStateException("unsupported protocol: " + protocol);
     }
 
     /**
@@ -567,99 +683,47 @@ public class DefaultSyncView extends AbstractView implements SyncView
     public void initGUI()
     {
         this.panel.setLayout(new GridBagLayout());
+        this.panel.setName("panel");
 
         int row = 0;
 
         // Config
         JPanel configPanel = createConfigPanel();
-        this.panel.add(configPanel, new GbcBuilder(0, row).gridwidth(7).anchorCenter().fillHorizontal());
+        this.panel.add(configPanel, new GbcBuilder(0, row).gridwidth(10).anchorCenter().fillHorizontal());
 
         row++;
-        this.panel.add(new JSeparator(), new GbcBuilder(0, row).gridwidth(7).fillHorizontal());
+        this.panel.add(new JSeparator(), new GbcBuilder(0, row).gridwidth(10).fillHorizontal());
 
-        // Path-Selection Sender
+        // Path-Selection
         row++;
-        JLabel labelPath = new JLabel(getMessage("jsync.source"));
-        this.panel.add(labelPath, new GbcBuilder(0, row));
-        this.panel.add(getTextFieldSenderPath(), new GbcBuilder(1, row).fillHorizontal());
-        JButton buttonPath = new JButton(getMessage("jsync.open"));
-        buttonPath.addActionListener(event -> {
-            File folder = selectFolder(getTextFieldSenderPath().getText());
 
-            if (folder != null)
-            {
-                getTextFieldSenderPath().setText(folder.toString());
-            }
-            else
-            {
-                getTextFieldSenderPath().setText(null);
-            }
-        });
-        this.panel.add(buttonPath, new GbcBuilder(2, row));
+        this.uriViewSender = new UriView().initGUI(EFileSystem.SENDER);
+        this.panel.add(this.uriViewSender.getPanel(), new GbcBuilder(0, row).gridwidth(5).fillHorizontal());
 
-        this.panel.add(Box.createGlue(), new GbcBuilder(3, row).weightx(0.1D));
-
-        // Path-Selection Receiver
-        labelPath = new JLabel(getMessage("jsync.target"));
-        this.panel.add(labelPath, new GbcBuilder(4, row).anchorEast());
-        this.panel.add(getTextFieldReceiverPath(), new GbcBuilder(5, row).anchorEast().fillHorizontal());
-        buttonPath = new JButton(getMessage("jsync.open"));
-        buttonPath.addActionListener(event -> {
-            File folder = selectFolder(getTextFieldReceiverPath().getText());
-
-            if (folder != null)
-            {
-                getTextFieldReceiverPath().setText(folder.toString());
-            }
-            else
-            {
-                getTextFieldReceiverPath().setText(null);
-            }
-        });
-        this.panel.add(buttonPath, new GbcBuilder(6, row).anchorEast());
+        this.uriViewReceiver = new UriView().initGUI(EFileSystem.RECEIVER);
+        this.panel.add(this.uriViewReceiver.getPanel(), new GbcBuilder(5, row).gridwidth(5).fillHorizontal());
 
         // Tabelle
         row++;
         JScrollPane scrollPane = new JScrollPane(getTable());
-        this.panel.add(scrollPane, new GbcBuilder(0, row).gridwidth(7).fillBoth());
+        scrollPane.setName("scrollPane");
+        this.panel.add(scrollPane, new GbcBuilder(0, row).gridwidth(10).fillBoth());
 
         // ProgressBars
         row++;
-        this.panel.add(getProgressBarSender(), new GbcBuilder(0, row).gridwidth(3).fillHorizontal().insets(5, 5, 5, 0));
-        this.panel.add(getProgressBarFiles(), new GbcBuilder(3, row).insets(5, 0, 5, 0));
-        this.panel.add(getProgressBarReceiver(), new GbcBuilder(4, row).gridwidth(3).fillHorizontal().insets(5, 0, 5, 5));
+        this.panel.add(getProgressBarSender(), new GbcBuilder(0, row).gridwidth(4).fillHorizontal().insets(5, 5, 5, 0));
+        this.panel.add(getProgressBarFiles(), new GbcBuilder(5, row).insets(5, 0, 5, 0));
+        this.panel.add(getProgressBarReceiver(), new GbcBuilder(6, row).gridwidth(4).fillHorizontal().insets(5, 0, 5, 5));
 
-        // Compare-Button steuern
-        getTextFieldSenderPath().getDocument().addDocumentListener(new DocumentListenerAdapter()
-        {
-            /**
-             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
-             */
-            @Override
-            public void insertUpdate(final DocumentEvent event)
-            {
-                getButtonCompare().setEnabled(!getTextFieldSenderPath().getText().isBlank() && !getTextFieldReceiverPath().getText().isBlank());
-            }
-        });
-
-        getTextFieldReceiverPath().getDocument().addDocumentListener(new DocumentListenerAdapter()
-        {
-            /**
-             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
-             */
-            @Override
-            public void insertUpdate(final DocumentEvent event)
-            {
-                getButtonCompare().setEnabled(!getTextFieldSenderPath().getText().isBlank() && !getTextFieldReceiverPath().getText().isBlank());
-            }
-        });
+        // enableDebug(this.panel);
+        configGui();
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFiles(int)
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFilesMax(int)
      */
     @Override
-    public void setProgressBarFiles(final int max)
+    public void setProgressBarFilesMax(final int max)
     {
         if (SwingUtilities.isEventDispatchThread())
         {

@@ -34,7 +34,7 @@ class CompareWorker extends AbstractWorker<Void, Void>
         controller.getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, true);
         controller.getSyncView().addProgressBarText(EFileSystem.RECEIVER, "");
         controller.getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, true);
-        controller.getSyncView().setProgressBarFiles(0);
+        controller.getSyncView().setProgressBarFilesMax(0);
     }
 
     /**
@@ -110,7 +110,7 @@ class CompareWorker extends AbstractWorker<Void, Void>
         // Merge
         List<SyncPair> syncPairs = getClient().mergeSyncItems(syncItemsSender, syncItemsReceiver);
 
-        getSyncView().setProgressBarFiles(syncPairs.size());
+        getSyncView().setProgressBarFilesMax(syncPairs.size());
 
         if (!getOptions().isChecksum())
         {

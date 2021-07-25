@@ -4,7 +4,9 @@ package de.freese.jsync.rsocket.server;
 import io.rsocket.Closeable;
 
 /**
- * Siehe org.springframework.boot.rsocket.netty.NettyRSocketServer
+ * Siehe<br>
+ * org.springframework.boot.rsocket.netty.NettyRSocketServerFactory<br>
+ * org.springframework.boot.rsocket.netty.NettyRSocketServer
  *
  * @author Thomas Freese
  */

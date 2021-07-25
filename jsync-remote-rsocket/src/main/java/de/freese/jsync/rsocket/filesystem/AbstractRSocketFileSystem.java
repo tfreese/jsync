@@ -19,6 +19,7 @@ import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketConnector;
+import io.rsocket.core.Resume;
 import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
@@ -58,6 +59,8 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         TcpClient tcpClient = TcpClient.create()
                 .host(uri.getHost())
                 .port(uri.getPort())
+                .doOnConnected(connection -> getLogger().info("Connected: {}", connection.channel()))
+                .doOnDisconnected(connection -> getLogger().info("Disconnected: {}", connection.channel()))
                 ;
         // @formatter:on
 
@@ -67,10 +70,20 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         // ClientTransport clientTransport = LocalClientTransport.create("test-local-" + port);
 
         // @formatter:off
+        Resume resume = new Resume()
+                .sessionDuration(Duration.ofMinutes(5))
+                .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
+                        .doBeforeRetry(s -> getLogger().info("Disconnected. Trying to resume..."))
+                )
+                ;
+        // @formatter:on
+
+        // @formatter:off
         RSocketConnector connector = RSocketConnector.create()
                 .payloadDecoder(PayloadDecoder.ZERO_COPY)
                 .reconnect(Retry.fixedDelay(3, Duration.ofSeconds(1)))
                 // .reconnect(Retry.backoff(50, Duration.ofMillis(500)))
+                .resume(resume)
                 ;
         // @formatter:on
 

@@ -29,7 +29,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
 
         controller.getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
         controller.getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
-        controller.getSyncView().setProgressBarFiles(0);
+        controller.getSyncView().setProgressBarFilesMax(0);
     }
 
     /**
@@ -78,6 +78,8 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     protected Void doInBackground() throws Exception
     {
         List<SyncPair> syncPairs = getSyncView().getSyncList();
+
+        getSyncView().setProgressBarFilesMax(syncPairs.size());
 
         getClient().syncReceiver(syncPairs, this);
 

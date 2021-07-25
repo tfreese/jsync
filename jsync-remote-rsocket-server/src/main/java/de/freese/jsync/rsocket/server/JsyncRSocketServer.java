@@ -6,6 +6,8 @@ import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
@@ -32,12 +34,21 @@ public final class JsyncRSocketServer
 
     /**
      * @param args String[]
+     *
+     * @throws Exception Falls was schief geht.
      */
-    public static void main(final String[] args)
+    public static void main(final String[] args) throws Exception
     {
         JsyncRSocketServer server = new JsyncRSocketServer();
-        server.start(8888, 1, 4);
+
+        server.start(8888, 2, 4);
         // server.stop();
+
+        // Thread thread = new Thread(() -> server.start(8888, 2, 4), "rsocket-server");
+        // thread.setDaemon(false);
+        // thread.start();
+
+        System.in.read();
     }
 
     /**
@@ -60,6 +71,11 @@ public final class JsyncRSocketServer
      */
     public void start(final int port, final int selectCount, final int workerCount)
     {
+        // https://netty.io/wiki/reference-counted-objects.html
+        // io.netty.util.ResourceLeakDetector
+        // System.setProperty("io.netty.leakDetection.level", "PARANOID");
+        ResourceLeakDetector.setLevel(Level.ADVANCED);
+
         // Globale Default-Resourcen.
         // TcpResources.set(LoopResources.create("jsync-server"));
         TcpResources.set(LoopResources.create("jsync-server", selectCount, workerCount, true));
@@ -99,11 +115,12 @@ public final class JsyncRSocketServer
         SocketAcceptor socketAcceptor = SocketAcceptor.with(new JsyncRSocketHandler());
 
         // @formatter:off
-         this.server = RSocketServer.create()
+        this.server = RSocketServer.create()
                 .acceptor(socketAcceptor)
                 .resume(resume)
                 .payloadDecoder(PayloadDecoder.ZERO_COPY)
                 .bindNow(serverTransport)
+                //.bind(serverTransport).block()
                 ;
         // @formatter:on
     }

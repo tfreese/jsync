@@ -38,5 +38,4 @@ public abstract class AbstractLocalFileSystem extends AbstractFileSystem
 
         getGenerator().generateItems(baseDir, followSymLinks, consumerSyncItem);
     }
-
 }

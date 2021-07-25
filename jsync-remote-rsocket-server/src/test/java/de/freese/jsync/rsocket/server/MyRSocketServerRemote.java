@@ -47,6 +47,7 @@ public class MyRSocketServerRemote implements MyRSocketServer
 
     /**
      * @return {@link ProtocolSslContextSpec}
+     *
      * @throws Exception Falls was schief geht.
      */
     static ProtocolSslContextSpec createProtocolSslContextSpec() throws Exception
@@ -58,6 +59,7 @@ public class MyRSocketServerRemote implements MyRSocketServer
 
     /**
      * @return {@link ProtocolSslContextSpec}
+     *
      * @throws Exception Falls was schief geht.
      */
     static ProtocolSslContextSpec createProtocolSslContextSpecCertificate() throws Exception
@@ -101,6 +103,7 @@ public class MyRSocketServerRemote implements MyRSocketServer
 
     /**
      * @return {@link ProtocolSslContextSpec}
+     *
      * @throws Exception Falls was schief geht.
      */
     static ProtocolSslContextSpec createProtocolSslContextSpecSelfSigned() throws Exception
@@ -120,6 +123,7 @@ public class MyRSocketServerRemote implements MyRSocketServer
     /**
      * @param socketAcceptor {@link SocketAcceptor}
      * @param serverTransport {@link ServerTransport}
+     *
      * @return {@link CloseableChannel}
      */
     static CloseableChannel createRSocketServer(final SocketAcceptor socketAcceptor, final ServerTransport<CloseableChannel> serverTransport)
@@ -127,7 +131,7 @@ public class MyRSocketServerRemote implements MyRSocketServer
         // @formatter:off
         Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
-                .retry(Retry.fixedDelay(5, Duration.ofMillis(100))
+                .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
                         .doBeforeRetry(s -> LOGGER.info("Disconnected. Trying to resume..."))
                 )
                 ;
@@ -146,6 +150,7 @@ public class MyRSocketServerRemote implements MyRSocketServer
     /**
      * @param serverAddress {@link SocketAddress}
      * @param protocolSslContextSpec {@link ProtocolSslContextSpec}
+     *
      * @return {@link RSocketClient}
      */
     static TcpServer createTcpServer(final SocketAddress serverAddress, final ProtocolSslContextSpec protocolSslContextSpec)
