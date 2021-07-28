@@ -8,8 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import de.freese.jsync.utils.io.FileVisitorHierarchie;
 
 /**
  * Basis-Implementierung des {@link Generator}.
@@ -28,22 +28,38 @@ public abstract class AbstractGenerator implements Generator
      */
     protected Set<Path> getPaths(final Path base, final FileVisitOption[] visitOptions)
     {
-        Set<Path> set = null;
+        // Set<Path> set = new LinkedHashSet<>();
+        Set<Path> set = new TreeSet<>();
 
-        try (Stream<Path> stream = Files.walk(base, visitOptions))
+        try
         {
-            // TODO Excludes filtern
-            // @formatter:off
-            set = stream
-                    .collect(Collectors.toCollection(TreeSet::new))
-                    ;
-            // @formatter:on
+            Files.walkFileTree(base, Set.of(visitOptions), Integer.MAX_VALUE, new FileVisitorHierarchie(set));
         }
-        catch (IOException iex)
+        catch (IOException ex)
         {
-            throw new UncheckedIOException(iex);
+            throw new UncheckedIOException(ex);
         }
 
         return set;
+
+        // Set<Path> set = null;
+        //
+        // try (Stream<Path> stream = Files.walk(base, visitOptions))
+        // {
+        // // TODO Excludes filtern
+        // // TODO Wenn Dateien fehlerhaft sind, knallt es hier bereits -> eigenen FileWalker implementieren !
+        //
+//            // @formatter:off
+//            set = stream
+//                    .collect(Collectors.toCollection(TreeSet::new))
+//                    ;
+//            // @formatter:on
+        // }
+        // catch (IOException ex)
+        // {
+        // throw new UncheckedIOException(ex);
+        // }
+        //
+        // return set;
     }
 }

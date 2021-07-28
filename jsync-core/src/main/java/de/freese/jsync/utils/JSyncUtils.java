@@ -11,12 +11,10 @@ import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.Paths;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -24,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
-import de.freese.jsync.Options;
+import de.freese.jsync.utils.io.FileVisitorDelete;
 
 /**
  * @author Thomas Freese
@@ -179,30 +177,7 @@ public final class JSyncUtils
 
         if (Files.isDirectory(path, linkOptions))
         {
-            Files.walkFileTree(path, Set.of(fileVisitOptions), Integer.MAX_VALUE, new SimpleFileVisitor<>()
-            {
-                /**
-                 * @see java.nio.file.SimpleFileVisitor#postVisitDirectory(java.lang.Object, java.io.IOException)
-                 */
-                @Override
-                public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
-                {
-                    Files.delete(dir);
-
-                    return FileVisitResult.CONTINUE;
-                }
-
-                /**
-                 * @see java.nio.file.SimpleFileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
-                 */
-                @Override
-                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
-                {
-                    Files.delete(file);
-
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+            Files.walkFileTree(path, Set.of(fileVisitOptions), Integer.MAX_VALUE, new FileVisitorDelete());
         }
         else
         {
@@ -338,41 +313,6 @@ public final class JSyncUtils
     }
 
     /**
-     * Normalisiert den {@link URI#getPath()} je nach Betriebssystem.
-     *
-     * @param uri {@link URI}
-     *
-     * @return String
-     */
-    public static String normalizedPath(final URI uri)
-    {
-        String path = uri.getPath();
-
-        if (Options.IS_WINDOWS)
-        {
-            path = path.replace("\\", "/");
-
-            if (path.startsWith("/"))
-            {
-                path = path.substring(1);
-            }
-        }
-        else if (Options.IS_LINUX)
-        {
-            if (path.startsWith("//"))
-            {
-                path = path.substring(1);
-            }
-            else if (!path.startsWith("/"))
-            {
-                path = "/" + path;
-            }
-        }
-
-        return path;
-    }
-
-    /**
      * Entfernt führende '//' und das abschließende '/'.
      *
      * @param uri {@link URI}
@@ -381,7 +321,7 @@ public final class JSyncUtils
      */
     public static String normalizePath(final URI uri)
     {
-        String path = uri.getPath();
+        String path = Paths.get(uri).toString();
 
         if (path.startsWith("//"))
         {
