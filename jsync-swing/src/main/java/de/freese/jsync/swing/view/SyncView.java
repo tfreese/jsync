@@ -1,12 +1,12 @@
 // Created: 12.08.20
 package de.freese.jsync.swing.view;
 
+import java.awt.Component;
 import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.JButton;
-import javax.swing.JPanel;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -58,14 +58,14 @@ public interface SyncView
     void doOnSyncronize(Consumer<JButton> consumer);
 
     /**
+     * @return {@link Component}
+     */
+    Component getComponent();
+
+    /**
      * @return {@link Options}
      */
     Options getOptions();
-
-    /**
-     * @return {@link JPanel}
-     */
-    JPanel getPanel();
 
     /**
      * @return {@link List}

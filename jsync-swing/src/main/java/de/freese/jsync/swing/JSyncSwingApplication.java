@@ -247,7 +247,7 @@ public final class JSyncSwingApplication
 
         // JLabel label = new JLabel("jSync Swing GUI", SwingConstants.CENTER);
         // frame.add(label, BorderLayout.CENTER);
-        frame.add(syncView.getPanel(), BorderLayout.CENTER);
+        frame.add(syncView.getComponent(), BorderLayout.CENTER);
 
         // frame.setSize(800, 600);
         // frame.setSize(1024, 768);

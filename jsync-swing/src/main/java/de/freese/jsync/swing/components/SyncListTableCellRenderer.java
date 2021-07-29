@@ -31,7 +31,8 @@ public class SyncListTableCellRenderer extends DefaultTableCellRenderer
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
         SyncListTableModel tableModel = (SyncListTableModel) table.getModel();
-        SyncPair syncPair = tableModel.getObjectAt(row);
+        int modelIndex = table.convertRowIndexToModel(row);
+        SyncPair syncPair = tableModel.getObjectAt(modelIndex);
         SyncStatus syncStatus = syncPair.getStatus();
 
         switch (column)
@@ -40,30 +41,12 @@ public class SyncListTableCellRenderer extends DefaultTableCellRenderer
             default -> setHorizontalAlignment(SwingConstants.LEFT);
         }
 
-        // if (syncStatus == null)
-        // {
-        // return this;
-        // }
-
         switch (syncStatus)
         {
             case SYNCHRONIZED -> setForeground(Color.BLACK);
             case ONLY_IN_TARGET -> setForeground(Color.RED);
             default -> setForeground(Color.ORANGE.darker());
         }
-
-        // if (SyncStatus.SYNCHRONIZED.equals(syncStatus))
-        // {
-        // setForeground(Color.BLACK);
-        // }
-        // else if (SyncStatus.ONLY_IN_TARGET.equals(syncStatus))
-        // {
-        // setForeground(Color.RED);
-        // }
-        // else
-        // {
-        // setForeground(Color.ORANGE.darker());
-        // }
 
         return this;
     }

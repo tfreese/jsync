@@ -1,6 +1,7 @@
 // Created: 25.07.2021
 package de.freese.jsync.swing.view;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 
@@ -17,7 +18,7 @@ import de.freese.jsync.swing.JSyncSwingApplication;
 /**
  * @author Thomas Freese
  */
-public class UriView
+class UriView
 {
     /**
      *
@@ -66,6 +67,14 @@ public class UriView
     }
 
     /**
+     * @return {@link Component}
+     */
+    Component getComponent()
+    {
+        return this.panel;
+    }
+
+    /**
      * @param key String
      *
      * @return String
@@ -73,14 +82,6 @@ public class UriView
     private String getMessage(final String key)
     {
         return JSyncSwingApplication.getInstance().getMessages().getString(key);
-    }
-
-    /**
-     * @return {@link JPanel}
-     */
-    JPanel getPanel()
-    {
-        return this.panel;
     }
 
     /**

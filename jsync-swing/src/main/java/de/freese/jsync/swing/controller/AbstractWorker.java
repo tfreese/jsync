@@ -123,7 +123,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
                 // Empty
             }
         }
-        else if ("jsync".equals(senderUri.getScheme()) && "jsync".equals(receiverUri.getScheme()))
+        else if ("rsocket".equals(senderUri.getScheme()) && "rsocket".equals(receiverUri.getScheme()))
         {
             // Remote
             if (!senderUri.getHost().equals(receiverUri.getHost()))

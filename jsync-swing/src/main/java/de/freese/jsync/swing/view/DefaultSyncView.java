@@ -1,6 +1,7 @@
 // Created: 12.08.2020
 package de.freese.jsync.swing.view;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
@@ -9,10 +10,11 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -46,17 +48,15 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
      *
      */
-    private final Map<EFileSystem, AccumulativeRunnable<Object[]>> accumulatorProgressBarMinMaxText = new HashMap<>();
-
+    private final Map<EFileSystem, AccumulativeRunnable<Object[]>> accumulatorProgressBarMinMaxText = new EnumMap<>(EFileSystem.class);
     /**
      *
      */
-    private final Map<EFileSystem, AccumulativeRunnable<String>> accumulatorProgressBarText = new HashMap<>();
-
+    private final Map<EFileSystem, AccumulativeRunnable<String>> accumulatorProgressBarText = new EnumMap<>(EFileSystem.class);
     /**
      *
      */
-    private final Map<EFileSystem, AccumulativeRunnable<Integer>> accumulatorProgressBarValue = new HashMap<>();
+    private final Map<EFileSystem, AccumulativeRunnable<Integer>> accumulatorProgressBarValue = new EnumMap<>(EFileSystem.class);
     /**
      *
      */
@@ -97,27 +97,26 @@ public class DefaultSyncView extends AbstractView implements SyncView
      *
      */
     private JProgressBar progressBarFiles;
-
     /**
      *
      */
     private JProgressBar progressBarReceiver;
-
     /**
      *
      */
     private JProgressBar progressBarSender;
-
+    /**
+     *
+     */
+    private ShowView showView;
     /**
      *
      */
     private JTable table;
-
     /**
      *
      */
     private UriView uriViewReceiver;
-
     /**
      *
      */
@@ -291,17 +290,17 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.checkBoxChecksum.setName("jsync.options.checksum");
         panelOptions.add(this.checkBoxChecksum, new GbcBuilder(0, 0).anchorWest());
 
-        this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), false);
+        this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), true);
         this.checkBoxDryRun.setName("jsync.options.dryrun");
         panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 0).anchorWest());
 
-        this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), true);
+        this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), false);
         this.checkBoxDelete.setName("jsync.options.delete");
         panelOptions.add(this.checkBoxDelete, new GbcBuilder(0, 1).anchorWest());
 
-        this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), true);
+        this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), false);
         this.checkBoxFollowSymLinks.setName("jsync.options.followSymLinks");
-        panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(1, 1).anchorWest().gridwidth(2));
+        panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(1, 1).anchorWest());
 
         this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallel"), false);
         this.checkBoxParallelism.setName("jsync.options.parallel");
@@ -507,6 +506,15 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * @see de.freese.jsync.swing.view.SyncView#getComponent()
+     */
+    @Override
+    public Component getComponent()
+    {
+        return this.panel;
+    }
+
+    /**
      * @see de.freese.jsync.swing.view.SyncView#getOptions()
      */
     @Override
@@ -522,15 +530,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
                 .build()
                 ;
         // @formatter:on
-    }
-
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#getPanel()
-     */
-    @Override
-    public JPanel getPanel()
-    {
-        return this.panel;
     }
 
     /**
@@ -585,7 +584,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public List<SyncPair> getSyncList()
     {
-        return getTableModel().getList();
+        Predicate<SyncPair> predicate = this.showView.getPredicate();
+
+        return getTableModel().getStream().filter(predicate).toList();
     }
 
     /**
@@ -597,6 +598,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         {
             this.table = new JTable();
             this.table.setName("table");
+            this.table.setAutoCreateRowSorter(false);
             this.table.setModel(new SyncListTableModel());
 
             // Sender
@@ -689,7 +691,11 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         // Config
         JPanel configPanel = createConfigPanel();
-        this.panel.add(configPanel, new GbcBuilder(0, row).gridwidth(10).anchorCenter().fillHorizontal());
+        this.panel.add(configPanel, new GbcBuilder(0, row).gridwidth(5).anchorCenter().fillHorizontal());
+
+        // Show
+        this.showView = new ShowView().initGUI(getTable(), getTableModel());
+        this.panel.add(this.showView.getComponent(), new GbcBuilder(6, row).gridwidth(5).anchorCenter().fillHorizontal());
 
         row++;
         this.panel.add(new JSeparator(), new GbcBuilder(0, row).gridwidth(10).fillHorizontal());
@@ -698,10 +704,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
         row++;
 
         this.uriViewSender = new UriView().initGUI(EFileSystem.SENDER);
-        this.panel.add(this.uriViewSender.getPanel(), new GbcBuilder(0, row).gridwidth(5).fillHorizontal());
+        this.panel.add(this.uriViewSender.getComponent(), new GbcBuilder(0, row).gridwidth(5).fillHorizontal());
 
         this.uriViewReceiver = new UriView().initGUI(EFileSystem.RECEIVER);
-        this.panel.add(this.uriViewReceiver.getPanel(), new GbcBuilder(5, row).gridwidth(5).fillHorizontal());
+        this.panel.add(this.uriViewReceiver.getComponent(), new GbcBuilder(5, row).gridwidth(5).fillHorizontal());
 
         // Tabelle
         row++;
@@ -767,13 +773,15 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void updateLastEntry()
     {
+        int rowCount = getTableModel().getRowCount();
+
         if (SwingUtilities.isEventDispatchThread())
         {
-            getTableModel().fireTableRowsUpdated(getTableModel().getRowCount() - 1, getTableModel().getRowCount() - 1);
+            getTableModel().fireTableRowsUpdated(rowCount - 1, rowCount - 1);
         }
         else
         {
-            SwingUtilities.invokeLater(() -> getTableModel().fireTableRowsUpdated(getTableModel().getRowCount() - 1, getTableModel().getRowCount() - 1));
+            SwingUtilities.invokeLater(() -> getTableModel().fireTableRowsUpdated(rowCount - 1, rowCount - 1));
         }
     }
 }

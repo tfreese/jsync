@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -99,7 +100,7 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
     {
         getList().add(object);
 
-        fireTableRowsInserted(getList().size(), getList().size());
+        fireTableRowsInserted(getList().size() - 1, getList().size() - 1);
     }
 
     /**
@@ -111,7 +112,7 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
 
         getList().addAll(objects);
 
-        fireTableRowsInserted(sizeOld, getList().size());
+        fireTableRowsInserted(sizeOld, getList().size() - 1);
     }
 
     /**
@@ -194,15 +195,8 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
      *
      * @return Object
      */
-    public final T getObjectAt(final int rowIndex)
+    public T getObjectAt(final int rowIndex)
     {
-        // if ((rowIndex < 0) || (getList().size() <= rowIndex))
-        // {
-        // getLogger().warn("Falscher Index = " + rowIndex + "; ListSize = " + getList().size());
-        //
-        // // return null;
-        // }
-
         return getList().get(rowIndex);
     }
 
@@ -210,7 +204,7 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
      * @see javax.swing.table.TableModel#getRowCount()
      */
     @Override
-    public final int getRowCount()
+    public int getRowCount()
     {
         return getList().size();
     }
@@ -222,9 +216,19 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
      *
      * @return int
      */
-    public final int getRowOf(final T object)
+    public int getRowOf(final T object)
     {
         return getList().indexOf(object);
+    }
+
+    /**
+     * Liefert den {@link Stream} des TableModels.
+     *
+     * @return {@link Stream}
+     */
+    public Stream<T> getStream()
+    {
+        return getList().stream();
     }
 
     /**
@@ -233,10 +237,5 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
     public void refresh()
     {
         fireTableDataChanged();
-
-        // if (getRowCount() > 0)
-        // {
-        // fireTableRowsUpdated(0, getRowCount() - 1);
-        // }
     }
 }
