@@ -9,7 +9,6 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +33,14 @@ import de.freese.jsync.Options.Builder;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.swing.GbcBuilder;
-import de.freese.jsync.swing.components.AccumulativeRunnable;
 import de.freese.jsync.swing.components.DocumentListenerAdapter;
-import de.freese.jsync.swing.components.ScheduledAccumulativeRunnable;
 import de.freese.jsync.swing.components.SyncListTableCellRenderer;
 import de.freese.jsync.swing.components.SyncListTableModel;
+import de.freese.jsync.swing.components.accumulative.AccumulativeSinkSwing;
+import reactor.core.publisher.Sinks;
+import reactor.core.publisher.Sinks.Many;
+import reactor.util.function.Tuple3;
+import reactor.util.function.Tuples;
 
 /**
  * @author Thomas Freese
@@ -48,19 +50,19 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
      *
      */
-    private final Map<EFileSystem, AccumulativeRunnable<Object[]>> accumulatorProgressBarMinMaxText = new EnumMap<>(EFileSystem.class);
+    private final Map<EFileSystem, Sinks.Many<Tuple3<Integer, Integer, String>>> accumulatorProgressBarMinMaxText = new EnumMap<>(EFileSystem.class);
     /**
      *
      */
-    private final Map<EFileSystem, AccumulativeRunnable<String>> accumulatorProgressBarText = new EnumMap<>(EFileSystem.class);
+    private final Map<EFileSystem, Sinks.Many<String>> accumulatorProgressBarText = new EnumMap<>(EFileSystem.class);
     /**
      *
      */
-    private final Map<EFileSystem, AccumulativeRunnable<Integer>> accumulatorProgressBarValue = new EnumMap<>(EFileSystem.class);
+    private final Map<EFileSystem, Sinks.Many<Integer>> accumulatorProgressBarValue = new EnumMap<>(EFileSystem.class);
     /**
      *
      */
-    private AccumulativeRunnable<SyncPair> accumulatorTableAdd;
+    private Sinks.Many<SyncPair> accumulatorTableAdd;
     /**
      *
      */
@@ -138,10 +140,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
     {
-        getAccumulatorProgressBarMinMaxText(fileSystem).add(new Object[]
-        {
-                min, max, text
-        });
+        getAccumulatorProgressBarMinMaxText(fileSystem).tryEmitNext(Tuples.of(min, max, text));
     }
 
     /**
@@ -150,7 +149,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addProgressBarText(final EFileSystem fileSystem, final String text)
     {
-        getAccumulatorProgressBarText(fileSystem).add(text);
+        getAccumulatorProgressBarText(fileSystem).tryEmitNext(text);
     }
 
     /**
@@ -159,7 +158,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addProgressBarValue(final EFileSystem fileSystem, final int value)
     {
-        getAccumulatorProgressBarValue(fileSystem).add(value);
+        getAccumulatorProgressBarValue(fileSystem).tryEmitNext(value);
     }
 
     /**
@@ -168,7 +167,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addSyncPair(final SyncPair syncPair)
     {
-        getAccumulatorTableAdd().add(syncPair);
+        getAccumulatorTableAdd().tryEmitNext(syncPair);
     }
 
     /**
@@ -335,53 +334,37 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
      * @param fileSystem {@link EFileSystem}
      *
-     * @return {@link AccumulativeRunnable}<Object[]>
+     * @return {@link Many}
      */
-    private AccumulativeRunnable<Object[]> getAccumulatorProgressBarMinMaxText(final EFileSystem fileSystem)
+    private Sinks.Many<Tuple3<Integer, Integer, String>> getAccumulatorProgressBarMinMaxText(final EFileSystem fileSystem)
     {
-        AccumulativeRunnable<Object[]> accumulator = this.accumulatorProgressBarMinMaxText.get(fileSystem);
-
-        if (accumulator == null)
-        {
-            ScheduledAccumulativeRunnable<Object[]> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
+        return this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
 
-            sar.doOnSubmit(chunks -> {
-                Object[] chunk = chunks.get(chunks.size() - 1);
-                progressBar.setMinimum((int) chunk[0]);
-                progressBar.setMaximum((int) chunk[1]);
-                progressBar.setString((String) chunk[2]);
+            return new AccumulativeSinkSwing().createForSingle(value -> {
+                progressBar.setMinimum(value.getT1());
+                progressBar.setMaximum(value.getT2());
+                progressBar.setString(value.getT3());
 
                 if (getLogger().isDebugEnabled())
                 {
-                    getLogger().debug("getAccumulatorProgressBarMinMaxText - {}: {}", fileSystem, Arrays.toString(chunk));
+                    getLogger().debug("getAccumulatorProgressBarMinMaxText - {}: {}", fileSystem, value);
                 }
             });
-
-            this.accumulatorProgressBarMinMaxText.put(fileSystem, sar);
-            accumulator = sar;
-        }
-
-        return accumulator;
+        });
     }
 
     /**
      * @param fileSystem {@link EFileSystem}
      *
-     * @return {@link AccumulativeRunnable}<String>
+     * @return {@link Many}
      */
-    private AccumulativeRunnable<String> getAccumulatorProgressBarText(final EFileSystem fileSystem)
+    private Sinks.Many<String> getAccumulatorProgressBarText(final EFileSystem fileSystem)
     {
-        AccumulativeRunnable<String> accumulator = this.accumulatorProgressBarText.get(fileSystem);
-
-        if (accumulator == null)
-        {
-            ScheduledAccumulativeRunnable<String> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
+        return this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
 
-            sar.doOnSubmit(chunks -> {
-                String value = chunks.get(chunks.size() - 1);
-
+            return new AccumulativeSinkSwing().createForSingle(value -> {
                 progressBar.setString(value);
 
                 if (getLogger().isDebugEnabled())
@@ -389,31 +372,20 @@ public class DefaultSyncView extends AbstractView implements SyncView
                     getLogger().debug("getAccumulatorProgressBarText - {}: {}", fileSystem, value);
                 }
             });
-
-            this.accumulatorProgressBarText.put(fileSystem, sar);
-            accumulator = sar;
-        }
-
-        return accumulator;
+        });
     }
 
     /**
      * @param fileSystem {@link EFileSystem}
      *
-     * @return {@link AccumulativeRunnable}<Integer>
+     * @return {@link Many}
      */
-    private AccumulativeRunnable<Integer> getAccumulatorProgressBarValue(final EFileSystem fileSystem)
+    private Sinks.Many<Integer> getAccumulatorProgressBarValue(final EFileSystem fileSystem)
     {
-        AccumulativeRunnable<Integer> accumulator = this.accumulatorProgressBarValue.get(fileSystem);
-
-        if (accumulator == null)
-        {
-            ScheduledAccumulativeRunnable<Integer> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
+        return this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
 
-            sar.doOnSubmit(chunks -> {
-                int value = chunks.get(chunks.size() - 1);
-
+            return new AccumulativeSinkSwing().createForSingle(value -> {
                 progressBar.setValue(value);
 
                 if (getLogger().isDebugEnabled())
@@ -421,24 +393,18 @@ public class DefaultSyncView extends AbstractView implements SyncView
                     getLogger().debug("getAccumulatorProgressBarValue - {}: {}", fileSystem, value);
                 }
             });
-
-            this.accumulatorProgressBarValue.put(fileSystem, sar);
-            accumulator = sar;
-        }
-
-        return accumulator;
+        });
     }
 
     /**
-     * @return AccumulativeRunnable<SyncPair>
+     * @return {@link Many}
      */
-    private AccumulativeRunnable<SyncPair> getAccumulatorTableAdd()
+    private Sinks.Many<SyncPair> getAccumulatorTableAdd()
     {
         if (this.accumulatorTableAdd == null)
         {
-            ScheduledAccumulativeRunnable<SyncPair> sar = new ScheduledAccumulativeRunnable<>(getScheduledExecutorService());
-            sar.doOnSubmit(chunks -> {
-                getTableModel().addAll(chunks);
+            this.accumulatorTableAdd = new AccumulativeSinkSwing().createForList(list -> {
+                getTableModel().addAll(list);
 
                 int row = getTableModel().getRowCount() - 1;
                 Rectangle rectangle = getTable().getCellRect(row, 0, false);
@@ -447,9 +413,12 @@ public class DefaultSyncView extends AbstractView implements SyncView
                 int value = getTableModel().getRowCount();
                 getProgressBarFiles().setValue(value);
                 getProgressBarFiles().setString(getMessage("jsync.files") + ": " + value + "/" + getProgressBarFiles().getMaximum());
-            });
 
-            this.accumulatorTableAdd = sar;
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("getAccumulatorTableAdd - row: {}", row);
+                }
+            });
         }
 
         return this.accumulatorTableAdd;
