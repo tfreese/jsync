@@ -1,77 +1,51 @@
 // Created: 31.07.2021
 package de.freese.jsync.rsocket.builder;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
-import io.rsocket.Closeable;
-import io.rsocket.core.RSocketServer;
-import io.rsocket.frame.decoder.PayloadDecoder;
-import reactor.core.publisher.Mono;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Thomas Freese
  *
- * @param <T> Type
+ * @param <T> Builder Type
+ * @param <B> Build-Result Type
  */
-public abstract class AbstractRSocketBuilder<T extends AbstractRSocketBuilder<?>>
+public abstract class AbstractRSocketBuilder<T extends AbstractRSocketBuilder<?, ?>, B>
 {
     /**
      *
      */
-    private PayloadDecoder payloadDecoder = PayloadDecoder.ZERO_COPY;
+    private Logger logger;
 
     /**
-     *
+     * @return Object
      */
-    private final List<Function<RSocketServer, RSocketServer>> rSocketServerCustomizers = new ArrayList<>();
+    public abstract B build();
 
     /**
-     * @param rSocketServerCustomizer {@link Function}
-     *
-     * @return {@link AbstractRSocketBuilder}
+     * @return Logger
      */
-    @SuppressWarnings("unchecked")
-    public T addRSocketServerCustomizer(final Function<RSocketServer, RSocketServer> rSocketServerCustomizer)
+    protected Logger getLogger()
     {
-        this.rSocketServerCustomizers.add(Objects.requireNonNull(rSocketServerCustomizer, "rSocketServerCustomizer required"));
-
-        return (T) this;
-    }
-
-    /**
-     * @return {@link Mono}
-     */
-    public abstract Mono<? extends Closeable> build();
-
-    /**
-     * @param rSocketServer {@link RSocketServer}
-     *
-     * @return {@link RSocketServer}
-     */
-    protected RSocketServer configure(final RSocketServer rSocketServer)
-    {
-        RSocketServer server = rSocketServer.payloadDecoder(this.payloadDecoder);
-
-        for (Function<RSocketServer, RSocketServer> serverCustomizer : this.rSocketServerCustomizers)
+        if (this.logger == null)
         {
-            server = serverCustomizer.apply(server);
+            this.logger = LoggerFactory.getLogger(getClass());
         }
 
-        return server;
+        return this.logger;
     }
 
     /**
-     * @param payloadDecoder {@link PayloadDecoder}
+     * @param logger {@link Logger}
      *
      * @return {@link AbstractRSocketBuilder}
      */
     @SuppressWarnings("unchecked")
-    public T payloadDecoder(final PayloadDecoder payloadDecoder)
+    public T logger(final Logger logger)
     {
-        this.payloadDecoder = Objects.requireNonNull(payloadDecoder, "payloadDecoder required");
+        this.logger = Objects.requireNonNull(logger, "logger required");
 
         return (T) this;
     }

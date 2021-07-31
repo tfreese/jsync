@@ -1,8 +1,10 @@
-// Created: 11.07.2021
-package de.freese.jsync.rsocket.client;
+// Created: 31.07.2021
+package de.freese.jsync.rsocket.builder.client;
 
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.reactivestreams.Publisher;
 
@@ -13,31 +15,28 @@ import io.rsocket.loadbalance.LoadbalanceTarget;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import reactor.core.publisher.Flux;
-import reactor.netty.tcp.SslProvider.ProtocolSslContextSpec;
 import reactor.netty.tcp.TcpClient;
 
 /**
  * @author Thomas Freese
  */
-public class MyRSocketClientRemoteLoadBalanced implements MyRSocketClient<List<InetSocketAddress>>
+public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteLoadBalancedBuilder>
 {
     /**
-    *
-    */
-    private RSocketClient client;
+     *
+     */
+    private final List<SocketAddress> remoteAddresses = new ArrayList<>();
 
     /**
-     * @see de.freese.jsync.rsocket.client.MyRSocketClient#connect(java.lang.Object)
+     * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
      */
     @Override
-    public void connect(final List<InetSocketAddress> serverInfos) throws Exception
+    public RSocketClient build()
     {
-        ProtocolSslContextSpec protocolSslContextSpec = MyRSocketClientRemote.createProtocolSslContextSpec();
-
         // @formatter:off
-        Publisher<List<LoadbalanceTarget>> serverProducer = Flux.fromIterable(serverInfos)
+        Publisher<List<LoadbalanceTarget>> serverProducer = Flux.fromIterable(this.remoteAddresses)
             .map(serverAddress ->  {
-                TcpClient tcpClient = MyRSocketClientRemote.createTcpClient(serverAddress, protocolSslContextSpec);
+                TcpClient tcpClient = configure(TcpClient.create()).remoteAddress(() -> serverAddress);
                 ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
 
                 return LoadbalanceTarget.from(serverAddress.toString(), clientTransport);
@@ -63,10 +62,10 @@ public class MyRSocketClientRemoteLoadBalanced implements MyRSocketClient<List<I
         // };
         // });
 
-        RSocketConnector rSocketConnector = MyRSocketClientRemote.createRSocketConnector();
+        RSocketConnector rSocketConnector = configure(RSocketConnector.create());
 
         // @formatter:off
-        this.client = LoadbalanceRSocketClient.builder(serverProducer)
+        return LoadbalanceRSocketClient.builder(serverProducer)
                 .connector(rSocketConnector)
                 .roundRobinLoadbalanceStrategy()
                 // .weightedLoadbalanceStrategy()
@@ -76,20 +75,16 @@ public class MyRSocketClientRemoteLoadBalanced implements MyRSocketClient<List<I
     }
 
     /**
-     * @see de.freese.jsync.rsocket.client.MyRSocketClient#disconnect()
+     * @param remoteAddresses {@link List}
+     *
+     * @return {@link RSocketClientRemoteLoadBalancedBuilder}
      */
-    @Override
-    public void disconnect()
+    public RSocketClientRemoteLoadBalancedBuilder remoteAddresses(final List<SocketAddress> remoteAddresses)
     {
-        getClient().dispose();
-    }
+        Objects.requireNonNull(remoteAddresses, "remoteAddresses required");
 
-    /**
-     * @see de.freese.jsync.rsocket.client.MyRSocketClient#getClient()
-     */
-    @Override
-    public RSocketClient getClient()
-    {
-        return this.client;
+        this.remoteAddresses.addAll(remoteAddresses);
+
+        return this;
     }
 }

@@ -2,23 +2,21 @@
 package de.freese.jsync.rsocket;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
-import de.freese.jsync.rsocket.client.MyRSocketClient;
-import de.freese.jsync.rsocket.client.MyRSocketClientLocal;
-import de.freese.jsync.rsocket.client.MyRSocketClientRemote;
-import de.freese.jsync.rsocket.client.MyRSocketClientRemoteLoadBalanced;
-import de.freese.jsync.rsocket.client.MyRSocketClientRemoteLoadBalancedWithServiceDiscovery;
-import de.freese.jsync.rsocket.server.MyRSocketServerRemote;
 import io.rsocket.Payload;
 import io.rsocket.SocketAcceptor;
+import io.rsocket.core.RSocketClient;
 import io.rsocket.transport.netty.server.CloseableChannel;
 import io.rsocket.util.DefaultPayload;
 import reactor.core.Disposable;
@@ -50,25 +48,36 @@ public class RSocketDemo
      *
      * @throws Exception Falls was schief geht.
      */
-    static Tuple2<MyRSocketClient<?>, List<Disposable>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
+    static Tuple2<RSocketClient, List<Disposable>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
     {
-        InetSocketAddress socketAddress = new InetSocketAddress("localhost", 6000);
+        InetSocketAddress serverAddress = new InetSocketAddress("localhost", 6000);
 
         // @formatter:off
         CloseableChannel server = RSocketBuilders.serverRemote()
-                .socketAddress(socketAddress)
-                .socketAcceptor(socketAcceptor.apply(6000))
-                .resumeDefault(LOGGER)
-                .logTcpServerBoundStatus(LOGGER)
+                .socketAddress(serverAddress)
+                .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
+                .resumeDefault()
+                .logTcpServerBoundStatus()
+                .logger(LoggerFactory.getLogger("server"))
+                .protocolSslContextSpecCertificate()
                 .build()
                 .block()
                 ;
         // @formatter:on
 
-        MyRSocketClientRemote myClient = new MyRSocketClientRemote();
-        myClient.connect(socketAddress);
+        // @formatter:off
+        RSocketClient client = RSocketBuilders.clientRemote()
+                .remoteAddress(serverAddress)
+                .resumeDefault()
+                .retryDefault()
+                .logTcpClientBoundStatus()
+                .logger(LoggerFactory.getLogger("client"))
+                .protocolSslContextSpecTrusted()
+                .build()
+                ;
+        // @formatter:on
 
-        return Tuples.of(myClient, List.of(server));
+        return Tuples.of(client, List.of(server));
     }
 
     /**
@@ -80,18 +89,20 @@ public class RSocketDemo
      *
      * @throws Exception Falls was schief geht.
      */
-    static Tuple2<MyRSocketClient<?>, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
+    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
     {
-        MyRSocketServerRemote myServer1 = new MyRSocketServerRemote("localhost", 6000, socketAcceptor);
-        MyRSocketServerRemote myServer2 = new MyRSocketServerRemote("localhost", 7000, socketAcceptor);
+        InetSocketAddress socketAddress1 = new InetSocketAddress("localhost", 6000);
+        InetSocketAddress socketAddress2 = new InetSocketAddress("localhost", 7000);
 
-        myServer1.start();
-        myServer2.start();
+        CloseableChannel server1 = RSocketBuilders.serverRemote().socketAddress(socketAddress1).socketAcceptor(socketAcceptor.apply(socketAddress1.getPort()))
+                .resumeDefault().logTcpServerBoundStatus().logger(LoggerFactory.getLogger("server1")).build().block();
+        CloseableChannel server2 = RSocketBuilders.serverRemote().socketAddress(socketAddress2).socketAcceptor(socketAcceptor.apply(socketAddress2.getPort()))
+                .resumeDefault().logTcpServerBoundStatus().logger(LoggerFactory.getLogger("server2")).build().block();
 
-        MyRSocketClientRemoteLoadBalanced myClient = new MyRSocketClientRemoteLoadBalanced();
-        myClient.connect(List.of(myServer1.getSocketAddress(), myServer2.getSocketAddress()));
+        RSocketClient client = RSocketBuilders.clientRemoteLoadBalanced().remoteAddresses(List.of(socketAddress1, socketAddress2)).resumeDefault()
+                .retryDefault().logTcpClientBoundStatus().logger(LoggerFactory.getLogger("client")).build();
 
-        return Tuples.of(myClient, List.of(myServer1, myServer2));
+        return Tuples.of(client, List.of(server1, server2));
     }
 
     /**
@@ -103,23 +114,39 @@ public class RSocketDemo
      *
      * @throws Exception Falls was schief geht.
      */
-    static Tuple2<MyRSocketClient<?>, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor)
+    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor)
         throws Exception
     {
-        MyRSocketServerRemote myServer1 = new MyRSocketServerRemote("localhost", 6000, socketAcceptor);
-        MyRSocketServerRemote myServer2 = new MyRSocketServerRemote("localhost", 7000, socketAcceptor);
-        MyRSocketServerRemote myServer3 = new MyRSocketServerRemote("localhost", 8000, socketAcceptor);
-        MyRSocketServerRemote myServer4 = new MyRSocketServerRemote("localhost", 9000, socketAcceptor);
+        InetSocketAddress socketAddress1 = new InetSocketAddress("localhost", 6000);
+        InetSocketAddress socketAddress2 = new InetSocketAddress("localhost", 7000);
+        InetSocketAddress socketAddress3 = new InetSocketAddress("localhost", 8000);
+        InetSocketAddress socketAddress4 = new InetSocketAddress("localhost", 9000);
 
-        myServer1.start();
-        myServer2.start();
-        myServer3.start();
-        myServer4.start();
+        CloseableChannel server1 = RSocketBuilders.serverRemote().socketAddress(socketAddress1).socketAcceptor(socketAcceptor.apply(socketAddress1.getPort()))
+                .resumeDefault().logTcpServerBoundStatus().logger(LoggerFactory.getLogger("server1")).build().block();
+        CloseableChannel server2 = RSocketBuilders.serverRemote().socketAddress(socketAddress2).socketAcceptor(socketAcceptor.apply(socketAddress2.getPort()))
+                .resumeDefault().logTcpServerBoundStatus().logger(LoggerFactory.getLogger("server2")).build().block();
+        CloseableChannel server3 = RSocketBuilders.serverRemote().socketAddress(socketAddress3).socketAcceptor(socketAcceptor.apply(socketAddress3.getPort()))
+                .resumeDefault().logTcpServerBoundStatus().logger(LoggerFactory.getLogger("server3")).build().block();
+        CloseableChannel server4 = RSocketBuilders.serverRemote().socketAddress(socketAddress4).socketAcceptor(socketAcceptor.apply(socketAddress4.getPort()))
+                .resumeDefault().logTcpServerBoundStatus().logger(LoggerFactory.getLogger("server4")).build().block();
 
-        MyRSocketClientRemoteLoadBalancedWithServiceDiscovery myClient = new MyRSocketClientRemoteLoadBalancedWithServiceDiscovery();
-        myClient.connect(List.of(myServer1.getSocketAddress(), myServer2.getSocketAddress(), myServer3.getSocketAddress(), myServer4.getSocketAddress()));
+        List<SocketAddress> serverAddresses = List.of(socketAddress1, socketAddress2, socketAddress3, socketAddress4);
 
-        return Tuples.of(myClient, List.of(myServer1, myServer2, myServer3, myServer4));
+        // @formatter:off
+        // Wechselnde Service-Discovery Anfrage simulieren.
+        // org.springframework.cloud.client.discovery.DiscoveryClient - org.springframework.cloud:spring-cloud-commons
+        Random random = new Random();
+        Supplier<List<SocketAddress>> serviceDiscovery = () -> serverAddresses.stream()
+                .filter(server -> random.nextBoolean()) // Nicht jeden Server verwenden.
+                .toList()
+                ;
+        // @formatter:on
+
+        RSocketClient client = RSocketBuilders.clientRemoteLoadBalancedWithServiceDiscovery().serviceDiscovery(serviceDiscovery).resumeDefault().retryDefault()
+                .logTcpClientBoundStatus().logger(LoggerFactory.getLogger("client")).build();
+
+        return Tuples.of(client, List.of(server1, server2, server3, server4));
     }
 
     /**
@@ -131,7 +158,7 @@ public class RSocketDemo
      *
      * @throws Exception Falls was schief geht.
      */
-    static Tuple2<MyRSocketClient<?>, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
+    static Tuple2<RSocketClient, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
     {
         // @formatter:off
         Disposable server = RSocketBuilders.serverLocal()
@@ -142,10 +169,9 @@ public class RSocketDemo
                 ;
         // @formatter:on
 
-        MyRSocketClient<String> myClient = new MyRSocketClientLocal();
-        myClient.connect("test1");
+        RSocketClient client = RSocketBuilders.clientLocal().name("test1").build();
 
-        return Tuples.of(myClient, List.of(server));
+        return Tuples.of(client, List.of(server));
     }
 
     /**
@@ -178,12 +204,12 @@ public class RSocketDemo
             return Mono.just(DefaultPayload.create("Client of Server " + port + " got response " + request));
         });
 
-        // Tuple2<MyRSocketClient<?>, List<Disposable>> tuple = createSameVm(socketAcceptor);
-        Tuple2<MyRSocketClient<?>, List<Disposable>> tuple = createRemote(socketAcceptor);
-        // Tuple2<MyRSocketClient<?>, List<Disposable>> tuple = createRemoteWithLoadBalancer(socketAcceptor)
-        // Tuple2<MyRSocketClient<?>, List<Disposable>> tuple = createRemoteWithLoadBalancerAndServiceDiscovery(socketAcceptor);
+        // Tuple2<RSocketClient, List<Disposable>> tuple = createSameVm(socketAcceptor);
+        Tuple2<RSocketClient, List<Disposable>> tuple = createRemote(socketAcceptor);
+        // Tuple2<RSocketClient, List<Disposable>> tuple = createRemoteWithLoadBalancer(socketAcceptor);
+        // Tuple2<RSocketClient, List<Disposable>> tuple = createRemoteWithLoadBalancerAndServiceDiscovery(socketAcceptor);
 
-        MyRSocketClient<?> myRSocketClient = tuple.getT1();
+        RSocketClient rSocketClient = tuple.getT1();
         List<Disposable> servers = tuple.getT2();
 
         // Der IntStream blockiert, bis alle parallelen Operationen beendet sind.
@@ -191,7 +217,7 @@ public class RSocketDemo
         // @formatter:off
         Flux.range(0, 30).parallel().runOn(Schedulers.boundedElastic())
             .map(i ->
-                myRSocketClient.getClient()
+                rSocketClient
                     .requestResponse(Mono.just(DefaultPayload.create("flux-" + i.intValue())))
                     .map(Payload::getDataUtf8)
                     .doOnNext(LOGGER::info)
@@ -205,7 +231,7 @@ public class RSocketDemo
         // @formatter:off
         IntStream.range(0, 30).parallel()
             .mapToObj(i ->
-                myRSocketClient.getClient()
+                rSocketClient
                     .requestResponse(Mono.just(DefaultPayload.create("intstream-" + i)))
                     .map(Payload::getDataUtf8)
                     .doOnNext(LOGGER::info)
@@ -221,7 +247,7 @@ public class RSocketDemo
             TimeUnit.MILLISECONDS.sleep(100);
 
             // @formatter:off
-            myRSocketClient.getClient()
+            rSocketClient
                 .requestResponse(Mono.just(DefaultPayload.create("for-" + i)))
                 .map(Payload::getDataUtf8)
                 .doOnNext(LOGGER::info)
@@ -234,7 +260,7 @@ public class RSocketDemo
         TimeUnit.SECONDS.sleep(2);
         // System.in.read();
 
-        myRSocketClient.disconnect();
+        rSocketClient.dispose();
         servers.forEach(Disposable::dispose);
     }
 }

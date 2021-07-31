@@ -1,5 +1,5 @@
 // Created: 31.07.2021
-package de.freese.jsync.rsocket.builder;
+package de.freese.jsync.rsocket.builder.server;
 
 import java.util.Objects;
 
