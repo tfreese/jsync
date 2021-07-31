@@ -39,6 +39,9 @@ public final class JsyncRSocketServer
      */
     public static void main(final String[] args) throws Exception
     {
+        System.setProperty("reactor.schedulers.defaultPoolSize", Integer.toString(8));
+        System.setProperty("reactor.schedulers.defaultBoundedElasticSize", Integer.toString(8));
+
         JsyncRSocketServer server = new JsyncRSocketServer();
 
         server.start(8888, 2, 4);

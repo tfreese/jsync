@@ -16,7 +16,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
@@ -79,7 +78,7 @@ public final class JSyncSwingApplication
     /**
      *
      */
-    public static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwingApplication.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwingApplication.class);
 
     /**
      * @return {@link JSyncSwingApplication}
@@ -95,49 +94,6 @@ public final class JSyncSwingApplication
     public static Logger getLogger()
     {
         return LOGGER;
-    }
-
-    /**
-     * @param args final String[]
-     */
-    public static void main(final String[] args)
-    {
-        Thread.setDefaultUncaughtExceptionHandler((t, ex) -> {
-            getLogger().error("***Default exception handler***");
-            getLogger().error(null, ex);
-
-            // new ErrorDialog().forThrowable(ex).showAndWait();
-        });
-
-        // Um Comparator Fehler zu vermeiden.
-        // System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-
-        SwingUtilities.invokeLater(() -> {
-            try
-            {
-                getInstance().init(args);
-            }
-            catch (Exception ex)
-            {
-                throw new RuntimeException(ex);
-            }
-        });
-
-        // Runnable task = () -> {
-        // launch(args);
-        // // LauncherImpl.launchApplication(JSyncJavaFxApplication.class, JSyncJavaFxApplicationPreloader.class, args);
-        // };
-        // task.run();
-
-        // // Eigene ThreadGroup für Handling von Runtime-Exceptions.
-        // ThreadGroup threadGroup = new ThreadGroup("jsync");
-        //
-        // // Kein Thread des gesamten Clients kann eine höhere Prio haben.
-        // threadGroup.setMaxPriority(Thread.NORM_PRIORITY + 1);
-        //
-        // Thread thread = new Thread(threadGroup, task, "JSyncJavaFx-Startup");
-        // // thread.setDaemon(false);
-        // thread.start();
     }
 
     /**
@@ -214,7 +170,7 @@ public final class JSyncSwingApplication
      *
      * @throws Exception Falls was schief geht.
      */
-    private void init(final String[] args) throws Exception
+    void init(final String[] args) throws Exception
     {
         if (args == null)
         {
@@ -225,8 +181,8 @@ public final class JSyncSwingApplication
             getLogger().info("init: {}", Arrays.toString(args));
         }
 
-        this.executorService = Executors.newFixedThreadPool(4);
-        this.scheduledExecutorService = Executors.newScheduledThreadPool(4);
+        this.executorService = Executors.newFixedThreadPool(8);
+        this.scheduledExecutorService = Executors.newScheduledThreadPool(8);
 
         this.messages = new Messages();
         this.messages.setLocale(Locale.getDefault());
@@ -276,7 +232,7 @@ public final class JSyncSwingApplication
         }
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex)
         {
-            LOGGER.error(null, ex);
+            getLogger().error(null, ex);
         }
 
         UIManager.put("FileChooser.useSystemIcons", Boolean.TRUE);

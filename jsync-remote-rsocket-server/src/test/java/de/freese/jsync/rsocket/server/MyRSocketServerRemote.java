@@ -218,20 +218,12 @@ public class MyRSocketServerRemote implements MyRSocketServer
     }
 
     /**
-     * @see de.freese.jsync.rsocket.server.MyRSocketServer#getServer()
-     */
-    @Override
-    public CloseableChannel getServer()
-    {
-        return this.server;
-    }
-
-    /**
      * @return {@link InetSocketAddress}
      */
     public InetSocketAddress getSocketAddress()
     {
-        return getServer().address();
+        // return this.server.address();
+        return this.socketAddress;
     }
 
     /**
@@ -245,6 +237,7 @@ public class MyRSocketServerRemote implements MyRSocketServer
         TcpServer tcpServer = createTcpServer(this.socketAddress, protocolSslContextSpec);
 
         ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
+        // ServerTransport<Closeable> serverTransport = LocalServerTransport.create("test-local-" + getSocketAddress().getPort());
 
         this.server = createRSocketServer(this.socketAcceptor.apply(this.socketAddress.getPort()), serverTransport);
     }
@@ -255,6 +248,6 @@ public class MyRSocketServerRemote implements MyRSocketServer
     @Override
     public void stop()
     {
-        getServer().dispose();
+        this.server.dispose();
     }
 }

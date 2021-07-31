@@ -56,15 +56,6 @@ public class MyRSocketServerLocal implements MyRSocketServer
     }
 
     /**
-     * @see de.freese.jsync.rsocket.server.MyRSocketServer#getServer()
-     */
-    @Override
-    public Closeable getServer()
-    {
-        return this.server;
-    }
-
-    /**
      * @see de.freese.jsync.rsocket.server.MyRSocketServer#start()
      */
     @Override
@@ -87,6 +78,6 @@ public class MyRSocketServerLocal implements MyRSocketServer
     @Override
     public void stop()
     {
-        getServer().dispose();
+        this.server.dispose();
     }
 }

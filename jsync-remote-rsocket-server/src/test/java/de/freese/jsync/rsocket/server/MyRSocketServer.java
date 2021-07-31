@@ -1,7 +1,7 @@
 // Created: 11.07.2021
 package de.freese.jsync.rsocket.server;
 
-import io.rsocket.Closeable;
+import reactor.core.Disposable;
 
 /**
  * Siehe<br>
@@ -10,12 +10,16 @@ import io.rsocket.Closeable;
  *
  * @author Thomas Freese
  */
-public interface MyRSocketServer
+public interface MyRSocketServer extends Disposable
 {
     /**
-     * @return {@link Closeable}
+     * @see reactor.core.Disposable#dispose()
      */
-    Closeable getServer();
+    @Override
+    default void dispose()
+    {
+        stop();
+    }
 
     /**
      * @throws Exception Falls was schief geht.

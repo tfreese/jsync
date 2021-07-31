@@ -1,7 +1,6 @@
 // Created: 11.07.2021
 package de.freese.jsync.rsocket.client;
 
-import de.freese.jsync.rsocket.server.MyRSocketServerLocal;
 import io.rsocket.RSocket;
 import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketConnector;
@@ -15,7 +14,7 @@ import reactor.core.publisher.Mono;
  *
  * @author Thomas Freese
  */
-public class MyRSocketClientLocal implements MyRSocketClient<MyRSocketServerLocal>
+public class MyRSocketClientLocal implements MyRSocketClient<String>
 {
     /**
      *
@@ -26,9 +25,9 @@ public class MyRSocketClientLocal implements MyRSocketClient<MyRSocketServerLoca
      * @see de.freese.jsync.rsocket.client.MyRSocketClient#connect(java.lang.Object)
      */
     @Override
-    public void connect(final MyRSocketServerLocal serverInfo) throws Exception
+    public void connect(final String name) throws Exception
     {
-        ClientTransport clientTransport = LocalClientTransport.create(serverInfo.getName());
+        ClientTransport clientTransport = LocalClientTransport.create(name);
 
         // @formatter:off
         Mono<RSocket> rSocket = RSocketConnector.create()

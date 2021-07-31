@@ -1,6 +1,7 @@
 // Created: 11.07.2021
 package de.freese.jsync.rsocket;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -9,17 +10,18 @@ import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import de.freese.jsync.rsocket.client.MyRSocketClient;
 import de.freese.jsync.rsocket.client.MyRSocketClientLocal;
 import de.freese.jsync.rsocket.client.MyRSocketClientRemote;
 import de.freese.jsync.rsocket.client.MyRSocketClientRemoteLoadBalanced;
 import de.freese.jsync.rsocket.client.MyRSocketClientRemoteLoadBalancedWithServiceDiscovery;
-import de.freese.jsync.rsocket.server.MyRSocketServer;
-import de.freese.jsync.rsocket.server.MyRSocketServerLocal;
 import de.freese.jsync.rsocket.server.MyRSocketServerRemote;
 import io.rsocket.Payload;
 import io.rsocket.SocketAcceptor;
+import io.rsocket.transport.netty.server.CloseableChannel;
 import io.rsocket.util.DefaultPayload;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
@@ -48,15 +50,25 @@ public class RSocketDemo
      *
      * @throws Exception Falls was schief geht.
      */
-    static Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
+    static Tuple2<MyRSocketClient<?>, List<Disposable>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
     {
-        MyRSocketServerRemote myServer = new MyRSocketServerRemote("localhost", 6000, socketAcceptor);
-        myServer.start();
+        InetSocketAddress socketAddress = new InetSocketAddress("localhost", 6000);
+
+        // @formatter:off
+        CloseableChannel server = RSocketBuilders.serverRemote()
+                .socketAddress(socketAddress)
+                .socketAcceptor(socketAcceptor.apply(6000))
+                .resumeDefault(LOGGER)
+                .logTcpServerBoundStatus(LOGGER)
+                .build()
+                .block()
+                ;
+        // @formatter:on
 
         MyRSocketClientRemote myClient = new MyRSocketClientRemote();
-        myClient.connect(myServer.getSocketAddress());
+        myClient.connect(socketAddress);
 
-        return Tuples.of(myClient, List.of(myServer));
+        return Tuples.of(myClient, List.of(server));
     }
 
     /**
@@ -68,8 +80,7 @@ public class RSocketDemo
      *
      * @throws Exception Falls was schief geht.
      */
-    static Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor)
-        throws Exception
+    static Tuple2<MyRSocketClient<?>, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
     {
         MyRSocketServerRemote myServer1 = new MyRSocketServerRemote("localhost", 6000, socketAcceptor);
         MyRSocketServerRemote myServer2 = new MyRSocketServerRemote("localhost", 7000, socketAcceptor);
@@ -92,7 +103,7 @@ public class RSocketDemo
      *
      * @throws Exception Falls was schief geht.
      */
-    static Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor)
+    static Tuple2<MyRSocketClient<?>, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor)
         throws Exception
     {
         MyRSocketServerRemote myServer1 = new MyRSocketServerRemote("localhost", 6000, socketAcceptor);
@@ -120,15 +131,21 @@ public class RSocketDemo
      *
      * @throws Exception Falls was schief geht.
      */
-    static Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
+    static Tuple2<MyRSocketClient<?>, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
     {
-        MyRSocketServerLocal myServer = new MyRSocketServerLocal("test1", socketAcceptor);
-        myServer.start();
+        // @formatter:off
+        Disposable server = RSocketBuilders.serverLocal()
+                .name("test1")
+                .socketAcceptor(socketAcceptor.apply(0))
+                .build()
+                .block()
+                ;
+        // @formatter:on
 
-        MyRSocketClient<MyRSocketServerLocal> myClient = new MyRSocketClientLocal();
-        myClient.connect(myServer);
+        MyRSocketClient<String> myClient = new MyRSocketClientLocal();
+        myClient.connect("test1");
 
-        return Tuples.of(myClient, List.of(myServer));
+        return Tuples.of(myClient, List.of(server));
     }
 
     /**
@@ -138,6 +155,9 @@ public class RSocketDemo
      */
     public static void main(final String[] args) throws Exception
     {
+        System.setProperty("reactor.schedulers.defaultPoolSize", Integer.toString(8));
+        System.setProperty("reactor.schedulers.defaultBoundedElasticSize", Integer.toString(8));
+
         // Globale Default-Resourcen.
         // TcpResources.set(LoopResources.create("rsocket"));
         TcpResources.set(LoopResources.create("rsocket", 2, 8, true));
@@ -145,9 +165,9 @@ public class RSocketDemo
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.
         // Nur einmalig definieren, sonst gibs mehrere Logs-Meldungen !!!
-        // Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
-        Hooks.onErrorDropped(th -> {
-        });
+        Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
+        // Hooks.onErrorDropped(th -> {
+        // });
 
         // Debug einschalten.
         Hooks.onOperatorDebug();
@@ -158,13 +178,13 @@ public class RSocketDemo
             return Mono.just(DefaultPayload.create("Client of Server " + port + " got response " + request));
         });
 
-        // Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> tuple = createSameVm(socketAcceptor);
-        // Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> tuple = createRemote(socketAcceptor);
-        // Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> tuple = createRemoteWithLoadBalancer(socketAcceptor)
-        Tuple2<MyRSocketClient<?>, List<MyRSocketServer>> tuple = createRemoteWithLoadBalancerAndServiceDiscovery(socketAcceptor);
+        // Tuple2<MyRSocketClient<?>, List<Disposable>> tuple = createSameVm(socketAcceptor);
+        Tuple2<MyRSocketClient<?>, List<Disposable>> tuple = createRemote(socketAcceptor);
+        // Tuple2<MyRSocketClient<?>, List<Disposable>> tuple = createRemoteWithLoadBalancer(socketAcceptor)
+        // Tuple2<MyRSocketClient<?>, List<Disposable>> tuple = createRemoteWithLoadBalancerAndServiceDiscovery(socketAcceptor);
 
         MyRSocketClient<?> myRSocketClient = tuple.getT1();
-        List<MyRSocketServer> servers = tuple.getT2();
+        List<Disposable> servers = tuple.getT2();
 
         // Der IntStream blockiert, bis alle parallelen Operationen beendet sind.
         // Der Flux macht dies nicht, sondern im Hintergrund.
@@ -215,6 +235,6 @@ public class RSocketDemo
         // System.in.read();
 
         myRSocketClient.disconnect();
-        servers.forEach(MyRSocketServer::stop);
+        servers.forEach(Disposable::dispose);
     }
 }
