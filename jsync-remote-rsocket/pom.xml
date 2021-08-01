@@ -24,8 +24,12 @@
         </dependency>
         <dependency>
             <groupId>io.rsocket</groupId>
+            <artifactId>rsocket-transport-local</artifactId>
+        </dependency>        
+        <dependency>
+            <groupId>io.rsocket</groupId>
             <artifactId>rsocket-transport-netty</artifactId>
-        </dependency>         
+        </dependency>      
                       
 
         <!-- runtime scope -->
@@ -36,11 +40,7 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>io.rsocket</groupId>
-            <artifactId>rsocket-transport-local</artifactId>
-            <scope>test</scope>
-        </dependency>        
+        
     </dependencies>
 
 </project>

@@ -8,7 +8,6 @@ import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Paths;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +30,14 @@ import javax.swing.event.DocumentEvent;
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.filesystem.EFileSystem;
+import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.swing.GbcBuilder;
 import de.freese.jsync.swing.components.DocumentListenerAdapter;
 import de.freese.jsync.swing.components.SyncListTableCellRenderer;
 import de.freese.jsync.swing.components.SyncListTableModel;
 import de.freese.jsync.swing.components.accumulative.AccumulativeSinkSwing;
+import de.freese.jsync.utils.JSyncUtils;
 import reactor.core.publisher.Sinks;
 import reactor.core.publisher.Sinks.Many;
 import reactor.util.function.Tuple3;
@@ -184,8 +185,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
      */
     private void configGui()
     {
-        JComboBox<String> comboboxSender = getComboBox(EFileSystem.SENDER);
-        JComboBox<String> comboboxReceiver = getComboBox(EFileSystem.RECEIVER);
+        JComboBox<JSyncProtocol> comboboxSender = getComboBox(EFileSystem.SENDER);
+        JComboBox<JSyncProtocol> comboboxReceiver = getComboBox(EFileSystem.RECEIVER);
 
         JTextField textFieldSender = getTextField(EFileSystem.SENDER);
         JTextField textFieldReceiver = getTextField(EFileSystem.RECEIVER);
@@ -469,7 +470,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      *
      * @return {@link JComboBox}
      */
-    private JComboBox<String> getComboBox(final EFileSystem fileSystem)
+    private JComboBox<JSyncProtocol> getComboBox(final EFileSystem fileSystem)
     {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getComboBox() : this.uriViewReceiver.getComboBox();
     }
@@ -620,10 +621,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public URI getUri(final EFileSystem fileSystem)
     {
-        JComboBox<String> comboBox = getComboBox(fileSystem);
+        JComboBox<JSyncProtocol> comboBox = getComboBox(fileSystem);
         JTextField textField = getTextField(fileSystem);
 
-        String protocol = (String) comboBox.getSelectedItem();
+        JSyncProtocol protocol = (JSyncProtocol) comboBox.getSelectedItem();
         String path = textField.getText();
 
         if ((path == null) || path.isBlank())
@@ -631,20 +632,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
             return null;
         }
 
-        if ("file".equals(protocol))
-        {
-            return Paths.get(path).toUri();
-        }
-        else if ("rsocket".equals(protocol))
-        {
-            String[] splits = path.split("[\\/]", 2);
-            String host = splits[0];
-            String p = splits[1];
-
-            return URI.create("rsocket://" + host + "/" + p.replace(" ", "%20"));
-        }
-
-        throw new IllegalStateException("unsupported protocol: " + protocol);
+        return JSyncUtils.toUri(protocol, path);
     }
 
     /**

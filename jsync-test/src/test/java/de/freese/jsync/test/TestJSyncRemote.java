@@ -25,9 +25,11 @@ import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
+import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.rsocket.server.JsyncRSocketServer;
+import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /***
@@ -103,7 +105,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         if (!CLOSEABLES.containsKey("rsocket"))
         {
             JsyncRSocketServer server = new JsyncRSocketServer();
-            server.start(8002, 2, 4);
+            server.start(8002);
             CLOSEABLES.put("rsocket", () -> server.stop());
         }
     }
@@ -174,8 +176,11 @@ class TestJSyncRemote extends AbstractJSyncIoTest
 
         startServerRSocket();
 
-        URI senderUri = new URI("rsocket://localhost:8002/" + PATH_QUELLE.toString());
-        URI receiverUri = new URI("rsocket://localhost:8002/" + PATH_ZIEL.toString());
+        URI senderUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002/" + PATH_QUELLE);
+        URI receiverUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002/" + PATH_ZIEL);
+
+        // URI senderUri = new URI("rsocket://localhost:8002/" + PATH_QUELLE.toString());
+        // URI receiverUri = new URI("rsocket://localhost:8002/" + PATH_ZIEL.toString());
 
         syncDirectories(options, senderUri, receiverUri);
 

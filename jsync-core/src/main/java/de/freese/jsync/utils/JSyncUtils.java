@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
+import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.utils.io.FileVisitorDelete;
 
 /**
@@ -321,7 +322,8 @@ public final class JSyncUtils
      */
     public static String normalizePath(final URI uri)
     {
-        String path = Paths.get(uri).toString();
+        // String path = Paths.get(uri).toString();
+        String path = uri.getPath();
 
         if (path.startsWith("//"))
         {
@@ -548,6 +550,30 @@ public final class JSyncUtils
         // }
         //
         // return String.format("%.1f %cB", value, ci.previous());
+    }
+
+    /**
+     * @param protocol {@link JSyncProtocol}
+     * @param path {@link Path}
+     *
+     * @return {@link URI}
+     */
+    public static URI toUri(final JSyncProtocol protocol, final String path)
+    {
+        if (JSyncProtocol.FILE.equals(protocol))
+        {
+            return Paths.get(path).toUri();
+        }
+        else if (JSyncProtocol.RSOCKET.equals(protocol))
+        {
+            String[] splits = path.split("[\\/]", 2);
+            String host = splits[0];
+            String p = splits[1];
+
+            return URI.create("rsocket://" + host + "/" + p.replace(" ", "%20"));
+        }
+
+        throw new IllegalArgumentException("unsupported protocol: " + protocol);
     }
 
     /**

@@ -79,7 +79,7 @@ public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClien
      *
      * @return {@link RSocketClientRemoteLoadBalancedBuilder}
      */
-    public RSocketClientRemoteLoadBalancedBuilder remoteAddresses(final List<SocketAddress> remoteAddresses)
+    public RSocketClientRemoteLoadBalancedBuilder remoteAddresses(final List<? extends SocketAddress> remoteAddresses)
     {
         Objects.requireNonNull(remoteAddresses, "remoteAddresses required");
 

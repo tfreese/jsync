@@ -26,7 +26,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void connect(final URI uri)
     {
-        connect(uri, tcpClient -> tcpClient.runOn(LoopResources.create("jsync-client-receiver", 3, true)));
+        connect(uri, tcpClient -> tcpClient.runOn(LoopResources.create("jsync-client-receiver", 4, true)));
     }
 
     /**

@@ -13,9 +13,11 @@ import java.util.function.Function;
 import javax.net.ssl.TrustManagerFactory;
 
 import de.freese.jsync.rsocket.builder.server.RSocketServerRemoteBuilder;
+import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.rsocket.core.Resume;
+import reactor.netty.resources.LoopResources;
 import reactor.netty.tcp.SslProvider.ProtocolSslContextSpec;
 import reactor.netty.tcp.TcpClient;
 import reactor.netty.tcp.TcpSslContextSpec;
@@ -55,9 +57,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     protected TcpClient configure(final TcpClient tcpClient)
     {
         TcpClient client = tcpClient;
-
-        // client.runOn(new NioEventLoopGroup(4)
-        // EpollEventLoopGroup geht nur auf Linux
 
         for (Function<TcpClient, TcpClient> clientCustomizer : this.tcpClientCustomizers)
         {
@@ -218,5 +217,37 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     {
         return retry(Retry.fixedDelay(5, Duration.ofMillis(100)));
         // return retry(Retry.backoff(50, Duration.ofMillis(100))));
+    }
+
+    /**
+     * EpollEventLoopGroup geht nur auf Linux -> NioEventLoopGroup verwenden.
+     *
+     * @param eventLoopGroup {@link EventLoopGroup}
+     *
+     * @return {@link AbstractRSocketClientRemoteBuilder}
+     */
+    @SuppressWarnings("unchecked")
+    public T runOn(final EventLoopGroup eventLoopGroup)
+    {
+        Objects.requireNonNull(eventLoopGroup, "eventLoopGroup required");
+
+        addTcpClientCustomizer(tcpClient -> tcpClient.runOn(eventLoopGroup));
+
+        return (T) this;
+    }
+
+    /**
+     * @param loopResources {@link LoopResources}
+     *
+     * @return {@link AbstractRSocketClientRemoteBuilder}
+     */
+    @SuppressWarnings("unchecked")
+    public T runOn(final LoopResources loopResources)
+    {
+        Objects.requireNonNull(loopResources, "loopResources required");
+
+        addTcpClientCustomizer(tcpClient -> tcpClient.runOn(loopResources));
+
+        return (T) this;
     }
 }

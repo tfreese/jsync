@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import de.freese.jsync.filesystem.EFileSystem;
+import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.swing.GbcBuilder;
 import de.freese.jsync.swing.JSyncSwingApplication;
 
@@ -28,7 +29,7 @@ class UriView
     /**
      *
      */
-    private JComboBox<String> comboBox;
+    private JComboBox<JSyncProtocol> comboBox;
 
     /**
     *
@@ -61,7 +62,7 @@ class UriView
     /**
      * @return {@link JComboBox}<String>
      */
-    JComboBox<String> getComboBox()
+    JComboBox<JSyncProtocol> getComboBox()
     {
         return this.comboBox;
     }
@@ -122,8 +123,8 @@ class UriView
 
         this.comboBox = new JComboBox<>();
         this.comboBox.setName(this.panel.getName() + "-comboBox");
-        this.comboBox.addItem("file");
-        this.comboBox.addItem("rsocket");
+        this.comboBox.addItem(JSyncProtocol.FILE);
+        this.comboBox.addItem(JSyncProtocol.RSOCKET);
         this.comboBox.setPreferredSize(new Dimension(100, 25));
         this.panel.add(this.comboBox, new GbcBuilder(0, row));
 

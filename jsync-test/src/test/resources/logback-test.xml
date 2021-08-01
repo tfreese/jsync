@@ -31,7 +31,7 @@
         </filter>
     </appender>
 
-    <logger name="de.freese.jsync" level="INFO" />
+    <logger name="de.freese.jsync" level="DEBUG" />
     
     <!--logger name="io.rsocket.FrameLogger" level="INFO" />
     <logger name="reactor" level="INFO" />

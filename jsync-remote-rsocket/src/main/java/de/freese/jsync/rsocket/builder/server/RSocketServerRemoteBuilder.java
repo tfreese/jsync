@@ -16,6 +16,7 @@ import java.util.function.Function;
 
 import javax.net.ssl.TrustManagerFactory;
 
+import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.rsocket.core.RSocketServer;
@@ -24,6 +25,7 @@ import io.rsocket.transport.ServerTransport;
 import io.rsocket.transport.netty.server.CloseableChannel;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import reactor.core.publisher.Mono;
+import reactor.netty.resources.LoopResources;
 import reactor.netty.tcp.SslProvider.ProtocolSslContextSpec;
 import reactor.netty.tcp.TcpServer;
 import reactor.netty.tcp.TcpSslContextSpec;
@@ -215,6 +217,36 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         // @formatter:on
 
         return resume(resume);
+    }
+
+    /**
+     * EpollEventLoopGroup geht nur auf Linux -> NioEventLoopGroup verwenden.
+     *
+     * @param eventLoopGroup {@link EventLoopGroup}
+     *
+     * @return {@link RSocketServerRemoteBuilder}
+     */
+    public RSocketServerRemoteBuilder runOn(final EventLoopGroup eventLoopGroup)
+    {
+        Objects.requireNonNull(eventLoopGroup, "eventLoopGroup required");
+
+        addTcpServerCustomizer(tcpServer -> tcpServer.runOn(eventLoopGroup));
+
+        return this;
+    }
+
+    /**
+     * @param loopResources {@link LoopResources}
+     *
+     * @return {@link RSocketServerRemoteBuilder}
+     */
+    public RSocketServerRemoteBuilder runOn(final LoopResources loopResources)
+    {
+        Objects.requireNonNull(loopResources, "loopResources required");
+
+        addTcpServerCustomizer(tcpServer -> tcpServer.runOn(loopResources));
+
+        return this;
     }
 
     /**

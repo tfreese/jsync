@@ -1,26 +1,19 @@
 // Created: 19.10.2020
 package de.freese.jsync.rsocket.server;
 
-import java.time.Duration;
+import java.net.InetSocketAddress;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import io.rsocket.SocketAcceptor;
-import io.rsocket.core.RSocketServer;
-import io.rsocket.core.Resume;
-import io.rsocket.frame.decoder.PayloadDecoder;
-import io.rsocket.transport.ServerTransport;
 import io.rsocket.transport.netty.server.CloseableChannel;
-import io.rsocket.transport.netty.server.TcpServerTransport;
-import reactor.core.Disposable;
 import reactor.core.publisher.Hooks;
 import reactor.netty.resources.LoopResources;
 import reactor.netty.tcp.TcpResources;
-import reactor.netty.tcp.TcpServer;
-import reactor.util.retry.Retry;
 
 /**
  * @author Thomas Freese
@@ -42,9 +35,12 @@ public final class JsyncRSocketServer
         System.setProperty("reactor.schedulers.defaultPoolSize", Integer.toString(8));
         System.setProperty("reactor.schedulers.defaultBoundedElasticSize", Integer.toString(8));
 
+        System.setProperty("reactor.netty.ioSelectCount", Integer.toString(4));
+        System.setProperty("reactor.netty.ioWorkerCount", Integer.toString(8));
+
         JsyncRSocketServer server = new JsyncRSocketServer();
 
-        server.start(8888, 2, 4);
+        server.start(8888);
         // server.stop();
 
         // Thread thread = new Thread(() -> server.start(8888, 2, 4), "rsocket-server");
@@ -57,7 +53,7 @@ public final class JsyncRSocketServer
     /**
      *
      */
-    private Disposable server;
+    private CloseableChannel server;
 
     /**
      * @return {@link Logger}
@@ -69,22 +65,20 @@ public final class JsyncRSocketServer
 
     /**
      * @param port int
-     * @param selectCount int
-     * @param workerCount int
      */
-    public void start(final int port, final int selectCount, final int workerCount)
+    public void start(final int port)
     {
+        getLogger().info("starting jsync-rsocket server on port: {}", port);
+
         // https://netty.io/wiki/reference-counted-objects.html
         // io.netty.util.ResourceLeakDetector
         // System.setProperty("io.netty.leakDetection.level", "PARANOID");
         ResourceLeakDetector.setLevel(Level.ADVANCED);
 
         // Globale Default-Resourcen.
-        // TcpResources.set(LoopResources.create("jsync-server"));
-        TcpResources.set(LoopResources.create("jsync-server", selectCount, workerCount, true));
+        TcpResources.set(LoopResources.create("jsync-server"));
+        // TcpResources.set(LoopResources.create("jsync-server", selectCount, workerCount, true));
         // TcpResources.set(ConnectionProvider.create("demo-connectionPool", 16));
-
-        getLogger().info("starting jsync-rsocket server on port: {}", port);
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.
         // Nur einmalig definieren, sonst gibs mehrere Logs-Meldungen !!!
@@ -92,38 +86,17 @@ public final class JsyncRSocketServer
         Hooks.onErrorDropped(th -> {
         });
 
-        // @formatter:off
-        Resume resume = new Resume()
-                .sessionDuration(Duration.ofMinutes(5))
-                .retry(
-                        Retry
-                            .fixedDelay(10, Duration.ofSeconds(1))
-                            .doBeforeRetry(s -> LOGGER.debug("Disconnected. Trying to resume..."))
-                )
-                ;
-        // @formatter:on
-
-        // @formatter:off
-        TcpServer tcpServer = TcpServer.create()
-                .host("localhost")
-                .port(port)
-                //.runOn(LoopResources.create("jsync-server", selectCount, workerCount, false))
-                .doOnUnbound(connection -> LOGGER.info("Unbound: {}", connection.channel()))
-                ;
-        // @formatter:on
-
-        ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
-        // ServerTransport<Closeable> serverTransport = LocalServerTransport.create("test-local-" + port);
-
         SocketAcceptor socketAcceptor = SocketAcceptor.with(new JsyncRSocketHandler());
 
         // @formatter:off
-        this.server = RSocketServer.create()
-                .acceptor(socketAcceptor)
-                .resume(resume)
-                .payloadDecoder(PayloadDecoder.ZERO_COPY)
-                .bindNow(serverTransport)
-                //.bind(serverTransport).block()
+        this.server = RSocketBuilders.serverRemote()
+                .socketAddress(new InetSocketAddress(port))
+                .socketAcceptor(socketAcceptor)
+                .resumeDefault()
+                .logTcpServerBoundStatus()
+                .logger(LOGGER)
+                .build()
+                .block()
                 ;
         // @formatter:on
     }
