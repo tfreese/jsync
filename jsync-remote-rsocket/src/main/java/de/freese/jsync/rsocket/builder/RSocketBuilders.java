@@ -9,6 +9,9 @@ import de.freese.jsync.rsocket.builder.server.RSocketServerLocalBuilder;
 import de.freese.jsync.rsocket.builder.server.RSocketServerRemoteBuilder;
 
 /**
+ * org.springframework.boot.rsocket.netty.NettyRSocketServerFactory<br>
+ * org.springframework.boot.rsocket.netty.NettyRSocketServer
+ *
  * @author Thomas Freese
  */
 public final class RSocketBuilders

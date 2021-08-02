@@ -42,7 +42,6 @@ public class RSocketClientRemoteBuilder extends AbstractRSocketClientRemoteBuild
     {
         Objects.requireNonNull(remoteAddress, "remoteAddress required");
 
-        // .host(HOST).port(PORT)
         addTcpClientCustomizer(tcpClient -> tcpClient.remoteAddress(() -> remoteAddress));
 
         return this;

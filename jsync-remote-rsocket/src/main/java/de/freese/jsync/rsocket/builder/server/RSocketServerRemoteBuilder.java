@@ -64,7 +64,11 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
 
         ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
 
-        return rSocketServer.bind(serverTransport);
+        // @formatter:off
+        return rSocketServer.bind(serverTransport)
+                .doOnNext(this::startDaemonOnCloseThread)
+                ;
+        // @formatter:on
     }
 
     /**
@@ -75,9 +79,6 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     protected TcpServer configure(final TcpServer tcpServer)
     {
         TcpServer server = tcpServer;
-
-        // server.runOn(new NioEventLoopGroup(4))
-        // EpollEventLoopGroup geht nur auf Linux
 
         for (Function<TcpServer, TcpServer> serverCustomizer : this.tcpServerCustomizers)
         {
@@ -261,5 +262,21 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         addTcpServerCustomizer(tcpServer -> tcpServer.bindAddress(() -> socketAddress));
 
         return this;
+    }
+
+    /**
+     * @param channel {@link CloseableChannel}
+     */
+    protected void startDaemonOnCloseThread(final CloseableChannel channel)
+    {
+        String name = "rsocket-" + channel.address().getPort();
+
+        Thread thread = new Thread(() -> {
+            channel.onClose().block();
+            getLogger().info("terminated: {}", name);
+        }, name);
+        thread.setContextClassLoader(getClass().getClassLoader());
+        thread.setDaemon(false);
+        thread.start();
     }
 }
