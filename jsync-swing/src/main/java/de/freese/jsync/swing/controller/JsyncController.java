@@ -39,7 +39,8 @@ public class JsyncController
      */
     private void compare()
     {
-        CompareWorker worker = new CompareWorker(this);
+        // AbstractCompareWorker worker = new CompareWorkerList(this);
+        AbstractCompareWorker worker = new CompareWorkerReactive(this);
 
         worker.execute();
     }
@@ -101,6 +102,7 @@ public class JsyncController
     public void init(final SyncView syncView)
     {
         this.syncView = syncView;
+        this.syncView.restoreState();
 
         syncView.doOnCompare(button -> button.addActionListener(event -> compare()));
         syncView.doOnSyncronize(button -> button.addActionListener(event -> synchronize()));
@@ -127,6 +129,8 @@ public class JsyncController
     public void shutdown()
     {
         getLogger().info("shutdown");
+
+        getSyncView().saveState();
 
         if (this.client != null)
         {

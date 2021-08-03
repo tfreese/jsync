@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.model.SyncItem;
+import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
@@ -29,18 +30,28 @@ public interface FileSystem
      *
      * @param baseDir String
      * @param relativeFile String
-     * @param checksumBytesReadConsumer {@link LongConsumer}
+     * @param consumerChecksumBytesRead {@link LongConsumer}
      *
      * @return String
      */
-    String generateChecksum(String baseDir, String relativeFile, LongConsumer checksumBytesReadConsumer);
+    String generateChecksum(String baseDir, String relativeFile, LongConsumer consumerChecksumBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses<br>
      *
      * @param baseDir String
      * @param followSymLinks boolean
-     * @param consumerSyncItem {@link Consumer}
+     *
+     * @return {@link Flux}
      */
-    void generateSyncItems(String baseDir, boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem);
+    Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks);
+
+    /**
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses<br>
+     *
+     * @param baseDir String
+     * @param followSymLinks boolean
+     * @param consumer {@link Consumer}
+     */
+    void generateSyncItems(String baseDir, boolean followSymLinks, final Consumer<SyncItem> consumer);
 }

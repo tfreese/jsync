@@ -7,10 +7,17 @@ import java.awt.GridBagLayout;
 import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -680,6 +687,61 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         // enableDebug(this.panel);
         configGui();
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#restoreState()
+     */
+    @Override
+    public void restoreState()
+    {
+        Path path = Paths.get(System.getProperty("user.dir"), "jsyncGuiState");
+        Properties properties = new Properties();
+
+        try
+        {
+            if (!Files.exists(path))
+            {
+                Files.createFile(path);
+            }
+        }
+        catch (Exception ex)
+        {
+            getLogger().error(null, ex);
+        }
+
+        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ))
+        {
+            properties.load(is);
+        }
+        catch (Exception ex)
+        {
+            getLogger().error(null, ex);
+        }
+
+        getTextField(EFileSystem.SENDER).setText(properties.getProperty("sender.textfield"));
+        getTextField(EFileSystem.RECEIVER).setText(properties.getProperty("receiver.textfield"));
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#saveState()
+     */
+    @Override
+    public void saveState()
+    {
+        Properties properties = new Properties();
+        properties.setProperty("sender.textfield", getTextField(EFileSystem.SENDER).getText());
+        properties.setProperty("receiver.textfield", getTextField(EFileSystem.RECEIVER).getText());
+
+        try (OutputStream os = Files.newOutputStream(Paths.get(System.getProperty("user.dir"), "jsyncGuiState"), StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING))
+        {
+            properties.store(os, null);
+        }
+        catch (Exception ex)
+        {
+            getLogger().error(null, ex);
+        }
     }
 
     /**

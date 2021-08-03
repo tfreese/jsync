@@ -10,6 +10,7 @@ import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.filesystem.Sender;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import reactor.core.publisher.Flux;
 
 /**
  * Koordiniert den Abgleich zwischen {@link Sender} und {@link Receiver}.
@@ -33,17 +34,39 @@ public interface Client
      *
      * @param fileSystem {@link EFileSystem}
      * @param syncItem {@link SyncItem}
-     * @param checksumBytesReadConsumer {@link LongConsumer}
+     * @param consumerChecksumBytesRead {@link LongConsumer}
      */
-    void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer checksumBytesReadConsumer);
+    void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerChecksumBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
      *
      * @param fileSystem {@link EFileSystem}
-     * @param consumerSyncItem {@link Consumer}
+     *
+     * @return {@link Flux}
      */
-    void generateSyncItems(EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem);
+    Flux<SyncItem> generateSyncItems(EFileSystem fileSystem);
+
+    /**
+     * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
+     *
+     * @param fileSystem {@link EFileSystem}
+     * @param consumer {@link Consumer}
+     */
+    void generateSyncItems(EFileSystem fileSystem, final Consumer<SyncItem> consumer);
+
+    /**
+     * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
+     * Die Einträge des Senders sind die Referenz.<br>
+     * Ist ein Item im Receiver nicht enthalten, muss er kopiert werden.<br>
+     * Ist ein Item nur Receiver enthalten, muss er dort gelöscht werden.<br>
+     *
+     * @param syncItemsSender {@link Flux}
+     * @param syncItemsReceiver {@link Flux}
+     *
+     * @return {@link Flux}
+     */
+    Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver);
 
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>

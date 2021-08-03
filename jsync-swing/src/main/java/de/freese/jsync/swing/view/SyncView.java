@@ -85,6 +85,16 @@ public interface SyncView
     void initGUI();
 
     /**
+     *
+     */
+    void restoreState();
+
+    /**
+     *
+     */
+    void saveState();
+
+    /**
      * @param max int
      */
     void setProgressBarFilesMax(int max);

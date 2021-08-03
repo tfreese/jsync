@@ -359,10 +359,10 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.Consumer)
+     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem)
      */
     @Override
-    public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumerSyncItem)
+    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem)
     {
         FileSystem fs = null;
         String baseDir = null;
@@ -378,7 +378,30 @@ public abstract class AbstractClient implements Client
             baseDir = getReceiverPath();
         }
 
-        fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), consumerSyncItem);
+        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks());
+    }
+
+    /**
+     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.Consumer)
+     */
+    @Override
+    public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumer)
+    {
+        FileSystem fs = null;
+        String baseDir = null;
+
+        if (EFileSystem.SENDER.equals(fileSystem))
+        {
+            fs = getSender();
+            baseDir = getSenderPath();
+        }
+        else
+        {
+            fs = getReceiver();
+            baseDir = getReceiverPath();
+        }
+
+        fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), consumer);
     }
 
     /**

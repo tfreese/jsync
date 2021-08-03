@@ -7,7 +7,7 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,18 +25,18 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
     /**
      *
      */
-    final Set<Path> set;
+    final Consumer<Path> consumer;
 
     /**
      * Erstellt ein neues {@link FileVisitorHierarchie} Object.
      *
-     * @param set {@link Set}
+     * @param consumer {@link Consumer}
      */
-    public FileVisitorHierarchie(final Set<Path> set)
+    public FileVisitorHierarchie(final Consumer<Path> consumer)
     {
         super();
 
-        this.set = Objects.requireNonNull(set, "set required");
+        this.consumer = Objects.requireNonNull(consumer, "consumer required");
     }
 
     /**
@@ -61,7 +61,7 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
         }
         else
         {
-            this.set.add(dir);
+            this.consumer.accept(dir);
         }
 
         return FileVisitResult.CONTINUE;
@@ -90,7 +90,7 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
         Objects.requireNonNull(file);
         Objects.requireNonNull(attrs);
 
-        this.set.add(file);
+        this.consumer.accept(file);
 
         return FileVisitResult.CONTINUE;
     }

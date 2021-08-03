@@ -4,7 +4,6 @@
 package de.freese.jsync;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -20,6 +19,7 @@ import de.freese.jsync.client.listener.ConsoleClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import reactor.core.publisher.Flux;
 
 /**
  * Consolen-Anwendung für jsync.<br>
@@ -132,23 +132,39 @@ public final class JSyncConsole
         Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
-        List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
-            syncItemsSender.add(syncItem);
-            client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
-                // System.out.println("Sender Bytes read: " + i);
-            });
-        });
+        // @formatter:off
+        Flux<SyncItem> syncItemsSender = client.generateSyncItems(EFileSystem.SENDER)
+                .doOnNext(syncItem -> client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+                    // System.out.println("Sender Bytes read: " + i);
+                }))
+                ;
+        // @formatter:on
 
-        List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
-            syncItemsReceiver.add(syncItem);
-            client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
-                // System.out.println("Sender Bytes read: " + i);
-            });
-        });
+        // @formatter:off
+        Flux<SyncItem> syncItemsReceiver = client.generateSyncItems(EFileSystem.RECEIVER)
+                .doOnNext(syncItem -> client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+                    // System.out.println("Sender Bytes read: " + i);
+                }))
+                ;
+        // @formatter:on        
 
-        List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
+        // List<SyncItem> syncItemsSender = new ArrayList<>();
+        // client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
+        // syncItemsSender.add(syncItem);
+        // client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+        // // System.out.println("Sender Bytes read: " + i);
+        // });
+        // });
+
+        // List<SyncItem> syncItemsReceiver = new ArrayList<>();
+        // client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
+        // syncItemsReceiver.add(syncItem);
+        // client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+        // // System.out.println("Sender Bytes read: " + i);
+        // });
+        // });
+
+        List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender.collectList().block(), syncItemsReceiver.collectList().block());
 
         syncPairs.forEach(SyncPair::validateStatus);
 

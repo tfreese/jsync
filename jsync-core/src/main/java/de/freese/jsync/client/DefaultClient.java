@@ -15,6 +15,7 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncPairComparator;
 import de.freese.jsync.model.SyncStatus;
+import reactor.core.publisher.Flux;
 
 /**
  * Default-Implementierung des {@link Client}.
@@ -33,6 +34,31 @@ public class DefaultClient extends AbstractClient
     public DefaultClient(final Options options, final URI senderUri, final URI receiverUri)
     {
         super(options, senderUri, receiverUri);
+    }
+
+    /**
+     * @see de.freese.jsync.client.Client#mergeSyncItems(reactor.core.publisher.Flux, reactor.core.publisher.Flux)
+     */
+    @Override
+    public Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver)
+    {
+        // Map der ReceiverItems bauen.
+        Map<String, SyncItem> mapReceiver = syncItemsReceiver.collectMap(SyncItem::getRelativePath).block();
+
+        // @formatter:off
+        List<SyncPair> syncPairs = syncItemsSender
+                .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
+                .collectList()
+                .block()
+                ;
+        // @formatter:on
+
+        // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
+        mapReceiver.forEach((key, value) -> syncPairs.add(new SyncPair(null, value)));
+
+        syncPairs.sort(new SyncPairComparator());
+
+        return Flux.fromIterable(syncPairs);
     }
 
     /**

@@ -1,4 +1,4 @@
-// Created: 16.08.2020
+// Created: 03.08.2021
 package de.freese.jsync.swing.controller;
 
 import java.util.ArrayList;
@@ -14,27 +14,16 @@ import de.freese.jsync.model.SyncPair;
 /**
  * @author Thomas Freese
  */
-class CompareWorker extends AbstractWorker<Void, Void>
+public class CompareWorkerList extends AbstractCompareWorker
 {
     /**
-     * Erstellt ein neues {@link CompareWorker} Object.
+     * Erstellt ein neues {@link CompareWorkerList} Object.
      *
      * @param controller {@link JsyncController}
      */
-    CompareWorker(final JsyncController controller)
+    CompareWorkerList(final JsyncController controller)
     {
         super(controller);
-
-        controller.getSyncView().doOnCompare(button -> button.setEnabled(false));
-        controller.getSyncView().doOnSyncronize(button -> button.setEnabled(false));
-
-        controller.getSyncView().clearTable();
-
-        controller.getSyncView().addProgressBarText(EFileSystem.SENDER, "");
-        controller.getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, true);
-        controller.getSyncView().addProgressBarText(EFileSystem.RECEIVER, "");
-        controller.getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, true);
-        controller.getSyncView().setProgressBarFilesMax(0);
     }
 
     /**
@@ -148,26 +137,5 @@ class CompareWorker extends AbstractWorker<Void, Void>
         getSyncView().updateLastEntry();
 
         return null;
-    }
-
-    /**
-     * @see javax.swing.SwingWorker#done()
-     */
-    @Override
-    protected void done()
-    {
-        try
-        {
-            get();
-        }
-        catch (Exception ex)
-        {
-            getLogger().error(null, ex);
-        }
-
-        getSyncView().doOnCompare(button -> button.setEnabled(true));
-        getSyncView().doOnSyncronize(button -> button.setEnabled(true));
-        getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
     }
 }

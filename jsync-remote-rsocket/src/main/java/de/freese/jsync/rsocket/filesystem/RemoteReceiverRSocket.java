@@ -90,18 +90,27 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
      * @see de.freese.jsync.filesystem.FileSystem#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer checksumBytesReadConsumer)
+    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead)
     {
-        return generateChecksum(baseDir, relativeFile, checksumBytesReadConsumer, JSyncCommand.TARGET_CHECKSUM);
+        return generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead, JSyncCommand.TARGET_CHECKSUM);
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean)
+     */
+    @Override
+    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
+    {
+        return generateSyncItems(baseDir, followSymLinks, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
     }
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, java.util.function.Consumer)
      */
     @Override
-    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
+    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer)
     {
-        generateSyncItems(baseDir, followSymLinks, consumerSyncItem, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
+        generateSyncItems(baseDir, followSymLinks, consumer, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
     }
 
     /**
