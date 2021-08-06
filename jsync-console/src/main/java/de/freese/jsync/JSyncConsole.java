@@ -134,35 +134,25 @@ public final class JSyncConsole
 
         // @formatter:off
         Flux<SyncItem> syncItemsSender = client.generateSyncItems(EFileSystem.SENDER)
-                .doOnNext(syncItem -> client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
-                    // System.out.println("Sender Bytes read: " + i);
-                }))
+                .doOnNext(syncItem -> {
+                    String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+                            // System.out.println("Sender Bytes read: " + i);
+                        });
+                    syncItem.setChecksum(checksum);
+                })
                 ;
         // @formatter:on
 
         // @formatter:off
         Flux<SyncItem> syncItemsReceiver = client.generateSyncItems(EFileSystem.RECEIVER)
-                .doOnNext(syncItem -> client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
-                    // System.out.println("Sender Bytes read: " + i);
-                }))
+                .doOnNext(syncItem -> {
+                    String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+                        // System.out.println("Sender Bytes read: " + i);
+                    });
+                    syncItem.setChecksum(checksum);
+                })
                 ;
-        // @formatter:on        
-
-        // List<SyncItem> syncItemsSender = new ArrayList<>();
-        // client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
-        // syncItemsSender.add(syncItem);
-        // client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
-        // // System.out.println("Sender Bytes read: " + i);
-        // });
-        // });
-
-        // List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        // client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
-        // syncItemsReceiver.add(syncItem);
-        // client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
-        // // System.out.println("Sender Bytes read: " + i);
-        // });
-        // });
+        // @formatter:on
 
         List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender.collectList().block(), syncItemsReceiver.collectList().block());
 

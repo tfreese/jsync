@@ -30,13 +30,15 @@ public interface Client
     void disconnectFileSystems();
 
     /**
-     * Erzeugt die Prüfsumme einer Datei und speichert diese im {@link SyncItem}.<br>
+     * Erzeugt die Prüfsumme einer Datei.<br>
      *
      * @param fileSystem {@link EFileSystem}
      * @param syncItem {@link SyncItem}
      * @param consumerChecksumBytesRead {@link LongConsumer}
+     *
+     * @return String
      */
-    void generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerChecksumBytesRead);
+    String generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerChecksumBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
@@ -58,8 +60,8 @@ public interface Client
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
      * Die Einträge des Senders sind die Referenz.<br>
-     * Ist ein Item im Receiver nicht enthalten, muss er kopiert werden.<br>
-     * Ist ein Item nur Receiver enthalten, muss er dort gelöscht werden.<br>
+     * Ist ein Item nicht im Receiver enthalten, muss es dorthin kopiert werden.<br>
+     * Ist ein Item nur Receiver enthalten, muss es dort gelöscht werden.<br>
      *
      * @param syncItemsSender {@link Flux}
      * @param syncItemsReceiver {@link Flux}
@@ -71,8 +73,8 @@ public interface Client
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
      * Die Einträge des Senders sind die Referenz.<br>
-     * Ist ein Item im Receiver nicht enthalten, muss er kopiert werden.<br>
-     * Ist ein Item nur Receiver enthalten, muss er dort gelöscht werden.<br>
+     * Ist ein Item nicht im Receiver enthalten, muss es dorthin kopiert werden.<br>
+     * Ist ein Item nur Receiver enthalten, muss es dort gelöscht werden.<br>
      *
      * @param syncItemsSender {@link List}
      * @param syncItemsReceiver {@link List}

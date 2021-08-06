@@ -333,11 +333,11 @@ public abstract class AbstractClient implements Client
      *      java.util.function.LongConsumer)
      */
     @Override
-    public void generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer checksumBytesReadConsumer)
+    public String generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer checksumBytesReadConsumer)
     {
         if (!getOptions().isChecksum() || !syncItem.isFile())
         {
-            return;
+            return null;
         }
 
         FileSystem fs = null;
@@ -354,8 +354,7 @@ public abstract class AbstractClient implements Client
             baseDir = getReceiverPath();
         }
 
-        String checksum = fs.generateChecksum(baseDir, syncItem.getRelativePath(), checksumBytesReadConsumer);
-        syncItem.setChecksum(checksum);
+        return fs.generateChecksum(baseDir, syncItem.getRelativePath(), checksumBytesReadConsumer);
     }
 
     /**

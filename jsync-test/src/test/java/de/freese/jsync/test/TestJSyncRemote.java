@@ -127,17 +127,19 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         List<SyncItem> syncItemsSender = new ArrayList<>();
         client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
             syncItemsSender.add(syncItem);
-            client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+            String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);
             });
+            syncItem.setChecksum(checksum);
         });
 
         List<SyncItem> syncItemsReceiver = new ArrayList<>();
         client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
             syncItemsReceiver.add(syncItem);
-            client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+            String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);
             });
+            syncItem.setChecksum(checksum);
         });
 
         List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);

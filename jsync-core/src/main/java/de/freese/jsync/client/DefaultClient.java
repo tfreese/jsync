@@ -2,8 +2,10 @@
 package de.freese.jsync.client;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -42,23 +44,10 @@ public class DefaultClient extends AbstractClient
     @Override
     public Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver)
     {
-        // Map der ReceiverItems bauen.
-        Map<String, SyncItem> mapReceiver = syncItemsReceiver.collectMap(SyncItem::getRelativePath).block();
-
-        // @formatter:off
-        List<SyncPair> syncPairs = syncItemsSender
-                .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
-                .collectList()
-                .block()
-                ;
-        // @formatter:on
-
-        // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
-        mapReceiver.forEach((key, value) -> syncPairs.add(new SyncPair(null, value)));
-
-        syncPairs.sort(new SyncPairComparator());
-
-        return Flux.fromIterable(syncPairs);
+        return Flux.<SyncPair> create(sink -> {
+            mergeSyncItems(syncItemsSender.collectList().block(), syncItemsReceiver.collectList().block(), sink::next);
+            sink.complete();
+        }).sort(new SyncPairComparator());
     }
 
     /**
@@ -67,22 +56,34 @@ public class DefaultClient extends AbstractClient
     @Override
     public List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver)
     {
-        // Map der ReceiverItems bauen.
-        Map<String, SyncItem> mapReceiver = syncItemsReceiver.stream().collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
+        List<SyncPair> syncPairs = new ArrayList<>();
 
-        // @formatter:off
-        List<SyncPair> syncPairs = syncItemsSender.stream()
-                .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
-                .collect(Collectors.toList())
-                ;
-        // @formatter:on
-
-        // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
-        mapReceiver.forEach((key, value) -> syncPairs.add(new SyncPair(null, value)));
+        mergeSyncItems(syncItemsSender, syncItemsReceiver, syncPairs::add);
 
         syncPairs.sort(new SyncPairComparator());
 
         return syncPairs;
+    }
+
+    /**
+     * @param syncItemsSender {@link List}
+     * @param syncItemsReceiver {@link List}
+     * @param consumer {@link Consumer}
+     */
+    private void mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver, final Consumer<SyncPair> consumer)
+    {
+        // Map der ReceiverItems bauen.
+        Map<String, SyncItem> mapReceiver = syncItemsReceiver.stream().collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
+
+        // @formatter:off
+        syncItemsSender.stream()
+                .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
+                .forEach(consumer)
+                ;
+        // @formatter:on
+
+        // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
+        mapReceiver.forEach((key, value) -> consumer.accept(new SyncPair(null, value)));
     }
 
     /**

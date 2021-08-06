@@ -39,8 +39,7 @@ public class JsyncController
      */
     private void compare()
     {
-        // AbstractCompareWorker worker = new CompareWorkerList(this);
-        AbstractCompareWorker worker = new CompareWorkerReactive(this);
+        CompareWorker worker = new CompareWorker(this);
 
         worker.execute();
     }

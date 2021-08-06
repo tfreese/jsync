@@ -30,7 +30,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 
@@ -46,7 +45,6 @@ import de.freese.jsync.swing.components.SyncListTableModel;
 import de.freese.jsync.swing.components.accumulative.AccumulativeSinkSwing;
 import de.freese.jsync.utils.JSyncUtils;
 import reactor.core.publisher.Sinks;
-import reactor.core.publisher.Sinks.Many;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
@@ -148,7 +146,22 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
     {
-        getAccumulatorProgressBarMinMaxText(fileSystem).tryEmitNext(Tuples.of(min, max, text));
+        Sinks.Many<Tuple3<Integer, Integer, String>> sink = this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
+            final JProgressBar progressBar = getProgressBar(fileSystem);
+
+            return new AccumulativeSinkSwing().createForSingle(value -> {
+                progressBar.setMinimum(value.getT1());
+                progressBar.setMaximum(value.getT2());
+                progressBar.setString(value.getT3());
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("getAccumulatorProgressBarMinMaxText - {}: {}", fileSystem, value);
+                }
+            });
+        });
+
+        sink.tryEmitNext(Tuples.of(min, max, text));
     }
 
     /**
@@ -157,7 +170,20 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addProgressBarText(final EFileSystem fileSystem, final String text)
     {
-        getAccumulatorProgressBarText(fileSystem).tryEmitNext(text);
+        Sinks.Many<String> sink = this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
+            final JProgressBar progressBar = getProgressBar(fileSystem);
+
+            return new AccumulativeSinkSwing().createForSingle(value -> {
+                progressBar.setString(value);
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("getAccumulatorProgressBarText - {}: {}", fileSystem, value);
+                }
+            });
+        });
+
+        sink.tryEmitNext(text);
     }
 
     /**
@@ -166,7 +192,20 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addProgressBarValue(final EFileSystem fileSystem, final int value)
     {
-        getAccumulatorProgressBarValue(fileSystem).tryEmitNext(value);
+        Sinks.Many<Integer> sink = this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
+            final JProgressBar progressBar = getProgressBar(fileSystem);
+
+            return new AccumulativeSinkSwing().createForSingle(v -> {
+                progressBar.setValue(v);
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("getAccumulatorProgressBarValue - {}: {}", fileSystem, v);
+                }
+            });
+        });
+
+        sink.tryEmitNext(value);
     }
 
     /**
@@ -175,7 +214,27 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addSyncPair(final SyncPair syncPair)
     {
-        getAccumulatorTableAdd().tryEmitNext(syncPair);
+        if (this.accumulatorTableAdd == null)
+        {
+            this.accumulatorTableAdd = new AccumulativeSinkSwing().createForList(list -> {
+                getTableModel().addAll(list);
+
+                int row = getTableModel().getRowCount() - 1;
+                Rectangle rectangle = getTable().getCellRect(row, 0, false);
+                getTable().scrollRectToVisible(rectangle);
+
+                int value = getTableModel().getRowCount();
+                getProgressBarFiles().setValue(value);
+                getProgressBarFiles().setString(getMessage("jsync.files") + ": " + value + "/" + getProgressBarFiles().getMaximum());
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("getAccumulatorTableAdd - row: {}", row);
+                }
+            });
+        }
+
+        this.accumulatorTableAdd.tryEmitNext(syncPair);
     }
 
     /**
@@ -340,99 +399,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link Many}
-     */
-    private Sinks.Many<Tuple3<Integer, Integer, String>> getAccumulatorProgressBarMinMaxText(final EFileSystem fileSystem)
-    {
-        return this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
-            final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
-
-            return new AccumulativeSinkSwing().createForSingle(value -> {
-                progressBar.setMinimum(value.getT1());
-                progressBar.setMaximum(value.getT2());
-                progressBar.setString(value.getT3());
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("getAccumulatorProgressBarMinMaxText - {}: {}", fileSystem, value);
-                }
-            });
-        });
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link Many}
-     */
-    private Sinks.Many<String> getAccumulatorProgressBarText(final EFileSystem fileSystem)
-    {
-        return this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
-            final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
-
-            return new AccumulativeSinkSwing().createForSingle(value -> {
-                progressBar.setString(value);
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("getAccumulatorProgressBarText - {}: {}", fileSystem, value);
-                }
-            });
-        });
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link Many}
-     */
-    private Sinks.Many<Integer> getAccumulatorProgressBarValue(final EFileSystem fileSystem)
-    {
-        return this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
-            final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
-
-            return new AccumulativeSinkSwing().createForSingle(value -> {
-                progressBar.setValue(value);
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("getAccumulatorProgressBarValue - {}: {}", fileSystem, value);
-                }
-            });
-        });
-    }
-
-    /**
-     * @return {@link Many}
-     */
-    private Sinks.Many<SyncPair> getAccumulatorTableAdd()
-    {
-        if (this.accumulatorTableAdd == null)
-        {
-            this.accumulatorTableAdd = new AccumulativeSinkSwing().createForList(list -> {
-                getTableModel().addAll(list);
-
-                int row = getTableModel().getRowCount() - 1;
-                Rectangle rectangle = getTable().getCellRect(row, 0, false);
-                getTable().scrollRectToVisible(rectangle);
-
-                int value = getTableModel().getRowCount();
-                getProgressBarFiles().setValue(value);
-                getProgressBarFiles().setString(getMessage("jsync.files") + ": " + value + "/" + getProgressBarFiles().getMaximum());
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("getAccumulatorTableAdd - row: {}", row);
-                }
-            });
-        }
-
-        return this.accumulatorTableAdd;
-    }
-
-    /**
      * @return {@link JButton}
      */
     private JButton getButtonCompare()
@@ -507,6 +473,16 @@ public class DefaultSyncView extends AbstractView implements SyncView
                 .build()
                 ;
         // @formatter:on
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     *
+     * @return {@link JProgressBar}
+     */
+    private JProgressBar getProgressBar(final EFileSystem fileSystem)
+    {
+        return EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
     }
 
     /**
@@ -695,7 +671,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void restoreState()
     {
-        Path path = Paths.get(System.getProperty("user.dir"), "jsyncGuiState");
+        Path path = Paths.get(System.getProperty("user.dir"), ".jsyncGuiState");
         Properties properties = new Properties();
 
         try
@@ -733,7 +709,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         properties.setProperty("sender.textfield", getTextField(EFileSystem.SENDER).getText());
         properties.setProperty("receiver.textfield", getTextField(EFileSystem.RECEIVER).getText());
 
-        try (OutputStream os = Files.newOutputStream(Paths.get(System.getProperty("user.dir"), "jsyncGuiState"), StandardOpenOption.WRITE,
+        try (OutputStream os = Files.newOutputStream(Paths.get(System.getProperty("user.dir"), ".jsyncGuiState"), StandardOpenOption.WRITE,
                 StandardOpenOption.TRUNCATE_EXISTING))
         {
             properties.store(os, null);
@@ -750,22 +726,12 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void setProgressBarFilesMax(final int max)
     {
-        if (SwingUtilities.isEventDispatchThread())
-        {
+        runInEdt(() -> {
             getProgressBarFiles().setMinimum(0);
             getProgressBarFiles().setMaximum(max);
             getProgressBarFiles().setValue(0);
             getProgressBarFiles().setString("");
-        }
-        else
-        {
-            SwingUtilities.invokeLater(() -> {
-                getProgressBarFiles().setMinimum(0);
-                getProgressBarFiles().setMaximum(max);
-                getProgressBarFiles().setValue(0);
-                getProgressBarFiles().setString("");
-            });
-        }
+        });
     }
 
     /**
@@ -774,16 +740,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void setProgressBarIndeterminate(final EFileSystem fileSystem, final boolean indeterminate)
     {
-        final JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
-
-        if (SwingUtilities.isEventDispatchThread())
-        {
+        runInEdt(() -> {
+            JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
             progressBar.setIndeterminate(indeterminate);
-        }
-        else
-        {
-            SwingUtilities.invokeLater(() -> progressBar.setIndeterminate(indeterminate));
-        }
+        });
     }
 
     /**
@@ -792,15 +752,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void updateLastEntry()
     {
-        int rowCount = getTableModel().getRowCount();
-
-        if (SwingUtilities.isEventDispatchThread())
-        {
+        runInEdt(() -> {
+            int rowCount = getTableModel().getRowCount();
             getTableModel().fireTableRowsUpdated(rowCount - 1, rowCount - 1);
-        }
-        else
-        {
-            SwingUtilities.invokeLater(() -> getTableModel().fireTableRowsUpdated(rowCount - 1, rowCount - 1));
-        }
+        });
     }
 }

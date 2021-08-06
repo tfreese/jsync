@@ -27,7 +27,8 @@ public class SyncPair
     private SyncStatus status;
 
     /**
-     * Erstellt ein neues {@link SyncPair} Object.
+     * Erstellt ein neues {@link SyncPair} Object.<br>
+     * Nur eines der beiden {@link SyncItem}s darf null sein.
      *
      * @param senderItem {@link SyncItem}; wenn null -> nur im Receiver enthalten
      * @param receiverItem {@link SyncItem}; wenn null -> nur im Sender enthalten
@@ -38,6 +39,11 @@ public class SyncPair
 
         this.senderItem = senderItem;
         this.receiverItem = receiverItem;
+
+        if ((senderItem == null) && (receiverItem == null))
+        {
+            throw new IllegalArgumentException("only one SyncItem can be null");
+        }
     }
 
     /**
@@ -76,6 +82,14 @@ public class SyncPair
     public SyncStatus getStatus()
     {
         return this.status;
+    }
+
+    /**
+     * @return boolean
+     */
+    public boolean isFile()
+    {
+        return getSenderItem() != null ? getSenderItem().isFile() : getReceiverItem().isFile();
     }
 
     /**
