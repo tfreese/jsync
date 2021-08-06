@@ -14,9 +14,9 @@ import javax.swing.table.TableRowSorter;
 
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
-import de.freese.jsync.swing.GbcBuilder;
-import de.freese.jsync.swing.JSyncSwingApplication;
+import de.freese.jsync.swing.JsyncContext;
 import de.freese.jsync.swing.components.SyncListTableModel;
+import de.freese.jsync.swing.util.GbcBuilder;
 
 /**
  * @author Thomas Freese
@@ -78,7 +78,7 @@ class ShowView
      */
     private String getMessage(final String key)
     {
-        return JSyncSwingApplication.getInstance().getMessages().getString(key);
+        return JsyncContext.getMessages().getString(key);
     }
 
     /**
@@ -103,7 +103,7 @@ class ShowView
 
         TableRowSorter<SyncListTableModel> rowSorter = new TableRowSorter<>(tableModel);
 
-        this.checkBoxSynchronized = new JCheckBox(getMessage("jsync.show.synchronized"), false);
+        this.checkBoxSynchronized = new JCheckBox(getMessage("jsync.show.synchronized"), true);
         this.checkBoxSynchronized.setName("showPanel.show.synchronized");
         this.checkBoxSynchronized.setForeground(Color.BLACK);
         this.panel.add(this.checkBoxSynchronized, new GbcBuilder(0, 0).anchorWest());
@@ -162,7 +162,7 @@ class ShowView
      */
     private void updatePredicate()
     {
-        this.predicate = syncPair -> false;
+        this.predicate = syncPair -> SyncStatus.UNKNOWN.equals(syncPair.getStatus());
 
         if (this.checkBoxSynchronized.isSelected())
         {

@@ -18,7 +18,7 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.freese.jsync.swing.JSyncSwingApplication;
+import de.freese.jsync.swing.JsyncContext;
 
 /**
  * @author Thomas Freese
@@ -32,7 +32,7 @@ public abstract class AbstractView
      */
     protected static String getMessage(final String key)
     {
-        return JSyncSwingApplication.getInstance().getMessages().getString(key);
+        return JsyncContext.getMessages().getString(key);
     }
 
     /**
@@ -41,7 +41,7 @@ public abstract class AbstractView
     public final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Malt einen Rahmen um jede {@link Component}.
+     * Malt einen Rahmen um jede {@link JComponent}.
      *
      * @param component {@link Component}
      */
@@ -63,7 +63,7 @@ public abstract class AbstractView
     }
 
     /**
-     * Malt einen Rahmen um jede {@link Component}.
+     * Malt einen Rahmen um jede {@link JComponent}.
      *
      * @param container {@link Container}
      */
@@ -71,10 +71,8 @@ public abstract class AbstractView
     {
         enableDebug((Component) container);
 
-        for (int i = 0; i < container.getComponentCount(); i++)
+        for (Component child : container.getComponents())
         {
-            Component child = container.getComponent(i);
-
             if (child instanceof Container)
             {
                 enableDebug((Container) child);
@@ -99,7 +97,7 @@ public abstract class AbstractView
      */
     protected JFrame getMainFrame()
     {
-        return JSyncSwingApplication.getInstance().getMainFrame();
+        return JsyncContext.getMainFrame();
     }
 
     /**
@@ -107,7 +105,7 @@ public abstract class AbstractView
      */
     protected ScheduledExecutorService getScheduledExecutorService()
     {
-        return JSyncSwingApplication.getInstance().getScheduledExecutorService();
+        return JsyncContext.getScheduledExecutorService();
     }
 
     /**

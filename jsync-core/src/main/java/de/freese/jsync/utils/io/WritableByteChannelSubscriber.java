@@ -155,7 +155,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
         }
         catch (IOException ex)
         {
-            this.sink.next(0L);
+            this.sink.next(-1L);
             this.sink.error(ex);
         }
     }

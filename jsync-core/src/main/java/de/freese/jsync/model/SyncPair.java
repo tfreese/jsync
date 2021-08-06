@@ -24,7 +24,7 @@ public class SyncPair
     /**
      *
      */
-    private SyncStatus status;
+    private SyncStatus status = SyncStatus.UNKNOWN;
 
     /**
      * Erstellt ein neues {@link SyncPair} Object.<br>
@@ -157,7 +157,7 @@ public class SyncPair
         }
         else
         {
-            throw new IllegalStateException("unknown SyncStatus");
+            this.status = SyncStatus.UNKNOWN;
         }
     }
 }

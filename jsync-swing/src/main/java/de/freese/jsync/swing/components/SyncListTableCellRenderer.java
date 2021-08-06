@@ -43,6 +43,7 @@ public class SyncListTableCellRenderer extends DefaultTableCellRenderer
 
         switch (syncStatus)
         {
+            case UNKNOWN -> setForeground(Color.GRAY);
             case SYNCHRONIZED -> setForeground(Color.BLACK);
             case ONLY_IN_TARGET -> setForeground(Color.RED);
             default -> setForeground(Color.ORANGE.darker());

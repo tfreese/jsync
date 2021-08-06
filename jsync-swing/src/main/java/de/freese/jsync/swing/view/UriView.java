@@ -13,8 +13,8 @@ import javax.swing.JTextField;
 
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.JSyncProtocol;
-import de.freese.jsync.swing.GbcBuilder;
-import de.freese.jsync.swing.JSyncSwingApplication;
+import de.freese.jsync.swing.JsyncContext;
+import de.freese.jsync.swing.util.GbcBuilder;
 
 /**
  * @author Thomas Freese
@@ -82,7 +82,7 @@ class UriView
      */
     private String getMessage(final String key)
     {
-        return JSyncSwingApplication.getInstance().getMessages().getString(key);
+        return JsyncContext.getMessages().getString(key);
     }
 
     /**

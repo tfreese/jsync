@@ -8,7 +8,7 @@ import java.util.List;
 
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.swing.JSyncSwingApplication;
+import de.freese.jsync.swing.JsyncContext;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
@@ -26,11 +26,9 @@ public class SyncListTableModel extends AbstractListTableModel<SyncPair>
      */
     public SyncListTableModel()
     {
-        super(List.of(JSyncSwingApplication.getInstance().getMessages().getString("jsync.name"),
-                JSyncSwingApplication.getInstance().getMessages().getString("jsync.size"),
-                JSyncSwingApplication.getInstance().getMessages().getString("jsync.status"),
-                JSyncSwingApplication.getInstance().getMessages().getString("jsync.name"),
-                JSyncSwingApplication.getInstance().getMessages().getString("jsync.size")));
+        super(List.of(JsyncContext.getMessages().getString("jsync.name"), JsyncContext.getMessages().getString("jsync.size"),
+                JsyncContext.getMessages().getString("jsync.status"), JsyncContext.getMessages().getString("jsync.name"),
+                JsyncContext.getMessages().getString("jsync.size")));
     }
 
     /**

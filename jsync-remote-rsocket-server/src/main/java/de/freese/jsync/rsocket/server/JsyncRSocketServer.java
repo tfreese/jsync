@@ -43,11 +43,11 @@ public final class JsyncRSocketServer
         server.start(8888);
         // server.stop();
 
-        // Thread thread = new Thread(() -> server.start(8888, 2, 4), "rsocket-server");
+        // Thread thread = new Thread(() -> server.start(8888), "rsocket-server");
         // thread.setDaemon(false);
         // thread.start();
 
-        System.in.read();
+        // System.in.read();
     }
 
     /**
@@ -76,15 +76,15 @@ public final class JsyncRSocketServer
         ResourceLeakDetector.setLevel(Level.ADVANCED);
 
         // Globale Default-Resourcen.
-        TcpResources.set(LoopResources.create("jsync-server"));
-        // TcpResources.set(LoopResources.create("jsync-server", selectCount, workerCount, true));
-        // TcpResources.set(ConnectionProvider.create("demo-connectionPool", 16));
+        TcpResources.set(LoopResources.create("server"));
+        // TcpResources.set(LoopResources.create("server", selectCount, workerCount, true));
+        // TcpResources.set(ConnectionProvider.create("connectionPool", 16));
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.
         // Nur einmalig definieren, sonst gibs mehrere Logs-Meldungen !!!
-        // Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
-        Hooks.onErrorDropped(th -> {
-        });
+        Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
+        // Hooks.onErrorDropped(th -> {
+        // });
 
         SocketAcceptor socketAcceptor = SocketAcceptor.with(new JsyncRSocketHandler());
 

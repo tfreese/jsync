@@ -104,8 +104,8 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 
     /**
      * @param baseDir String
-     * @param relativeFile relativeFile
-     * @param consumerChecksumBytesRead checksumBytesReadConsumer
+     * @param relativeFile String
+     * @param consumerChecksumBytesRead consumerChecksumBytesRead
      * @param command {@link JSyncCommand}
      *
      * @return String

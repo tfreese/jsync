@@ -29,6 +29,16 @@ public final class ReactiveUtils
     private static final Consumer<ByteBuffer> RELEASE_CONSUMER = ReactiveUtils::release;
 
     /**
+     * SocketChannels werden NICHT geschlossen !
+     *
+     * @param channel {@link Channel}
+     */
+    public static void close(final Channel channel)
+    {
+        JSyncUtils.close(channel);
+    }
+
+    /**
      * List den {@link Channel} als Flux von {@link ByteBuffer}.<br>
      * Der {@link Channel} wird im Anschluss geschlossen.<br>
      * Sollen die {@link ByteBuffer} freigegeben werden, muss der return-Flux mit {@link #releaseConsumer()} subscribed werden.
@@ -39,7 +49,7 @@ public final class ReactiveUtils
      */
     public static Flux<ByteBuffer> readByteChannel(final Callable<ReadableByteChannel> channelSupplier)
     {
-        return Flux.using(channelSupplier, channel -> Flux.generate(new ReadableByteChannelGenerator(channel)), JSyncUtils::close);
+        return Flux.using(channelSupplier, channel -> Flux.generate(new ReadableByteChannelGenerator(channel)), ReactiveUtils::close);
     }
 
     /**

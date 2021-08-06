@@ -51,5 +51,10 @@ public enum SyncStatus
     /**
      * Quelle und Ziel identisch.
      */
-    SYNCHRONIZED
+    SYNCHRONIZED,
+
+    /**
+     *
+     */
+    UNKNOWN
 }

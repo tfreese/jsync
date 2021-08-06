@@ -30,6 +30,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 
@@ -38,11 +39,11 @@ import de.freese.jsync.Options.Builder;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.swing.GbcBuilder;
 import de.freese.jsync.swing.components.DocumentListenerAdapter;
 import de.freese.jsync.swing.components.SyncListTableCellRenderer;
 import de.freese.jsync.swing.components.SyncListTableModel;
 import de.freese.jsync.swing.components.accumulative.AccumulativeSinkSwing;
+import de.freese.jsync.swing.util.GbcBuilder;
 import de.freese.jsync.utils.JSyncUtils;
 import reactor.core.publisher.Sinks;
 import reactor.util.function.Tuple3;
@@ -146,7 +147,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
     {
-        Sinks.Many<Tuple3<Integer, Integer, String>> sink = this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
+        this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = getProgressBar(fileSystem);
 
             return new AccumulativeSinkSwing().createForSingle(value -> {
@@ -156,12 +157,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
                 if (getLogger().isDebugEnabled())
                 {
-                    getLogger().debug("getAccumulatorProgressBarMinMaxText - {}: {}", fileSystem, value);
+                    getLogger().debug("addProgressBarMinMaxText - {}: {}", fileSystem, value);
                 }
             });
-        });
-
-        sink.tryEmitNext(Tuples.of(min, max, text));
+        }).tryEmitNext(Tuples.of(min, max, text));
     }
 
     /**
@@ -170,7 +169,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addProgressBarText(final EFileSystem fileSystem, final String text)
     {
-        Sinks.Many<String> sink = this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
+        this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = getProgressBar(fileSystem);
 
             return new AccumulativeSinkSwing().createForSingle(value -> {
@@ -178,12 +177,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
                 if (getLogger().isDebugEnabled())
                 {
-                    getLogger().debug("getAccumulatorProgressBarText - {}: {}", fileSystem, value);
+                    getLogger().debug("addProgressBarText - {}: {}", fileSystem, value);
                 }
             });
-        });
-
-        sink.tryEmitNext(text);
+        }).tryEmitNext(text);
     }
 
     /**
@@ -192,7 +189,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void addProgressBarValue(final EFileSystem fileSystem, final int value)
     {
-        Sinks.Many<Integer> sink = this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
+        this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = getProgressBar(fileSystem);
 
             return new AccumulativeSinkSwing().createForSingle(v -> {
@@ -200,12 +197,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
                 if (getLogger().isDebugEnabled())
                 {
-                    getLogger().debug("getAccumulatorProgressBarValue - {}: {}", fileSystem, v);
+                    getLogger().debug("addProgressBarValue - {}: {}", fileSystem, v);
                 }
             });
-        });
-
-        sink.tryEmitNext(value);
+        }).tryEmitNext(value);
     }
 
     /**
@@ -229,7 +224,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
                 if (getLogger().isDebugEnabled())
                 {
-                    getLogger().debug("getAccumulatorTableAdd - row: {}", row);
+                    getLogger().debug("addSyncPair - row: {}", row);
                 }
             });
         }
@@ -495,7 +490,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
             this.progressBarFiles = new JProgressBar();
             this.progressBarFiles.setName("progressBarFiles");
             this.progressBarFiles.setStringPainted(true);
-            this.progressBarFiles.setPreferredSize(new Dimension(210, 20));
+            this.progressBarFiles.setMinimumSize(new Dimension(200, 20));
+            this.progressBarFiles.setPreferredSize(this.progressBarFiles.getMinimumSize());
         }
 
         return this.progressBarFiles;
@@ -511,6 +507,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
             this.progressBarReceiver = new JProgressBar();
             this.progressBarReceiver.setName("progressBarReceiver");
             this.progressBarReceiver.setStringPainted(true);
+            this.progressBarReceiver.setMinimumSize(new Dimension(600, 20));
+            this.progressBarReceiver.setPreferredSize(this.progressBarReceiver.getMinimumSize());
         }
 
         return this.progressBarReceiver;
@@ -526,6 +524,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
             this.progressBarSender = new JProgressBar();
             this.progressBarSender.setName("progressBarSender");
             this.progressBarSender.setStringPainted(true);
+            this.progressBarSender.setMinimumSize(new Dimension(600, 20));
+            this.progressBarSender.setPreferredSize(this.progressBarSender.getMinimumSize());
         }
 
         return this.progressBarSender;
@@ -635,31 +635,44 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         // Show
         this.showView = new ShowView().initGUI(getTable(), getTableModel());
-        this.panel.add(this.showView.getComponent(), new GbcBuilder(6, row).gridwidth(5).anchorCenter().fillHorizontal());
+        this.panel.add(this.showView.getComponent(), new GbcBuilder(5, row).gridwidth(5).anchorCenter().fillHorizontal());
 
         row++;
         this.panel.add(new JSeparator(), new GbcBuilder(0, row).gridwidth(10).fillHorizontal());
 
         // Path-Selection
         row++;
-
         this.uriViewSender = new UriView().initGUI(EFileSystem.SENDER);
-        this.panel.add(this.uriViewSender.getComponent(), new GbcBuilder(0, row).gridwidth(5).fillHorizontal());
+        this.uriViewSender.getComponent().setMinimumSize(new Dimension(700, 50));
+        this.uriViewSender.getComponent().setPreferredSize(this.uriViewSender.getComponent().getMinimumSize());
+        this.panel.add(this.uriViewSender.getComponent(), new GbcBuilder(0, row).gridwidth(4).fillHorizontal());
+
+        // this.panel.add(Box.createGlue(), new GbcBuilder(4, row).gridwidth(2).fillHorizontal());
 
         this.uriViewReceiver = new UriView().initGUI(EFileSystem.RECEIVER);
-        this.panel.add(this.uriViewReceiver.getComponent(), new GbcBuilder(5, row).gridwidth(5).fillHorizontal());
+        this.uriViewReceiver.getComponent().setMinimumSize(new Dimension(700, 50));
+        this.uriViewReceiver.getComponent().setPreferredSize(this.uriViewReceiver.getComponent().getMinimumSize());
+        this.panel.add(this.uriViewReceiver.getComponent(), new GbcBuilder(6, row).gridwidth(4).fillHorizontal());
 
         // Tabelle
         row++;
         JScrollPane scrollPane = new JScrollPane(getTable());
         scrollPane.setName("scrollPane");
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPane, new GbcBuilder(0, row).gridwidth(10).fillBoth());
 
         // ProgressBars
         row++;
-        this.panel.add(getProgressBarSender(), new GbcBuilder(0, row).gridwidth(4).fillHorizontal().insets(5, 5, 5, 0));
-        this.panel.add(getProgressBarFiles(), new GbcBuilder(5, row).insets(5, 0, 5, 0));
-        this.panel.add(getProgressBarReceiver(), new GbcBuilder(6, row).gridwidth(4).fillHorizontal().insets(5, 0, 5, 5));
+        this.panel.add(getProgressBarSender(), new GbcBuilder(0, row).gridwidth(4).fillHorizontal());
+        this.panel.add(getProgressBarFiles(), new GbcBuilder(4, row).gridwidth(2).fillHorizontal().insets(5, 0, 5, 0));
+        this.panel.add(getProgressBarReceiver(), new GbcBuilder(6, row).gridwidth(4).fillHorizontal());
+
+        // JPanel panelProgressBars = new JPanel();
+        // panelProgressBars.setLayout(new GridBagLayout());
+        // panelProgressBars.add(getProgressBarSender(), new GbcBuilder(0, 0).gridwidth(2).fillHorizontal().insets(0, 0, 0, 5));
+        // panelProgressBars.add(getProgressBarFiles(), new GbcBuilder(2, 0).fillHorizontal().weightx(0.1D).insets(0, 0, 0, 0));
+        // panelProgressBars.add(getProgressBarReceiver(), new GbcBuilder(3, 0).gridwidth(2).fillHorizontal().insets(0, 5, 0, 0));
+        // this.panel.add(panelProgressBars, new GbcBuilder(0, row).gridwidth(10).fillHorizontal());
 
         // enableDebug(this.panel);
         configGui();
@@ -741,7 +754,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     public void setProgressBarIndeterminate(final EFileSystem fileSystem, final boolean indeterminate)
     {
         runInEdt(() -> {
-            JProgressBar progressBar = EFileSystem.SENDER.equals(fileSystem) ? getProgressBarSender() : getProgressBarReceiver();
+            JProgressBar progressBar = getProgressBar(fileSystem);
             progressBar.setIndeterminate(indeterminate);
         });
     }

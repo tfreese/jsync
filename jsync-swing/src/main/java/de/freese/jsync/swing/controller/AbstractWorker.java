@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.filesystem.EFileSystem;
-import de.freese.jsync.swing.JSyncSwingApplication;
+import de.freese.jsync.swing.JsyncContext;
 import de.freese.jsync.swing.view.SyncView;
 import de.freese.jsync.utils.JSyncUtils;
 
@@ -33,7 +33,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      */
     protected static ExecutorService getExecutorService()
     {
-        return JSyncSwingApplication.getInstance().getExecutorService();
+        return JsyncContext.getExecutorService();
     }
 
     /**
@@ -43,7 +43,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      */
     protected static String getMessage(final String key)
     {
-        return JSyncSwingApplication.getInstance().getMessages().getString(key);
+        return JsyncContext.getMessages().getString(key);
     }
 
     /**

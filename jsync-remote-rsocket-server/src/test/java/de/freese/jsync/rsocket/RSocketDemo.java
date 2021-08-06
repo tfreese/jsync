@@ -212,7 +212,7 @@ public class RSocketDemo
         // Globale Default-Resourcen.
         TcpResources.set(LoopResources.create("rsocket"));
         // TcpResources.set(LoopResources.create("rsocket", 2, 8, true));
-        // TcpResources.set(ConnectionProvider.create("rsocket-connectionPool", 16));
+        // TcpResources.set(ConnectionProvider.create("connectionPool", 16));
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.
         // Nur einmalig definieren, sonst gibs mehrere Logs-Meldungen !!!

@@ -111,7 +111,7 @@ public class DefaultClient extends AbstractClient
         // Aktualisieren von Datei-Attributen.
         updateFiles(sync, cl);
 
-        // Neue leere Verzeichnisse
+        // Neue leere Verzeichnisse.
         createDirectories(sync, clientListener);
 
         // Aktualisieren von Verzeichniss-Attributen.

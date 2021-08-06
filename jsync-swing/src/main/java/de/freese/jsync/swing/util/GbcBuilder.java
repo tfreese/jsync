@@ -1,5 +1,5 @@
 // Created: 04.05.2020
-package de.freese.jsync.swing;
+package de.freese.jsync.swing.util;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;

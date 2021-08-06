@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
-import de.freese.jsync.swing.JSyncSwingApplication;
+import de.freese.jsync.swing.JsyncContext;
 import de.freese.jsync.swing.view.SyncView;
 
 /**
@@ -84,7 +84,7 @@ public class JsyncController
      */
     String getMessage(final String key)
     {
-        return JSyncSwingApplication.getInstance().getMessages().getString(key);
+        return JsyncContext.getMessages().getString(key);
     }
 
     /**

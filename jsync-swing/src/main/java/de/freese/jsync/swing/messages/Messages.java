@@ -28,6 +28,18 @@ public class Messages
     private Map<String, String> messageMap = Collections.emptyMap();
 
     /**
+     * Erstellt ein neues {@link Messages} Object.
+     *
+     * @param locale {@link Locale}
+     */
+    public Messages(final Locale locale)
+    {
+        super();
+
+        setLocale(locale);
+    }
+
+    /**
      * @param key String
      *
      * @return String
@@ -49,7 +61,7 @@ public class Messages
     /**
      * @param locale {@link Locale}
      */
-    public void setLocale(final Locale locale)
+    private void setLocale(final Locale locale)
     {
         Objects.requireNonNull(locale, "locale required");
 

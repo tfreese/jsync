@@ -9,11 +9,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Consumer;
 
 import javax.swing.JFrame;
 import javax.swing.UIManager;
@@ -25,36 +21,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.freese.jsync.swing.controller.JsyncController;
-import de.freese.jsync.swing.messages.Messages;
 import de.freese.jsync.swing.view.DefaultSyncView;
 import de.freese.jsync.swing.view.SyncView;
 
 /**
  * @author Thomas Freese
  */
-public final class JSyncSwingApplication
+public final class JSyncSwing
 {
-    /**
-     * ThreadSafe Singleton-Pattern.
-     *
-     * @author Thomas Freese
-     */
-    private static final class InstanceHolder
-    {
-        /**
-         *
-         */
-        private static final JSyncSwingApplication INSTANCE = new JSyncSwingApplication();
-
-        /**
-         * Erstellt ein neues {@link InstanceHolder} Object.
-         */
-        private InstanceHolder()
-        {
-            super();
-        }
-    }
-
     /**
      * WindowListener zum Beenden.
      *
@@ -69,7 +43,7 @@ public final class JSyncSwingApplication
         public void windowClosing(final WindowEvent event)
         {
             getLogger().info("stop");
-            JSyncSwingApplication.this.controller.shutdown();
+            JSyncSwing.this.controller.shutdown();
 
             System.exit(0);
         }
@@ -78,15 +52,7 @@ public final class JSyncSwingApplication
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwingApplication.class);
-
-    /**
-     * @return {@link JSyncSwingApplication}
-     */
-    public static JSyncSwingApplication getInstance()
-    {
-        return InstanceHolder.INSTANCE;
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwing.class);
 
     /**
      * @return {@link Logger}
@@ -102,95 +68,26 @@ public final class JSyncSwingApplication
     private JsyncController controller;
 
     /**
-     *
+     * Erstellt ein neues {@link JSyncSwing} Object.
      */
-    private ExecutorService executorService;
-
-    /**
-     *
-     */
-    private JFrame mainFrame;
-
-    /**
-     *
-     */
-    private Messages messages;
-
-    /**
-     *
-     */
-    private ScheduledExecutorService scheduledExecutorService;
-
-    /**
-     * Erstellt ein neues {@link JSyncSwingApplication} Object.
-     */
-    private JSyncSwingApplication()
+    JSyncSwing()
     {
         super();
-
-        this.controller = null;
-    }
-
-    /**
-     * @return {@link ExecutorService}
-     */
-    public ExecutorService getExecutorService()
-    {
-        return this.executorService;
-    }
-
-    /**
-     * @return JFrame
-     */
-    public JFrame getMainFrame()
-    {
-        return this.mainFrame;
-    }
-
-    /**
-     * @return {@link Messages}
-     */
-    public Messages getMessages()
-    {
-        return this.messages;
-    }
-
-    /**
-     * @return {@link ScheduledExecutorService}
-     */
-    public ScheduledExecutorService getScheduledExecutorService()
-    {
-        return this.scheduledExecutorService;
     }
 
     /**
      * Initialisierung der GUI.
      *
-     * @param args String[]
+     * @param consumer {@link Consumer}
      *
      * @throws Exception Falls was schief geht.
      */
-    void init(final String[] args) throws Exception
+    void initGui(final Consumer<JFrame> consumer) throws Exception
     {
-        if (args == null)
-        {
-            getLogger().info("init");
-        }
-        else
-        {
-            getLogger().info("init: {}", Arrays.toString(args));
-        }
-
-        this.executorService = Executors.newFixedThreadPool(8);
-        this.scheduledExecutorService = Executors.newScheduledThreadPool(8);
-
-        this.messages = new Messages();
-        this.messages.setLocale(Locale.getDefault());
-
         initUIDefaults();
 
         JFrame frame = new JFrame();
-        frame.setTitle(this.messages.getString("jsync.title"));
+        frame.setTitle(JsyncContext.getMessages().getString("jsync.title"));
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new MainFrameListener());
         frame.setLayout(new BorderLayout());
@@ -205,16 +102,7 @@ public final class JSyncSwingApplication
         // frame.add(label, BorderLayout.CENTER);
         frame.add(syncView.getComponent(), BorderLayout.CENTER);
 
-        // frame.setSize(800, 600);
-        // frame.setSize(1024, 768);
-        // frame.setSize(1280, 768);
-        // frame.setSize(1280, 1024);
-        frame.setSize(1680, 1050);
-        // frame.setSize(1920, 1080);
-        // frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-        this.mainFrame = frame;
+        consumer.accept(frame);
     }
 
     /**

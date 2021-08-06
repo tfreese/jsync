@@ -1,7 +1,6 @@
 // Created: 03.08.2021
 package de.freese.jsync.swing.controller;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -73,7 +72,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         // @formatter:off
         Callable<List<SyncItem>> callable = () -> getClient().generateSyncItems(fileSystem)
                 .index()
-                .delayElements(Duration.ofMillis(100))
+                //.delayElements(Duration.ofMillis(10))
                 .doOnNext(tuple -> getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + (tuple.getT1() + 1)))
                 .map(Tuple2::getT2)
                 .doFinally(signal -> getSyncView().setProgressBarIndeterminate(fileSystem, false))
@@ -165,7 +164,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
             syncPair.validateStatus();
         }
 
-        getSyncView().updateLastEntry();
+        // getSyncView().updateLastEntry();
 
         return null;
     }
