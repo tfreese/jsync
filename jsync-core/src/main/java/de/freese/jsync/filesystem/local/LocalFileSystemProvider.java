@@ -5,7 +5,9 @@ import java.net.URI;
 
 import de.freese.jsync.filesystem.FileSystemProvider;
 import de.freese.jsync.filesystem.Receiver;
+import de.freese.jsync.filesystem.ReceiverDelegateLogger;
 import de.freese.jsync.filesystem.Sender;
+import de.freese.jsync.filesystem.SenderDelegateLogger;
 
 /**
  * @author Thomas Freese
@@ -18,7 +20,7 @@ public class LocalFileSystemProvider implements FileSystemProvider
     @Override
     public Receiver createReceiver(final URI uri)
     {
-        return new LocalhostReceiver();
+        return new ReceiverDelegateLogger(new LocalhostReceiver());
     }
 
     /**
@@ -27,7 +29,7 @@ public class LocalFileSystemProvider implements FileSystemProvider
     @Override
     public Sender createSender(final URI uri)
     {
-        return new LocalhostSender();
+        return new SenderDelegateLogger(new LocalhostSender());
     }
 
     /**

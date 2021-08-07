@@ -52,8 +52,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
-        getLogger().info("create: {}/{}", baseDir, relativePath);
-
         Path path = Paths.get(baseDir, relativePath);
 
         try
@@ -75,8 +73,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        getLogger().info("delete: {}/{}", baseDir, relativePath);
-
         Path path = Paths.get(baseDir, relativePath);
 
         try
@@ -105,8 +101,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        getLogger().info("update: {}/{}", baseDir, syncItem.getRelativePath());
-
         Path path = Paths.get(baseDir, syncItem.getRelativePath());
 
         // In der Form "rwxr-xr-x"; optional, kann unter Windows null sein.
@@ -155,8 +149,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer checksumBytesReadConsumer)
     {
-        getLogger().info("validate file: {}/{}, withChecksum={}", baseDir, syncItem.getRelativePath(), withChecksum);
-
         Path path = Paths.get(baseDir, syncItem.getRelativePath());
 
         try
@@ -192,8 +184,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
-        getLogger().info("write file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
-
         Path path = Paths.get(baseDir, relativeFile);
         Path parentPath = path.getParent();
 

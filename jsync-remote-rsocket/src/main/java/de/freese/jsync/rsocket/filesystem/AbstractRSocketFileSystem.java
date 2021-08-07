@@ -145,8 +145,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead, final JSyncCommand command)
     {
-        getLogger().info("create checksum: {}/{}", baseDir, relativeFile);
-
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, command);
 
@@ -178,8 +176,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer, final JSyncCommand command)
     {
-        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
-
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, command);
 
@@ -216,8 +212,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final JSyncCommand command)
     {
-        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
-
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, command);
 

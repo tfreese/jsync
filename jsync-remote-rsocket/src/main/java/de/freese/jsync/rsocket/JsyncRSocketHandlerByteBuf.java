@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.Receiver;
+import de.freese.jsync.filesystem.ReceiverDelegateLogger;
 import de.freese.jsync.filesystem.Sender;
+import de.freese.jsync.filesystem.SenderDelegateLogger;
 import de.freese.jsync.filesystem.local.LocalhostReceiver;
 import de.freese.jsync.filesystem.local.LocalhostSender;
 import de.freese.jsync.model.JSyncCommand;
@@ -58,7 +60,7 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
         @Override
         protected Receiver create()
         {
-            return new LocalhostReceiver();
+            return new ReceiverDelegateLogger(new LocalhostReceiver());
         }
     };
 
@@ -73,7 +75,7 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
         @Override
         protected Sender create()
         {
-            return new LocalhostSender();
+            return new SenderDelegateLogger(new LocalhostSender());
         }
     };
 

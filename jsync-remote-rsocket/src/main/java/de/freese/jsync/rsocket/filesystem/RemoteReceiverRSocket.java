@@ -35,8 +35,6 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
-        getLogger().info("create: {}/{}", baseDir, relativePath);
-
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_CREATE_DIRECTORY);
 
@@ -66,8 +64,6 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        getLogger().info("delete: {}/{}", baseDir, relativePath);
-
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_DELETE);
 
@@ -125,8 +121,6 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        getLogger().info("update: {}/{}", baseDir, syncItem.getRelativePath());
-
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_UPDATE);
 
@@ -156,8 +150,6 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer checksumBytesReadConsumer)
     {
-        getLogger().info("validate file: {}/{}, withChecksum={}", baseDir, syncItem.getRelativePath(), withChecksum);
-
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_VALIDATE_FILE);
 
@@ -188,8 +180,6 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
-        getLogger().info("write file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
-
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_WRITE_FILE);
 

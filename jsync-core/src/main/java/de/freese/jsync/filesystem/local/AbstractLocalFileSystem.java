@@ -22,11 +22,7 @@ public abstract class AbstractLocalFileSystem extends AbstractFileSystem
     @Override
     public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead)
     {
-        getLogger().info("create checksum: {}/{}", baseDir, relativeFile);
-
-        String checksum = getGenerator().generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead);
-
-        return checksum;
+        return getGenerator().generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead);
     }
 
     /**
@@ -35,8 +31,6 @@ public abstract class AbstractLocalFileSystem extends AbstractFileSystem
     @Override
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
     {
-        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
-
         return getGenerator().generateItems(baseDir, followSymLinks);
     }
 
@@ -46,8 +40,6 @@ public abstract class AbstractLocalFileSystem extends AbstractFileSystem
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer)
     {
-        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
-
         getGenerator().generateItems(baseDir, followSymLinks, consumer);
     }
 }

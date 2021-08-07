@@ -62,8 +62,6 @@ public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Se
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        getLogger().info("read file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
-
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, JSyncCommand.SOURCE_READ_FILE);
 
