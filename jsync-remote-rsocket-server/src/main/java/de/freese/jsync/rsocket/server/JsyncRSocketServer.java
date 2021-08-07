@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.freese.jsync.rsocket.JsyncRSocketHandlerByteBuf;
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
@@ -86,12 +87,10 @@ public final class JsyncRSocketServer
         // Hooks.onErrorDropped(th -> {
         // });
 
-        SocketAcceptor socketAcceptor = SocketAcceptor.with(new JsyncRSocketHandler());
-
         // @formatter:off
         this.server = RSocketBuilders.serverRemote()
                 .socketAddress(new InetSocketAddress(port))
-                .socketAcceptor(socketAcceptor)
+                .socketAcceptor(SocketAcceptor.with(new JsyncRSocketHandlerByteBuf()))
                 .resumeDefault()
                 .logTcpServerBoundStatus()
                 .logger(LOGGER)

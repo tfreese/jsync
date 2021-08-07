@@ -168,9 +168,19 @@ public class ByteBufferPool extends Pool<ByteBuffer>
     @Override
     public ByteBuffer obtain()
     {
+        return obtain(Options.BUFFER_SIZE);
+    }
+
+    /**
+     * @param size int
+     *
+     * @return {@link ByteBuffer}
+     */
+    public ByteBuffer obtain(final int size)
+    {
         ByteBuffer byteBuffer = super.obtain();
 
-        byteBuffer = ensureCapacity(byteBuffer, Options.BUFFER_SIZE);
+        byteBuffer = ensureCapacity(byteBuffer, size);
 
         byteBuffer.clear();
 

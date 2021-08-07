@@ -62,20 +62,23 @@ public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Se
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
-        getSerializer().writeTo(byteBufMeta, JSyncCommand.SOURCE_READ_FILE);
+        getLogger().info("read file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
-        ByteBuffer byteBufData = getByteBufferPool().obtain();
-        getSerializer().writeTo(byteBufData, baseDir);
-        getSerializer().writeTo(byteBufData, relativeFile);
-        getSerializer().writeTo(byteBufData, sizeOfFile);
+        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        getSerializer().writeTo(bufferMeta, JSyncCommand.SOURCE_READ_FILE);
+
+        ByteBuffer bufferData = getByteBufferPool().obtain();
+        getSerializer().writeTo(bufferData, baseDir);
+        getSerializer().writeTo(bufferData, relativeFile);
+        getSerializer().writeTo(bufferData, sizeOfFile);
 
         // @formatter:off
         return getClient()
-            .requestStream(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
-                getByteBufferPool().free(byteBufMeta);
-                getByteBufferPool().free(byteBufData);
-                })
+            .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                    .doOnSubscribe(subscription -> {
+                        getByteBufferPool().free(bufferMeta);
+                        getByteBufferPool().free(bufferData);
+                    })
             )
             .map(Payload::getData)
             .doOnError(th -> getLogger().error(null, th))

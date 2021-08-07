@@ -148,7 +148,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      */
     protected Client getClient()
     {
-        return this.controller.getClient();
+        return getController().getClient();
     }
 
     /**
@@ -180,7 +180,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      */
     protected SyncView getSyncView()
     {
-        return this.controller.getSyncView();
+        return getController().getSyncView();
     }
 
     /**

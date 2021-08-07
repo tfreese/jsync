@@ -21,7 +21,7 @@ abstract class AbstractAccumulativeSink
     /**
      *
      */
-    private static final Duration DEFAULT_DURATION = Duration.ofMillis(250);
+    private static final Duration DEFAULT_DURATION = Duration.ofMillis(100);
 
     /**
      * @param <T> Type

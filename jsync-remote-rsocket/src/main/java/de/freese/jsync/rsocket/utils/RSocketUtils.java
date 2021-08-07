@@ -23,14 +23,16 @@ public final class RSocketUtils
             return;
         }
 
-        if (payload.refCnt() > 2)
-        {
-            payload.release();
-        }
-        else
-        {
-            payload.retain();
-        }
+        payload.release(payload.refCnt());
+
+        // if (payload.refCnt() > 2)
+        // {
+        // payload.release();
+        // }
+        // else
+        // {
+        // payload.retain();
+        // }
     }
 
     /**
@@ -41,15 +43,15 @@ public final class RSocketUtils
      */
     public static int write(final Payload payload, final WritableByteChannel channel)
     {
-        ByteBuffer byteBuffer = payload.getData();
+        ByteBuffer buffer = payload.getData();
 
         int bytesWritten = 0;
 
         try
         {
-            while (byteBuffer.hasRemaining())
+            while (buffer.hasRemaining())
             {
-                bytesWritten += channel.write(byteBuffer);
+                bytesWritten += channel.write(buffer);
             }
         }
         catch (IOException ex)

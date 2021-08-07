@@ -134,21 +134,21 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     }
 
     /**
-     * @param byteBuffer {@link ByteBuffer}
+     * @param buffer {@link ByteBuffer}
      */
     @Override
-    protected void hookOnNext(final ByteBuffer byteBuffer)
+    protected void hookOnNext(final ByteBuffer buffer)
     {
         try
         {
-            long limit = byteBuffer.limit();
+            long limit = buffer.limit();
 
-            while (byteBuffer.hasRemaining())
+            while (buffer.hasRemaining())
             {
-                this.channel.write(byteBuffer);
+                this.channel.write(buffer);
             }
 
-            ByteBufferPool.getInstance().free(byteBuffer);
+            ByteBufferPool.getInstance().free(buffer);
 
             this.sink.next(limit);
             request(1);

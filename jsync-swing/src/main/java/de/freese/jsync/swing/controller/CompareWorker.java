@@ -10,6 +10,7 @@ import java.util.concurrent.RunnableFuture;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 import reactor.util.function.Tuple2;
 
 /**
@@ -26,16 +27,18 @@ public class CompareWorker extends AbstractWorker<Void, Void>
     {
         super(controller);
 
-        controller.getSyncView().doOnCompare(button -> button.setEnabled(false));
-        controller.getSyncView().doOnSyncronize(button -> button.setEnabled(false));
+        getSyncView().doOnCompare(button -> button.setEnabled(false));
+        getSyncView().doOnSyncronize(button -> button.setEnabled(false));
 
-        controller.getSyncView().clearTable();
+        getSyncView().clearTable();
 
-        controller.getSyncView().addProgressBarText(EFileSystem.SENDER, "");
-        controller.getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, true);
-        controller.getSyncView().addProgressBarText(EFileSystem.RECEIVER, "");
-        controller.getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, true);
-        controller.getSyncView().setProgressBarFilesMax(0);
+        getSyncView().addProgressBarText(EFileSystem.SENDER, "");
+        getSyncView().addProgressBarText(EFileSystem.RECEIVER, "");
+
+        getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, true);
+        getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, true);
+
+        getSyncView().setProgressBarFilesMax(0);
     }
 
     /**
@@ -52,10 +55,17 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         }
 
         Runnable runnable = () -> {
-            getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
-                    getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
+            getSyncView().addProgressBarText(fileSystem, getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
 
-            String checksum = getClient().generateChecksum(fileSystem, syncItem, bytesRead -> getSyncView().addProgressBarValue(fileSystem, (int) bytesRead));
+            String checksum = getClient().generateChecksum(fileSystem, syncItem, bytesRead -> {
+                if (bytesRead == 0)
+                {
+                    getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
+                            getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
+                }
+
+                getSyncView().addProgressBarValue(fileSystem, (int) bytesRead);
+            });
             syncItem.setChecksum(checksum);
         };
 
@@ -75,7 +85,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
                 //.delayElements(Duration.ofMillis(10))
                 .doOnNext(tuple -> getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + (tuple.getT1() + 1)))
                 .map(Tuple2::getT2)
-                .doFinally(signal -> getSyncView().setProgressBarIndeterminate(fileSystem, false))
+                //.doFinally(signal -> getSyncView().setProgressBarIndeterminate(fileSystem, false))
                 .collectList()
                 .block();
         // @formatter:on
@@ -98,7 +108,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
                 getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + syncItems.size());
             });
 
-            getSyncView().setProgressBarIndeterminate(fileSystem, false);
+            // getSyncView().setProgressBarIndeterminate(fileSystem, false);
 
             return syncItems;
         };
@@ -175,6 +185,9 @@ public class CompareWorker extends AbstractWorker<Void, Void>
     @Override
     protected void done()
     {
+        ByteBufferPool pool = ByteBufferPool.getInstance();
+        getLogger().info("ByteBufferPool: created={}, free={}, peak={}", pool.getCreated(), pool.getFree(), pool.getPeak());
+
         try
         {
             get();
@@ -186,6 +199,10 @@ public class CompareWorker extends AbstractWorker<Void, Void>
 
         getSyncView().doOnCompare(button -> button.setEnabled(true));
         getSyncView().doOnSyncronize(button -> button.setEnabled(true));
+
+        getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, false);
+        getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, false);
+
         getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
         getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
     }

@@ -50,26 +50,19 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected void connect(final URI uri, final Function<TcpClient, TcpClient> tcpClientCustomizer)
     {
-        // @formatter:off
-        this.client = RSocketBuilders.clientRemote()
-                .remoteAddress(new InetSocketAddress(uri.getHost(), uri.getPort()))
-                .resumeDefault()
-                .retryDefault()
-                .logTcpClientBoundStatus()
-                .logger(getLogger())
-                .addTcpClientCustomizer(tcpClientCustomizer)
-                .build()
-                ;
-        // @formatter:on
+        this.client = createClientRemote(uri, tcpClientCustomizer);
+        // this.client = createClientLocal(uri, tcpClientCustomizer);
 
         // Connect an den Server schicken.
-        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
+        ByteBuffer bufferMeta = getByteBufferPool().obtain();
 
-        getSerializer().writeTo(byteBufMeta, JSyncCommand.CONNECT);
+        getSerializer().writeTo(bufferMeta, JSyncCommand.CONNECT);
 
         // @formatter:off
         this.client
-            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, byteBufMeta.flip())).doOnSubscribe(subscription -> getByteBufferPool().free(byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
+                    .doOnSubscribe(subscription -> getByteBufferPool().free(bufferMeta))
+            )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
@@ -80,20 +73,60 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     }
 
     /**
+     * @param uri {@link URI}
+     * @param tcpClientCustomizer {@link Function}
+     *
+     * @return {@link RSocketClient}
+     */
+    protected RSocketClient createClientLocal(final URI uri, final Function<TcpClient, TcpClient> tcpClientCustomizer)
+    {
+        // @formatter:off
+        return RSocketBuilders.clientLocal()
+                .name("jsync")
+                .logger(getLogger())
+                .build()
+                ;
+        // @formatter:on
+    }
+
+    /**
+     * @param uri {@link URI}
+     * @param tcpClientCustomizer {@link Function}
+     *
+     * @return {@link RSocketClient}
+     */
+    protected RSocketClient createClientRemote(final URI uri, final Function<TcpClient, TcpClient> tcpClientCustomizer)
+    {
+        // @formatter:off
+        return RSocketBuilders.clientRemote()
+                .remoteAddress(new InetSocketAddress(uri.getHost(), uri.getPort()))
+                .resumeDefault()
+                .retryDefault()
+                .logTcpClientBoundStatus()
+                .logger(getLogger())
+                .addTcpClientCustomizer(tcpClientCustomizer)
+                .build()
+                ;
+        // @formatter:on
+    }
+
+    /**
      * @see de.freese.jsync.filesystem.FileSystem#disconnect()
      */
     @Override
     public void disconnect()
     {
-        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
-        getSerializer().writeTo(byteBufMeta, JSyncCommand.DISCONNECT);
+        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        getSerializer().writeTo(bufferMeta, JSyncCommand.DISCONNECT);
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, byteBufMeta.flip())).doOnSubscribe(subscription -> getByteBufferPool().free(byteBufMeta)))
+            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
+                    .doOnSubscribe(subscription -> getByteBufferPool().free(bufferMeta))
+            )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(null, th))
+            .doOnError(th -> getLogger().warn(th.getMessage()))
             .block()
             ;
         // @formatter:on
@@ -112,19 +145,22 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead, final JSyncCommand command)
     {
-        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
-        getSerializer().writeTo(byteBufMeta, command);
+        getLogger().info("create checksum: {}/{}", baseDir, relativeFile);
 
-        ByteBuffer byteBufData = getByteBufferPool().obtain();
-        getSerializer().writeTo(byteBufData, baseDir);
-        getSerializer().writeTo(byteBufData, relativeFile);
+        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        getSerializer().writeTo(bufferMeta, command);
+
+        ByteBuffer bufferData = getByteBufferPool().obtain();
+        getSerializer().writeTo(bufferData, baseDir);
+        getSerializer().writeTo(bufferData, relativeFile);
 
         // @formatter:off
         return getClient()
-                .requestResponse(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
-                    getByteBufferPool().free(byteBufMeta);
-                    getByteBufferPool().free(byteBufData);
-                    })
+                .requestResponse(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                        .doOnSubscribe(subscription -> {
+                            getByteBufferPool().free(bufferMeta);
+                            getByteBufferPool().free(bufferData);
+                        })
                 )
                 .map(Payload::getDataUtf8)
                 .doOnNext(getLogger()::debug)
@@ -142,25 +178,28 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer, final JSyncCommand command)
     {
-        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
-        getSerializer().writeTo(byteBufMeta, command);
+        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
-        ByteBuffer byteBufData = getByteBufferPool().obtain();
-        getSerializer().writeTo(byteBufData, baseDir);
-        getSerializer().writeTo(byteBufData, followSymLinks);
+        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        getSerializer().writeTo(bufferMeta, command);
+
+        ByteBuffer bufferData = getByteBufferPool().obtain();
+        getSerializer().writeTo(bufferData, baseDir);
+        getSerializer().writeTo(bufferData, followSymLinks);
 
         // @formatter:off
         getClient()
-            .requestStream(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
-                getByteBufferPool().free(byteBufMeta);
-                getByteBufferPool().free(byteBufData);
-                })
+            .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                    .doOnSubscribe(subscription -> {
+                        getByteBufferPool().free(bufferMeta);
+                        getByteBufferPool().free(bufferData);
+                    })
             )
             .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf -> in anderen Thread auslagern sonst knallts !
             .doOnError(th -> getLogger().error(null, th))
             .doOnNext(payload -> {
-                ByteBuffer byteBuf = payload.getData();
-                SyncItem syncItem = getSerializer().readFrom(byteBuf, SyncItem.class);
+                ByteBuffer buffer = payload.getData();
+                SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
                 consumer.accept(syncItem);
             })
             .blockLast()
@@ -177,25 +216,28 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final JSyncCommand command)
     {
-        ByteBuffer byteBufMeta = getByteBufferPool().obtain();
-        getSerializer().writeTo(byteBufMeta, command);
+        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
-        ByteBuffer byteBufData = getByteBufferPool().obtain();
-        getSerializer().writeTo(byteBufData, baseDir);
-        getSerializer().writeTo(byteBufData, followSymLinks);
+        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        getSerializer().writeTo(bufferMeta, command);
+
+        ByteBuffer bufferData = getByteBufferPool().obtain();
+        getSerializer().writeTo(bufferData, baseDir);
+        getSerializer().writeTo(bufferData, followSymLinks);
 
         // @formatter:off
         return getClient()
-            .requestStream(Mono.just(DefaultPayload.create(byteBufData.flip(), byteBufMeta.flip())).doOnSubscribe(subscription -> {
-                getByteBufferPool().free(byteBufMeta);
-                getByteBufferPool().free(byteBufData);
-                })
+            .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                    .doOnSubscribe(subscription -> {
+                        getByteBufferPool().free(bufferMeta);
+                        getByteBufferPool().free(bufferData);
+                    })
             )
             .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf -> in anderen Thread auslagern sonst knallts !
             .doOnError(th -> getLogger().error(null, th))
             .map(payload -> {
-                ByteBuffer byteBuf = payload.getData();
-                return getSerializer().readFrom(byteBuf, SyncItem.class);
+                ByteBuffer buffer = payload.getData();
+                return getSerializer().readFrom(buffer, SyncItem.class);
             })
             ;
         // @formatter:on

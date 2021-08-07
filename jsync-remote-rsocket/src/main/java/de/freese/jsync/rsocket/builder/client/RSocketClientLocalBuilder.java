@@ -26,9 +26,11 @@ public class RSocketClientLocalBuilder extends AbstractRSocketClientBuilder<RSoc
     @Override
     public RSocketClient build()
     {
+        Objects.requireNonNull(this.name, "name required");
+
         RSocketConnector rSocketConnector = configure(RSocketConnector.create());
 
-        ClientTransport clientTransport = LocalClientTransport.create(Objects.requireNonNull(this.name, "name required"));
+        ClientTransport clientTransport = LocalClientTransport.create(this.name);
 
         Mono<RSocket> rSocket = rSocketConnector.connect(clientTransport);
 

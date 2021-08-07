@@ -51,11 +51,7 @@ public class JsyncController
      */
     void createNewClient(final Options options, final URI senderUri, final URI receiverUri)
     {
-        if (this.client != null)
-        {
-            this.client.disconnectFileSystems();
-            this.client = null;
-        }
+        shutdownClient();
 
         this.client = new DefaultClient(options, senderUri, receiverUri);
         this.client.connectFileSystems();
@@ -131,6 +127,14 @@ public class JsyncController
 
         getSyncView().saveState();
 
+        shutdownClient();
+    }
+
+    /**
+     *
+     */
+    void shutdownClient()
+    {
         if (this.client != null)
         {
             this.client.disconnectFileSystems();

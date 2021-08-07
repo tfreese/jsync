@@ -24,12 +24,13 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     {
         super(controller);
 
-        controller.getSyncView().doOnCompare(button -> button.setEnabled(false));
-        controller.getSyncView().doOnSyncronize(button -> button.setEnabled(false));
+        getSyncView().doOnCompare(button -> button.setEnabled(false));
+        getSyncView().doOnSyncronize(button -> button.setEnabled(false));
 
-        controller.getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
-        controller.getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
-        controller.getSyncView().setProgressBarFilesMax(0);
+        getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
+        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
+
+        getSyncView().setProgressBarFilesMax(0);
     }
 
     /**
@@ -109,7 +110,6 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
         getSyncView().doOnCompare(button -> button.setEnabled(true));
         getSyncView().doOnSyncronize(button -> button.setEnabled(true));
-        getClient().disconnectFileSystems();
     }
 
     /**

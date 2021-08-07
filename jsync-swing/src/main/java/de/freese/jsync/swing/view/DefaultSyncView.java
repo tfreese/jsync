@@ -261,9 +261,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
                 return;
             }
 
-            String protocol = (String) event.getItem();
+            JSyncProtocol protocol = (JSyncProtocol) event.getItem();
 
-            buttonOpenSender.setVisible("file".equals(protocol));
+            buttonOpenSender.setVisible(JSyncProtocol.FILE.equals(protocol));
         });
 
         comboboxReceiver.addItemListener(event -> {
@@ -272,9 +272,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
                 return;
             }
 
-            String protocol = (String) event.getItem();
+            JSyncProtocol protocol = (JSyncProtocol) event.getItem();
 
-            buttonOpenReceiver.setVisible("file".equals(protocol));
+            buttonOpenReceiver.setVisible(JSyncProtocol.FILE.equals(protocol));
         });
 
         buttonOpenSender.addActionListener(event -> {
@@ -710,6 +710,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         getTextField(EFileSystem.SENDER).setText(properties.getProperty("sender.textfield"));
         getTextField(EFileSystem.RECEIVER).setText(properties.getProperty("receiver.textfield"));
+
+        getComboBox(EFileSystem.SENDER).setSelectedItem(JSyncProtocol.valueOf(properties.getProperty("sender.protocol", "FILE")));
+        getComboBox(EFileSystem.RECEIVER).setSelectedItem(JSyncProtocol.valueOf(properties.getProperty("receiver.protocol", "FILE")));
     }
 
     /**
@@ -721,6 +724,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
         Properties properties = new Properties();
         properties.setProperty("sender.textfield", getTextField(EFileSystem.SENDER).getText());
         properties.setProperty("receiver.textfield", getTextField(EFileSystem.RECEIVER).getText());
+
+        properties.setProperty("sender.protocol", ((JSyncProtocol) getComboBox(EFileSystem.SENDER).getSelectedItem()).name());
+        properties.setProperty("receiver.protocol", ((JSyncProtocol) getComboBox(EFileSystem.RECEIVER).getSelectedItem()).name());
 
         try (OutputStream os = Files.newOutputStream(Paths.get(System.getProperty("user.dir"), ".jsyncGuiState"), StandardOpenOption.WRITE,
                 StandardOpenOption.TRUNCATE_EXISTING))

@@ -70,6 +70,7 @@
     <logger name="de.freese.jsync" level="INFO" />
     <logger name="de.freese.jsync.client" level="INFO" />
     <logger name="de.freese.jsync.swing.view.DefaultSyncView" level="INFO" />
+    <logger name="de.freese.jsync.rsocket" level="DEBUG" />
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

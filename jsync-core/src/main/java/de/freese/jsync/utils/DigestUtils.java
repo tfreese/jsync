@@ -143,31 +143,31 @@ public final class DigestUtils
             consumerBytesRead.accept(0);
         }
 
-        ByteBuffer byteBuffer = ByteBufferPool.getInstance().obtain();
+        ByteBuffer buffer = ByteBufferPool.getInstance().obtain();
 
         try
         {
             long bytesRead = 0;
 
-            while (readableByteChannel.read(byteBuffer) != -1)
+            while (readableByteChannel.read(buffer) != -1)
             {
-                bytesRead += byteBuffer.position();
+                bytesRead += buffer.position();
 
                 if (consumerBytesRead != null)
                 {
                     consumerBytesRead.accept(bytesRead);
                 }
 
-                byteBuffer.flip();
-                messageDigest.update(byteBuffer);
-                byteBuffer.clear();
+                buffer.flip();
+                messageDigest.update(buffer);
+                buffer.clear();
             }
 
             bytes = messageDigest.digest();
         }
         finally
         {
-            ByteBufferPool.getInstance().free(byteBuffer);
+            ByteBufferPool.getInstance().free(buffer);
         }
 
         return bytes;

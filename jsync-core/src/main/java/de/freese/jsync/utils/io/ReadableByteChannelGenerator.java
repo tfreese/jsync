@@ -40,15 +40,15 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
     public void accept(final SynchronousSink<ByteBuffer> sink)
     {
         boolean release = true;
-        ByteBuffer byteBuffer = ByteBufferPool.getInstance().obtain();
+        ByteBuffer buffer = ByteBufferPool.getInstance().obtain();
 
         try
         {
-            if (this.channel.read(byteBuffer) >= 0)
+            if (this.channel.read(buffer) >= 0)
             {
                 release = false;
-                byteBuffer.flip();
-                sink.next(byteBuffer);
+                buffer.flip();
+                sink.next(buffer);
             }
             else
             {
@@ -63,7 +63,7 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
         {
             if (release)
             {
-                ByteBufferPool.getInstance().free(byteBuffer);
+                ByteBufferPool.getInstance().free(buffer);
             }
         }
     }

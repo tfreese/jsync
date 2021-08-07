@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import javax.swing.SwingUtilities;
 
 import de.freese.jsync.swing.messages.Messages;
+import reactor.core.publisher.Hooks;
 
 /**
  * @author Thomas Freese
@@ -41,6 +42,18 @@ public final class JsyncSwingLauncher
 
         // Um Comparator Fehler zu vermeiden.
         // System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
+        Hooks.onErrorDropped(th -> JSyncSwing.getLogger().warn(th.getMessage()));
+
+//        // @formatter:off
+//        RSocketBuilders.serverLocal()
+//            .name("jsync")
+//            .socketAcceptor(SocketAcceptor.with(new JsyncRSocketHandlerByteBuf()))
+//            .logger(JSyncSwing.getLogger())
+//            .build()
+//            .block()
+//            ;
+//        // @formatter:on
 
         SwingUtilities.invokeLater(() -> {
             try
