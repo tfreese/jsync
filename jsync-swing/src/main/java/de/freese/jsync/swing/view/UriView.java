@@ -125,6 +125,7 @@ class UriView
         this.comboBox.setName(this.panel.getName() + "-comboBox");
         this.comboBox.addItem(JSyncProtocol.FILE);
         this.comboBox.addItem(JSyncProtocol.RSOCKET);
+        this.comboBox.addItem(JSyncProtocol.RSOCKET_LOCAL);
         this.comboBox.setPreferredSize(new Dimension(100, 25));
         this.panel.add(this.comboBox, new GbcBuilder(0, row));
 

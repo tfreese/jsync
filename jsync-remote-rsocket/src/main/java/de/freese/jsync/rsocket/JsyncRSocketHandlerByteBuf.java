@@ -1,8 +1,8 @@
 // Created: 19.10.2020
 package de.freese.jsync.rsocket;
 
-import java.nio.ByteBuffer;
 import java.util.function.Consumer;
+import java.util.function.LongConsumer;
 
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -92,18 +92,21 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
      *
      * @return {@link Mono}
      */
-    private Mono<Payload> checksum(final Payload payload, final FileSystem fileSystem)
+    private Flux<Payload> checksum(final Payload payload, final FileSystem fileSystem)
     {
         ByteBuf bufferData = payload.data();
 
         String baseDir = getSerializer().readFrom(bufferData, String.class);
         String relativeFile = getSerializer().readFrom(bufferData, String.class);
 
-        String checksum = fileSystem.generateChecksum(baseDir, relativeFile, null);
+        return Flux.create(sink -> {
+            LongConsumer consumer = checksumBytesRead -> sink.next(ByteBufPayload.create(Long.toString(checksumBytesRead)));
 
-        Payload responsePayload = ByteBufPayload.create(checksum);
+            String checksum = fileSystem.generateChecksum(baseDir, relativeFile, consumer);
+            sink.next(ByteBufPayload.create(checksum));
 
-        return Mono.just(responsePayload);// .doFinally(signalType -> RSocketUtils.release(responsePayload));
+            sink.complete();
+        });
     }
 
     /**
@@ -238,10 +241,8 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
         String relativeFile = getSerializer().readFrom(bufferData, String.class);
         long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
 
-        Flux<ByteBuffer> fileFlux = sender.readFile(baseDir, relativeFile, sizeOfFile);
-
         // @formatter:off
-        return fileFlux
+        return sender.readFile(baseDir, relativeFile, sizeOfFile)
                 .map(DefaultPayload::create)
                 ;
         // @formatter:on
@@ -305,8 +306,6 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
             {
                 case CONNECT -> connect();
                 case DISCONNECT -> disconnect();
-                case SOURCE_CHECKSUM -> checksum(payload, sender);
-                case TARGET_CHECKSUM -> checksum(payload, receiver);
                 case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
                 case TARGET_DELETE -> delete(payload, receiver);
                 case TARGET_UPDATE -> update(payload, receiver);
@@ -348,8 +347,10 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
 
             return switch (command)
             {
+                case SOURCE_CHECKSUM -> checksum(payload, sender);
                 case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
                 case SOURCE_READ_FILE -> readFile(payload, sender);
+                case TARGET_CHECKSUM -> checksum(payload, receiver);
                 case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
 
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);

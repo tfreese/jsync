@@ -60,6 +60,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
             String checksum = getClient().generateChecksum(fileSystem, syncItem, bytesRead -> {
                 if (bytesRead == 0)
                 {
+                    getSyncView().setProgressBarIndeterminate(fileSystem, false);
                     getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
                             getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
                 }

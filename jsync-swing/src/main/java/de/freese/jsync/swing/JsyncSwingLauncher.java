@@ -45,15 +45,7 @@ public final class JsyncSwingLauncher
 
         Hooks.onErrorDropped(th -> JSyncSwing.getLogger().warn(th.getMessage()));
 
-//        // @formatter:off
-//        RSocketBuilders.serverLocal()
-//            .name("jsync")
-//            .socketAcceptor(SocketAcceptor.with(new JsyncRSocketHandlerByteBuf()))
-//            .logger(JSyncSwing.getLogger())
-//            .build()
-//            .block()
-//            ;
-//        // @formatter:on
+        JsyncContext.startLocalRsocketServer();
 
         SwingUtilities.invokeLater(() -> {
             try

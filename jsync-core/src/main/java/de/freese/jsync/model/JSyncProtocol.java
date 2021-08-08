@@ -10,9 +10,12 @@ public enum JSyncProtocol
      *
      */
     FILE,
-
     /**
      *
      */
-    RSOCKET
+    RSOCKET,
+    /**
+    *
+    */
+    RSOCKET_LOCAL
 }

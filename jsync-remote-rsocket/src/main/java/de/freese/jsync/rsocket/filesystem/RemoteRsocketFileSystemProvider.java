@@ -38,6 +38,6 @@ public class RemoteRsocketFileSystemProvider implements FileSystemProvider
     @Override
     public boolean supportsProtocol(final URI uri)
     {
-        return "rsocket".equals(uri.getScheme());
+        return "rsocket".equals(uri.getScheme()) || "rsocketLocal".equals(uri.getScheme());
     }
 }

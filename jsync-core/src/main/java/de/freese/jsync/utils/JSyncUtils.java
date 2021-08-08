@@ -567,10 +567,21 @@ public final class JSyncUtils
         else if (JSyncProtocol.RSOCKET.equals(protocol))
         {
             String[] splits = path.split("[\\/]", 2);
-            String host = splits[0];
+            String hostAndPort = splits[0];
             String p = splits[1];
 
-            return URI.create("rsocket://" + host + "/" + p.replace(" ", "%20"));
+            URI uri = Paths.get("/" + p).toUri();
+
+            return URI.create("rsocket://" + hostAndPort + uri.getRawPath());
+
+            //
+            // return URI.create("rsocket://" + host + "/" + p.replace(" ", "%20"));
+        }
+        else if (JSyncProtocol.RSOCKET_LOCAL.equals(protocol))
+        {
+            URI uri = Paths.get(path).toUri();
+
+            return URI.create("rsocketLocal://" + uri.getRawPath());
         }
 
         throw new IllegalArgumentException("unsupported protocol: " + protocol);

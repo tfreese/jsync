@@ -6,7 +6,12 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.swing.JFrame;
 
+import de.freese.jsync.rsocket.JsyncRSocketHandlerByteBuf;
+import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import de.freese.jsync.swing.messages.Messages;
+import de.freese.jsync.utils.JSyncUtils;
+import io.rsocket.Closeable;
+import io.rsocket.SocketAcceptor;
 
 /**
  * @author Thomas Freese
@@ -27,6 +32,11 @@ public final class JsyncContext
     *
     */
     private static Messages messages;
+
+    /**
+     *
+     */
+    private static Closeable rsocketServerLocal;
 
     /**
     *
@@ -95,6 +105,45 @@ public final class JsyncContext
     static void setScheduledExecutorService(final ScheduledExecutorService scheduledExecutorService)
     {
         JsyncContext.scheduledExecutorService = scheduledExecutorService;
+    }
+
+    /**
+    *
+    */
+    public static void shutdown()
+    {
+        if (rsocketServerLocal != null)
+        {
+            rsocketServerLocal.dispose();
+            rsocketServerLocal = null;
+        }
+
+        JSyncUtils.shutdown(executorService, JSyncSwing.getLogger());
+        JSyncUtils.shutdown(scheduledExecutorService, JSyncSwing.getLogger());
+
+        executorService = null;
+        scheduledExecutorService = null;
+        messages = null;
+        mainFrame = null;
+    }
+
+    /**
+     *
+     */
+    public static void startLocalRsocketServer()
+    {
+        if (rsocketServerLocal == null)
+        {
+          // @formatter:off
+            rsocketServerLocal = RSocketBuilders.serverLocal()
+              .name("jsync")
+              .socketAcceptor(SocketAcceptor.with(new JsyncRSocketHandlerByteBuf()))
+              .logger(JSyncSwing.getLogger())
+              .build()
+              .block()
+              ;
+          // @formatter:on
+        }
     }
 
     /**

@@ -21,12 +21,17 @@ import reactor.netty.resources.LoopResources;
 public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements Receiver
 {
     /**
+     * Dürfen nur einmal erzeugt werden.
+     */
+    private static final LoopResources LOOP_RESOURCES = LoopResources.create("receiver", 4, true);
+
+    /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
      */
     @Override
     public void connect(final URI uri)
     {
-        connect(uri, tcpClient -> tcpClient.runOn(LoopResources.create("client-receiver", 4, true)));
+        connect(uri, tcpClient -> tcpClient.runOn(LOOP_RESOURCES));
     }
 
     /**

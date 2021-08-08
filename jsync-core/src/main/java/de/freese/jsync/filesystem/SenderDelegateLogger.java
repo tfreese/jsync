@@ -38,7 +38,15 @@ public class SenderDelegateLogger implements Sender
         super();
 
         this.delegate = Objects.requireNonNull(delegate, "delegate required");
-        this.logger = LoggerFactory.getLogger(this.delegate.getClass());
+
+        if (this.delegate instanceof AbstractFileSystem)
+        {
+            this.logger = ((AbstractFileSystem) this.delegate).getLogger();
+        }
+        else
+        {
+            this.logger = LoggerFactory.getLogger(this.delegate.getClass());
+        }
     }
 
     /**
@@ -47,7 +55,7 @@ public class SenderDelegateLogger implements Sender
     @Override
     public void connect(final URI uri)
     {
-        this.logger.info("connect to {}", uri);
+        getLogger().info("connect to {}", uri);
 
         this.delegate.connect(uri);
     }
@@ -58,7 +66,7 @@ public class SenderDelegateLogger implements Sender
     @Override
     public void disconnect()
     {
-        this.logger.info("disconnect");
+        getLogger().info("disconnect");
 
         this.delegate.disconnect();
     }
@@ -69,7 +77,7 @@ public class SenderDelegateLogger implements Sender
     @Override
     public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead)
     {
-        this.logger.info("create checksum: {}/{}", baseDir, relativeFile);
+        getLogger().info("create checksum: {}/{}", baseDir, relativeFile);
 
         return this.delegate.generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead);
     }
@@ -80,7 +88,7 @@ public class SenderDelegateLogger implements Sender
     @Override
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
     {
-        this.logger.info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
+        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
         return this.delegate.generateSyncItems(baseDir, followSymLinks);
     }
@@ -91,9 +99,17 @@ public class SenderDelegateLogger implements Sender
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer)
     {
-        this.logger.info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
+        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
         this.delegate.generateSyncItems(baseDir, followSymLinks, consumer);
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
     }
 
     /**
@@ -102,7 +118,7 @@ public class SenderDelegateLogger implements Sender
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        this.logger.info("read file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+        getLogger().info("read file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
         return this.delegate.readFile(baseDir, relativeFile, sizeOfFile);
     }

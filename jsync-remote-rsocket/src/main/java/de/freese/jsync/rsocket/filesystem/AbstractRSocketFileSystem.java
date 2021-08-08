@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.LongConsumer;
+import java.util.regex.Pattern;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.model.JSyncCommand;
@@ -30,6 +31,17 @@ import reactor.netty.tcp.TcpClient;
 public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 {
     /**
+     * -? – this part identifies if the given number is negative<br>
+     * the dash “–” searches for dash literally<br>
+     * the question mark “?” marks its presence as an optional one<br>
+     * \d+ – this searches for one or more digits<br>
+     * (\.\d+)? – this part of regex is to identify float numbers<br>
+     * Here we're searching for one or more digits followed by a period.<br>
+     * The question mark, in the end, signifies that this complete group is optional
+     */
+    private static final Pattern PATTERN_NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
+
+    /**
      *
      */
     private final ByteBufferPool byteBufferPool = ByteBufferPool.getInstance();
@@ -50,8 +62,14 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     protected void connect(final URI uri, final Function<TcpClient, TcpClient> tcpClientCustomizer)
     {
-        this.client = createClientRemote(uri, tcpClientCustomizer);
-        // this.client = createClientLocal(uri, tcpClientCustomizer);
+        if ("rsocket".equals(uri.getScheme()))
+        {
+            this.client = createClientRemote(uri, tcpClientCustomizer);
+        }
+        else
+        {
+            this.client = createClientLocal(uri, tcpClientCustomizer);
+        }
 
         // Connect an den Server schicken.
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
@@ -154,7 +172,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 
         // @formatter:off
         return getClient()
-                .requestResponse(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
                         .doOnSubscribe(subscription -> {
                             getByteBufferPool().free(bufferMeta);
                             getByteBufferPool().free(bufferData);
@@ -163,7 +181,13 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
                 .map(Payload::getDataUtf8)
                 .doOnNext(getLogger()::debug)
                 .doOnError(th -> getLogger().error(null, th))
-                .block()
+                .doOnNext(value -> {
+                    if(PATTERN_NUMBER.matcher(value).matches())
+                    {
+                        consumerChecksumBytesRead.accept(Long.parseLong(value));
+                    }
+                })
+                .blockLast()
                 ;
         // @formatter:on
     }

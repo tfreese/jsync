@@ -38,7 +38,15 @@ public class ReceiverDelegateLogger implements Receiver
         super();
 
         this.delegate = Objects.requireNonNull(delegate, "delegate required");
-        this.logger = LoggerFactory.getLogger(this.delegate.getClass());
+
+        if (this.delegate instanceof AbstractFileSystem)
+        {
+            this.logger = ((AbstractFileSystem) this.delegate).getLogger();
+        }
+        else
+        {
+            this.logger = LoggerFactory.getLogger(this.delegate.getClass());
+        }
     }
 
     /**
@@ -47,7 +55,7 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public void connect(final URI uri)
     {
-        this.logger.info("connect to {}", uri);
+        getLogger().info("connect to {}", uri);
 
         this.delegate.connect(uri);
     }
@@ -58,7 +66,7 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
-        this.logger.info("create: {}/{}", baseDir, relativePath);
+        getLogger().info("create: {}/{}", baseDir, relativePath);
 
         this.delegate.createDirectory(baseDir, relativePath);
     }
@@ -69,7 +77,7 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        this.logger.info("delete: {}/{}", baseDir, relativePath);
+        getLogger().info("delete: {}/{}", baseDir, relativePath);
 
         this.delegate.delete(baseDir, relativePath, followSymLinks);
     }
@@ -80,7 +88,7 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public void disconnect()
     {
-        this.logger.info("disconnect");
+        getLogger().info("disconnect");
 
         this.delegate.disconnect();
     }
@@ -91,7 +99,7 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead)
     {
-        this.logger.info("create checksum: {}/{}", baseDir, relativeFile);
+        getLogger().info("create checksum: {}/{}", baseDir, relativeFile);
 
         return this.delegate.generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead);
     }
@@ -102,7 +110,7 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
     {
-        this.logger.info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
+        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
         return this.delegate.generateSyncItems(baseDir, followSymLinks);
     }
@@ -113,9 +121,17 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer)
     {
-        this.logger.info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
+        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
         this.delegate.generateSyncItems(baseDir, followSymLinks, consumer);
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
     }
 
     /**
@@ -124,7 +140,7 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        this.logger.info("update: {}/{}", baseDir, syncItem.getRelativePath());
+        getLogger().info("update: {}/{}", baseDir, syncItem.getRelativePath());
 
         this.delegate.update(baseDir, syncItem);
     }
@@ -135,7 +151,7 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer checksumBytesReadConsumer)
     {
-        this.logger.info("validate file: {}/{}, withChecksum={}", baseDir, syncItem.getRelativePath(), withChecksum);
+        getLogger().info("validate file: {}/{}, withChecksum={}", baseDir, syncItem.getRelativePath(), withChecksum);
 
         this.delegate.update(baseDir, syncItem);
     }
@@ -146,7 +162,7 @@ public class ReceiverDelegateLogger implements Receiver
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
-        this.logger.info("write file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
+        getLogger().info("write file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
         return this.delegate.writeFile(baseDir, relativeFile, sizeOfFile, fileFlux);
     }

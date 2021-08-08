@@ -44,6 +44,7 @@ public final class JSyncSwing
         {
             getLogger().info("stop");
             JSyncSwing.this.controller.shutdown();
+            JsyncContext.shutdown();
 
             System.exit(0);
         }
