@@ -53,6 +53,11 @@ public class JsyncController
     {
         shutdownClient();
 
+        if ("rsocketLocal".equals(senderUri.getScheme()) || "rsocketLocal".equals(receiverUri.getScheme()))
+        {
+            JsyncContext.startLocalRsocketServer();
+        }
+
         this.client = new DefaultClient(options, senderUri, receiverUri);
         this.client.connectFileSystems();
     }

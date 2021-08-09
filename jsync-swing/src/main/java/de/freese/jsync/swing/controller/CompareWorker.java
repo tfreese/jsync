@@ -86,7 +86,6 @@ public class CompareWorker extends AbstractWorker<Void, Void>
                 //.delayElements(Duration.ofMillis(10))
                 .doOnNext(tuple -> getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + (tuple.getT1() + 1)))
                 .map(Tuple2::getT2)
-                //.doFinally(signal -> getSyncView().setProgressBarIndeterminate(fileSystem, false))
                 .collectList()
                 .block();
         // @formatter:on
@@ -108,8 +107,6 @@ public class CompareWorker extends AbstractWorker<Void, Void>
                 syncItems.add(syncItem);
                 getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + syncItems.size());
             });
-
-            // getSyncView().setProgressBarIndeterminate(fileSystem, false);
 
             return syncItems;
         };

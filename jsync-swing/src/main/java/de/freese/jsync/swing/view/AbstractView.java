@@ -85,6 +85,11 @@ public abstract class AbstractView
     }
 
     /**
+     * @return {@link Component}
+     */
+    abstract Component getComponent();
+
+    /**
      * @return {@link Logger}
      */
     protected Logger getLogger()

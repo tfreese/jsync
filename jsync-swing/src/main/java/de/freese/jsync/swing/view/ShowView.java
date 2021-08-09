@@ -14,14 +14,13 @@ import javax.swing.table.TableRowSorter;
 
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
-import de.freese.jsync.swing.JsyncContext;
 import de.freese.jsync.swing.components.SyncListTableModel;
 import de.freese.jsync.swing.util.GbcBuilder;
 
 /**
  * @author Thomas Freese
  */
-class ShowView
+class ShowView extends AbstractView
 {
     /**
      *
@@ -46,7 +45,7 @@ class ShowView
     /**
      *
      */
-    private final JPanel panel;
+    private final JPanel panel = new JPanel();
 
     /**
      *
@@ -54,31 +53,12 @@ class ShowView
     private Predicate<SyncPair> predicate = syncPair -> true;
 
     /**
-     * Erstellt ein neues {@link ShowView} Object.
+     * @see de.freese.jsync.swing.view.AbstractView#getComponent()
      */
-    ShowView()
-    {
-        super();
-
-        this.panel = new JPanel();
-    }
-
-    /**
-     * @return {@link JPanel}
-     */
+    @Override
     JPanel getComponent()
     {
         return this.panel;
-    }
-
-    /**
-     * @param key String
-     *
-     * @return String
-     */
-    private String getMessage(final String key)
-    {
-        return JsyncContext.getMessages().getString(key);
     }
 
     /**
@@ -92,10 +72,8 @@ class ShowView
     /**
      * @param table {@link JTable}
      * @param tableModel {@link SyncListTableModel}
-     *
-     * @return {@link ShowView}
      */
-    ShowView initGUI(final JTable table, final SyncListTableModel tableModel)
+    void initGUI(final JTable table, final SyncListTableModel tableModel)
     {
         this.panel.setName("showPanel");
         this.panel.setLayout(new GridBagLayout());
@@ -104,7 +82,7 @@ class ShowView
         TableRowSorter<SyncListTableModel> rowSorter = new TableRowSorter<>(tableModel);
 
         this.checkBoxSynchronized = new JCheckBox(getMessage("jsync.show.synchronized"), true);
-        this.checkBoxSynchronized.setName("showPanel.show.synchronized");
+        this.checkBoxSynchronized.setName(this.panel.getName() + ".synchronized");
         this.checkBoxSynchronized.setForeground(Color.BLACK);
         this.panel.add(this.checkBoxSynchronized, new GbcBuilder(0, 0).anchorWest());
         this.checkBoxSynchronized.addItemListener(event -> {
@@ -113,7 +91,7 @@ class ShowView
         });
 
         this.checkBoxOnlyInTarget = new JCheckBox(getMessage("jsync.show.onlyInTarget"), true);
-        this.checkBoxOnlyInTarget.setName("showPanel.show.onlyInTarget");
+        this.checkBoxOnlyInTarget.setName(this.panel.getName() + ".onlyInTarget");
         this.checkBoxOnlyInTarget.setForeground(Color.RED);
         this.panel.add(this.checkBoxOnlyInTarget, new GbcBuilder(0, 1).anchorWest());
         this.checkBoxOnlyInTarget.addItemListener(event -> {
@@ -122,7 +100,7 @@ class ShowView
         });
 
         this.checkBoxOnlyInSource = new JCheckBox(getMessage("jsync.show.onlyInSource"), true);
-        this.checkBoxOnlyInSource.setName("showPanel.show.onlyInSource");
+        this.checkBoxOnlyInSource.setName(this.panel.getName() + ".onlyInSource");
         this.checkBoxOnlyInSource.setForeground(Color.ORANGE.darker());
         this.panel.add(this.checkBoxOnlyInSource, new GbcBuilder(0, 2).anchorWest());
         this.checkBoxOnlyInSource.addItemListener(event -> {
@@ -131,7 +109,7 @@ class ShowView
         });
 
         this.checkBoxDifferent = new JCheckBox(getMessage("jsync.show.different"), true);
-        this.checkBoxDifferent.setName("showPanel.show.different");
+        this.checkBoxDifferent.setName(this.panel.getName() + ".different");
         this.checkBoxDifferent.setForeground(Color.ORANGE.darker());
         this.panel.add(this.checkBoxDifferent, new GbcBuilder(0, 3).anchorWest());
         this.checkBoxDifferent.addItemListener(event -> {
@@ -153,8 +131,6 @@ class ShowView
 
         rowSorter.setRowFilter(rowFilter);
         table.setRowSorter(rowSorter);
-
-        return this;
     }
 
     /**
