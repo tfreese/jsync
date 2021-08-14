@@ -1,7 +1,6 @@
 // Created: 19.10.2020
 package de.freese.jsync.rsocket;
 
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import org.reactivestreams.Publisher;
@@ -29,7 +28,6 @@ import io.rsocket.RSocket;
 import io.rsocket.util.ByteBufPayload;
 import io.rsocket.util.DefaultPayload;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 /**
@@ -189,16 +187,22 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
         String baseDir = getSerializer().readFrom(bufferData, String.class);
         boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
 
-        Consumer<FluxSink<SyncItem>> syncItemConsumer = sink -> {
-            fileSystem.generateSyncItems(baseDir, followSymLinks, sink::next);
-            sink.complete();
-        };
-
-        return Flux.create(syncItemConsumer).map(syncItem -> {
+        return fileSystem.generateSyncItems(baseDir, followSymLinks).map(syncItem -> {
             ByteBuf byteBuf = getByteBufAllocator().buffer();
             getSerializer().writeTo(byteBuf, syncItem);
             return byteBuf;
         }).map(ByteBufPayload::create);
+
+        // Consumer<FluxSink<SyncItem>> syncItemConsumer = sink -> {
+        // fileSystem.generateSyncItems(baseDir, followSymLinks, sink::next);
+        // sink.complete();
+        // };
+        //
+        // return Flux.create(syncItemConsumer).map(syncItem -> {
+        // ByteBuf byteBuf = getByteBufAllocator().buffer();
+        // getSerializer().writeTo(byteBuf, syncItem);
+        // return byteBuf;
+        // }).map(ByteBufPayload::create);
     }
 
     /**

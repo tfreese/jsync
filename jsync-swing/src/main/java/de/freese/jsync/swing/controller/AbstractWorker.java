@@ -86,7 +86,8 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
 
     /**
      * Parallel-Verabeitung aktivieren, wenn<br>
-     * - Sender und Receiver nicht auf dem gleichen File-Device laufen - Sender und Receiver nicht auf dem gleichen Server laufen
+     * - Sender und Receiver nicht auf dem gleichen File-Device laufen<br>
+     * - Sender und Receiver nicht auf dem gleichen Server laufen<br>
      *
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}

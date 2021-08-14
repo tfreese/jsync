@@ -21,11 +21,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-rsocket</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.rsocket</groupId>
-            <artifactId>rsocket-transport-netty</artifactId>
-        </dependency>                          
+        </dependency>                         
 
         <!-- runtime scope -->
         <dependency>
@@ -40,12 +36,7 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.rsocket</groupId>
-            <artifactId>rsocket-transport-local</artifactId>
-            <scope>test</scope>
-        </dependency>        
+        </dependency>       
     </dependencies>
 
 </project>

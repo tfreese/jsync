@@ -2,7 +2,6 @@
 package de.freese.jsync.swing;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 import javax.swing.JFrame;
 
@@ -39,11 +38,6 @@ public final class JsyncContext
     private static Closeable rsocketServerLocal;
 
     /**
-    *
-    */
-    private static ScheduledExecutorService scheduledExecutorService;
-
-    /**
      * @return {@link ExecutorService}
      */
     public static ExecutorService getExecutorService()
@@ -65,14 +59,6 @@ public final class JsyncContext
     public static Messages getMessages()
     {
         return messages;
-    }
-
-    /**
-     * @return {@link ScheduledExecutorService}
-     */
-    public static ScheduledExecutorService getScheduledExecutorService()
-    {
-        return scheduledExecutorService;
     }
 
     /**
@@ -100,14 +86,6 @@ public final class JsyncContext
     }
 
     /**
-     * @param scheduledExecutorService {@link ScheduledExecutorService}
-     */
-    static void setScheduledExecutorService(final ScheduledExecutorService scheduledExecutorService)
-    {
-        JsyncContext.scheduledExecutorService = scheduledExecutorService;
-    }
-
-    /**
     *
     */
     public static void shutdown()
@@ -119,10 +97,8 @@ public final class JsyncContext
         }
 
         JSyncUtils.shutdown(executorService, JSyncSwing.getLogger());
-        JSyncUtils.shutdown(scheduledExecutorService, JSyncSwing.getLogger());
 
         executorService = null;
-        scheduledExecutorService = null;
         messages = null;
         mainFrame = null;
     }

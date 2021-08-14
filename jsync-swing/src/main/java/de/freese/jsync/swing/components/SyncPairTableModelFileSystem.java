@@ -16,7 +16,7 @@ import de.freese.jsync.utils.JSyncUtils;
 /**
  * @author Thomas Freese
  */
-public class SyncPairTableModel extends AbstractListTableModel<SyncPair>
+public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPair>
 {
     /**
      *
@@ -29,11 +29,11 @@ public class SyncPairTableModel extends AbstractListTableModel<SyncPair>
     private final EFileSystem fileSystem;
 
     /**
-     * Erstellt ein neues {@link SyncPairTableModel} Object.
+     * Erstellt ein neues {@link SyncPairTableModelFileSystem} Object.
      *
      * @param fileSystem {@link EFileSystem}
      */
-    public SyncPairTableModel(final EFileSystem fileSystem)
+    public SyncPairTableModelFileSystem(final EFileSystem fileSystem)
     {
         super(List.of(JsyncContext.getMessages().getString("jsync.name"), JsyncContext.getMessages().getString("jsync.size")));
 

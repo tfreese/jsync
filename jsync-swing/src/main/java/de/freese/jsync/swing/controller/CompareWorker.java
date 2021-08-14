@@ -1,7 +1,6 @@
 // Created: 03.08.2021
 package de.freese.jsync.swing.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -67,6 +66,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
 
                 getSyncView().addProgressBarValue(fileSystem, (int) bytesRead);
             });
+
             syncItem.setChecksum(checksum);
         };
 
@@ -78,7 +78,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
      *
      * @return {@link RunnableFuture}
      */
-    protected RunnableFuture<List<SyncItem>> createFutureSyncItemsFlux(final EFileSystem fileSystem)
+    protected RunnableFuture<List<SyncItem>> createFutureSyncItems(final EFileSystem fileSystem)
     {
         // @formatter:off
         Callable<List<SyncItem>> callable = () -> getClient().generateSyncItems(fileSystem)
@@ -94,35 +94,14 @@ public class CompareWorker extends AbstractWorker<Void, Void>
     }
 
     /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link RunnableFuture}
-     */
-    protected RunnableFuture<List<SyncItem>> createFutureSyncItemsList(final EFileSystem fileSystem)
-    {
-        Callable<List<SyncItem>> callable = () -> {
-            List<SyncItem> syncItems = new ArrayList<>();
-
-            getClient().generateSyncItems(fileSystem, syncItem -> {
-                syncItems.add(syncItem);
-                getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + syncItems.size());
-            });
-
-            return syncItems;
-        };
-
-        return new FutureTask<>(callable);
-    }
-
-    /**
      * @see javax.swing.SwingWorker#doInBackground()
      */
     @Override
     protected Void doInBackground() throws Exception
     {
         // Dateien laden
-        RunnableFuture<List<SyncItem>> futureSenderItems = createFutureSyncItemsFlux(EFileSystem.SENDER);
-        RunnableFuture<List<SyncItem>> futureReceiverItems = createFutureSyncItemsFlux(EFileSystem.RECEIVER);
+        RunnableFuture<List<SyncItem>> futureSenderItems = createFutureSyncItems(EFileSystem.SENDER);
+        RunnableFuture<List<SyncItem>> futureReceiverItems = createFutureSyncItems(EFileSystem.RECEIVER);
 
         if (isParallel())
         {

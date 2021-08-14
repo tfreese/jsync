@@ -3,7 +3,6 @@ package de.freese.jsync.rsocket.filesystem;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.Receiver;
@@ -109,15 +108,6 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
     {
         return generateSyncItems(baseDir, followSymLinks, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, java.util.function.Consumer)
-     */
-    @Override
-    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer)
-    {
-        generateSyncItems(baseDir, followSymLinks, consumer, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
     }
 
     /**

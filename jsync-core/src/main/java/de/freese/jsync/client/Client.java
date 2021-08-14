@@ -56,20 +56,10 @@ public interface Client
      * @param fileSystem {@link EFileSystem}
      * @param consumer {@link Consumer}
      */
-    void generateSyncItems(EFileSystem fileSystem, final Consumer<SyncItem> consumer);
-
-    /**
-     * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
-     * Die Einträge des Senders sind die Referenz.<br>
-     * Ist ein Item nicht im Receiver enthalten, muss es dorthin kopiert werden.<br>
-     * Ist ein Item nur Receiver enthalten, muss es dort gelöscht werden.<br>
-     *
-     * @param syncItemsSender {@link Flux}
-     * @param syncItemsReceiver {@link Flux}
-     *
-     * @return {@link Flux}
-     */
-    Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver);
+    default void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumer)
+    {
+        generateSyncItems(fileSystem).subscribe(consumer);
+    }
 
     /**
      * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>

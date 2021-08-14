@@ -1,7 +1,6 @@
 // Created: 05.04.2018
 package de.freese.jsync.filesystem.local;
 
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
@@ -32,14 +31,5 @@ public abstract class AbstractLocalFileSystem extends AbstractFileSystem
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
     {
         return getGenerator().generateItems(baseDir, followSymLinks);
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, java.util.function.Consumer)
-     */
-    @Override
-    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer)
-    {
-        getGenerator().generateItems(baseDir, followSymLinks, consumer);
     }
 }

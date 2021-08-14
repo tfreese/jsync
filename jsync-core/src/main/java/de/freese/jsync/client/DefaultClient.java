@@ -39,9 +39,11 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @see de.freese.jsync.client.Client#mergeSyncItems(reactor.core.publisher.Flux, reactor.core.publisher.Flux)
+     * @param syncItemsSender {@link Flux}
+     * @param syncItemsReceiver {@link Flux}
+     *
+     * @return {@link Flux}
      */
-    @Override
     public Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver)
     {
         return Flux.<SyncPair> create(sink -> {

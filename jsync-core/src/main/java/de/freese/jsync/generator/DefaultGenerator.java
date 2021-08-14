@@ -16,7 +16,6 @@ import java.nio.file.attribute.UserPrincipal;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -41,11 +40,11 @@ public class DefaultGenerator extends AbstractGenerator
      * @see de.freese.jsync.generator.Generator#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer checksumBytesReadConsumer)
+    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead)
     {
         Path path = Paths.get(baseDir, relativeFile);
 
-        return DigestUtils.sha256DigestAsHex(path, checksumBytesReadConsumer);
+        return DigestUtils.sha256DigestAsHex(path, consumerChecksumBytesRead);
     }
 
     /**
@@ -90,36 +89,6 @@ public class DefaultGenerator extends AbstractGenerator
 
                 return syncItem;
             })
-            ;
-        // @formatter:on
-    }
-
-    /**
-     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean, java.util.function.Consumer)
-     */
-    @Override
-    public void generateItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumerSyncItem)
-    {
-        Path base = Paths.get(baseDir);
-
-        if (Files.notExists(base))
-        {
-            return;
-        }
-
-        FileVisitOption[] visitOptions = JSyncUtils.getFileVisitOptions(followSymLinks);
-        LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
-
-        // @formatter:off
-        getPathsAsSet(base, visitOptions).stream()
-            .map(path -> {
-                String relativePath = base.relativize(path).toString();
-
-                SyncItem syncItem = generateItem(path, relativePath, linkOptions);
-
-                return syncItem;
-            })
-            .forEach(consumerSyncItem)
             ;
         // @formatter:on
     }

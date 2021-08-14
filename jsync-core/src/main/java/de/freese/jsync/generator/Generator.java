@@ -44,5 +44,8 @@ public interface Generator
      * @param followSymLinks boolean
      * @param consumer {@link Consumer}
      */
-    void generateItems(final String baseDir, boolean followSymLinks, final Consumer<SyncItem> consumer);
+    default void generateItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer)
+    {
+        generateItems(baseDir, followSymLinks).subscribe(consumer);
+    }
 }

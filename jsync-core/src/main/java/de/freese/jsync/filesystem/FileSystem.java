@@ -2,7 +2,6 @@
 package de.freese.jsync.filesystem;
 
 import java.net.URI;
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.model.SyncItem;
@@ -45,13 +44,4 @@ public interface FileSystem
      * @return {@link Flux}
      */
     Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks);
-
-    /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses<br>
-     *
-     * @param baseDir String
-     * @param followSymLinks boolean
-     * @param consumer {@link Consumer}
-     */
-    void generateSyncItems(String baseDir, boolean followSymLinks, final Consumer<SyncItem> consumer);
 }

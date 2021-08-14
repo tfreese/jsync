@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 
@@ -378,29 +377,6 @@ public abstract class AbstractClient implements Client
         }
 
         return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks());
-    }
-
-    /**
-     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, java.util.function.Consumer)
-     */
-    @Override
-    public void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumer)
-    {
-        FileSystem fs = null;
-        String baseDir = null;
-
-        if (EFileSystem.SENDER.equals(fileSystem))
-        {
-            fs = getSender();
-            baseDir = getSenderPath();
-        }
-        else
-        {
-            fs = getReceiver();
-            baseDir = getReceiverPath();
-        }
-
-        fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), consumer);
     }
 
     /**

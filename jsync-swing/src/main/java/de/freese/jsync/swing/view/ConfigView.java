@@ -20,37 +20,36 @@ import de.freese.jsync.swing.util.GbcBuilder;
 public class ConfigView extends AbstractView
 {
     /**
-    *
-    */
+     *
+     */
     private JButton buttonCompare;
-
     /**
-        *
-        */
+     *
+     */
     private JButton buttonSyncronize;
     /**
-    *
-    */
+     *
+     */
     private JCheckBox checkBoxChecksum;
     /**
-    *
-    */
+     *
+     */
     private JCheckBox checkBoxDelete;
     /**
-       *
-       */
+     *
+     */
     private JCheckBox checkBoxDryRun;
     /**
-    *
-    */
+     *
+     */
     private JCheckBox checkBoxFollowSymLinks;
     /**
      *
      */
     private JCheckBox checkBoxParallelism;
     /**
-    *
-    */
+     *
+     */
     private final JPanel panel = new JPanel();
 
     /**
@@ -116,36 +115,29 @@ public class ConfigView extends AbstractView
      */
     void initGUI()
     {
-        this.panel.setName("confiPanel");
         this.panel.setLayout(new GridBagLayout());
 
         // Button Compare
         this.buttonCompare = new JButton(getMessage("jsync.compare"));
-        this.buttonCompare.setName(this.panel.getName() + ".buttonCompare");
         this.buttonCompare.setEnabled(false);
         this.panel.add(this.buttonCompare, new GbcBuilder(0, 0).insets(5, 5, 5, 20));
 
         // Optionen
         JPanel panelOptions = new JPanel();
-        panelOptions.setName(this.panel.getName() + ".panelOptions");
         panelOptions.setLayout(new GridBagLayout());
         panelOptions.setBorder(new TitledBorder(getMessage("jsync.options")));
         this.panel.add(panelOptions, new GbcBuilder(1, 0).anchorWest());
 
         this.checkBoxChecksum = new JCheckBox(getMessage("jsync.options.checksum"), false);
-        this.checkBoxChecksum.setName(panelOptions.getName() + ".checksum");
         panelOptions.add(this.checkBoxChecksum, new GbcBuilder(0, 0).anchorWest());
 
         this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), true);
-        this.checkBoxDryRun.setName(panelOptions.getName() + ".dryrun");
         panelOptions.add(this.checkBoxDryRun, new GbcBuilder(1, 0).anchorWest());
 
         this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), false);
-        this.checkBoxDelete.setName(panelOptions.getName() + ".delete");
         panelOptions.add(this.checkBoxDelete, new GbcBuilder(0, 1).anchorWest());
 
         this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), false);
-        this.checkBoxFollowSymLinks.setName(panelOptions.getName() + ".followSymLinks");
         panelOptions.add(this.checkBoxFollowSymLinks, new GbcBuilder(1, 1).anchorWest());
 
         this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallel"), false);
@@ -156,7 +148,6 @@ public class ConfigView extends AbstractView
 
         // Button Synchronize
         this.buttonSyncronize = new JButton(getMessage("jsync.synchronize"));
-        this.buttonSyncronize.setName(this.panel.getName() + ".buttonSyncronize");
         this.buttonSyncronize.setEnabled(false);
         this.panel.add(this.buttonSyncronize, new GbcBuilder(2, 0).insets(5, 20, 5, 5));
     }

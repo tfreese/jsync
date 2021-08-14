@@ -4,7 +4,6 @@ package de.freese.jsync.filesystem;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import org.slf4j.Logger;
@@ -113,17 +112,6 @@ public class ReceiverDelegateLogger implements Receiver
         getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
         return this.delegate.generateSyncItems(baseDir, followSymLinks);
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, java.util.function.Consumer)
-     */
-    @Override
-    public void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer)
-    {
-        getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
-
-        this.delegate.generateSyncItems(baseDir, followSymLinks, consumer);
     }
 
     /**

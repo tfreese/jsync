@@ -37,7 +37,6 @@ public final class JsyncSwingLauncher
         System.setProperty("reactor.schedulers.defaultBoundedElasticSize", Integer.toString(8));
 
         JsyncContext.setExecutorService(Executors.newFixedThreadPool(8));
-        JsyncContext.setScheduledExecutorService(Executors.newScheduledThreadPool(8));
         JsyncContext.setMessages(new Messages(Locale.getDefault()));
 
         // Um Comparator Fehler zu vermeiden.
@@ -54,7 +53,8 @@ public final class JsyncSwingLauncher
                     // frame.setSize(1280, 768);
                     // frame.setSize(1280, 1024);
                     // frame.setSize(1680, 1050);
-                    frame.setSize(1920, 1080);
+                    // frame.setSize(1920, 1080);
+                    frame.setSize(1920, 768);
                     // frame.setExtendedState(Frame.MAXIMIZED_BOTH);
                     frame.setLocationRelativeTo(null);
                     frame.setVisible(true);

@@ -4,7 +4,6 @@ package de.freese.jsync.rsocket.filesystem;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.LongConsumer;
 import java.util.regex.Pattern;
@@ -189,41 +188,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
                 })
                 .blockLast()
                 ;
-        // @formatter:on
-    }
-
-    /**
-     * @param baseDir String
-     * @param followSymLinks boolean
-     * @param consumer {@link Consumer}
-     * @param command {@link JSyncCommand}
-     */
-    protected void generateSyncItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer, final JSyncCommand command)
-    {
-        ByteBuffer bufferMeta = getByteBufferPool().obtain();
-        getSerializer().writeTo(bufferMeta, command);
-
-        ByteBuffer bufferData = getByteBufferPool().obtain();
-        getSerializer().writeTo(bufferData, baseDir);
-        getSerializer().writeTo(bufferData, followSymLinks);
-
-        // @formatter:off
-        getClient()
-            .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> {
-                        getByteBufferPool().free(bufferMeta);
-                        getByteBufferPool().free(bufferData);
-                    })
-            )
-            .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf -> in anderen Thread auslagern sonst knallts !
-            .doOnError(th -> getLogger().error(null, th))
-            .doOnNext(payload -> {
-                ByteBuffer buffer = payload.getData();
-                SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
-                consumer.accept(syncItem);
-            })
-            .blockLast()
-            ;
         // @formatter:on
     }
 
