@@ -9,6 +9,7 @@ import java.util.function.LongConsumer;
 import java.util.regex.Pattern;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
@@ -194,11 +195,12 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     /**
      * @param baseDir String
      * @param followSymLinks boolean
+     * @param pathFilter {@link PathFilter}
      * @param command {@link JSyncCommand}
      *
      * @return {@link Flux}
      */
-    protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final JSyncCommand command)
+    protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command)
     {
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, command);
@@ -206,6 +208,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         ByteBuffer bufferData = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, followSymLinks);
+        getSerializer().writeTo(bufferData, pathFilter);
 
         // @formatter:off
         return getClient()

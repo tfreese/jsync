@@ -21,6 +21,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import de.freese.jsync.Options;
+import de.freese.jsync.filter.PathFilter;
+import de.freese.jsync.filter.PathFilterTrue;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
@@ -48,48 +50,34 @@ public class DefaultGenerator extends AbstractGenerator
     }
 
     /**
-     * @param path {@link Path}
-     * @param relativePath String
-     * @param linkOptions {@link LinkOption}[]
-     *
-     * @return {@link SyncItem}
-     */
-    public SyncItem generateItem(final Path path, final String relativePath, final LinkOption[] linkOptions)
-    {
-        if (Files.isDirectory(path))
-        {
-            return toDirectoryItem(path, relativePath, linkOptions);
-        }
-
-        return toFileItem(path, relativePath, linkOptions);
-    }
-
-    /**
-     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean)
+     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean, de.freese.jsync.filter.PathFilter)
      */
     @Override
-    public Flux<SyncItem> generateItems(final String baseDir, final boolean followSymLinks)
+    public Flux<SyncItem> generateItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
     {
         Path base = Paths.get(baseDir);
 
         if (Files.notExists(base))
         {
-            Flux.empty();
+            return Flux.empty();
         }
+
+        PathFilter filter = pathFilter != null ? pathFilter : new PathFilterTrue();
 
         FileVisitOption[] visitOptions = JSyncUtils.getFileVisitOptions(followSymLinks);
         LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
 
         // @formatter:off
-        return getPathsAsFlux(base, visitOptions)
-            .map(path -> {
-                String relativePath = base.relativize(path).toString();
+        return getPathsAsFlux(base, visitOptions,filter)
+                .mapNotNull(path -> {
+                    if (Files.isDirectory(path))
+                    {
+                        return toDirectoryItem(path, base.relativize(path).toString(), linkOptions);
+                    }
 
-                SyncItem syncItem = generateItem(path, relativePath, linkOptions);
-
-                return syncItem;
-            })
-            ;
+                    return toFileItem(path, base.relativize(path).toString(), linkOptions);
+                })
+                ;
         // @formatter:on
     }
 

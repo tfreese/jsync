@@ -19,6 +19,7 @@ import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.FileSystemFactory;
 import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.filesystem.Sender;
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
@@ -357,10 +358,10 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem)
+     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.filter.PathFilter)
      */
     @Override
-    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem)
+    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter)
     {
         FileSystem fs = null;
         String baseDir = null;
@@ -376,7 +377,7 @@ public abstract class AbstractClient implements Client
             baseDir = getReceiverPath();
         }
 
-        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks());
+        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), pathFilter);
     }
 
     /**

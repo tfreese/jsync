@@ -9,6 +9,7 @@ import java.util.function.LongConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
 
@@ -82,14 +83,14 @@ public class SenderDelegateLogger implements Sender
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean)
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, de.freese.jsync.filter.PathFilter)
      */
     @Override
-    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
+    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
     {
         getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
-        return this.delegate.generateSyncItems(baseDir, followSymLinks);
+        return this.delegate.generateSyncItems(baseDir, followSymLinks, pathFilter);
     }
 
     /**

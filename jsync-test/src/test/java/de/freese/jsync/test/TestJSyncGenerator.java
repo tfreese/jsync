@@ -5,19 +5,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 import de.freese.jsync.Options;
+import de.freese.jsync.filter.PathFilter;
+import de.freese.jsync.filter.PathFilterEndsWith;
 import de.freese.jsync.generator.DefaultGenerator;
-import de.freese.jsync.generator.Generator;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
@@ -39,10 +40,9 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
         Path base = PATH_QUELLE;
         System.out.printf("Quelle: %s%n", base);
 
-        Generator generator = new DefaultGenerator();
         List<SyncItem> syncItems = new ArrayList<>();
 
-        generator.generateItems(base.toString(), false, syncItems::add);
+        new DefaultGenerator().generateItems(base.toString(), false, null, syncItems::add);
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 
@@ -62,10 +62,9 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
         Path base = PATH_ZIEL;
         System.out.printf("Ziel: %s%n", base);
 
-        Generator generator = new DefaultGenerator();
         List<SyncItem> syncItems = new ArrayList<>();
 
-        generator.generateItems(base.toString(), false, syncItems::add);
+        new DefaultGenerator().generateItems(base.toString(), false, null, syncItems::add);
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 
@@ -78,18 +77,46 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test030FileAttributes() throws Exception
+    void test030Filter() throws Exception
     {
         System.out.println();
 
-        Path path = Paths.get(System.getProperty("user.dir"), "pom.xml");
+        PathFilter filter = new PathFilterEndsWith(Set.of("src", "target", ".settings"), Set.of(".classpath", ".project"));
 
-        DefaultGenerator generator = new DefaultGenerator();
-        SyncItem syncItem = generator.generateItem(path, "pom.xml", new LinkOption[]
-        {
-                LinkOption.NOFOLLOW_LINKS
-        });
+        // @formatter:off
+        Map<String, SyncItem> map = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, filter)
+                .collectMap(SyncItem::getRelativePath)
+                .block()
+                ;
+        // @formatter:on
 
+        assertTrue(map.size() >= 1);
+
+        map.keySet().stream().sorted().forEach(System.out::println);
+
+        assertTrue(map.keySet().stream().noneMatch(path -> path.endsWith(".classpath")));
+        assertTrue(map.keySet().stream().noneMatch(path -> path.endsWith(".project")));
+        assertTrue(map.keySet().stream().noneMatch(path -> path.contains("src/")));
+        assertTrue(map.keySet().stream().noneMatch(path -> path.contains("target/")));
+        assertTrue(map.keySet().stream().noneMatch(path -> path.contains(".settings")));
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    void test040FileAttributes() throws Exception
+    {
+        System.out.println();
+
+        // @formatter:off
+        SyncItem syncItem = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, null)
+                .filter(si -> si.getRelativePath().endsWith("pom.xml"))
+                .blockFirst()
+                ;
+        // @formatter:on
+
+        assertNotNull(syncItem);
         assertTrue(syncItem.getLastModifiedTime() > 0);
         assertTrue(syncItem.getSize() > 0);
 

@@ -125,7 +125,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         client.connectFileSystems();
 
         List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
+        client.generateSyncItems(EFileSystem.SENDER, null, syncItem -> {
             syncItemsSender.add(syncItem);
             String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);
@@ -134,7 +134,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         });
 
         List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
+        client.generateSyncItems(EFileSystem.RECEIVER, null, syncItem -> {
             syncItemsReceiver.add(syncItem);
             String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);
@@ -178,11 +178,8 @@ class TestJSyncRemote extends AbstractJSyncIoTest
 
         startServerRSocket();
 
-        URI senderUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002/" + PATH_QUELLE);
-        URI receiverUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002/" + PATH_ZIEL);
-
-        // URI senderUri = new URI("rsocket://localhost:8002/" + PATH_QUELLE.toString());
-        // URI receiverUri = new URI("rsocket://localhost:8002/" + PATH_ZIEL.toString());
+        URI senderUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002", PATH_QUELLE.toString());
+        URI receiverUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002", PATH_ZIEL.toString());
 
         syncDirectories(options, senderUri, receiverUri);
 

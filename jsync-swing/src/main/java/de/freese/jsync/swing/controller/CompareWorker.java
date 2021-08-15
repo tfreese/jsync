@@ -7,6 +7,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 
 import de.freese.jsync.filesystem.EFileSystem;
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.utils.pool.ByteBufferPool;
@@ -75,13 +76,14 @@ public class CompareWorker extends AbstractWorker<Void, Void>
 
     /**
      * @param fileSystem {@link EFileSystem}
+     * @param pathFilter {@link PathFilter}
      *
      * @return {@link RunnableFuture}
      */
-    protected RunnableFuture<List<SyncItem>> createFutureSyncItems(final EFileSystem fileSystem)
+    protected RunnableFuture<List<SyncItem>> createFutureSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter)
     {
         // @formatter:off
-        Callable<List<SyncItem>> callable = () -> getClient().generateSyncItems(fileSystem)
+        Callable<List<SyncItem>> callable = () -> getClient().generateSyncItems(fileSystem, pathFilter)
                 .index()
                 //.delayElements(Duration.ofMillis(10))
                 .doOnNext(tuple -> getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + (tuple.getT1() + 1)))
@@ -100,8 +102,10 @@ public class CompareWorker extends AbstractWorker<Void, Void>
     protected Void doInBackground() throws Exception
     {
         // Dateien laden
-        RunnableFuture<List<SyncItem>> futureSenderItems = createFutureSyncItems(EFileSystem.SENDER);
-        RunnableFuture<List<SyncItem>> futureReceiverItems = createFutureSyncItems(EFileSystem.RECEIVER);
+        PathFilter pathFilter = getSyncView().getPathFilter();
+
+        RunnableFuture<List<SyncItem>> futureSenderItems = createFutureSyncItems(EFileSystem.SENDER, pathFilter);
+        RunnableFuture<List<SyncItem>> futureReceiverItems = createFutureSyncItems(EFileSystem.RECEIVER, pathFilter);
 
         if (isParallel())
         {

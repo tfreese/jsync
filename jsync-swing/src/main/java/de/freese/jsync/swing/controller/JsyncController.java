@@ -3,8 +3,6 @@ package de.freese.jsync.swing.controller;
 
 import java.net.URI;
 
-import javax.swing.SwingUtilities;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +10,7 @@ import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.swing.JsyncContext;
+import de.freese.jsync.swing.util.SwingUtils;
 import de.freese.jsync.swing.view.SyncView;
 
 /**
@@ -113,14 +112,7 @@ public class JsyncController
      */
     void runInEdt(final Runnable runnable)
     {
-        if (SwingUtilities.isEventDispatchThread())
-        {
-            runnable.run();
-        }
-        else
-        {
-            SwingUtilities.invokeLater(runnable);
-        }
+        SwingUtils.runInEdt(runnable);
     }
 
     /**

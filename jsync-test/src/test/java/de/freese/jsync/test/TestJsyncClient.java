@@ -69,7 +69,7 @@ class TestJsyncClient extends AbstractJSyncIoTest
         client.connectFileSystems();
 
         List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.SENDER, syncItem -> {
+        client.generateSyncItems(EFileSystem.SENDER, null, syncItem -> {
             syncItemsSender.add(syncItem);
             String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);
@@ -78,7 +78,7 @@ class TestJsyncClient extends AbstractJSyncIoTest
         });
 
         List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.RECEIVER, syncItem -> {
+        client.generateSyncItems(EFileSystem.RECEIVER, null, syncItem -> {
             syncItemsReceiver.add(syncItem);
             String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);

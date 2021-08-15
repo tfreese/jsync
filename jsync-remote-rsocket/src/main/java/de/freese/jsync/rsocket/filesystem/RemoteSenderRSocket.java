@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.Sender;
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import io.rsocket.Payload;
@@ -43,12 +44,12 @@ public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Se
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean)
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, de.freese.jsync.filter.PathFilter)
      */
     @Override
-    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
+    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
     {
-        return generateSyncItems(baseDir, followSymLinks, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
+        return generateSyncItems(baseDir, followSymLinks, pathFilter, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
     }
 
     /**

@@ -12,6 +12,8 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import de.freese.jsync.filter.PathFilter;
+import de.freese.jsync.filter.PathFilterEndsWith;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
@@ -209,5 +211,27 @@ class TestJsyncSerializers
 
         // LoggerFactory.getLogger(getClass()).error(null, exception1);
         // LoggerFactory.getLogger(getClass()).error(null, exception2);
+    }
+
+    /**
+    *
+    */
+    @Test
+    void test060PathFilter()
+    {
+        ByteBuffer buffer = BUFFER;
+
+        Set<String> directoryFiltersOrigin = Set.of("a", "b");
+        Set<String> fileFiltersOrigin = Set.of("c", "d");
+
+        SERIALIZER.writeTo(buffer, new PathFilterEndsWith(directoryFiltersOrigin, fileFiltersOrigin), PathFilterEndsWith.class);
+
+        buffer.flip();
+        PathFilter pathFilter = SERIALIZER.readFrom(buffer, PathFilter.class);
+
+        assertEquals(PathFilterEndsWith.class, pathFilter.getClass());
+        assertEquals(directoryFiltersOrigin, pathFilter.getDirectoryFilter());
+        assertEquals(fileFiltersOrigin, pathFilter.getFileFilter());
+
     }
 }

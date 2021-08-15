@@ -15,6 +15,7 @@ import de.freese.jsync.filesystem.Sender;
 import de.freese.jsync.filesystem.SenderDelegateLogger;
 import de.freese.jsync.filesystem.local.LocalhostReceiver;
 import de.freese.jsync.filesystem.local.LocalhostSender;
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
@@ -183,8 +184,9 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
 
         String baseDir = getSerializer().readFrom(bufferData, String.class);
         boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
+        PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
 
-        return fileSystem.generateSyncItems(baseDir, followSymLinks).map(syncItem -> {
+        return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem -> {
             ByteBuffer buffer = getPooledBuffer();
             getSerializer().writeTo(buffer, syncItem);
             return buffer.flip();

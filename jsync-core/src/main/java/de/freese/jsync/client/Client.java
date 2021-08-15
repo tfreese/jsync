@@ -9,6 +9,7 @@ import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.filesystem.Sender;
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import reactor.core.publisher.Flux;
@@ -45,20 +46,22 @@ public interface Client
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
      *
      * @param fileSystem {@link EFileSystem}
+     * @param pathFilter {@link PathFilter}
      *
      * @return {@link Flux}
      */
-    Flux<SyncItem> generateSyncItems(EFileSystem fileSystem);
+    Flux<SyncItem> generateSyncItems(EFileSystem fileSystem, PathFilter pathFilter);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
      *
      * @param fileSystem {@link EFileSystem}
+     * @param pathFilter {@link PathFilter}
      * @param consumer {@link Consumer}
      */
-    default void generateSyncItems(final EFileSystem fileSystem, final Consumer<SyncItem> consumer)
+    default void generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter, final Consumer<SyncItem> consumer)
     {
-        generateSyncItems(fileSystem).subscribe(consumer);
+        generateSyncItems(fileSystem, pathFilter).subscribe(consumer);
     }
 
     /**

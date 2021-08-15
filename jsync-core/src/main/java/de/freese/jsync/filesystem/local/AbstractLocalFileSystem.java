@@ -5,6 +5,7 @@ import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.filesystem.FileSystem;
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
 
@@ -25,11 +26,11 @@ public abstract class AbstractLocalFileSystem extends AbstractFileSystem
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean)
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, de.freese.jsync.filter.PathFilter)
      */
     @Override
-    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks)
+    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
     {
-        return getGenerator().generateItems(baseDir, followSymLinks);
+        return getGenerator().generateItems(baseDir, followSymLinks, pathFilter);
     }
 }

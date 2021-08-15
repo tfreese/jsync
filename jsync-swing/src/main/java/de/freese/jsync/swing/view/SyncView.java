@@ -10,6 +10,7 @@ import javax.swing.JButton;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.EFileSystem;
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncPair;
 
 /**
@@ -66,6 +67,11 @@ public interface SyncView
      * @return {@link Options}
      */
     Options getOptions();
+
+    /**
+     * @return {@link PathFilter}
+     */
+    PathFilter getPathFilter();
 
     /**
      * @return {@link List}

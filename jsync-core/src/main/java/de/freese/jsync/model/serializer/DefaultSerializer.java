@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import de.freese.jsync.Options;
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.JSyncCommand;
@@ -20,6 +21,7 @@ import de.freese.jsync.model.serializer.objectserializer.impl.IntegerSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.JSyncCommandSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.LongSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.OptionsSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.PathFilterSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.StackTraceElementSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.StringSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.SyncItemSerializer;
@@ -82,6 +84,7 @@ public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegi
         register(Options.class, new OptionsSerializer());
         register(StackTraceElement.class, new StackTraceElementSerializer());
         register(Exception.class, new ExceptionSerializer());
+        register(PathFilter.class, new PathFilterSerializer());
     }
 
     /**
@@ -91,7 +94,22 @@ public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegi
     @Override
     public <T> ObjectSerializer<T> getSerializer(final Class<T> type)
     {
-        return (ObjectSerializer<T>) this.serializerMap.get(type);
+        ObjectSerializer<T> serializer = (ObjectSerializer<T>) this.serializerMap.get(type);
+
+        if (serializer == null)
+        {
+            for (Class<?> ifc : type.getInterfaces())
+            {
+                serializer = (ObjectSerializer<T>) this.serializerMap.get(ifc);
+
+                if (serializer != null)
+                {
+                    break;
+                }
+            }
+        }
+
+        return serializer;
     }
 
     /**

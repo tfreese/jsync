@@ -15,13 +15,18 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.utils.io.FileVisitorDelete;
 
@@ -71,6 +76,11 @@ public final class JSyncUtils
      * @see Files#readAttributes(Path, String, LinkOption...)
      */
     private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = {};
+
+    /**
+    *
+    */
+    private static final Pattern PATTERN_FILTER = Pattern.compile("[;,]");
 
     /**
      *
@@ -475,6 +485,25 @@ public final class JSyncUtils
     }
 
     /**
+     * Aufsplitten nach ';' oder ',' um ein Set für den {@link PathFilter} zu erzeugen.
+     *
+     * @param value String
+     *
+     * @return {@link Set}
+     */
+    public static Set<String> toFilter(final String value)
+    {
+        if ((value == null) || value.isBlank())
+        {
+            return Collections.emptySet();
+        }
+
+        String[] splits = PATTERN_FILTER.split(value);
+
+        return Arrays.stream(splits).map(String::trim).collect(Collectors.toSet());
+    }
+
+    /**
      * @param size long
      *
      * @return String, z.B. '___,___ MB'
@@ -554,11 +583,12 @@ public final class JSyncUtils
 
     /**
      * @param protocol {@link JSyncProtocol}
+     * @param hostPort String
      * @param path {@link Path}
      *
      * @return {@link URI}
      */
-    public static URI toUri(final JSyncProtocol protocol, final String path)
+    public static URI toUri(final JSyncProtocol protocol, final String hostPort, final String path)
     {
         if (JSyncProtocol.FILE.equals(protocol))
         {
@@ -566,14 +596,17 @@ public final class JSyncUtils
         }
         else if (JSyncProtocol.RSOCKET.equals(protocol))
         {
-            String[] splits = path.split("[\\/]", 2);
-            String hostAndPort = splits[0];
-            String p = splits[1];
+            URI uri = Paths.get(path).toUri();
 
-            URI uri = Paths.get("/" + p).toUri();
+            return URI.create("rsocket://" + hostPort + uri.getRawPath());
 
-            return URI.create("rsocket://" + hostAndPort + uri.getRawPath());
-
+            // String[] splits = path.split("[\\/]", 2);
+            // String hostAndPort = splits[0];
+            // String p = splits[1];
+            //
+            // URI uri = Paths.get("/" + p).toUri();
+            //
+            // return URI.create("rsocket://" + hostAndPort + uri.getRawPath());
             //
             // return URI.create("rsocket://" + host + "/" + p.replace(" ", "%20"));
         }

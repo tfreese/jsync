@@ -4,6 +4,7 @@ package de.freese.jsync.filesystem;
 import java.net.URI;
 import java.util.function.LongConsumer;
 
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
 
@@ -40,8 +41,9 @@ public interface FileSystem
      *
      * @param baseDir String
      * @param followSymLinks boolean
+     * @param pathFilter {@link PathFilter}
      *
      * @return {@link Flux}
      */
-    Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks);
+    Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks, PathFilter pathFilter);
 }

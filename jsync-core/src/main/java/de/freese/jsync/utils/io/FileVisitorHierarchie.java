@@ -12,6 +12,8 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.freese.jsync.filter.PathFilter;
+
 /**
  * @author Thomas Freese
  */
@@ -25,17 +27,24 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
     /**
      *
      */
-    final Consumer<Path> consumer;
+    private final Consumer<Path> consumer;
+
+    /**
+     *
+     */
+    private final PathFilter pathFilter;
 
     /**
      * Erstellt ein neues {@link FileVisitorHierarchie} Object.
      *
+     * @param pathFilter {@link PathFilter}
      * @param consumer {@link Consumer}
      */
-    public FileVisitorHierarchie(final Consumer<Path> consumer)
+    public FileVisitorHierarchie(final PathFilter pathFilter, final Consumer<Path> consumer)
     {
         super();
 
+        this.pathFilter = Objects.requireNonNull(pathFilter, "pathFilter required");
         this.consumer = Objects.requireNonNull(consumer, "consumer required");
     }
 
@@ -73,9 +82,14 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
     @Override
     public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException
     {
-        // TODO Filtern auf Verzeichnis-Ebene.
         Objects.requireNonNull(dir);
         Objects.requireNonNull(attrs);
+
+        if (this.pathFilter.isExcludedDirectory(dir))
+        {
+            getLogger().debug("exclude directory: {}", dir);
+            return FileVisitResult.SKIP_SUBTREE;
+        }
 
         return FileVisitResult.CONTINUE;
     }
@@ -86,11 +100,17 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
     @Override
     public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
     {
-        // TODO Filtern auf Datei-Ebene.
         Objects.requireNonNull(file);
         Objects.requireNonNull(attrs);
 
-        this.consumer.accept(file);
+        if (this.pathFilter.isExcludedFile(file))
+        {
+            getLogger().debug("exclude file: {}", file);
+        }
+        else
+        {
+            this.consumer.accept(file);
+        }
 
         return FileVisitResult.CONTINUE;
     }

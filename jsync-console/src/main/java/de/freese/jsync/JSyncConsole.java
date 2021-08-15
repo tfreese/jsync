@@ -133,7 +133,7 @@ public final class JSyncConsole
         client.connectFileSystems();
 
         // @formatter:off
-        Flux<SyncItem> syncItemsSender = client.generateSyncItems(EFileSystem.SENDER)
+        Flux<SyncItem> syncItemsSender = client.generateSyncItems(EFileSystem.SENDER, null)
                 .doOnNext(syncItem -> {
                     String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
                             // System.out.println("Sender Bytes read: " + i);
@@ -144,7 +144,7 @@ public final class JSyncConsole
         // @formatter:on
 
         // @formatter:off
-        Flux<SyncItem> syncItemsReceiver = client.generateSyncItems(EFileSystem.RECEIVER)
+        Flux<SyncItem> syncItemsReceiver = client.generateSyncItems(EFileSystem.RECEIVER, null)
                 .doOnNext(syncItem -> {
                     String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
                         // System.out.println("Sender Bytes read: " + i);

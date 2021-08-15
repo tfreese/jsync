@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
+import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,20 +33,22 @@ public interface Generator
      *
      * @param baseDir String
      * @param followSymLinks boolean
+     * @param pathFilter {@link PathFilter}
      *
      * @return {@link Flux}
      */
-    Flux<SyncItem> generateItems(final String baseDir, boolean followSymLinks);
+    Flux<SyncItem> generateItems(final String baseDir, boolean followSymLinks, PathFilter pathFilter);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      *
      * @param baseDir String
      * @param followSymLinks boolean
+     * @param pathFilter {@link PathFilter}
      * @param consumer {@link Consumer}
      */
-    default void generateItems(final String baseDir, final boolean followSymLinks, final Consumer<SyncItem> consumer)
+    default void generateItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final Consumer<SyncItem> consumer)
     {
-        generateItems(baseDir, followSymLinks).subscribe(consumer);
+        generateItems(baseDir, followSymLinks, pathFilter).subscribe(consumer);
     }
 }
