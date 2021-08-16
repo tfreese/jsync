@@ -39,9 +39,14 @@ public final class JsyncRSocketServer
         System.setProperty("reactor.netty.ioSelectCount", Integer.toString(4));
         System.setProperty("reactor.netty.ioWorkerCount", Integer.toString(8));
 
+        int port = Integer.parseInt(args[0]);
+
         JsyncRSocketServer server = new JsyncRSocketServer();
 
-        server.start(8888);
+        server.start(port);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(server::stop, "server-stop"));
+
         // server.stop();
 
         // Thread thread = new Thread(() -> server.start(8888), "rsocket-server");

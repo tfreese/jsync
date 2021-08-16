@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.filter.PathFilter;
+import de.freese.jsync.filter.PathFilterTrue;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
@@ -208,7 +209,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         ByteBuffer bufferData = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, followSymLinks);
-        getSerializer().writeTo(bufferData, pathFilter);
+        getSerializer().writeTo(bufferData, pathFilter != null ? pathFilter : new PathFilterTrue());
 
         // @formatter:off
         return getClient()

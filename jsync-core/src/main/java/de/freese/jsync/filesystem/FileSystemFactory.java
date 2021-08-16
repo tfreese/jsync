@@ -89,6 +89,6 @@ public final class FileSystemFactory
             }
         }
 
-        throw new IllegalArgumentException("unsupported protocol:" + uri.getScheme());
+        throw new IllegalArgumentException("unsupported protocol: " + uri.getScheme());
     }
 }

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.filter.PathFilterEndsWith;
+import de.freese.jsync.filter.PathFilterTrue;
 import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
 import de.freese.jsync.model.serializer.objectserializer.AbstractObjectSerializer;
@@ -38,6 +39,11 @@ public class PathFilterSerializer extends AbstractObjectSerializer<PathFilter>
         for (int i = 0; i < count; i++)
         {
             fileFilters.add(readString(adapter, source, getCharset()));
+        }
+
+        if (directoryFilters.isEmpty() && fileFilters.isEmpty())
+        {
+            return new PathFilterTrue();
         }
 
         return new PathFilterEndsWith(directoryFilters, fileFilters);
