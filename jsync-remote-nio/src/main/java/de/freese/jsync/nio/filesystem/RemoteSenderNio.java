@@ -1,0 +1,67 @@
+// Created: 17.08.2021
+package de.freese.jsync.nio.filesystem;
+
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.util.function.LongConsumer;
+
+import de.freese.jsync.filesystem.Sender;
+import de.freese.jsync.filter.PathFilter;
+import de.freese.jsync.model.SyncItem;
+import reactor.core.publisher.Flux;
+
+/**
+ * @author Thomas Freese
+ */
+public class RemoteSenderNio extends AbstractNioFileSystem implements Sender
+{
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
+     */
+    @Override
+    public void connect(final URI uri)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
+     */
+    @Override
+    public void disconnect()
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
+     */
+    @Override
+    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, de.freese.jsync.filter.PathFilter)
+     */
+    @Override
+    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.Sender#readFile(java.lang.String, java.lang.String, long)
+     */
+    @Override
+    public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile)
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+}

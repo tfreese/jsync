@@ -32,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.DocumentEvent;
 
@@ -448,9 +449,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.panel.add(this.configView.getComponent(), new GbcBuilder(0, row).anchorCenter().fillHorizontal());
 
         // Component glue = Box.createGlue();
-        // glue.setMinimumSize(new Dimension(210, 1));
-        // glue.setPreferredSize(new Dimension(210, 1));
-        // glue.setMaximumSize(new Dimension(210, 1));
+        // glue.setMinimumSize(new Dimension(230, 1));
+        // glue.setPreferredSize(new Dimension(230, 1));
+        // glue.setMaximumSize(new Dimension(230, 1));
         // this.panel.add(glue, new GbcBuilder(1, row).fillHorizontal().weightx(0));
         JPanel panelFilter = new JPanel();
         panelFilter.setLayout(new GridBagLayout());
@@ -464,9 +465,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.textAreaFilterFiles = new JTextArea();
         panelFilter.add(this.textAreaFilterFiles, new GbcBuilder(0, 3).fillBoth());
 
-        panelFilter.setMinimumSize(new Dimension(210, 160));
-        panelFilter.setPreferredSize(new Dimension(210, 160));
-        panelFilter.setMaximumSize(new Dimension(210, 160));
+        panelFilter.setMinimumSize(new Dimension(230, 160));
+        panelFilter.setPreferredSize(new Dimension(230, 160));
+        panelFilter.setMaximumSize(new Dimension(230, 160));
         this.panel.add(panelFilter, new GbcBuilder(1, row).fillHorizontal().weightx(0));
 
         // Show
@@ -487,44 +488,48 @@ public class DefaultSyncView extends AbstractView implements SyncView
         row++;
 
         // Tabelle Sender
-        JTable table = this.tableFacade.getTableSender();
-        table.setModel(this.tableFacade.getTableModelSender());
-        table.setAutoCreateRowSorter(false);
-        table.setDefaultRenderer(Object.class, new SyncPairTableCellRendererFileSystem());
-        table.getColumnModel().getColumn(0).setPreferredWidth(1000);
-        table.getColumnModel().getColumn(1).setMinWidth(70);
-        table.getColumnModel().getColumn(1).setMaxWidth(70);
+        JTable tableSender = this.tableFacade.getTableSender();
+        tableSender.setModel(this.tableFacade.getTableModelSender());
+        tableSender.setAutoCreateRowSorter(false);
+        tableSender.setDefaultRenderer(Object.class, new SyncPairTableCellRendererFileSystem());
+        tableSender.getColumnModel().getColumn(0).setPreferredWidth(1000);
+        tableSender.getColumnModel().getColumn(1).setMinWidth(70);
+        tableSender.getColumnModel().getColumn(1).setMaxWidth(70);
 
-        JScrollPane scrollPaneSender = new JScrollPane(table);
-        scrollPaneSender.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        JScrollPane scrollPaneSender = new JScrollPane(tableSender);
+        scrollPaneSender.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPaneSender, new GbcBuilder(0, row).fillBoth());
 
         // Tabelle Status
-        table = this.tableFacade.getTableStatus();
-        table.setModel(this.tableFacade.getTableModelStatus());
-        table.setAutoCreateRowSorter(false);
-        table.setDefaultRenderer(Object.class, new SyncPairTableCellRendererStatus());
-        // table.setPreferredScrollableViewportSize(new Dimension(220, 1000));
+        JTable tableStatus = this.tableFacade.getTableStatus();
+        tableStatus.setModel(this.tableFacade.getTableModelStatus());
+        tableStatus.setAutoCreateRowSorter(false);
+        tableStatus.setDefaultRenderer(Object.class, new SyncPairTableCellRendererStatus());
+        // tableStatus.setPreferredScrollableViewportSize(new Dimension(220, 1000));
 
-        JScrollPane scrollPaneStatus = new JScrollPane(table);
-        scrollPaneStatus.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        JScrollPane scrollPaneStatus = new JScrollPane(tableStatus);
+        scrollPaneStatus.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPaneStatus, new GbcBuilder(1, row).fillBoth().weightx(0D));
 
         // Tabelle Receiver
-        table = this.tableFacade.getTableReceiver();
-        table.setModel(this.tableFacade.getTableModelReceiver());
-        table.setAutoCreateRowSorter(false);
-        table.setDefaultRenderer(Object.class, new SyncPairTableCellRendererFileSystem());
-        table.getColumnModel().getColumn(0).setPreferredWidth(1000);
-        table.getColumnModel().getColumn(1).setMinWidth(70);
-        table.getColumnModel().getColumn(1).setMaxWidth(70);
+        JTable tableReceiver = this.tableFacade.getTableReceiver();
+        tableReceiver.setModel(this.tableFacade.getTableModelReceiver());
+        tableReceiver.setAutoCreateRowSorter(false);
+        tableReceiver.setDefaultRenderer(Object.class, new SyncPairTableCellRendererFileSystem());
+        tableReceiver.getColumnModel().getColumn(0).setPreferredWidth(1000);
+        tableReceiver.getColumnModel().getColumn(1).setMinWidth(70);
+        tableReceiver.getColumnModel().getColumn(1).setMaxWidth(70);
 
-        JScrollPane scrollPaneReceiver = new JScrollPane(table);
-        scrollPaneReceiver.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        JScrollPane scrollPaneReceiver = new JScrollPane(tableReceiver);
+        scrollPaneReceiver.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPaneReceiver, new GbcBuilder(2, row).fillBoth());
 
-        this.panel.add(scrollPaneReceiver.getVerticalScrollBar(), new GbcBuilder(3, row).fillVertical());
+        // SelectionModel synchronisieren
+        tableReceiver.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tableStatus.setSelectionModel(tableReceiver.getSelectionModel());
+        tableSender.setSelectionModel(tableReceiver.getSelectionModel());
 
+        // Vertikale ScrollBars synchronisieren
         scrollPaneSender.getVerticalScrollBar().setModel(scrollPaneReceiver.getVerticalScrollBar().getModel());
         scrollPaneStatus.getVerticalScrollBar().setModel(scrollPaneReceiver.getVerticalScrollBar().getModel());
 

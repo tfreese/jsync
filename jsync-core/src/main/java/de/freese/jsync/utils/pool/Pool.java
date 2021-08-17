@@ -10,6 +10,9 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A pool of objects that can be reused to avoid allocations.<br>
  * The pool is optionally thread safe and can be configured to use soft references.<br>
@@ -271,6 +274,11 @@ public abstract class Pool<T>
     private final Queue<T> freeObjects;
 
     /**
+    *
+    */
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
      *
      */
     private int peak;
@@ -397,7 +405,7 @@ public abstract class Pool<T>
      *
      * @param object Object
      */
-    public void free(final T object)
+    public final void free(final T object)
     {
         Objects.requireNonNull(object, "object required");
 
@@ -434,6 +442,14 @@ public abstract class Pool<T>
     public int getFree()
     {
         return this.freeObjects.size();
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
     }
 
     /**
