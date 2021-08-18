@@ -1,12 +1,12 @@
 // Created: 17.08.2021
 package de.freese.jsync.nio.filesystem;
 
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.Sender;
 import de.freese.jsync.filter.PathFilter;
+import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
 
@@ -15,26 +15,6 @@ import reactor.core.publisher.Flux;
  */
 public class RemoteSenderNio extends AbstractNioFileSystem implements Sender
 {
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
-     */
-    @Override
-    public void connect(final URI uri)
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
-     */
-    @Override
-    public void disconnect()
-    {
-        // TODO Auto-generated method stub
-
-    }
-
     /**
      * @see de.freese.jsync.filesystem.FileSystem#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
@@ -51,8 +31,7 @@ public class RemoteSenderNio extends AbstractNioFileSystem implements Sender
     @Override
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
     {
-        // TODO Auto-generated method stub
-        return null;
+        return generateSyncItems(baseDir, followSymLinks, pathFilter, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
     }
 
     /**

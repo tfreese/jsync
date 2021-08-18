@@ -37,7 +37,7 @@ public class GbcBuilder extends GridBagConstraints
         this.gridy = gridy;
 
         fillNone();
-        insets(5, 5, 5, 5);
+        insets(2, 2, 2, 2);
     }
 
     /**

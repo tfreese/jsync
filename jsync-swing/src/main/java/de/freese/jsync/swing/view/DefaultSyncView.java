@@ -245,6 +245,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
             textFieldHostPortSender.setVisible(JSyncProtocol.RSOCKET.equals(protocol));
             buttonOpenSender.setVisible(JSyncProtocol.FILE.equals(protocol));
+
+            this.uriViewSender.getComponent().revalidate();
+            this.uriViewSender.getComponent().repaint();
         });
 
         comboboxProtocolReceiver.addItemListener(event -> {
@@ -257,6 +260,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
             textFieldHostPortReceiver.setVisible(JSyncProtocol.RSOCKET.equals(protocol));
             buttonOpenReceiver.setVisible(JSyncProtocol.FILE.equals(protocol));
+
+            this.uriViewReceiver.getComponent().revalidate();
+            this.uriViewReceiver.getComponent().repaint();
         });
 
         buttonOpenSender.addActionListener(event -> {
@@ -457,18 +463,18 @@ public class DefaultSyncView extends AbstractView implements SyncView
         panelFilter.setLayout(new GridBagLayout());
         panelFilter.setBorder(BorderFactory.createTitledBorder(getMessage("jsync.filter")));
 
-        panelFilter.add(new JLabel(getMessage("jsync.directories")), new GbcBuilder(0, 0).anchorWest().insets(5, 5, 0, 5));
+        panelFilter.add(new JLabel(getMessage("jsync.directories")), new GbcBuilder(0, 0).anchorWest());
         this.textAreaFilterDirs = new JTextArea();
         panelFilter.add(this.textAreaFilterDirs, new GbcBuilder(0, 1).fillBoth());
 
-        panelFilter.add(new JLabel(getMessage("jsync.files")), new GbcBuilder(0, 2).anchorWest().insets(5, 5, 0, 5));
+        panelFilter.add(new JLabel(getMessage("jsync.files")), new GbcBuilder(0, 2).anchorWest());
         this.textAreaFilterFiles = new JTextArea();
         panelFilter.add(this.textAreaFilterFiles, new GbcBuilder(0, 3).fillBoth());
 
         panelFilter.setMinimumSize(new Dimension(230, 160));
         panelFilter.setPreferredSize(new Dimension(230, 160));
         panelFilter.setMaximumSize(new Dimension(230, 160));
-        this.panel.add(panelFilter, new GbcBuilder(1, row).fillHorizontal().weightx(0));
+        this.panel.add(panelFilter, new GbcBuilder(1, row).fillBoth().gridheight(2).weightx(0).weighty(0));
 
         // Show
         this.showView.initGUI(this.tableFacade);

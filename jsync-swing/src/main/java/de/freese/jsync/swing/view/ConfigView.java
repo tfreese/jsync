@@ -2,6 +2,7 @@
 package de.freese.jsync.swing.view;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.util.function.Consumer;
 
@@ -120,6 +121,8 @@ public class ConfigView extends AbstractView
         // Button Compare
         this.buttonCompare = new JButton(getMessage("jsync.compare"));
         this.buttonCompare.setEnabled(false);
+        this.buttonCompare.setMinimumSize(new Dimension(150, 20));
+        this.buttonCompare.setPreferredSize(new Dimension(200, 100));
         this.panel.add(this.buttonCompare, new GbcBuilder(0, 0).insets(5, 5, 5, 20));
 
         // Optionen
@@ -142,13 +145,15 @@ public class ConfigView extends AbstractView
 
         this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallel"), false);
         this.checkBoxParallelism.setName(panelOptions.getName() + ".parallel");
-        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 2).gridwidth(2));
+        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 2).gridwidth(2).anchorCenter());
 
         this.panel.add(panelOptions, new GbcBuilder(1, 0));
 
         // Button Synchronize
         this.buttonSyncronize = new JButton(getMessage("jsync.synchronize"));
         this.buttonSyncronize.setEnabled(false);
+        this.buttonSyncronize.setMinimumSize(new Dimension(150, 20));
+        this.buttonSyncronize.setPreferredSize(new Dimension(200, 100));
         this.panel.add(this.buttonSyncronize, new GbcBuilder(2, 0).insets(5, 20, 5, 5));
     }
 }
