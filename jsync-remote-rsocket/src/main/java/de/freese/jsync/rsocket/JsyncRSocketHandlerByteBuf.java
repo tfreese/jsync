@@ -39,18 +39,18 @@ import reactor.core.publisher.Mono;
 public class JsyncRSocketHandlerByteBuf implements RSocket
 {
     /**
-    *
-    */
+     *
+     */
     private static final ByteBufAllocator BYTE_BUF_ALLOCATOR = ByteBufAllocator.DEFAULT;
 
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JsyncRSocketHandlerByteBuf.class);
 
     /**
-    *
-    */
+     *
+     */
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true)
     {
         /**
@@ -64,8 +64,8 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
     };
 
     /**
-    *
-    */
+     *
+     */
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true)
     {
         /**
@@ -79,8 +79,8 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
     };
 
     /**
-    *
-    */
+     *
+     */
     private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
 
     /**

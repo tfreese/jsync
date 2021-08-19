@@ -33,6 +33,26 @@ public final class SocketChannelPool extends Pool<SocketChannel>
     }
 
     /**
+     * @see de.freese.jsync.utils.pool.Pool#clear()
+     */
+    @Override
+    public void clear()
+    {
+        super.clear(channel -> {
+            try
+            {
+                channel.shutdownInput();
+                channel.shutdownOutput();
+                channel.close();
+            }
+            catch (IOException ex)
+            {
+                getLogger().warn(ex.getMessage());
+            }
+        });
+    }
+
+    /**
      * @see de.freese.jsync.utils.pool.Pool#create()
      */
     @Override
@@ -56,32 +76,6 @@ public final class SocketChannelPool extends Pool<SocketChannel>
         catch (IOException ex)
         {
             throw new UncheckedIOException(ex);
-        }
-    }
-
-    /**
-     * @see de.freese.jsync.utils.pool.Pool#reset(java.lang.Object)
-     */
-    @Override
-    protected void reset(final SocketChannel object)
-    {
-        try
-        {
-            // if(object.isOpen())
-            // {
-            //
-            // }
-            object.shutdownInput();
-            object.shutdownOutput();
-            object.close();
-        }
-        catch (IOException ex)
-        {
-            getLogger().warn(ex.getMessage());
-        }
-        finally
-        {
-            super.reset(object);
         }
     }
 }

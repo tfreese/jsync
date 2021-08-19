@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -28,6 +29,8 @@ import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import de.freese.jsync.nio.server.JSyncNioServer;
+import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.rsocket.server.JsyncRSocketServer;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
@@ -98,14 +101,33 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     }
 
     /**
+     * @param port int
+     *
      * @throws Exception Falls was schief geht.
      */
-    private void startServerRSocket() throws Exception
+    private void startServerNio(final int port) throws Exception
+    {
+        if (!CLOSEABLES.containsKey("nio"))
+        {
+            JSyncNioServer server = new JSyncNioServer(port, 2, 4);
+            server.setName("nio");
+            server.setIoHandler(new JSyncIoHandler());
+            server.start();
+            CLOSEABLES.put("nio", () -> server.stop());
+        }
+    }
+
+    /**
+     * @param port int
+     *
+     * @throws Exception Falls was schief geht.
+     */
+    private void startServerRSocket(final int port) throws Exception
     {
         if (!CLOSEABLES.containsKey("rsocket"))
         {
             JsyncRSocketServer server = new JsyncRSocketServer();
-            server.start(8002);
+            server.start(port);
             CLOSEABLES.put("rsocket", () -> server.stop());
         }
     }
@@ -167,25 +189,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         assertTrue(true);
     }
 
-    /**
-     * @throws Exception Falls was schief geht.
-     */
-    @Test
-    void testRSocket() throws Exception
-    {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
-
-        startServerRSocket();
-
-        URI senderUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002", PATH_QUELLE.toString());
-        URI receiverUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002", PATH_ZIEL.toString());
-
-        syncDirectories(options, senderUri, receiverUri);
-
-        assertTrue(true);
-    }
-
     // /**
     // * @throws Exception Falls was schief geht.
     // */
@@ -199,20 +202,25 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // }
     // }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // private void startServerNio() throws Exception
-    // {
-    // if (!CLOSEABLES.containsKey("nio"))
-    // {
-    // JSyncNioServer server = new JSyncNioServer(8001, 2, 4);
-    // server.setName("nio");
-    // server.setIoHandler(new JSyncIoHandler());
-    // server.start();
-    // CLOSEABLES.put("nio", () -> server.stop());
-    // }
-    // }
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    @Disabled
+    void testNio() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        startServerNio(8001);
+
+        URI senderUri = JSyncUtils.toUri(JSyncProtocol.NIO, "localhost:8001", PATH_QUELLE.toString());
+        URI receiverUri = JSyncUtils.toUri(JSyncProtocol.NIO, "localhost:8001", PATH_ZIEL.toString());
+
+        syncDirectories(options, senderUri, receiverUri);
+
+        assertTrue(true);
+    }
 
     // /**
     // * @throws Exception Falls was schief geht.
@@ -253,26 +261,24 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // }
     // }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // @Test
-    // void testNio() throws Exception
-    // {
-    // System.out.println();
-    // TimeUnit.MILLISECONDS.sleep(500);
-    //
-    // startServerNio();
-    //
-    // // URI sender = new URI("jsync", null, "localhost", 8001, "/" + PATH_QUELLE.toString(), null, null);
-    // // URI receiver = new URI("jsync", null, "localhost", 8001, "/" + PATH_ZIEL.toString(), null, null);
-    // URI senderUri = new URI("jsync://localhost:8001/" + PATH_QUELLE.toString());
-    // URI receiverUri = new URI("jsync://localhost:8001/" + PATH_ZIEL.toString());
-    //
-    // syncDirectories(options, senderUri, receiverUri, RemoteMode.NIO);
-    //
-    // assertTrue(true);
-    // }
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    void testRSocket() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        startServerRSocket(8002);
+
+        URI senderUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002", PATH_QUELLE.toString());
+        URI receiverUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002", PATH_ZIEL.toString());
+
+        syncDirectories(options, senderUri, receiverUri);
+
+        assertTrue(true);
+    }
 
     // /**
     // * @throws Exception Falls was schief geht.

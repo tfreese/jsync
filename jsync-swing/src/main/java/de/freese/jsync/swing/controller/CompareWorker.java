@@ -88,6 +88,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
                 //.delayElements(Duration.ofMillis(10))
                 .doOnNext(tuple -> getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + (tuple.getT1() + 1)))
                 .map(Tuple2::getT2)
+                .doOnError(ex -> getLogger().error(null,ex))
                 .collectList()
                 .block();
         // @formatter:on

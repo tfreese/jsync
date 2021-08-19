@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -392,6 +393,18 @@ public abstract class Pool<T>
     }
 
     /**
+     * Removes all free objects from this pool.
+     *
+     * @param cleanup {@link Consumer}
+     */
+    public void clear(final Consumer<T> cleanup)
+    {
+        this.freeObjects.forEach(cleanup);
+
+        this.freeObjects.clear();
+    }
+
+    /**
      * @return Object
      */
     protected abstract T create();
@@ -442,6 +455,14 @@ public abstract class Pool<T>
     public int getFree()
     {
         return this.freeObjects.size();
+    }
+
+    /**
+     * @return {@link Queue}<T>
+     */
+    protected Queue<T> getFreeObjects()
+    {
+        return this.freeObjects;
     }
 
     /**

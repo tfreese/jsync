@@ -27,6 +27,12 @@
         <!-- test scope -->
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>jsync-remote-nio-server</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>          
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-rsocket-server</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

@@ -599,6 +599,12 @@ public final class JSyncUtils
         {
             return Paths.get(path).toUri();
         }
+        else if (JSyncProtocol.NIO.equals(protocol))
+        {
+            URI uri = Paths.get(path).toUri();
+
+            return URI.create("nio://" + hostPort + uri.getRawPath());
+        }
         else if (JSyncProtocol.RSOCKET.equals(protocol))
         {
             URI uri = Paths.get(path).toUri();

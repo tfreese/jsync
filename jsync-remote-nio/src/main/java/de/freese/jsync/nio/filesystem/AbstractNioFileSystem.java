@@ -106,6 +106,9 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         {
             getChannelPool().free(channel);
             ByteBufferPool.getInstance().free(buffer);
+
+            this.channelPool.clear();
+            this.channelPool = null;
         }
     }
 
@@ -119,47 +122,45 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
      */
     protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command)
     {
-        SocketChannel channel = getChannelPool().obtain();
-        ByteBuffer buffer = ByteBufferPool.getInstance().obtain();
+        return Flux.create(sink -> {
 
-        try
-        {
-            getSerializer().writeTo(buffer, command);
-            getSerializer().writeTo(buffer, baseDir);
-            getSerializer().writeTo(buffer, followSymLinks);
-            getSerializer().writeTo(buffer, pathFilter != null ? pathFilter : new PathFilterTrue());
+            SocketChannel channel = getChannelPool().obtain();
+            ByteBuffer buffer = ByteBufferPool.getInstance().obtain();
 
-            write(buffer, channel);
-
-            long contentLength = readResponseHeader(buffer, channel);
-            readResponseBody(buffer, channel, contentLength);
-
-            int itemCount = getSerializer().readFrom(buffer, int.class);
-
-            // while ((byteBuffer.limit() - byteBuffer.position()) > 0)
-            for (int i = 0; i < itemCount; i++)
+            try
             {
-                SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
-                consumerSyncItem.accept(syncItem);
+                getSerializer().writeTo(buffer, command);
+                getSerializer().writeTo(buffer, baseDir);
+                getSerializer().writeTo(buffer, followSymLinks);
+                getSerializer().writeTo(buffer, pathFilter != null ? pathFilter : new PathFilterTrue());
+
+                write(buffer, channel);
+
+                long contentLength = readResponseHeader(buffer, channel);
+                readResponseBody(buffer, channel, contentLength);
+
+                int itemCount = getSerializer().readFrom(buffer, int.class);
+
+                // while ((byteBuffer.limit() - byteBuffer.position()) > 0)
+                for (int i = 0; i < itemCount; i++)
+                {
+                    SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
+
+                    sink.next(syncItem);
+                }
             }
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
-        }
-        finally
-        {
-            getChannelPool().free(channel);
-            ByteBufferPool.getInstance().free(buffer);
-        }
+            catch (Exception ex)
+            {
+                sink.error(ex);
+            }
+            finally
+            {
+                getChannelPool().free(channel);
+                ByteBufferPool.getInstance().free(buffer);
+
+                sink.complete();
+            }
+        });
     }
 
     /**
