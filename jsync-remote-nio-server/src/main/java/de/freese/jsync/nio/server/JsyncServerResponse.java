@@ -119,7 +119,7 @@ public final class JsyncServerResponse
      * @param channel {@link SocketChannel}
      * @param buffer {@link ByteBuffer}
      *
-     * @throws IOException @throws Exception Falls was schief geht
+     * @throws IOException Falls was schief geht
      */
     void write(final SocketChannel channel, final ByteBuffer buffer) throws IOException
     {
