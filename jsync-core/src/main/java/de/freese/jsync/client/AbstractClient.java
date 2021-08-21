@@ -377,7 +377,11 @@ public abstract class AbstractClient implements Client
             baseDir = getReceiverPath();
         }
 
-        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), pathFilter);
+        // @formatter:off
+        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), pathFilter)
+                .doOnError(ex -> getLogger().error(null, ex))
+                ;
+        // @formatter:on
     }
 
     /**

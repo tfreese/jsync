@@ -9,6 +9,11 @@ import java.nio.ByteBuffer;
 public interface ByteBufferPool
 {
     /**
+     *
+     */
+    void clear();
+
+    /**
      * @param buffer {@link ByteBuffer}
      */
     void free(ByteBuffer buffer);

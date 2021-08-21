@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -206,7 +205,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    @Disabled
+    // @Disabled
     void testNio() throws Exception
     {
         System.out.println();

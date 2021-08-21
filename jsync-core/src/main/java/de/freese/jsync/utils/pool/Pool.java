@@ -401,6 +401,14 @@ public abstract class Pool<T>
     {
         this.freeObjects.forEach(cleanup);
 
+        // for (T obj : this.freeObjects)
+        // {
+        // if (obj != null)
+        // {
+        // cleanup.accept(obj);
+        // }
+        // }
+
         this.freeObjects.clear();
     }
 

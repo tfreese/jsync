@@ -27,7 +27,7 @@ public final class SocketChannelPool extends Pool<SocketChannel>
      */
     public SocketChannelPool(final URI uri)
     {
-        super(true, true);
+        super(true, false);
 
         this.uri = Objects.requireNonNull(uri, "uri required");
     }

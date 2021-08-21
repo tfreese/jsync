@@ -285,7 +285,7 @@ public interface RemoteSupport
 
         try
         {
-            getSerializer().writeTo(byteBuffer, JSyncCommand.SOURCE_READ_FILE_HANDLE);
+            getSerializer().writeTo(byteBuffer, JSyncCommand.SOURCE_READ_FILE);
             getSerializer().writeTo(byteBuffer, baseDir);
             getSerializer().writeTo(byteBuffer, relativeFile);
             getSerializer().writeTo(byteBuffer, sizeOfFile);
@@ -664,53 +664,53 @@ public interface RemoteSupport
     // }
     // }
 
-    /**
-     * Schreibt den {@link FileHandle} in die Datei.
-     *
-     * @param channel {@link SocketChannel}
-     * @param baseDir String
-     * @param relativeFile String
-     * @param sizeOfFile long
-     * @param fileHandle {@link FileHandle}
-     * @param bytesWrittenConsumer {@link LongConsumer}
-     */
-    default void writeFileHandle(final SocketChannel channel, final String baseDir, final String relativeFile, final long sizeOfFile,
-                                 final FileHandle fileHandle, final LongConsumer bytesWrittenConsumer)
-    {
-        ByteBuffer byteBuffer = ByteBufferPool.getInstance().obtain();
-
-        try
-        {
-            getSerializer().writeTo(byteBuffer, JSyncCommand.TARGET_WRITE_FILE_HANDLE);
-            getSerializer().writeTo(byteBuffer, baseDir);
-            getSerializer().writeTo(byteBuffer, relativeFile);
-            getSerializer().writeTo(byteBuffer, sizeOfFile);
-
-            write(channel, byteBuffer);
-
-            // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
-            // Warum auch immer ...
-            Thread.sleep(1);
-
-            fileHandle.writeTo(channel, sizeOfFile);
-
-            readResponseHeader(byteBuffer, channel);
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        catch (Exception ex)
-        {
-            throw new RuntimeException(ex);
-        }
-        finally
-        {
-            ByteBufferPool.getInstance().free(byteBuffer);
-        }
-    }
+    // /**
+    // * Schreibt den {@link FileHandle} in die Datei.
+    // *
+    // * @param channel {@link SocketChannel}
+    // * @param baseDir String
+    // * @param relativeFile String
+    // * @param sizeOfFile long
+    // * @param fileHandle {@link FileHandle}
+    // * @param bytesWrittenConsumer {@link LongConsumer}
+    // */
+    // default void writeFileHandle(final SocketChannel channel, final String baseDir, final String relativeFile, final long sizeOfFile,
+    // final FileHandle fileHandle, final LongConsumer bytesWrittenConsumer)
+    // {
+    // ByteBuffer byteBuffer = ByteBufferPool.getInstance().obtain();
+    //
+    // try
+    // {
+    // getSerializer().writeTo(byteBuffer, JSyncCommand.TARGET_WRITE_FILE);
+    // getSerializer().writeTo(byteBuffer, baseDir);
+    // getSerializer().writeTo(byteBuffer, relativeFile);
+    // getSerializer().writeTo(byteBuffer, sizeOfFile);
+    //
+    // write(channel, byteBuffer);
+    //
+    // // Ohne diese Pause kann es beim Remote-Transfer Hänger geben.
+    // // Warum auch immer ...
+    // Thread.sleep(1);
+    //
+    // fileHandle.writeTo(channel, sizeOfFile);
+    //
+    // readResponseHeader(byteBuffer, channel);
+    // }
+    // catch (RuntimeException rex)
+    // {
+    // throw rex;
+    // }
+    // catch (IOException ex)
+    // {
+    // throw new UncheckedIOException(ex);
+    // }
+    // catch (Exception ex)
+    // {
+    // throw new RuntimeException(ex);
+    // }
+    // finally
+    // {
+    // ByteBufferPool.getInstance().free(byteBuffer);
+    // }
+    // }
 }

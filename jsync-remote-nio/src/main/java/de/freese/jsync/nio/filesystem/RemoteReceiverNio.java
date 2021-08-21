@@ -80,7 +80,6 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
-        // TODO Auto-generated method stub
-        return null;
+        return Flux.empty();
     }
 }
