@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,7 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.nio.server.JsyncServerResponse;
-import de.freese.jsync.nio.transport.NioTransport;
+import de.freese.jsync.nio.transport.NioFrameProtocol;
 import de.freese.jsync.nio.utils.RemoteUtils;
 import de.freese.jsync.utils.pool.Pool;
 
@@ -109,7 +108,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
     *
     */
-    private final NioTransport nioTransport = new NioTransport();
+    private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
 
     /**
      *
@@ -119,29 +118,34 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
      * Create the checksum.
      *
-     * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
+     * @param channel {@link SocketChannel}
      * @param fileSystem {@link FileSystem}
      */
-    protected void createChecksum(final SelectionKey selectionKey, final ByteBuffer buffer, final FileSystem fileSystem)
+    protected void createChecksum(final SocketChannel channel, final FileSystem fileSystem)
     {
-        String baseDir = getSerializer().readFrom(buffer, String.class);
-        String relativeFile = getSerializer().readFrom(buffer, String.class);
-
         try
         {
+            ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
+
+            String baseDir = getSerializer().readFrom(buffer, String.class);
+            String relativeFile = getSerializer().readFrom(buffer, String.class);
+
+            this.frameProtocol.getBufferPool().free(buffer);
+
             String checksum = fileSystem.generateChecksum(baseDir, relativeFile, null);
 
-            JsyncServerResponse.ok(buffer).write(selectionKey, buf -> getSerializer().writeTo(buffer, checksum));
+            this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, checksum));
+            this.frameProtocol.writeFinish(channel);
         }
         catch (Exception ex)
         {
+            getLogger().error(null, ex);
+
             try
             {
-                // Exception senden.
-                JsyncServerResponse.error(buffer).write(selectionKey, buf -> getSerializer().writeTo(buf, ex, Exception.class));
+                this.frameProtocol.writeError(channel, ex);
             }
-            catch (IOException ioex)
+            catch (Exception ioex)
             {
                 getLogger().error(null, ioex);
             }
@@ -191,27 +195,21 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      */
     protected void createSyncItems(final SocketChannel channel, final FileSystem fileSystem)
     {
-        AtomicReference<String> refBaseDir = new AtomicReference<>();
-        AtomicReference<Boolean> refFollowSymLinks = new AtomicReference<>();
-        AtomicReference<PathFilter> refPathFilter = new AtomicReference<>();
-
         try
         {
-            this.nioTransport.readAll(channel, buffer -> {
-                refBaseDir.set(getSerializer().readFrom(buffer, String.class));
-                refFollowSymLinks.set(getSerializer().readFrom(buffer, Boolean.class));
-                refPathFilter.set(getSerializer().readFrom(buffer, PathFilter.class));
-            });
+            ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
 
-            String baseDir = refBaseDir.get();
-            boolean followSymLinks = refFollowSymLinks.get();
-            PathFilter pathFilter = refPathFilter.get();
+            String baseDir = getSerializer().readFrom(buffer, String.class);
+            boolean followSymLinks = getSerializer().readFrom(buffer, Boolean.class);
+            PathFilter pathFilter = getSerializer().readFrom(buffer, PathFilter.class);
+
+            this.frameProtocol.getBufferPool().free(buffer);
 
             fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).subscribe(syncItem -> {
-                this.nioTransport.writeData(channel, buffer -> getSerializer().writeTo(buffer, syncItem));
+                this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, syncItem));
             });
 
-            this.nioTransport.writeFinish(channel);
+            this.frameProtocol.writeFinish(channel);
         }
         catch (Exception ex)
         {
@@ -219,7 +217,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
             try
             {
-                this.nioTransport.writeError(channel, ex);
+                this.frameProtocol.writeError(channel, ex);
             }
             catch (Exception ioex)
             {
@@ -308,11 +306,12 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         {
             SocketChannel channel = (SocketChannel) selectionKey.channel();
 
-            AtomicReference<JSyncCommand> refCommand = new AtomicReference<>();
+            ByteBuffer buffer = this.frameProtocol.readFrame(channel);
 
-            this.nioTransport.readFrame(channel, buf -> refCommand.set(getSerializer().readFrom(buf, JSyncCommand.class)));
+            JSyncCommand command = getSerializer().readFrom(buffer, JSyncCommand.class);
 
-            JSyncCommand command = refCommand.get();
+            this.frameProtocol.getBufferPool().free(buffer);
+
             getLogger().debug("{}: read command: {}", getRemoteAddress(selectionKey), command);
 
             if (command == null)
@@ -322,33 +321,34 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 return;
             }
 
+            getLogger().debug("{}", this.frameProtocol.getBufferPool());
+
             switch (command)
             {
                 case DISCONNECT:
                     // FINISH-Frame lesen
-                    this.nioTransport.readFrame(channel, buf -> {
-                    });
+                    this.frameProtocol.readFrame(channel);
 
-                    this.nioTransport.writeData(channel, buf -> getSerializer().writeTo(buf, "DISCONNECTED"));
-                    this.nioTransport.writeFinish(channel);
+                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, "DISCONNECTED"));
+                    this.frameProtocol.writeFinish(channel);
 
                     selectionKey.attach(null);
                     // selectionKey.interestOps(SelectionKey.OP_CONNECT);
                     selectionKey.channel().close();
                     selectionKey.cancel();
+
                     break;
 
                 case CONNECT:
                     // FINISH-Frame lesen
-                    this.nioTransport.readFrame(channel, buf -> {
-                    });
+                    this.frameProtocol.readFrame(channel);
 
-                    this.nioTransport.writeData(channel, buf -> getSerializer().writeTo(buf, "CONNECTED"));
-                    this.nioTransport.writeFinish(channel);
+                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, "CONNECTED"));
+                    this.frameProtocol.writeFinish(channel);
                     break;
 
                 case SOURCE_CHECKSUM:
-                    createChecksum(selectionKey, null, sender);
+                    createChecksum(channel, sender);
                     break;
 
                 case SOURCE_CREATE_SYNC_ITEMS:
@@ -360,7 +360,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                     break;
 
                 case TARGET_CHECKSUM:
-                    createChecksum(selectionKey, null, receiver);
+                    createChecksum(channel, receiver);
                     break;
 
                 case TARGET_CREATE_DIRECTORY:

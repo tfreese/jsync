@@ -21,8 +21,7 @@ public class RemoteSenderNio extends AbstractNioFileSystem implements Sender
     @Override
     public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead)
     {
-        // TODO Auto-generated method stub
-        return null;
+        return generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead, JSyncCommand.SOURCE_CHECKSUM);
     }
 
     /**
