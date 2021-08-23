@@ -7,7 +7,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.core.publisher.SynchronousSink;
 
 /**
@@ -40,7 +40,7 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
     public void accept(final SynchronousSink<ByteBuffer> sink)
     {
         boolean release = true;
-        ByteBuffer buffer = ByteBufferPool.getInstance().obtain();
+        ByteBuffer buffer = ByteBufferPool.DEFAULT.get();
 
         try
         {
@@ -63,7 +63,7 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
         {
             if (release)
             {
-                ByteBufferPool.getInstance().free(buffer);
+                ByteBufferPool.DEFAULT.free(buffer);
             }
         }
     }

@@ -438,6 +438,21 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * @see de.freese.jsync.swing.view.SyncView#incrementProgressBarFilesValue(int)
+     */
+    @Override
+    public void incrementProgressBarFilesValue(final int value)
+    {
+        runInEdt(() -> {
+            int v = value + this.progressBarFiles.getValue();
+
+            this.progressBarFiles.setValue(v);
+
+            this.progressBarFiles.setString(getMessage("jsync.files") + ": " + v + "/" + this.progressBarFiles.getMaximum());
+        });
+    }
+
+    /**
      * @see de.freese.jsync.swing.view.SyncView#initGUI()
      */
     @Override

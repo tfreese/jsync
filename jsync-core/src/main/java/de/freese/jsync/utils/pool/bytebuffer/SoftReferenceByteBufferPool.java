@@ -1,37 +1,17 @@
 // Created: 16.07.2021
-package de.freese.jsync.utils.pool;
+package de.freese.jsync.utils.pool.bytebuffer;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import de.freese.jsync.Options;
+import de.freese.jsync.utils.pool.Pool;
 
 /**
  * @author Thomas Freese
  */
-public class ByteBufferPool extends Pool<ByteBuffer>
+class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBufferPool
 {
-    /**
-     * ThreadSafe Singleton-Pattern.
-     *
-     * @author Thomas Freese
-     */
-    private static final class ByteBufferPoolHolder
-    {
-        /**
-         *
-         */
-        private static final ByteBufferPool INSTANCE = new ByteBufferPool();
-
-        /**
-         * Erstellt ein neues {@link ByteBufferPoolHolder} Object.
-         */
-        private ByteBufferPoolHolder()
-        {
-            super();
-        }
-    }
-
     /**
      * Default: 4 MB
      */
@@ -43,22 +23,6 @@ public class ByteBufferPool extends Pool<ByteBuffer>
     private static final int MAX_CAPACITY = Integer.MAX_VALUE;
 
     /**
-     * @return {@link ByteBufferPool}
-     */
-    public static ByteBufferPool getInstance()
-    {
-        return ByteBufferPoolHolder.INSTANCE;
-    }
-
-    /**
-     * Erstellt ein neues {@link ByteBufferPool} Object.
-     */
-    private ByteBufferPool()
-    {
-        super(true, true);
-    }
-
-    /**
      * Calculate the capacity of the buffer.
      *
      * @param neededCapacity int
@@ -68,7 +32,7 @@ public class ByteBufferPool extends Pool<ByteBuffer>
      * @see io.netty.buffer.AbstractByteBufAllocator#calculateNewCapacity(int, int)
      */
     @SuppressWarnings("javadoc")
-    private int calculateCapacity(final int neededCapacity)
+    static int calculateCapacity(final int neededCapacity)
     {
         if (neededCapacity < 0)
         {
@@ -108,6 +72,14 @@ public class ByteBufferPool extends Pool<ByteBuffer>
         }
 
         return Math.min(newCapacity, MAX_CAPACITY);
+    }
+
+    /**
+     * Erstellt ein neues {@link ByteBufferPool} Object.
+     */
+    SoftReferenceByteBufferPool()
+    {
+        super(true, true);
     }
 
     /**
@@ -163,22 +135,10 @@ public class ByteBufferPool extends Pool<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.utils.pool.Pool#obtain()
+     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get(int)
      */
     @Override
-    public ByteBuffer obtain()
-    {
-        return obtain(Options.BUFFER_SIZE);
-    }
-
-    /**
-     * Garantiert die Mindestgröße des Buffers.
-     *
-     * @param size int
-     *
-     * @return {@link ByteBuffer}
-     */
-    public ByteBuffer obtain(final int size)
+    public ByteBuffer get(final int size)
     {
         ByteBuffer byteBuffer = super.obtain();
 
@@ -190,6 +150,15 @@ public class ByteBufferPool extends Pool<ByteBuffer>
     }
 
     /**
+     * @see de.freese.jsync.utils.pool.Pool#obtain()
+     */
+    @Override
+    public ByteBuffer obtain()
+    {
+        return get(Options.BUFFER_SIZE);
+    }
+
+    /**
      * @see java.lang.Object#toString()
      */
     @Override
@@ -197,7 +166,6 @@ public class ByteBufferPool extends Pool<ByteBuffer>
     {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(":");
-
         sb.append(" created=").append(getCreated());
         sb.append(", free=").append(getFree());
         sb.append(", peak=").append(getPeak());

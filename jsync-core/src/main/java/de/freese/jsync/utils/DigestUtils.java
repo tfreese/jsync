@@ -14,7 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.Options;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * @author Thomas Freese
@@ -143,7 +143,7 @@ public final class DigestUtils
             consumerBytesRead.accept(0);
         }
 
-        ByteBuffer buffer = ByteBufferPool.getInstance().obtain();
+        ByteBuffer buffer = ByteBufferPool.DEFAULT.get();
 
         try
         {
@@ -167,7 +167,7 @@ public final class DigestUtils
         }
         finally
         {
-            ByteBufferPool.getInstance().free(buffer);
+            ByteBufferPool.DEFAULT.free(buffer);
         }
 
         return bytes;

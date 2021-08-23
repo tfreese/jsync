@@ -13,7 +13,7 @@ import org.reactivestreams.Publisher;
 
 import de.freese.jsync.utils.io.ReadableByteChannelGenerator;
 import de.freese.jsync.utils.io.WritableByteChannelSubscriber;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.core.publisher.Flux;
 
 /**
@@ -59,7 +59,7 @@ public final class ReactiveUtils
     {
         Objects.requireNonNull(byteBuffer, "byteBuffer required");
 
-        ByteBufferPool.getInstance().free(byteBuffer);
+        ByteBufferPool.DEFAULT.free(byteBuffer);
     }
 
     /**

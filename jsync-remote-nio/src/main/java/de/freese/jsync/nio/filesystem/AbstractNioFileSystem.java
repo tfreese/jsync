@@ -17,7 +17,6 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.nio.transport.NioFrameProtocol;
-import de.freese.jsync.nio.utils.pool.ByteBufferPoolAdapter;
 import de.freese.jsync.nio.utils.pool.SocketChannelPool;
 import reactor.core.publisher.Flux;
 
@@ -34,7 +33,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
     /**
     *
     */
-    private final NioFrameProtocol frameProtocol = new NioFrameProtocol(new ByteBufferPoolAdapter());
+    private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
 
     /**
     *

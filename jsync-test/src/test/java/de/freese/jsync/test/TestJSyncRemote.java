@@ -32,7 +32,7 @@ import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.rsocket.server.JsyncRSocketServer;
 import de.freese.jsync.utils.JSyncUtils;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.core.publisher.Hooks;
 
 /***
@@ -82,8 +82,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
             closeable.close();
         }
 
-        ByteBufferPool pool = ByteBufferPool.getInstance();
-        LOGGER.info("ByteBufferPool: created={}, free={}, peak={}", pool.getCreated(), pool.getFree(), pool.getPeak());
+        LOGGER.info("{}", ByteBufferPool.DEFAULT);
 
         // if (ByteBufAllocator.DEFAULT instanceof PooledByteBufAllocator)
         // {

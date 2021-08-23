@@ -40,10 +40,10 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
-        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_CREATE_DIRECTORY);
 
-        ByteBuffer bufferData = getByteBufferPool().obtain();
+        ByteBuffer bufferData = getByteBufferPool().get();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, relativePath);
 
@@ -69,10 +69,10 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_DELETE);
 
-        ByteBuffer bufferData = getByteBufferPool().obtain();
+        ByteBuffer bufferData = getByteBufferPool().get();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, relativePath);
         getSerializer().writeTo(bufferData, followSymLinks);
@@ -117,10 +117,10 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_UPDATE);
 
-        ByteBuffer bufferData = getByteBufferPool().obtain();
+        ByteBuffer bufferData = getByteBufferPool().get();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, syncItem);
 
@@ -146,10 +146,10 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer consumerChecksumBytesRead)
     {
-        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_VALIDATE_FILE);
 
-        ByteBuffer bufferData = getByteBufferPool().obtain();
+        ByteBuffer bufferData = getByteBufferPool().get();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, syncItem);
         getSerializer().writeTo(bufferData, withChecksum);
@@ -177,10 +177,10 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
-        ByteBuffer bufferMeta = getByteBufferPool().obtain();
+        ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_WRITE_FILE);
 
-        ByteBuffer bufferData = getByteBufferPool().obtain();
+        ByteBuffer bufferData = getByteBufferPool().get();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, relativeFile);
         getSerializer().writeTo(bufferData, sizeOfFile);

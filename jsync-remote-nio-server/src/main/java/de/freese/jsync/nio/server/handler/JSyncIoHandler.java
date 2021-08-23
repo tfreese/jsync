@@ -25,7 +25,6 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.nio.transport.NioFrameProtocol;
-import de.freese.jsync.nio.utils.pool.ByteBufferPoolAdapter;
 import de.freese.jsync.utils.pool.Pool;
 import reactor.core.publisher.Flux;
 
@@ -77,7 +76,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
      *
      */
-    private final NioFrameProtocol frameProtocol = new NioFrameProtocol(new ByteBufferPoolAdapter());
+    private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
 
     /**
      *

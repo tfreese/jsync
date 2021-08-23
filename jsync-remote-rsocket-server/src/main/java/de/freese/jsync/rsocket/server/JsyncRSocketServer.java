@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import de.freese.jsync.rsocket.JsyncRSocketHandlerByteBuf;
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import io.rsocket.SocketAcceptor;
@@ -115,6 +115,6 @@ public final class JsyncRSocketServer
 
         this.server.dispose();
 
-        ByteBufferPool.getInstance().clean();
+        ByteBufferPool.DEFAULT.clear();
     }
 }

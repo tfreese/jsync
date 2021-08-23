@@ -22,8 +22,8 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.rsocket.utils.RSocketUtils;
-import de.freese.jsync.utils.pool.ByteBufferPool;
 import de.freese.jsync.utils.pool.Pool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.util.DefaultPayload;
@@ -74,6 +74,11 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
             return new SenderDelegateLogger(new LocalhostSender());
         }
     };
+
+    /**
+    *
+    */
+    private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
 
     /**
     *
@@ -187,7 +192,7 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
 
         return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem -> {
-            ByteBuffer buffer = getPooledBuffer();
+            ByteBuffer buffer = this.byteBufferPool.get();
             getSerializer().writeTo(buffer, syncItem);
             return buffer.flip();
         }).map(DefaultPayload::create);
@@ -210,14 +215,6 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
     private Logger getLogger()
     {
         return LOGGER;
-    }
-
-    /**
-     * @return {@link ByteBuffer}
-     */
-    private ByteBuffer getPooledBuffer()
-    {
-        return ByteBufferPool.getInstance().obtain();
     }
 
     /**
@@ -441,7 +438,7 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         // @formatter:off
         Flux<Payload> response = receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
                 .map(bytesWritten -> {
-                    ByteBuffer buffer = getPooledBuffer();
+                    ByteBuffer buffer = this.byteBufferPool.get();
                     buffer.putLong(bytesWritten).flip();
                     return DefaultPayload.create(buffer);
                 })

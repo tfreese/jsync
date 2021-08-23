@@ -20,7 +20,7 @@ import de.freese.jsync.nio.server.dispatcher.Dispatcher;
 import de.freese.jsync.nio.server.dispatcher.DispatcherPool;
 import de.freese.jsync.nio.server.handler.IoHandler;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * Dieser Server arbeitet nach dem Acceptor-Reactor Pattern.<br>
@@ -273,6 +273,6 @@ public final class JSyncNioServer implements Runnable
 
         getLogger().info("'{}' stopped on port: {}", this.name, this.port);
 
-        ByteBufferPool.getInstance().clean();
+        ByteBufferPool.DEFAULT.clear();
     }
 }

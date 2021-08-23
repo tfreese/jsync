@@ -8,7 +8,7 @@ import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * @author Thomas Freese
@@ -56,6 +56,8 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     {
         if (bytesTransferred == 0)
         {
+            getSyncView().incrementProgressBarFilesValue(1);
+
             getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, (int) syncItem.getSize(),
                     getMessage("jsync.files.copy") + ": " + syncItem.getRelativePath());
         }
@@ -93,7 +95,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     @Override
     protected void done()
     {
-        getLogger().info("{}", ByteBufferPool.getInstance());
+        getLogger().info("{}", ByteBufferPool.DEFAULT);
 
         try
         {
@@ -107,6 +109,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         getSyncView().clearTable();
         getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
         getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
+        getSyncView().setProgressBarFilesMax(0);
         getSyncView().doOnCompare(button -> button.setEnabled(true));
         getSyncView().doOnSyncronize(button -> button.setEnabled(true));
     }

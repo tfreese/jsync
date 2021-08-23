@@ -3,7 +3,7 @@ package de.freese.jsync.rsocket.payload;
 
 import java.nio.ByteBuffer;
 
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
@@ -27,6 +27,11 @@ import io.rsocket.frame.decoder.PayloadDecoder;
 @Deprecated
 class JsyncPayloadDecoder implements PayloadDecoder
 {
+    /**
+    *
+    */
+    private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
+
     /**
      * @see java.util.function.Function#apply(java.lang.Object)
      */
@@ -73,13 +78,13 @@ class JsyncPayloadDecoder implements PayloadDecoder
             default -> throw new IllegalArgumentException("unsupported frame type: " + type);
         }
 
-        ByteBuffer data = ByteBufferPool.getInstance().obtain(d.readableBytes());
+        ByteBuffer data = this.byteBufferPool.get(d.readableBytes());
         data.put(d.nioBuffer());
         data.flip();
 
         if (m != null)
         {
-            ByteBuffer metadata = ByteBufferPool.getInstance().obtain(m.readableBytes());
+            ByteBuffer metadata = this.byteBufferPool.get(m.readableBytes());
             metadata.put(m.nioBuffer());
             metadata.flip();
 

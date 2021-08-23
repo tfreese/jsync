@@ -86,6 +86,11 @@ public interface SyncView
     URI getUri(EFileSystem fileSystem);
 
     /**
+     * @param value int
+     */
+    void incrementProgressBarFilesValue(int value);
+
+    /**
      * Aufbau der GUI.
      */
     void initGUI();

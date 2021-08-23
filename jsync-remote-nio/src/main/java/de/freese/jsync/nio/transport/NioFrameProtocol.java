@@ -9,8 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import de.freese.jsync.nio.transport.pool.ByteBufferPool;
-import de.freese.jsync.nio.transport.pool.DefaultByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.core.publisher.Flux;
 
 /**
@@ -36,7 +35,7 @@ public class NioFrameProtocol
      */
     public NioFrameProtocol()
     {
-        this(new DefaultByteBufferPool());
+        this(ByteBufferPool.DEFAULT);
     }
 
     /**

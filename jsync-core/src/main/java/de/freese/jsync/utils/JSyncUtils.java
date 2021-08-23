@@ -526,7 +526,7 @@ public final class JSyncUtils
 
         // String readableSize = new DecimalFormat("#,##0.#").format(size / unitValue) + " " + SIZE_UNITS[unitIndex];
         // String readableSize = String.format("%7.0f %s", size / unitValue, SIZE_UNITS[unitIndex]);
-        String readableSize = String.format("%.0f %s", size / unitValue, SIZE_UNITS[unitIndex]);
+        String readableSize = String.format("%.1f %s", size / unitValue, SIZE_UNITS[unitIndex]);
 
         return readableSize;
 
@@ -557,7 +557,7 @@ public final class JSyncUtils
         // divider = 1_048_576D;
         // unit = "MB";
         // }
-        // else if (size < (1_048_576 * 1_048_576))
+        // else if (size < (1_099_511_627_776))
         // {
         // divider = 1_073_741_824D;
         // unit = "GB";

@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
@@ -23,6 +23,11 @@ import reactor.util.annotation.Nullable;
 @Deprecated
 class JsyncPayload implements Payload
 {
+    /**
+    *
+    */
+    private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
+
     /**
     *
     */
@@ -56,19 +61,11 @@ class JsyncPayload implements Payload
      */
     public static Payload create(final CharSequence data)
     {
-        ByteBuffer buffer = getPooledBuffer();
+        ByteBuffer buffer = BYTE_BUFFER_POOL.get();
         SERIALIZER.writeTo(buffer, data.toString());
         buffer.flip();
 
         return create(buffer);
-    }
-
-    /**
-     * @return {@link ByteBuffer}
-     */
-    private static ByteBuffer getPooledBuffer()
-    {
-        return ByteBufferPool.getInstance().obtain();
     }
 
     /**
@@ -157,12 +154,12 @@ class JsyncPayload implements Payload
     {
         if (this.data != DefaultPayload.EMPTY_BUFFER)
         {
-            ByteBufferPool.getInstance().free(this.data);
+            BYTE_BUFFER_POOL.free(this.data);
         }
 
         if ((this.metadata != null) && (this.metadata != DefaultPayload.EMPTY_BUFFER))
         {
-            ByteBufferPool.getInstance().free(this.metadata);
+            BYTE_BUFFER_POOL.free(this.metadata);
         }
 
         return false;

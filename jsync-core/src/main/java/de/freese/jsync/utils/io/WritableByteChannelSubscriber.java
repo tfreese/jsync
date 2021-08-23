@@ -10,7 +10,7 @@ import java.nio.file.StandardOpenOption;
 
 import org.reactivestreams.Subscription;
 
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.FluxSink;
 
@@ -148,7 +148,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
                 this.channel.write(buffer);
             }
 
-            ByteBufferPool.getInstance().free(buffer);
+            ByteBufferPool.DEFAULT.free(buffer);
 
             this.sink.next(limit);
             request(1);

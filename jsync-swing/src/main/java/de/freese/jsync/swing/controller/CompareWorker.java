@@ -10,7 +10,7 @@ import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.utils.pool.ByteBufferPool;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.util.function.Tuple2;
 
 /**
@@ -166,7 +166,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
     @Override
     protected void done()
     {
-        getLogger().info("{}", ByteBufferPool.getInstance());
+        getLogger().info("{}", ByteBufferPool.DEFAULT);
 
         try
         {
