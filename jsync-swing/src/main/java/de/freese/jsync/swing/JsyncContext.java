@@ -9,6 +9,7 @@ import de.freese.jsync.rsocket.JsyncRSocketHandlerByteBuf;
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import de.freese.jsync.swing.messages.Messages;
 import de.freese.jsync.utils.JSyncUtils;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 import io.rsocket.Closeable;
 import io.rsocket.SocketAcceptor;
 
@@ -97,6 +98,8 @@ public final class JsyncContext
         }
 
         JSyncUtils.shutdown(executorService, JSyncSwing.getLogger());
+
+        ByteBufferPool.getInstance().clean();
 
         executorService = null;
         messages = null;

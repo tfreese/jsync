@@ -315,7 +315,6 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
                 case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
                 case TARGET_DELETE -> delete(payload, receiver);
                 case TARGET_UPDATE -> update(payload, receiver);
-                case TARGET_VALIDATE_FILE -> validate(payload, receiver);
 
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
@@ -358,6 +357,7 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
                 case SOURCE_READ_FILE -> readFile(payload, sender);
                 case TARGET_CHECKSUM -> checksum(payload, receiver);
                 case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
+                case TARGET_VALIDATE_FILE -> validate(payload, receiver);
 
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
@@ -407,19 +407,30 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
      *
      * @return {@link Mono}
      */
-    private Mono<Payload> validate(final Payload payload, final Receiver receiver)
+    private Flux<Payload> validate(final Payload payload, final Receiver receiver)
     {
-        ByteBuf bufferData = payload.data();
+        return Flux.create(sink -> {
+            ByteBuf bufferData = payload.data();
 
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        SyncItem syncItem = getSerializer().readFrom(bufferData, SyncItem.class);
-        boolean withChecksum = getSerializer().readFrom(bufferData, Boolean.class);
+            try
+            {
+                String baseDir = getSerializer().readFrom(bufferData, String.class);
+                SyncItem syncItem = getSerializer().readFrom(bufferData, SyncItem.class);
+                boolean withChecksum = getSerializer().readFrom(bufferData, Boolean.class);
 
-        receiver.validateFile(baseDir, syncItem, withChecksum, null);
+                LongConsumer consumer = checksumBytesRead -> sink.next(ByteBufPayload.create(Long.toString(checksumBytesRead)));
 
-        Payload responsePayload = ByteBufPayload.create("OK");
-
-        return Mono.just(responsePayload);// .doFinally(signalType -> RSocketUtils.release(responsePayload));
+                receiver.validateFile(baseDir, syncItem, withChecksum, consumer);
+            }
+            catch (Exception ex)
+            {
+                sink.error(ex);
+            }
+            finally
+            {
+                sink.complete();
+            }
+        });
     }
 
     /**

@@ -144,7 +144,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
      * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean, java.util.function.LongConsumer)
      */
     @Override
-    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer checksumBytesReadConsumer)
+    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer consumerChecksumBytesRead)
     {
         ByteBuffer bufferMeta = getByteBufferPool().obtain();
         getSerializer().writeTo(bufferMeta, JSyncCommand.TARGET_VALIDATE_FILE);
@@ -156,7 +156,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
 
         // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+            .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
                     .doOnSubscribe(subscription -> {
                         getByteBufferPool().free(bufferMeta);
                         getByteBufferPool().free(bufferData);
@@ -165,7 +165,8 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(null, th))
-            .block()
+            .map(Long::parseLong)
+            .subscribe(consumerChecksumBytesRead::accept)
             ;
         // @formatter:on
     }

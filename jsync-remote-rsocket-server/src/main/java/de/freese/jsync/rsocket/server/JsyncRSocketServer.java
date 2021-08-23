@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import de.freese.jsync.rsocket.JsyncRSocketHandlerByteBuf;
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import io.rsocket.SocketAcceptor;
@@ -113,5 +114,7 @@ public final class JsyncRSocketServer
         getLogger().info("stopping jsync-rsocket server");
 
         this.server.dispose();
+
+        ByteBufferPool.getInstance().clean();
     }
 }

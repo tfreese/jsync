@@ -147,7 +147,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
      * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean, java.util.function.LongConsumer)
      */
     @Override
-    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer checksumBytesReadConsumer)
+    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer consumerChecksumBytesRead)
     {
         Path path = Paths.get(baseDir, syncItem.getRelativePath());
 
@@ -163,7 +163,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
             {
                 getLogger().debug("building Checksum: {}/{}", baseDir, syncItem.getRelativePath());
 
-                String checksum = DigestUtils.sha256DigestAsHex(path, checksumBytesReadConsumer);
+                String checksum = DigestUtils.sha256DigestAsHex(path, consumerChecksumBytesRead);
 
                 if (!checksum.equals(syncItem.getChecksum()))
                 {

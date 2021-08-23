@@ -17,6 +17,7 @@ import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.nio.transport.NioFrameProtocol;
+import de.freese.jsync.nio.utils.pool.ByteBufferPoolAdapter;
 import de.freese.jsync.nio.utils.pool.SocketChannelPool;
 import reactor.core.publisher.Flux;
 
@@ -33,7 +34,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
     /**
     *
     */
-    private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
+    private final NioFrameProtocol frameProtocol = new NioFrameProtocol(new ByteBufferPoolAdapter());
 
     /**
     *
@@ -53,18 +54,20 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         try
         {
             // MetaData-Frame
-            this.frameProtocol.writeData(channel, buffer -> {
+            getFrameProtocol().writeData(channel, buffer -> {
                 getSerializer().writeTo(buffer, JSyncCommand.CONNECT);
             });
 
             // Finish-Frame
-            this.frameProtocol.writeFinish(channel);
+            getFrameProtocol().writeFinish(channel);
 
-            this.frameProtocol.readAll(channel).doFinally(signal -> getLogger().info("client connected")).subscribe();
+            // Response lesen
+            getFrameProtocol().readAll(channel).doFinally(signal -> getLogger().info("client connected"))
+                    .subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
         }
-        catch (RuntimeException rex)
+        catch (RuntimeException ex)
         {
-            throw rex;
+            throw ex;
         }
         catch (IOException ex)
         {
@@ -91,26 +94,20 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         try
         {
             // MetaData-Frame
-            this.frameProtocol.writeData(channel, buffer -> {
+            getFrameProtocol().writeData(channel, buffer -> {
                 getSerializer().writeTo(buffer, JSyncCommand.DISCONNECT);
             });
 
             // Finish-Frame
-            this.frameProtocol.writeFinish(channel);
+            getFrameProtocol().writeFinish(channel);
 
-            this.frameProtocol.readAll(channel).doFinally(signal -> getLogger().info("client disconnected")).subscribe();
-        }
-        catch (RuntimeException rex)
-        {
-            throw rex;
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
+            // Response lesen
+            getFrameProtocol().readAll(channel).doFinally(signal -> getLogger().info("client disconnected"))
+                    .subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
         }
         catch (Exception ex)
         {
-            throw new RuntimeException(ex);
+            getLogger().error(null, ex);
         }
         finally
         {
@@ -138,29 +135,35 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         try
         {
             // MetaData-Frame
-            this.frameProtocol.writeData(channel, buffer -> {
+            getFrameProtocol().writeData(channel, buffer -> {
                 getSerializer().writeTo(buffer, command);
             });
 
             // Data-Frame
-            this.frameProtocol.writeData(channel, buffer -> {
+            getFrameProtocol().writeData(channel, buffer -> {
                 getSerializer().writeTo(buffer, baseDir);
                 getSerializer().writeTo(buffer, relativeFile);
             });
 
             // Finish-Frame
-            this.frameProtocol.writeFinish(channel);
+            getFrameProtocol().writeFinish(channel);
 
-            return this.frameProtocol.readAll(channel).next().map(buffer -> {
+            // Response lesen
+            return getFrameProtocol().readAll(channel).map(buffer -> {
                 String value = getSerializer().readFrom(buffer, String.class);
-                this.frameProtocol.getBufferPool().free(buffer);
+                getFrameProtocol().getBufferPool().free(buffer);
 
                 return value;
-            }).block();
+            }).doOnNext(value -> {
+                if (PATTERN_NUMBER.matcher(value).matches())
+                {
+                    consumerChecksumBytesRead.accept(Long.parseLong(value));
+                }
+            }).blockLast();
         }
-        catch (RuntimeException rex)
+        catch (RuntimeException ex)
         {
-            throw rex;
+            throw ex;
         }
         catch (IOException ex)
         {
@@ -193,26 +196,27 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
             try
             {
                 // MetaData-Frame
-                this.frameProtocol.writeData(channel, buffer -> {
+                getFrameProtocol().writeData(channel, buffer -> {
                     getSerializer().writeTo(buffer, command);
                 });
 
                 // Data-Frame
-                this.frameProtocol.writeData(channel, buffer -> {
+                getFrameProtocol().writeData(channel, buffer -> {
                     getSerializer().writeTo(buffer, baseDir);
                     getSerializer().writeTo(buffer, followSymLinks);
                     getSerializer().writeTo(buffer, pathFilter != null ? pathFilter : new PathFilterTrue());
                 });
 
                 // Finish-Frame
-                this.frameProtocol.writeFinish(channel);
+                getFrameProtocol().writeFinish(channel);
 
-                this.frameProtocol.readAll(channel, buffer -> {
+                // Response lesen
+                getFrameProtocol().readAll(channel, buffer -> {
                     SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
 
                     sink.next(syncItem);
 
-                    this.frameProtocol.getBufferPool().free(buffer);
+                    getFrameProtocol().getBufferPool().free(buffer);
                 });
             }
             catch (Exception ex)
@@ -234,6 +238,14 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
     protected SocketChannelPool getChannelPool()
     {
         return this.channelPool;
+    }
+
+    /**
+     * @return {@link NioFrameProtocol}
+     */
+    protected NioFrameProtocol getFrameProtocol()
+    {
+        return this.frameProtocol;
     }
 
     /**

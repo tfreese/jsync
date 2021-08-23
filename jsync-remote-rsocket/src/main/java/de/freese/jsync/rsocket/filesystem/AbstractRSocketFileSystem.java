@@ -6,7 +6,6 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.function.Function;
 import java.util.function.LongConsumer;
-import java.util.regex.Pattern;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.filter.PathFilter;
@@ -31,17 +30,6 @@ import reactor.netty.tcp.TcpClient;
  */
 public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
 {
-    /**
-     * -? – this part identifies if the given number is negative<br>
-     * the dash “–” searches for dash literally<br>
-     * the question mark “?” marks its presence as an optional one<br>
-     * \d+ – this searches for one or more digits<br>
-     * (\.\d+)? – this part of regex is to identify float numbers<br>
-     * Here we're searching for one or more digits followed by a period.<br>
-     * The question mark, in the end, signifies that this complete group is optional
-     */
-    private static final Pattern PATTERN_NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
-
     /**
      *
      */

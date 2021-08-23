@@ -49,7 +49,7 @@ public class ServerThreadFactory implements ThreadFactory
         String threadName = this.namePrefix + this.threadNumber.getAndIncrement();
         thread.setName(threadName);
 
-        thread.setDaemon(true);
+        thread.setDaemon(false);
         thread.setPriority(Thread.NORM_PRIORITY);
 
         return thread;

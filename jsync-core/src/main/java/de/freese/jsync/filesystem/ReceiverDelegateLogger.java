@@ -138,11 +138,11 @@ public class ReceiverDelegateLogger implements Receiver
      * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean, java.util.function.LongConsumer)
      */
     @Override
-    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer checksumBytesReadConsumer)
+    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer consumerChecksumBytesRead)
     {
         getLogger().info("validate file: {}/{}, withChecksum={}", baseDir, syncItem.getRelativePath(), withChecksum);
 
-        this.delegate.update(baseDir, syncItem);
+        this.delegate.validateFile(baseDir, syncItem, withChecksum, consumerChecksumBytesRead);
     }
 
     /**

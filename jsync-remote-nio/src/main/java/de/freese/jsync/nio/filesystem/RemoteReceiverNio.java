@@ -1,7 +1,10 @@
 // Created: 17.08.2021
 package de.freese.jsync.nio.filesystem;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.Receiver;
@@ -21,8 +24,43 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
     @Override
     public void createDirectory(final String baseDir, final String relativePath)
     {
-        // TODO Auto-generated method stub
+        SocketChannel channel = getChannelPool().obtain();
 
+        try
+        {
+            // MetaData-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY);
+            });
+
+            // Data-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, baseDir);
+                getSerializer().writeTo(buffer, relativePath);
+            });
+
+            // Finish-Frame
+            getFrameProtocol().writeFinish(channel);
+
+            // Response lesen
+            getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
+        }
+        catch (RuntimeException ex)
+        {
+            throw ex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            getChannelPool().free(channel);
+        }
     }
 
     /**
@@ -31,8 +69,44 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks)
     {
-        // TODO Auto-generated method stub
+        SocketChannel channel = getChannelPool().obtain();
 
+        try
+        {
+            // MetaData-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, JSyncCommand.TARGET_DELETE);
+            });
+
+            // Data-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, baseDir);
+                getSerializer().writeTo(buffer, relativePath);
+                getSerializer().writeTo(buffer, followSymLinks);
+            });
+
+            // Finish-Frame
+            getFrameProtocol().writeFinish(channel);
+
+            // Response lesen
+            getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
+        }
+        catch (RuntimeException ex)
+        {
+            throw ex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            getChannelPool().free(channel);
+        }
     }
 
     /**
@@ -59,18 +133,94 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {
-        // TODO Auto-generated method stub
+        SocketChannel channel = getChannelPool().obtain();
 
+        try
+        {
+            // MetaData-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, JSyncCommand.TARGET_UPDATE);
+            });
+
+            // Data-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, baseDir);
+                getSerializer().writeTo(buffer, syncItem);
+            });
+
+            // Finish-Frame
+            getFrameProtocol().writeFinish(channel);
+
+            // Response lesen
+            getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
+        }
+        catch (RuntimeException ex)
+        {
+            throw ex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            getChannelPool().free(channel);
+        }
     }
 
     /**
      * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean, java.util.function.LongConsumer)
      */
     @Override
-    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer checksumBytesReadConsumer)
+    public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer consumerChecksumBytesRead)
     {
-        // TODO Auto-generated method stub
+        SocketChannel channel = getChannelPool().obtain();
 
+        try
+        {
+            // MetaData-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, JSyncCommand.TARGET_VALIDATE_FILE);
+            });
+
+            // Data-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, baseDir);
+                getSerializer().writeTo(buffer, syncItem);
+                getSerializer().writeTo(buffer, withChecksum);
+            });
+
+            // Finish-Frame
+            getFrameProtocol().writeFinish(channel);
+
+            // Response lesen
+            getFrameProtocol().readAll(channel).map(buffer -> {
+                long value = getSerializer().readFrom(buffer, Long.class);
+                getFrameProtocol().getBufferPool().free(buffer);
+
+                return value;
+            }).doOnNext(consumerChecksumBytesRead::accept).subscribe();
+        }
+        catch (RuntimeException ex)
+        {
+            throw ex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            getChannelPool().free(channel);
+        }
     }
 
     /**
@@ -79,6 +229,59 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux)
     {
-        return Flux.empty();
+        SocketChannel channel = getChannelPool().obtain();
+
+        try
+        {
+            // MetaData-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, JSyncCommand.TARGET_WRITE_FILE);
+            });
+
+            // Data-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, baseDir);
+                getSerializer().writeTo(buffer, relativeFile);
+                getSerializer().writeTo(buffer, sizeOfFile);
+            });
+
+            fileFlux.subscribe(buffer -> {
+                try
+                {
+                    getFrameProtocol().writeData(channel, buffer);
+                }
+                catch (IOException ex)
+                {
+                    throw new UncheckedIOException(ex);
+                }
+            });
+
+            // Finish-Frame
+            getFrameProtocol().writeFinish(channel);
+
+            // Response lesen
+            return getFrameProtocol().readAll(channel).map(buffer -> {
+                long bytesWritten = getSerializer().readFrom(buffer, Long.class);
+                getFrameProtocol().getBufferPool().free(buffer);
+
+                return bytesWritten;
+            });
+        }
+        catch (RuntimeException ex)
+        {
+            throw ex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            getChannelPool().free(channel);
+        }
     }
 }

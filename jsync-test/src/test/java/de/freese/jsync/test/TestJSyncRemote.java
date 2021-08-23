@@ -33,6 +33,7 @@ import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.rsocket.server.JsyncRSocketServer;
 import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.pool.ByteBufferPool;
+import reactor.core.publisher.Hooks;
 
 /***
  * @author Thomas Freese
@@ -128,6 +129,11 @@ class TestJSyncRemote extends AbstractJSyncIoTest
             JsyncRSocketServer server = new JsyncRSocketServer();
             server.start(port);
             CLOSEABLES.put("rsocket", () -> server.stop());
+
+            // Fehlermeldungen beim Disconnect ausschalten.
+            Hooks.resetOnErrorDropped();
+            Hooks.onErrorDropped(th -> {
+            });
         }
     }
 
@@ -205,7 +211,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    // @Disabled
     void testNio() throws Exception
     {
         System.out.println();

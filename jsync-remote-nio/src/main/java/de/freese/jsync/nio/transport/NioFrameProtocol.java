@@ -2,7 +2,6 @@
 package de.freese.jsync.nio.transport;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -246,9 +245,36 @@ public class NioFrameProtocol
      * DATA-Frame schreiben.
      *
      * @param channel {@link WritableByteChannel}
-     * @param consumer {@link Consumer}
+     * @param buffer {@link ByteBuffer}
+     *
+     * @throws IOException Falls was schief geht.
      */
-    public void writeData(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer)
+    public void writeData(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException
+    {
+        int contentLength = 0;
+
+        if (buffer.position() == 0)
+        {
+            contentLength = buffer.limit();
+        }
+        else
+        {
+            contentLength = buffer.position();
+        }
+
+        writeFrameHeader(channel, FrameType.DATA, contentLength);
+        write(channel, buffer);
+    }
+
+    /**
+     * DATA-Frame schreiben.
+     *
+     * @param channel {@link WritableByteChannel}
+     * @param consumer {@link Consumer}
+     *
+     * @throws IOException Falls was schief geht.
+     */
+    public void writeData(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
     {
         ByteBuffer bufferContent = getBufferPool().get(DEFAULT_BUFFER_SIZE);
 
@@ -256,13 +282,7 @@ public class NioFrameProtocol
         {
             consumer.accept(bufferContent);
 
-            // Funktioniert nur solange wie der Consumer nicht den flip macht !
-            writeFrameHeader(channel, FrameType.DATA, bufferContent.position());
-            write(channel, bufferContent);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
+            writeData(channel, bufferContent);
         }
         finally
         {
@@ -275,8 +295,10 @@ public class NioFrameProtocol
      *
      * @param channel {@link WritableByteChannel}
      * @param th {@link Throwable}
+     *
+     * @throws IOException Falls was schief geht.
      */
-    public void writeError(final WritableByteChannel channel, final Throwable th)
+    public void writeError(final WritableByteChannel channel, final Throwable th) throws IOException
     {
         ByteBuffer bufferContent = getBufferPool().get(DEFAULT_BUFFER_SIZE);
 
@@ -288,10 +310,6 @@ public class NioFrameProtocol
 
             writeFrameHeader(channel, FrameType.ERROR, messageBytes.length);
             write(channel, bufferContent);
-        }
-        catch (IOException ex)
-        {
-            throw new UncheckedIOException(ex);
         }
         finally
         {

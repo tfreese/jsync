@@ -155,7 +155,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
             syncPair.validateStatus();
         }
 
-        // getSyncView().updateLastEntry();
+        getSyncView().updateLastEntry();
 
         return null;
     }
@@ -166,8 +166,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
     @Override
     protected void done()
     {
-        ByteBufferPool pool = ByteBufferPool.getInstance();
-        getLogger().info("ByteBufferPool: created={}, free={}, peak={}", pool.getCreated(), pool.getFree(), pool.getPeak());
+        getLogger().info("{}", ByteBufferPool.getInstance());
 
         try
         {

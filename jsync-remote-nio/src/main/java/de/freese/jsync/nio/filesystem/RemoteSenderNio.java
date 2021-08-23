@@ -1,7 +1,10 @@
 // Created: 17.08.2021
 package de.freese.jsync.nio.filesystem;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.Sender;
@@ -39,6 +42,43 @@ public class RemoteSenderNio extends AbstractNioFileSystem implements Sender
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile)
     {
-        return Flux.empty();
+        SocketChannel channel = getChannelPool().obtain();
+
+        try
+        {
+            // MetaData-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, JSyncCommand.SOURCE_READ_FILE);
+            });
+
+            // Data-Frame
+            getFrameProtocol().writeData(channel, buffer -> {
+                getSerializer().writeTo(buffer, baseDir);
+                getSerializer().writeTo(buffer, relativeFile);
+                getSerializer().writeTo(buffer, sizeOfFile);
+            });
+
+            // Finish-Frame
+            getFrameProtocol().writeFinish(channel);
+
+            // Response lesen
+            return getFrameProtocol().readAll(channel);
+        }
+        catch (RuntimeException ex)
+        {
+            throw ex;
+        }
+        catch (IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
+        finally
+        {
+            getChannelPool().free(channel);
+        }
     }
 }

@@ -8,6 +8,11 @@ import java.nio.ByteBuffer;
  */
 public interface ByteBufferPool
 {
+    // /**
+    // *
+    // */
+    // ByteBufferPool DEFAULT = new DefaultByteBufferPool();
+
     /**
      *
      */

@@ -131,8 +131,9 @@ class UriView extends AbstractView
         this.comboBoxProtocol.addItem(JSyncProtocol.FILE);
         this.comboBoxProtocol.addItem(JSyncProtocol.RSOCKET);
         this.comboBoxProtocol.addItem(JSyncProtocol.RSOCKET_LOCAL);
-        this.comboBoxProtocol.setMinimumSize(new Dimension(100, 20));
-        this.comboBoxProtocol.setPreferredSize(new Dimension(100, 20));
+        this.comboBoxProtocol.addItem(JSyncProtocol.NIO);
+        this.comboBoxProtocol.setMinimumSize(new Dimension(140, 20));
+        this.comboBoxProtocol.setPreferredSize(new Dimension(140, 20));
         this.panel.add(this.comboBoxProtocol, new GbcBuilder(0, row));
 
         this.textFieldHostPort = new JTextField("localhost:8888");

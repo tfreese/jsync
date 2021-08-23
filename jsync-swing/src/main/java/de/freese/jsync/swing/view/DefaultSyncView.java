@@ -243,7 +243,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
             JSyncProtocol protocol = (JSyncProtocol) event.getItem();
 
-            textFieldHostPortSender.setVisible(JSyncProtocol.RSOCKET.equals(protocol));
+            textFieldHostPortSender.setVisible(JSyncProtocol.RSOCKET.equals(protocol) || JSyncProtocol.NIO.equals(protocol));
             buttonOpenSender.setVisible(JSyncProtocol.FILE.equals(protocol));
 
             this.uriViewSender.getComponent().revalidate();
@@ -258,7 +258,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
             JSyncProtocol protocol = (JSyncProtocol) event.getItem();
 
-            textFieldHostPortReceiver.setVisible(JSyncProtocol.RSOCKET.equals(protocol));
+            textFieldHostPortReceiver.setVisible(JSyncProtocol.RSOCKET.equals(protocol) || JSyncProtocol.NIO.equals(protocol));
             buttonOpenReceiver.setVisible(JSyncProtocol.FILE.equals(protocol));
 
             this.uriViewReceiver.getComponent().revalidate();

@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import de.freese.jsync.nio.server.dispatcher.Dispatcher;
 import de.freese.jsync.nio.server.dispatcher.DispatcherPool;
 import de.freese.jsync.nio.server.handler.IoHandler;
+import de.freese.jsync.nio.server.handler.JSyncIoHandler;
+import de.freese.jsync.utils.pool.ByteBufferPool;
 
 /**
  * Dieser Server arbeitet nach dem Acceptor-Reactor Pattern.<br>
@@ -34,6 +36,31 @@ public final class JSyncNioServer implements Runnable
      *
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncNioServer.class);
+
+    /**
+     * @param args String[]
+     *
+     * @throws Exception Falls was schief geht.
+     */
+    public static void main(final String[] args) throws Exception
+    {
+        int port = Integer.parseInt(args[0]);
+
+        JSyncNioServer server = new JSyncNioServer(port, 2, 4);
+        server.setIoHandler(new JSyncIoHandler());
+        server.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(server::stop, "server-stop"));
+
+        // server.stop();
+
+        // Thread thread = new Thread(() -> server.start(8888), "rsocket-server");
+        // thread.setDaemon(false);
+        // thread.start();
+
+        // System.in.read();
+    }
+
     /**
      *
      */
@@ -245,5 +272,7 @@ public final class JSyncNioServer implements Runnable
         }
 
         getLogger().info("'{}' stopped on port: {}", this.name, this.port);
+
+        ByteBufferPool.getInstance().clean();
     }
 }

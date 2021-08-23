@@ -62,6 +62,12 @@
             <artifactId>jsync-remote-rsocket</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jsync-remote-nio</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
 
         <!-- runtime scope -->
         <dependency>

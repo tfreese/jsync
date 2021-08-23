@@ -14,13 +14,13 @@ import java.util.concurrent.locks.ReentrantLock;
 public class DefaultByteBufferPool implements ByteBufferPool
 {
     /**
-       *
-       */
+     * Default: 4 MB
+     */
     private static final int CAPACITY_THRESHOLD = 1024 * 1024 * 4;
 
     /**
-    *
-    */
+     *
+     */
     private static final int MAX_CAPACITY = Integer.MAX_VALUE;
 
     /**
@@ -29,8 +29,8 @@ public class DefaultByteBufferPool implements ByteBufferPool
     private final Map<Integer, Deque<ByteBuffer>> cache = new TreeMap<>();
 
     /**
-    *
-    */
+     *
+     */
     private final ReentrantLock lock = new ReentrantLock(true);
 
     /**

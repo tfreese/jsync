@@ -33,7 +33,7 @@ public class ByteBufferPool extends Pool<ByteBuffer>
     }
 
     /**
-     *
+     * Default: 4 MB
      */
     private static final int CAPACITY_THRESHOLD = 1024 * 1024 * 4;
 
@@ -172,6 +172,8 @@ public class ByteBufferPool extends Pool<ByteBuffer>
     }
 
     /**
+     * Garantiert die Mindestgröße des Buffers.
+     *
      * @param size int
      *
      * @return {@link ByteBuffer}
@@ -185,5 +187,21 @@ public class ByteBufferPool extends Pool<ByteBuffer>
         byteBuffer.clear();
 
         return byteBuffer;
+    }
+
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append(":");
+
+        sb.append(" created=").append(getCreated());
+        sb.append(", free=").append(getFree());
+        sb.append(", peak=").append(getPeak());
+
+        return sb.toString();
     }
 }
