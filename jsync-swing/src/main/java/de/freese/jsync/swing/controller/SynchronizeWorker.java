@@ -2,6 +2,7 @@
 package de.freese.jsync.swing.controller;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
@@ -27,8 +28,8 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         getSyncView().doOnCompare(button -> button.setEnabled(false));
         getSyncView().doOnSyncronize(button -> button.setEnabled(false));
 
-        getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
+        getSyncView().setProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
+        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
 
         getSyncView().setProgressBarFilesMax(0);
     }
@@ -41,11 +42,11 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     {
         if (bytesRead == 0)
         {
-            getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, (int) syncItem.getSize(),
+            getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, (int) syncItem.getSize(),
                     getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
         }
 
-        getSyncView().addProgressBarValue(EFileSystem.RECEIVER, (int) bytesRead);
+        getSyncView().setProgressBarValue(EFileSystem.RECEIVER, (int) bytesRead);
     }
 
     /**
@@ -58,11 +59,11 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         {
             getSyncView().incrementProgressBarFilesValue(1);
 
-            getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, (int) syncItem.getSize(),
+            getSyncView().setProgressBarMinMaxText(EFileSystem.SENDER, 0, (int) syncItem.getSize(),
                     getMessage("jsync.files.copy") + ": " + syncItem.getRelativePath());
         }
 
-        getSyncView().addProgressBarValue(EFileSystem.SENDER, (int) bytesTransferred);
+        getSyncView().setProgressBarValue(EFileSystem.SENDER, (int) bytesTransferred);
     }
 
     /**
@@ -71,7 +72,9 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     @Override
     public void delete(final Options options, final SyncItem syncItem)
     {
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.delete") + ": " + syncItem.getRelativePath());
+        getSyncView().incrementProgressBarFilesValue(1);
+
+        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.delete") + ": " + syncItem.getRelativePath());
     }
 
     /**
@@ -85,6 +88,9 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         getSyncView().setProgressBarFilesMax(syncPairs.size());
 
         getClient().syncReceiver(syncPairs, this);
+
+        // Wir warten etwas bis alle GUI-Events verarbeitet wurden.
+        TimeUnit.MILLISECONDS.sleep(200);
 
         return null;
     }
@@ -107,8 +113,8 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         }
 
         getSyncView().clearTable();
-        getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
+        getSyncView().setProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
+        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
         getSyncView().setProgressBarFilesMax(0);
         getSyncView().doOnCompare(button -> button.setEnabled(true));
         getSyncView().doOnSyncronize(button -> button.setEnabled(true));
@@ -129,7 +135,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     @Override
     public void update(final Options options, final SyncItem syncItem)
     {
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.update") + ": " + syncItem.getRelativePath());
+        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.update") + ": " + syncItem.getRelativePath());
     }
 
     /**
@@ -138,6 +144,6 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     @Override
     public void validate(final Options options, final SyncItem syncItem)
     {
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
+        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
     }
 }

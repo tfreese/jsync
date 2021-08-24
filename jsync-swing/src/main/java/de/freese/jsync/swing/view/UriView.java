@@ -13,9 +13,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import de.freese.jsync.filesystem.EFileSystem;
+import de.freese.jsync.filesystem.FileSystemFactory;
 import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.swing.util.GbcBuilder;
-import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
@@ -98,7 +98,7 @@ class UriView extends AbstractView
             return null;
         }
 
-        return JSyncUtils.toUri(protocol, hostPort, path);
+        return protocol.toUri(hostPort, path);
     }
 
     /**
@@ -128,10 +128,9 @@ class UriView extends AbstractView
         row++;
 
         this.comboBoxProtocol = new JComboBox<>();
-        this.comboBoxProtocol.addItem(JSyncProtocol.FILE);
-        this.comboBoxProtocol.addItem(JSyncProtocol.RSOCKET);
-        this.comboBoxProtocol.addItem(JSyncProtocol.RSOCKET_LOCAL);
-        this.comboBoxProtocol.addItem(JSyncProtocol.NIO);
+
+        FileSystemFactory.getInstance().getAvailableProtocols().forEach(this.comboBoxProtocol::addItem);
+
         this.comboBoxProtocol.setMinimumSize(new Dimension(140, 20));
         this.comboBoxProtocol.setPreferredSize(new Dimension(140, 20));
         this.panel.add(this.comboBoxProtocol, new GbcBuilder(0, row));

@@ -19,26 +19,6 @@ import de.freese.jsync.model.SyncPair;
 public interface SyncView
 {
     /**
-     * @param fileSystem {@link EFileSystem}
-     * @param min int
-     * @param max int
-     * @param text String
-     */
-    void addProgressBarMinMaxText(EFileSystem fileSystem, int min, int max, String text);
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     * @param text String
-     */
-    void addProgressBarText(EFileSystem fileSystem, String text);
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     * @param value int
-     */
-    void addProgressBarValue(EFileSystem fileSystem, int value);
-
-    /**
      * @param syncPair {@link SyncPair}
      */
     void addSyncPair(SyncPair syncPair);
@@ -115,6 +95,26 @@ public interface SyncView
      * @param indeterminate boolean
      */
     void setProgressBarIndeterminate(EFileSystem fileSystem, boolean indeterminate);
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     * @param min int
+     * @param max int
+     * @param text String
+     */
+    void setProgressBarMinMaxText(EFileSystem fileSystem, int min, int max, String text);
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     * @param text String
+     */
+    void setProgressBarText(EFileSystem fileSystem, String text);
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     * @param value int
+     */
+    void setProgressBarValue(EFileSystem fileSystem, int value);
 
     /**
      *

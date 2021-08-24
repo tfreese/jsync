@@ -31,7 +31,6 @@ import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.rsocket.server.JsyncRSocketServer;
-import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.core.publisher.Hooks;
 
@@ -217,8 +216,8 @@ class TestJSyncRemote extends AbstractJSyncIoTest
 
         startServerNio(8001);
 
-        URI senderUri = JSyncUtils.toUri(JSyncProtocol.NIO, "localhost:8001", PATH_QUELLE.toString());
-        URI receiverUri = JSyncUtils.toUri(JSyncProtocol.NIO, "localhost:8001", PATH_ZIEL.toString());
+        URI senderUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_QUELLE.toString());
+        URI receiverUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_ZIEL.toString());
 
         syncDirectories(options, senderUri, receiverUri);
 
@@ -275,8 +274,8 @@ class TestJSyncRemote extends AbstractJSyncIoTest
 
         startServerRSocket(8002);
 
-        URI senderUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002", PATH_QUELLE.toString());
-        URI receiverUri = JSyncUtils.toUri(JSyncProtocol.RSOCKET, "localhost:8002", PATH_ZIEL.toString());
+        URI senderUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_QUELLE.toString());
+        URI receiverUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_ZIEL.toString());
 
         syncDirectories(options, senderUri, receiverUri);
 

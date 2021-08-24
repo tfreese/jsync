@@ -23,10 +23,9 @@ public interface FileSystemProvider
     Sender createSender(final URI uri);
 
     /**
-     * @param uri {@link URI}
+     * @param scheme {@link String}
      *
      * @return boolean
      */
-    boolean supportsProtocol(URI uri);
-
+    boolean supportsProtocol(String scheme);
 }

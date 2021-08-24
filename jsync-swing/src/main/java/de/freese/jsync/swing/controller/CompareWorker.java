@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.TimeUnit;
 
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filter.PathFilter;
@@ -32,8 +33,8 @@ public class CompareWorker extends AbstractWorker<Void, Void>
 
         getSyncView().clearTable();
 
-        getSyncView().addProgressBarText(EFileSystem.SENDER, "");
-        getSyncView().addProgressBarText(EFileSystem.RECEIVER, "");
+        getSyncView().setProgressBarText(EFileSystem.SENDER, "");
+        getSyncView().setProgressBarText(EFileSystem.RECEIVER, "");
 
         getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, true);
         getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, true);
@@ -55,17 +56,17 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         }
 
         Runnable runnable = () -> {
-            getSyncView().addProgressBarText(fileSystem, getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
+            getSyncView().setProgressBarText(fileSystem, getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
 
             String checksum = getClient().generateChecksum(fileSystem, syncItem, bytesRead -> {
                 if (bytesRead == 0)
                 {
                     getSyncView().setProgressBarIndeterminate(fileSystem, false);
-                    getSyncView().addProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
+                    getSyncView().setProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
                             getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
                 }
 
-                getSyncView().addProgressBarValue(fileSystem, (int) bytesRead);
+                getSyncView().setProgressBarValue(fileSystem, (int) bytesRead);
             });
 
             syncItem.setChecksum(checksum);
@@ -86,7 +87,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         Callable<List<SyncItem>> callable = () -> getClient().generateSyncItems(fileSystem, pathFilter)
                 .index()
                 //.delayElements(Duration.ofMillis(10))
-                .doOnNext(tuple -> getSyncView().addProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + (tuple.getT1() + 1)))
+                .doOnNext(tuple -> getSyncView().setProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + (tuple.getT1() + 1)))
                 .map(Tuple2::getT2)
                 .collectList()
                 .block();
@@ -157,6 +158,9 @@ public class CompareWorker extends AbstractWorker<Void, Void>
 
         getSyncView().updateLastEntry();
 
+        // Wir warten etwas bis alle GUI-Events verarbeitet wurden.
+        TimeUnit.MILLISECONDS.sleep(200);
+
         return null;
     }
 
@@ -183,7 +187,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, false);
         getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, false);
 
-        getSyncView().addProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
-        getSyncView().addProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
+        getSyncView().setProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
+        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
     }
 }

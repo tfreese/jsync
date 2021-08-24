@@ -8,6 +8,7 @@ import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.filesystem.ReceiverDelegateLogger;
 import de.freese.jsync.filesystem.Sender;
 import de.freese.jsync.filesystem.SenderDelegateLogger;
+import de.freese.jsync.model.JSyncProtocol;
 
 /**
  * @author Thomas Freese
@@ -33,11 +34,11 @@ public class LocalFileSystemProvider implements FileSystemProvider
     }
 
     /**
-     * @see de.freese.jsync.filesystem.FileSystemProvider#supportsProtocol(java.net.URI)
+     * @see de.freese.jsync.filesystem.FileSystemProvider#supportsProtocol(java.lang.String)
      */
     @Override
-    public boolean supportsProtocol(final URI uri)
+    public boolean supportsProtocol(final String scheme)
     {
-        return "file".equals(uri.getScheme());
+        return JSyncProtocol.FILE.getScheme().equals(scheme);
     }
 }

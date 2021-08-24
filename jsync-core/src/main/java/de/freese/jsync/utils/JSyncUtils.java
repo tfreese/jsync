@@ -14,7 +14,6 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 
 import de.freese.jsync.filter.PathFilter;
-import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.utils.io.FileVisitorDelete;
 
 /**
@@ -584,51 +582,6 @@ public final class JSyncUtils
         // }
         //
         // return String.format("%.1f %cB", value, ci.previous());
-    }
-
-    /**
-     * @param protocol {@link JSyncProtocol}
-     * @param hostPort String
-     * @param path {@link Path}
-     *
-     * @return {@link URI}
-     */
-    public static URI toUri(final JSyncProtocol protocol, final String hostPort, final String path)
-    {
-        if (JSyncProtocol.FILE.equals(protocol))
-        {
-            return Paths.get(path).toUri();
-        }
-        else if (JSyncProtocol.NIO.equals(protocol))
-        {
-            URI uri = Paths.get(path).toUri();
-
-            return URI.create("nio://" + hostPort + uri.getRawPath());
-        }
-        else if (JSyncProtocol.RSOCKET.equals(protocol))
-        {
-            URI uri = Paths.get(path).toUri();
-
-            return URI.create("rsocket://" + hostPort + uri.getRawPath());
-
-            // String[] splits = path.split("[\\/]", 2);
-            // String hostAndPort = splits[0];
-            // String p = splits[1];
-            //
-            // URI uri = Paths.get("/" + p).toUri();
-            //
-            // return URI.create("rsocket://" + hostAndPort + uri.getRawPath());
-            //
-            // return URI.create("rsocket://" + host + "/" + p.replace(" ", "%20"));
-        }
-        else if (JSyncProtocol.RSOCKET_LOCAL.equals(protocol))
-        {
-            URI uri = Paths.get(path).toUri();
-
-            return URI.create("rsocketLocal://" + uri.getRawPath());
-        }
-
-        throw new IllegalArgumentException("unsupported protocol: " + protocol);
     }
 
     /**

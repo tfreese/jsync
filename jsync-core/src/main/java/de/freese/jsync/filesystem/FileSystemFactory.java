@@ -2,8 +2,15 @@
 package de.freese.jsync.filesystem;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.Set;
+
+import de.freese.jsync.model.JSyncProtocol;
 
 /**
  * @author Thomas Freese
@@ -61,9 +68,11 @@ public final class FileSystemFactory
     {
         Objects.requireNonNull(uri, "uri required");
 
+        String scheme = uri.getScheme();
+
         for (FileSystemProvider provider : this.serviceLoader)
         {
-            if (provider.supportsProtocol(uri))
+            if (provider.supportsProtocol(scheme))
             {
                 return provider.createReceiver(uri);
             }
@@ -81,14 +90,47 @@ public final class FileSystemFactory
     {
         Objects.requireNonNull(uri, "uri required");
 
+        String scheme = uri.getScheme();
+
         for (FileSystemProvider provider : this.serviceLoader)
         {
-            if (provider.supportsProtocol(uri))
+            if (provider.supportsProtocol(scheme))
             {
                 return provider.createSender(uri);
             }
         }
 
         throw new IllegalArgumentException("unsupported protocol: " + uri.getScheme());
+    }
+
+    /**
+     * @return {@link List}
+     */
+    public List<JSyncProtocol> getAvailableProtocols()
+    {
+        List<JSyncProtocol> protocols = List.of(JSyncProtocol.values());
+
+        Set<JSyncProtocol> availableProtocols = new HashSet<>();
+
+        for (FileSystemProvider provider : this.serviceLoader)
+        {
+            for (JSyncProtocol protocol : protocols)
+            {
+                if (provider.supportsProtocol(protocol.getScheme()))
+                {
+                    availableProtocols.add(protocol);
+                }
+            }
+        }
+
+        List<JSyncProtocol> list = new ArrayList<>();
+
+        // FILE ist immer dabei.
+        list.add(JSyncProtocol.FILE);
+        availableProtocols.remove(JSyncProtocol.FILE);
+
+        availableProtocols.stream().sorted(Comparator.comparing(JSyncProtocol::name)).forEach(list::add);
+
+        return list;
     }
 }

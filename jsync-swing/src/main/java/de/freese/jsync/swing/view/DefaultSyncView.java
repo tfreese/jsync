@@ -70,6 +70,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
     */
     private final Map<EFileSystem, Sinks.Many<Integer>> accumulatorProgressBarValue = new EnumMap<>(EFileSystem.class);
     /**
+     *
+     */
+    private Sinks.Many<Integer> accumulatorProgressFiles;
+    /**
     *
     */
     private Sinks.Many<SyncPair> accumulatorTableAdd;
@@ -117,68 +121,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
     *
     */
     private UriView uriViewSender;
-
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#addProgressBarMinMaxText(de.freese.jsync.filesystem.EFileSystem, int, int, java.lang.String)
-     */
-    @Override
-    public void addProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
-    {
-        this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
-            final JProgressBar progressBar = getProgressBar(fileSystem);
-
-            return new AccumulativeSinkSwing().createForSingle(value -> {
-                progressBar.setMinimum(value.getT1());
-                progressBar.setMaximum(value.getT2());
-                progressBar.setString(value.getT3());
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("addProgressBarMinMaxText - {}: {}", fileSystem, value);
-                }
-            });
-        }).tryEmitNext(Tuples.of(min, max, text));
-    }
-
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#addProgressBarText(de.freese.jsync.filesystem.EFileSystem, java.lang.String)
-     */
-    @Override
-    public void addProgressBarText(final EFileSystem fileSystem, final String text)
-    {
-        this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
-            final JProgressBar progressBar = getProgressBar(fileSystem);
-
-            return new AccumulativeSinkSwing().createForSingle(value -> {
-                progressBar.setString(value);
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("addProgressBarText - {}: {}", fileSystem, value);
-                }
-            });
-        }).tryEmitNext(text);
-    }
-
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#addProgressBarValue(de.freese.jsync.filesystem.EFileSystem, int)
-     */
-    @Override
-    public void addProgressBarValue(final EFileSystem fileSystem, final int value)
-    {
-        this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
-            final JProgressBar progressBar = getProgressBar(fileSystem);
-
-            return new AccumulativeSinkSwing().createForSingle(v -> {
-                progressBar.setValue(v);
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("addProgressBarValue - {}: {}", fileSystem, v);
-                }
-            });
-        }).tryEmitNext(value);
-    }
 
     /**
      * @see de.freese.jsync.swing.view.SyncView#addSyncPair(de.freese.jsync.model.SyncPair)
@@ -243,7 +185,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
             JSyncProtocol protocol = (JSyncProtocol) event.getItem();
 
-            textFieldHostPortSender.setVisible(JSyncProtocol.RSOCKET.equals(protocol) || JSyncProtocol.NIO.equals(protocol));
+            textFieldHostPortSender.setVisible(protocol.isRemote());
             buttonOpenSender.setVisible(JSyncProtocol.FILE.equals(protocol));
 
             this.uriViewSender.getComponent().revalidate();
@@ -258,7 +200,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
             JSyncProtocol protocol = (JSyncProtocol) event.getItem();
 
-            textFieldHostPortReceiver.setVisible(JSyncProtocol.RSOCKET.equals(protocol) || JSyncProtocol.NIO.equals(protocol));
+            textFieldHostPortReceiver.setVisible(protocol.isRemote());
             buttonOpenReceiver.setVisible(JSyncProtocol.FILE.equals(protocol));
 
             this.uriViewReceiver.getComponent().revalidate();
@@ -443,13 +385,18 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void incrementProgressBarFilesValue(final int value)
     {
-        runInEdt(() -> {
-            int v = value + this.progressBarFiles.getValue();
+        if (this.accumulatorProgressFiles == null)
+        {
+            this.accumulatorProgressFiles = new AccumulativeSinkSwing().createForList(list -> {
+                int v = list.stream().mapToInt(Integer::intValue).sum();
 
-            this.progressBarFiles.setValue(v);
+                this.progressBarFiles.setValue(v + this.progressBarFiles.getValue());
 
-            this.progressBarFiles.setString(getMessage("jsync.files") + ": " + v + "/" + this.progressBarFiles.getMaximum());
-        });
+                this.progressBarFiles.setString(getMessage("jsync.files") + ": " + v + "/" + this.progressBarFiles.getMaximum());
+            });
+        }
+
+        this.accumulatorProgressFiles.tryEmitNext(value);
     }
 
     /**
@@ -717,6 +664,68 @@ public class DefaultSyncView extends AbstractView implements SyncView
             JProgressBar progressBar = getProgressBar(fileSystem);
             progressBar.setIndeterminate(indeterminate);
         });
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarMinMaxText(de.freese.jsync.filesystem.EFileSystem, int, int, java.lang.String)
+     */
+    @Override
+    public void setProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
+    {
+        this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
+            final JProgressBar progressBar = getProgressBar(fileSystem);
+
+            return new AccumulativeSinkSwing().createForSingle(value -> {
+                progressBar.setMinimum(value.getT1());
+                progressBar.setMaximum(value.getT2());
+                progressBar.setString(value.getT3());
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("addProgressBarMinMaxText - {}: {}", fileSystem, value);
+                }
+            });
+        }).tryEmitNext(Tuples.of(min, max, text));
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarText(de.freese.jsync.filesystem.EFileSystem, java.lang.String)
+     */
+    @Override
+    public void setProgressBarText(final EFileSystem fileSystem, final String text)
+    {
+        this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
+            final JProgressBar progressBar = getProgressBar(fileSystem);
+
+            return new AccumulativeSinkSwing().createForSingle(value -> {
+                progressBar.setString(value);
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("addProgressBarText - {}: {}", fileSystem, value);
+                }
+            });
+        }).tryEmitNext(text);
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarValue(de.freese.jsync.filesystem.EFileSystem, int)
+     */
+    @Override
+    public void setProgressBarValue(final EFileSystem fileSystem, final int value)
+    {
+        this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
+            final JProgressBar progressBar = getProgressBar(fileSystem);
+
+            return new AccumulativeSinkSwing().createForSingle(v -> {
+                progressBar.setValue(v);
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("addProgressBarValue - {}: {}", fileSystem, v);
+                }
+            });
+        }).tryEmitNext(value);
     }
 
     /**
