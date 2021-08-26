@@ -120,7 +120,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
             try
             {
-                this.frameProtocol.writeError(channel, ex);
+                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
             }
             catch (Exception ioex)
             {
@@ -158,7 +158,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
             try
             {
-                this.frameProtocol.writeError(channel, ex);
+                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
             }
             catch (IOException ioex)
             {
@@ -206,7 +206,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
             try
             {
-                this.frameProtocol.writeError(channel, ex);
+                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
             }
             catch (Exception ioex)
             {
@@ -243,7 +243,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         {
             try
             {
-                this.frameProtocol.writeError(channel, ex);
+                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
             }
             catch (IOException ioex)
             {
@@ -442,7 +442,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         {
             try
             {
-                this.frameProtocol.writeError(channel, ex);
+                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
             }
             catch (IOException ioex)
             {
@@ -480,7 +480,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
             try
             {
-                this.frameProtocol.writeError(channel, ex);
+                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
             }
             catch (IOException ioex)
             {
@@ -530,7 +530,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
             try
             {
-                this.frameProtocol.writeError(channel, ex);
+                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
             }
             catch (IOException ioex)
             {
@@ -606,7 +606,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
             try
             {
-                this.frameProtocol.writeError(channel, ex);
+                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
             }
             catch (IOException ioex)
             {

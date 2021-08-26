@@ -149,38 +149,38 @@ public class NioFrameProtocol
     public ByteBuffer readFrame(final ReadableByteChannel channel) throws Exception
     {
         // Header lesen
-        ByteBuffer bufferHeader = readFrameHeader(channel);
+        ByteBuffer buffer = readFrameHeader(channel);
 
-        FrameType frameType = FrameType.fromEncodedType(bufferHeader.getInt());
-        int contentLength = bufferHeader.getInt();
+        FrameType frameType = FrameType.fromEncodedType(buffer.getInt());
+        int contentLength = buffer.getInt();
 
-        getBufferPool().free(bufferHeader);
+        getBufferPool().free(buffer);
 
         // Content lesen
-        ByteBuffer bufferContent = getBufferPool().get();
+        buffer = getBufferPool().get();
 
         if (FrameType.DATA.equals(frameType))
         {
-            read(channel, bufferContent, contentLength);
+            read(channel, buffer, contentLength);
 
-            return bufferContent.flip();
+            return buffer.flip();
         }
         else if (FrameType.ERROR.equals(frameType))
         {
-            read(channel, bufferContent, contentLength);
-            bufferContent.flip();
+            read(channel, buffer, contentLength);
+            buffer.flip();
 
             byte[] bytes = new byte[contentLength];
-            bufferContent.get(bytes);
+            buffer.get(bytes);
             String message = new String(bytes, StandardCharsets.UTF_8);
 
-            getBufferPool().free(bufferContent);
+            getBufferPool().free(buffer);
 
             throw new Exception(message);
         }
 
         // FINISH-Frame
-        getBufferPool().free(bufferContent);
+        getBufferPool().free(buffer);
 
         return null;
     }
@@ -275,17 +275,53 @@ public class NioFrameProtocol
      */
     public void writeData(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
     {
-        ByteBuffer bufferContent = getBufferPool().get();
+        ByteBuffer buffer = getBufferPool().get();
 
         try
         {
-            consumer.accept(bufferContent);
+            consumer.accept(buffer);
 
-            writeData(channel, bufferContent);
+            writeData(channel, buffer);
         }
         finally
         {
-            getBufferPool().free(bufferContent);
+            getBufferPool().free(buffer);
+        }
+    }
+
+    /**
+     * ERROR-Frame schreiben.
+     *
+     * @param channel {@link WritableByteChannel}
+     * @param consumer {@link Consumer}
+     *
+     * @throws IOException Falls was schief geht.
+     */
+    public void writeError(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
+    {
+        ByteBuffer buffer = getBufferPool().get();
+
+        try
+        {
+            consumer.accept(buffer);
+
+            int contentLength = 0;
+
+            if (buffer.position() == 0)
+            {
+                contentLength = buffer.limit();
+            }
+            else
+            {
+                contentLength = buffer.position();
+            }
+
+            writeFrameHeader(channel, FrameType.ERROR, contentLength);
+            write(channel, buffer);
+        }
+        finally
+        {
+            getBufferPool().free(buffer);
         }
     }
 
@@ -299,21 +335,11 @@ public class NioFrameProtocol
      */
     public void writeError(final WritableByteChannel channel, final Throwable th) throws IOException
     {
-        ByteBuffer bufferContent = getBufferPool().get();
-
-        try
-        {
+        writeError(channel, buffer -> {
             String message = th.getMessage() == null ? "" : th.getMessage();
             byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
-            bufferContent.put(messageBytes);
-
-            writeFrameHeader(channel, FrameType.ERROR, messageBytes.length);
-            write(channel, bufferContent);
-        }
-        finally
-        {
-            getBufferPool().free(bufferContent);
-        }
+            buffer.put(messageBytes);
+        });
     }
 
     /**
