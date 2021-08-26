@@ -2,9 +2,8 @@
 package de.freese.jsync.utils.pool.bytebuffer;
 
 import java.nio.ByteBuffer;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import de.freese.jsync.Options;
 
@@ -18,7 +17,7 @@ class SimpleByteBufferPool implements ByteBufferPool
     /**
      *
      */
-    private final Deque<ByteBuffer> cache = new LinkedList<>();
+    private final Queue<ByteBuffer> cache = new LinkedBlockingQueue<>(Integer.MAX_VALUE);
 
     /**
     *
@@ -29,11 +28,6 @@ class SimpleByteBufferPool implements ByteBufferPool
     *
     */
     private int free;
-
-    /**
-     *
-     */
-    private final ReentrantLock lock = new ReentrantLock(true);
 
     /**
      * Erstellt ein neues {@link SimpleByteBufferPool} Object.
@@ -49,16 +43,7 @@ class SimpleByteBufferPool implements ByteBufferPool
     @Override
     public void clear()
     {
-        this.lock.lock();
-
-        try
-        {
-            this.cache.clear();
-        }
-        finally
-        {
-            this.lock.unlock();
-        }
+        this.cache.clear();
     }
 
     /**
@@ -72,53 +57,31 @@ class SimpleByteBufferPool implements ByteBufferPool
             return;
         }
 
-        this.lock.lock();
+        this.free++;
 
-        try
-        {
-            this.free++;
-
-            this.cache.addLast(buffer);
-        }
-        finally
-        {
-            this.lock.unlock();
-        }
+        this.cache.offer(buffer);
     }
 
     /**
-     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get(int)
+     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get()
      */
     @Override
-    public ByteBuffer get(final int size)
+    public ByteBuffer get()
     {
-        this.lock.lock();
+        ByteBuffer buffer = this.cache.poll();
 
-        try
+        if (buffer == null)
         {
+            this.created++;
 
-            // int capacity = SoftReferenceByteBufferPool.calculateCapacity(size);
-            int capacity = Options.BUFFER_SIZE;
-
-            ByteBuffer buffer = this.cache.pollFirst();
-
-            if (buffer == null)
-            {
-                this.created++;
-
-                buffer = ByteBuffer.allocate(capacity);
-            }
-            else
-            {
-                buffer.clear();
-            }
-
-            return buffer;
+            buffer = ByteBuffer.allocate(Options.BUFFER_SIZE);
         }
-        finally
+        else
         {
-            this.lock.unlock();
+            buffer.clear();
         }
+
+        return buffer;
     }
 
     /**

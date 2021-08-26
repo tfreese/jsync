@@ -157,7 +157,7 @@ public class NioFrameProtocol
         getBufferPool().free(bufferHeader);
 
         // Content lesen
-        ByteBuffer bufferContent = getBufferPool().get(contentLength);
+        ByteBuffer bufferContent = getBufferPool().get();
 
         if (FrameType.DATA.equals(frameType))
         {
@@ -194,7 +194,7 @@ public class NioFrameProtocol
      */
     protected ByteBuffer readFrameHeader(final ReadableByteChannel channel) throws IOException
     {
-        ByteBuffer buffer = getBufferPool().get(8);
+        ByteBuffer buffer = getBufferPool().get();
 
         read(channel, buffer, 8);
 
@@ -275,7 +275,7 @@ public class NioFrameProtocol
      */
     public void writeData(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
     {
-        ByteBuffer bufferContent = getBufferPool().get(DEFAULT_BUFFER_SIZE);
+        ByteBuffer bufferContent = getBufferPool().get();
 
         try
         {
@@ -299,7 +299,7 @@ public class NioFrameProtocol
      */
     public void writeError(final WritableByteChannel channel, final Throwable th) throws IOException
     {
-        ByteBuffer bufferContent = getBufferPool().get(DEFAULT_BUFFER_SIZE);
+        ByteBuffer bufferContent = getBufferPool().get();
 
         try
         {
@@ -337,7 +337,7 @@ public class NioFrameProtocol
      */
     protected void writeFrameHeader(final WritableByteChannel channel, final FrameType frameType, final int contentLength) throws IOException
     {
-        ByteBuffer buffer = getBufferPool().get(8);
+        ByteBuffer buffer = getBufferPool().get();
 
         try
         {

@@ -78,13 +78,13 @@ class JsyncPayloadDecoder implements PayloadDecoder
             default -> throw new IllegalArgumentException("unsupported frame type: " + type);
         }
 
-        ByteBuffer data = this.byteBufferPool.get(d.readableBytes());
+        ByteBuffer data = this.byteBufferPool.get();
         data.put(d.nioBuffer());
         data.flip();
 
         if (m != null)
         {
-            ByteBuffer metadata = this.byteBufferPool.get(m.readableBytes());
+            ByteBuffer metadata = this.byteBufferPool.get();
             metadata.put(m.nioBuffer());
             metadata.flip();
 

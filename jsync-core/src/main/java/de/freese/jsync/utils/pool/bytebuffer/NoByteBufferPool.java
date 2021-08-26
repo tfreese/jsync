@@ -3,6 +3,8 @@ package de.freese.jsync.utils.pool.bytebuffer;
 
 import java.nio.ByteBuffer;
 
+import de.freese.jsync.Options;
+
 /**
  * @author Thomas Freese
  */
@@ -45,14 +47,14 @@ class NoByteBufferPool implements ByteBufferPool
     }
 
     /**
-     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get(int)
+     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get()
      */
     @Override
-    public ByteBuffer get(final int size)
+    public ByteBuffer get()
     {
         this.created++;
 
-        return ByteBuffer.allocate(size);
+        return ByteBuffer.allocate(Options.BUFFER_SIZE);
     }
 
     /**

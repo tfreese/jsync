@@ -3,8 +3,6 @@ package de.freese.jsync.utils.pool.bytebuffer;
 
 import java.nio.ByteBuffer;
 
-import de.freese.jsync.Options;
-
 /**
  * @author Thomas Freese
  */
@@ -30,15 +28,5 @@ public interface ByteBufferPool
      *
      * @return {@link ByteBuffer}
      */
-    default ByteBuffer get()
-    {
-        return get(Options.BUFFER_SIZE);
-    }
-
-    /**
-     * @param size int
-     *
-     * @return {@link ByteBuffer}
-     */
-    ByteBuffer get(int size);
+    ByteBuffer get();
 }
