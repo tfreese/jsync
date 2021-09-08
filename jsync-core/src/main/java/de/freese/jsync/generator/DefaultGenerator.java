@@ -90,11 +90,16 @@ public class DefaultGenerator extends AbstractGenerator
      */
     protected SyncItem toDirectoryItem(final Path directory, final String relativeDir, final LinkOption[] linkOptions)
     {
+        if (relativeDir.isEmpty())
+        {
+            // relativeDir = directory
+            return null;
+        }
+
         SyncItem syncItem = new DefaultSyncItem(relativeDir);
 
         try
         {
-            // syncItem.setSize(Files.walk(directory, 1).count());
             Predicate<Path> self = p -> p.getFileName().toString().startsWith(".");
 
             try (Stream<Path> childs = Files.list(directory).filter(self.negate()))

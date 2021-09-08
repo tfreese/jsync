@@ -560,7 +560,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         getComboBoxProtocol(EFileSystem.SENDER).setSelectedItem(JSyncProtocol.valueOf(properties.getProperty("sender.protocol", "FILE")));
         getComboBoxProtocol(EFileSystem.RECEIVER).setSelectedItem(JSyncProtocol.valueOf(properties.getProperty("receiver.protocol", "FILE")));
 
-        this.textAreaFilterDirs.setText(properties.getProperty("filter.directories", "target; .settings"));
+        this.textAreaFilterDirs.setText(properties.getProperty("filter.directories", "target; build; .settings; .idea; .gradle"));
         this.textAreaFilterFiles.setText(properties.getProperty("filter.files", ".class; .log"));
     }
 
