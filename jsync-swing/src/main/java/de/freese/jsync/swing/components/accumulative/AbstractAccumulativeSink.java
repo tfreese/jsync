@@ -62,7 +62,7 @@ abstract class AbstractAccumulativeSink
      */
     public <T> void createForList(final Sinks.Many<T> sink, final Consumer<List<T>> consumer, final Duration duration)
     {
-        sink.asFlux().buffer(duration).publishOn(getScheduler()).subscribe(consumer::accept);
+        sink.asFlux().buffer(duration).publishOn(getScheduler()).subscribe(consumer);
     }
 
     /**
@@ -104,7 +104,7 @@ abstract class AbstractAccumulativeSink
      */
     public <T> void createForSingle(final Sinks.Many<T> sink, final Consumer<T> consumer, final Duration duration)
     {
-        sink.asFlux().sample(duration).publishOn(getScheduler()).subscribe(consumer::accept);
+        sink.asFlux().sample(duration).publishOn(getScheduler()).subscribe(consumer);
     }
 
     /**
