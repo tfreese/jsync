@@ -26,12 +26,13 @@ public final class JsyncSwingLauncher
         }
         else
         {
-            JSyncSwing.getLogger().info("init: {}", Arrays.toString(args));
+            if (JSyncSwing.getLogger().isInfoEnabled())
+            {
+                JSyncSwing.getLogger().info("init: {}", Arrays.toString(args));
+            }
         }
 
-        Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
-            JSyncSwing.getLogger().error("Default exception handler", ex);
-        });
+        Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> JSyncSwing.getLogger().error("Default exception handler", ex));
 
         System.setProperty("reactor.schedulers.defaultPoolSize", Integer.toString(8));
         System.setProperty("reactor.schedulers.defaultBoundedElasticSize", Integer.toString(8));

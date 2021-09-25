@@ -22,12 +22,10 @@ public class JsyncController
      *
      */
     private Client client;
-
     /**
      *
      */
     public final Logger logger = LoggerFactory.getLogger(getClass());
-
     /**
      *
      */

@@ -18,12 +18,10 @@ class SimpleByteBufferPool implements ByteBufferPool
      *
      */
     private final Queue<ByteBuffer> cache = new LinkedBlockingQueue<>(Integer.MAX_VALUE);
-
     /**
     *
     */
     private int created;
-
     /**
     *
     */

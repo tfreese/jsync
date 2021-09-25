@@ -37,37 +37,30 @@ public abstract class AbstractClient implements Client
      *
      */
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
     /**
      *
      */
     private final Options options;
-
     /**
      *
      */
     private final Receiver receiver;
-
     /**
      *
      */
     private final String receiverPath;
-
     /**
      *
      */
     private final URI receiverUri;
-
     /**
      *
      */
     private final Sender sender;
-
     /**
      *
      */
     private final String senderPath;
-
     /**
      *
      */

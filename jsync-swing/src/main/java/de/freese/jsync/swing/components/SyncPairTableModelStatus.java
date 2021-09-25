@@ -1,7 +1,4 @@
-/**
- * Created: 12.07.2020
- */
-
+// Created: 12.07.2020
 package de.freese.jsync.swing.components;
 
 import java.util.List;

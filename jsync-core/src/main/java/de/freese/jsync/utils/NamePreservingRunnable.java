@@ -18,12 +18,10 @@ public class NamePreservingRunnable implements Runnable
      *
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(NamePreservingRunnable.class);
-
     /**
      *
      */
     private final Runnable runnable;
-
     /**
      *
      */

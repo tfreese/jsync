@@ -1,6 +1,4 @@
-/**
- * Created: 23.10.2016
- */
+// Created: 23.10.2016
 package de.freese.jsync;
 
 import java.net.URI;

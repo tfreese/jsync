@@ -17,12 +17,10 @@ public class GeneratorListenerAdapter implements GeneratorListener
      *
      */
     private LongConsumer checksumConsumer;
-
     /**
      *
      */
     private Consumer<SyncItem> currentItemConsumer;
-
     /**
      *
      */

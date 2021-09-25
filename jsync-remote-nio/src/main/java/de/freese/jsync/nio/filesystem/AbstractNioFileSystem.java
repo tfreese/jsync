@@ -29,12 +29,10 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
     *
     */
     private SocketChannelPool channelPool;
-
     /**
     *
     */
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
-
     /**
     *
     */
@@ -53,9 +51,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         try
         {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, JSyncCommand.CONNECT);
-            });
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.CONNECT));
 
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
@@ -93,9 +89,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         try
         {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, JSyncCommand.DISCONNECT);
-            });
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.DISCONNECT));
 
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
@@ -134,9 +128,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         try
         {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, command);
-            });
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, command));
 
             // Data-Frame
             getFrameProtocol().writeData(channel, buffer -> {
@@ -195,9 +187,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
             try
             {
                 // MetaData-Frame
-                getFrameProtocol().writeData(channel, buffer -> {
-                    getSerializer().writeTo(buffer, command);
-                });
+                getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, command));
 
                 // Data-Frame
                 getFrameProtocol().writeData(channel, buffer -> {

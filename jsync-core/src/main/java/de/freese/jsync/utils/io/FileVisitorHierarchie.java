@@ -23,12 +23,10 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
      *
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(FileVisitorHierarchie.class);
-
     /**
      *
      */
     private final Consumer<Path> consumer;
-
     /**
      *
      */
@@ -66,7 +64,10 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
 
         if (ex != null)
         {
-            getLogger().error(dir.toString(), ex);
+            if (getLogger().isErrorEnabled())
+            {
+                getLogger().error(dir.toString(), ex);
+            }
         }
         else
         {
@@ -125,7 +126,10 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
 
         if (ex != null)
         {
-            getLogger().error(file.toString(), ex);
+            if (getLogger().isErrorEnabled())
+            {
+                getLogger().error(file.toString(), ex);
+            }
         }
 
         return FileVisitResult.CONTINUE;

@@ -34,12 +34,10 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      *
      */
     private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
-
     /**
     *
     */
     private RSocketClient client;
-
     /**
     *
     */

@@ -47,9 +47,7 @@ public class RemoteSenderNio extends AbstractNioFileSystem implements Sender
         try
         {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, JSyncCommand.SOURCE_READ_FILE);
-            });
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.SOURCE_READ_FILE));
 
             // Data-Frame
             getFrameProtocol().writeData(channel, buffer -> {

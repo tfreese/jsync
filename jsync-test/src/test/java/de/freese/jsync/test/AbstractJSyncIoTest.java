@@ -8,8 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
@@ -22,24 +24,14 @@ public abstract class AbstractJSyncIoTest
      * Paths.get(System.getProperty("user.dir"), "target")
      */
     private static final Path PATH_BASE = Paths.get(System.getProperty("java.io.tmpdir"), "java");
-
     /**
      *
      */
     protected static final Path PATH_QUELLE = PATH_BASE.resolve("quelle");
-
     /**
      *
      */
     protected static final Path PATH_ZIEL = PATH_BASE.resolve("ziel");
-
-    /**
-     * Erzeugt eine neue Instanz von {@link AbstractJSyncIoTest}.
-     */
-    protected AbstractJSyncIoTest()
-    {
-        super();
-    }
 
     /**
      * Verzeichnis-Struktur zum Testen löschen.

@@ -14,22 +14,18 @@ public class Group
      *
      */
     public static final int ID_MAX = 65535;
-
     /**
      *
      */
     public static final Group NOBODY = new Group("nobody", ID_MAX - 1);
-
     /**
      *
      */
     public static final Group ROOT = new Group("root", 0);
-
     /**
      * unix:gid
      */
     private final int gid;
-
     /**
      *
      */

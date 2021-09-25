@@ -22,12 +22,10 @@ public class MonitorInputStream extends InputStream
     *
     */
     private long bytesRead;
-
     /**
-       *
-       */
+     *
+     */
     private final LongConsumer bytesReadConsumer;
-
     /**
     *
     */
@@ -42,7 +40,7 @@ public class MonitorInputStream extends InputStream
      */
     public MonitorInputStream(final InputStream delegate, final BiConsumer<Long, Long> bytesReadConsumer, final long size)
     {
-        this(delegate, bytesRead -> bytesReadConsumer.accept(bytesRead, size));
+        this(delegate, br -> bytesReadConsumer.accept(br, size));
     }
 
     /**

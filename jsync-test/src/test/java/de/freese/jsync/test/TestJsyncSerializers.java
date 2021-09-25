@@ -32,7 +32,6 @@ class TestJsyncSerializers
      * 8 kb
      */
     private static final ByteBuffer BUFFER = ByteBuffer.allocate(1024 * 8);
-
     /**
     *
     */

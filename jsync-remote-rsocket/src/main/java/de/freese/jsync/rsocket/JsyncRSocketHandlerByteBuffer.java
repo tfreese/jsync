@@ -43,6 +43,11 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
     /**
     *
     */
+    private static final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
+
+    /**
+    *
+    */
     private static final Logger LOGGER = LoggerFactory.getLogger(JsyncRSocketHandlerByteBuffer.class);
 
     /**
@@ -74,12 +79,6 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
             return new SenderDelegateLogger(new LocalhostSender());
         }
     };
-
-    /**
-    *
-    */
-    private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
-
     /**
     *
     */
@@ -192,7 +191,7 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
 
         return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem -> {
-            ByteBuffer buffer = this.byteBufferPool.get();
+            ByteBuffer buffer = JsyncRSocketHandlerByteBuffer.byteBufferPool.get();
             getSerializer().writeTo(buffer, syncItem);
             return buffer.flip();
         }).map(DefaultPayload::create);
@@ -438,7 +437,7 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         // @formatter:off
         Flux<Payload> response = receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
                 .map(bytesWritten -> {
-                    ByteBuffer buffer = this.byteBufferPool.get();
+                    ByteBuffer buffer = JsyncRSocketHandlerByteBuffer.byteBufferPool.get();
                     buffer.putLong(bytesWritten).flip();
                     return DefaultPayload.create(buffer);
                 })

@@ -17,37 +17,30 @@ public class DefaultSyncItem implements SyncItem
      *
      */
     private String checksum;
-
     /**
      *
      */
     private Group group;
-
     /**
      *
      */
     private boolean isFile;
-
     /**
      *
      */
     private long lastModifiedTime;
-
     /**
      *
      */
     private Set<PosixFilePermission> permissions;
-
     /**
      *
      */
     private final String relativePath;
-
     /**
      *
      */
     private long size;
-
     /**
      *
      */

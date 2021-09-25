@@ -1,9 +1,7 @@
 // Created: 13.11.2018
-
 package de.freese.jsync.utils;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -17,7 +15,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -128,9 +125,9 @@ public final class JSyncUtils
         {
             try
             {
-                if (channel instanceof FileChannel)
+                if (channel instanceof FileChannel fc)
                 {
-                    ((FileChannel) channel).force(false);
+                    fc.force(false);
                 }
 
                 channel.close();
@@ -176,7 +173,7 @@ public final class JSyncUtils
         {
             throw new IllegalArgumentException("path required");
         }
-        
+
         // Alternative
         // Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
 

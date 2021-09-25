@@ -35,8 +35,8 @@ class UriView extends AbstractView
      */
     private final JPanel panel = new JPanel();
     /**
-    *
-    */
+     *
+     */
     private JTextField textFieldHostPort;
     /**
      *

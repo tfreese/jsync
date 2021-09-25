@@ -77,7 +77,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      *
      */
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
-
     /**
      *
      */
@@ -551,9 +550,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     {
         try
         {
-            if (selectionKey.attachment() instanceof Runnable)
+            if (selectionKey.attachment()instanceof Runnable task)
             {
-                Runnable task = (Runnable) selectionKey.attachment();
                 selectionKey.attach(null);
 
                 task.run();

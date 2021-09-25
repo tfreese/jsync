@@ -15,12 +15,10 @@ public class SyncPair
      *
      */
     private final SyncItem receiverItem;
-
     /**
      *
      */
     private final SyncItem senderItem;
-
     /**
      *
      */

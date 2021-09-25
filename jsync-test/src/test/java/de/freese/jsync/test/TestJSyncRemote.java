@@ -59,12 +59,10 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     *
     */
     private static final Map<String, AutoCloseable> CLOSEABLES = new HashMap<>();
-
     /**
      *
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(TestJSyncRemote.class);
-
     /**
     *
     */

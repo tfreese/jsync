@@ -10,7 +10,6 @@ public final class RemoteUtils
      *
      */
     public static final int STATUS_ERROR = 500;
-
     /**
      *
      */

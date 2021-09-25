@@ -97,7 +97,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
     /**
      * @see de.freese.jsync.filesystem.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
      */
-    @SuppressWarnings("resource")
     @Override
     public void update(final String baseDir, final SyncItem syncItem)
     {

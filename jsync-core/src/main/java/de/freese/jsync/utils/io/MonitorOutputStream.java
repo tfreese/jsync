@@ -18,12 +18,10 @@ public class MonitorOutputStream extends OutputStream
     *
     */
     private long bytesWritten;
-
     /**
-       *
-       */
+     *
+     */
     private final LongConsumer bytesWrittenConsumer;
-
     /**
     *
     */
@@ -38,7 +36,7 @@ public class MonitorOutputStream extends OutputStream
      */
     public MonitorOutputStream(final OutputStream delegate, final BiConsumer<Long, Long> bytesWrittenConsumer, final long size)
     {
-        this(delegate, bytesWritten -> bytesWrittenConsumer.accept(bytesWritten, size));
+        this(delegate, bw -> bytesWrittenConsumer.accept(bw, size));
     }
 
     /**

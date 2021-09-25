@@ -15,12 +15,10 @@ public class JsyncThreadFactory implements ThreadFactory
     *
     */
     private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
-
     /**
      *
      */
     private final String namePrefix;
-
     /**
      *
      */

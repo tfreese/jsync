@@ -268,17 +268,14 @@ public abstract class Pool<T>
     *
     */
     private int created;
-
     /**
      *
      */
     private final Queue<T> freeObjects;
-
     /**
     *
     */
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
     /**
      *
      */
@@ -521,9 +518,9 @@ public abstract class Pool<T>
      */
     protected void reset(final T object)
     {
-        if (object instanceof Poolable)
+        if (object instanceof Poolable poolable)
         {
-            ((Poolable) object).reset();
+            poolable.reset();
         }
     }
 

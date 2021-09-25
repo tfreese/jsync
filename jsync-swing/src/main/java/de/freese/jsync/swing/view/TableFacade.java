@@ -24,16 +24,16 @@ import de.freese.jsync.swing.components.SyncPairTableModelStatus;
 public class TableFacade
 {
     /**
-       *
-       */
+     *
+     */
     private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterReceiver;
     /**
      *
      */
     private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterSender;
     /**
-    *
-    */
+     *
+     */
     private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterStatus;
     /**
      *

@@ -22,17 +22,14 @@ public final class JsyncContext
     *
     */
     private static ExecutorService executorService;
-
     /**
     *
     */
     private static JFrame mainFrame;
-
     /**
     *
     */
     private static Messages messages;
-
     /**
      *
      */

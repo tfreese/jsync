@@ -25,7 +25,6 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
      *
      */
     private final WritableByteChannel channel;
-
     /**
      *
      */

@@ -1,7 +1,4 @@
-/**
- * Created: 31.10.2016
- */
-
+// Created: 31.10.2016
 package de.freese.jsync.nio.server;
 
 import java.io.IOException;

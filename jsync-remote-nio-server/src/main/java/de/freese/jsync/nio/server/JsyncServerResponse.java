@@ -39,7 +39,6 @@ public final class JsyncServerResponse
      *
      */
     private final ByteBuffer bufferBody;
-
     /**
      *
      */

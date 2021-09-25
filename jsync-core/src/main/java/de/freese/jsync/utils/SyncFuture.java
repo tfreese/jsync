@@ -20,12 +20,10 @@ public class SyncFuture<T> implements Future<T>
      *
      */
     private CountDownLatch latch = new CountDownLatch(1);
-
     /**
      *
      */
     private T response;
-
     /**
      *
      */

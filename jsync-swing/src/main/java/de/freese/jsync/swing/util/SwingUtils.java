@@ -23,11 +23,11 @@ public final class SwingUtils
     {
         // System.out.printf("%s%n", component.getClass().getSimpleName());
 
-        if (component instanceof JComponent)
+        if (component instanceof JComponent c)
         {
             try
             {
-                ((JComponent) component).setBorder(BorderFactory.createLineBorder(Color.MAGENTA));
+                c.setBorder(BorderFactory.createLineBorder(Color.MAGENTA));
             }
             catch (Exception ex)
             {
@@ -47,9 +47,9 @@ public final class SwingUtils
 
         for (Component child : container.getComponents())
         {
-            if (child instanceof Container)
+            if (child instanceof Container c)
             {
-                enableDebug((Container) child);
+                enableDebug(c);
             }
             else
             {

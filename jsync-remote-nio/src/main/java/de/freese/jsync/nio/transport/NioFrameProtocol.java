@@ -24,7 +24,6 @@ public class NioFrameProtocol
      * Default: 4 MB
      */
     protected static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 4;
-
     /**
      *
      */

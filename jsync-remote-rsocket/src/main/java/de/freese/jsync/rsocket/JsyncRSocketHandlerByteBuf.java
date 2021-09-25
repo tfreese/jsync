@@ -42,7 +42,6 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
      *
      */
     private static final ByteBufAllocator BYTE_BUF_ALLOCATOR = ByteBufAllocator.DEFAULT;
-
     /**
      *
      */

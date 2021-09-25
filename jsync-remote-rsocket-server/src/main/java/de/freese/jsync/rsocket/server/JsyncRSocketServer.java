@@ -65,7 +65,7 @@ public final class JsyncRSocketServer
     /**
      * @return {@link Logger}
      */
-    protected Logger getLogger()
+    Logger getLogger()
     {
         return LOGGER;
     }

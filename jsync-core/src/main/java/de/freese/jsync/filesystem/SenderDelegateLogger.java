@@ -22,7 +22,6 @@ public class SenderDelegateLogger implements Sender
      *
      */
     private final Sender delegate;
-
     /**
      *
      */
@@ -39,9 +38,9 @@ public class SenderDelegateLogger implements Sender
 
         this.delegate = Objects.requireNonNull(delegate, "delegate required");
 
-        if (this.delegate instanceof AbstractFileSystem)
+        if (this.delegate instanceof AbstractFileSystem fs)
         {
-            this.logger = ((AbstractFileSystem) this.delegate).getLogger();
+            this.logger = fs.getLogger();
         }
         else
         {

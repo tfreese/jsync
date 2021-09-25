@@ -1,7 +1,4 @@
-/**
- * Created: 12.07.2020
- */
-
+// Created: 12.07.2020
 package de.freese.jsync.swing.components;
 
 import java.util.List;
@@ -22,7 +19,6 @@ public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPai
      *
      */
     private static final long serialVersionUID = -5500863230405594620L;
-
     /**
      *
      */

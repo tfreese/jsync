@@ -1,5 +1,4 @@
 // Created: 23.11.2018
-
 package de.freese.jsync.client.listener;
 
 import java.util.EventListener;

@@ -1,5 +1,4 @@
 // Created: 23.11.2018
-
 package de.freese.jsync.client.listener;
 
 import java.io.PrintStream;
@@ -21,7 +20,6 @@ public class ConsoleClientListener extends AbstractClientListener
      *
      */
     private final PrintStream printStream;
-
     /**
      *
      */

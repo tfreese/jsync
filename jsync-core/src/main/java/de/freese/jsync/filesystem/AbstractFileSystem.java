@@ -28,12 +28,10 @@ public abstract class AbstractFileSystem implements FileSystem
      * The question mark, in the end, signifies that this complete group is optional
      */
     protected static final Pattern PATTERN_NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
-
     /**
     *
     */
     private final Generator generator = new DefaultGenerator();
-
     /**
      *
      */

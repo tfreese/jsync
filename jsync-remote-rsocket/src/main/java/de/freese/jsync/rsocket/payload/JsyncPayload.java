@@ -27,7 +27,6 @@ class JsyncPayload implements Payload
     *
     */
     private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
-
     /**
     *
     */

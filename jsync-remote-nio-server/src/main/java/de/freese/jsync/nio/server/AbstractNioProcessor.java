@@ -289,7 +289,10 @@ public abstract class AbstractNioProcessor implements Runnable
             getStopLock().release();
         }
 
-        getLogger().debug("{} stopped", getClass().getSimpleName().toLowerCase());
+        if (getLogger().isDebugEnabled())
+        {
+            getLogger().debug("{} stopped", getClass().getSimpleName().toLowerCase());
+        }
     }
 
     /**
@@ -305,7 +308,10 @@ public abstract class AbstractNioProcessor implements Runnable
      */
     public void stop()
     {
-        getLogger().debug("stopping {}", getClass().getSimpleName().toLowerCase());
+        if (getLogger().isDebugEnabled())
+        {
+            getLogger().debug("stopping {}", getClass().getSimpleName().toLowerCase());
+        }
 
         setShutdown();
         getSelector().wakeup();

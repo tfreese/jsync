@@ -48,7 +48,6 @@ public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegi
      *
      */
     private final DataAdapter<D> adapter;
-
     /**
      *
      */

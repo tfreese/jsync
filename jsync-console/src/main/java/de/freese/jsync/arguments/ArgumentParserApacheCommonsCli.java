@@ -23,7 +23,6 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
     *
     */
     private final CommandLine line;
-
     /**
      *
      */
@@ -33,6 +32,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      * Erstellt ein neues {@link ArgumentParserApacheCommonsCli} Object.
      *
      * @param args String[]
+     *
      * @throws Exception Falls was schief geht.
      */
     public ArgumentParserApacheCommonsCli(final String[] args) throws Exception

@@ -1,7 +1,4 @@
-/**
- * Created: 25.11.2018
- */
-
+// Created: 25.11.2018
 package de.freese.jsync.swing;
 
 import java.awt.BorderLayout;

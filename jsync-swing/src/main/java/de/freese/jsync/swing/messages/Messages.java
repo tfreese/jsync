@@ -21,7 +21,6 @@ public class Messages
      *
      */
     public static final Logger LOGGER = LoggerFactory.getLogger(Messages.class);
-
     /**
      *
      */

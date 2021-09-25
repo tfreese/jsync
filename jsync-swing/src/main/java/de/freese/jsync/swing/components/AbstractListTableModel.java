@@ -21,17 +21,14 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
      *
      */
     private static final long serialVersionUID = 8219964863357772409L;
-
     /**
      *
      */
     private final int columnCount;
-
     /**
-    *
-    */
+     *
+     */
     private final List<String> columnNames;
-
     /**
      *
      */

@@ -20,7 +20,6 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
      *
      */
     private final Logger logger = LoggerFactory.getLogger("Generator");
-
     /**
      *
      */
