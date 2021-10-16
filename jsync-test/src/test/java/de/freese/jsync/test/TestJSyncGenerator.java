@@ -46,7 +46,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 
-        assertEquals(5, syncItems.size());
+        assertEquals(4, syncItems.size());
 
         syncItems.forEach(syncItem -> System.out.printf("%s%n", syncItem));
     }
@@ -68,7 +68,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 
-        assertEquals(4, syncItems.size());
+        assertEquals(3, syncItems.size());
 
         syncItems.forEach(syncItem -> System.out.printf("%s%n", syncItem));
     }
