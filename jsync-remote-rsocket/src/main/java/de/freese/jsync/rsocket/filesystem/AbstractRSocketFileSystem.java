@@ -44,6 +44,33 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
+     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
+     */
+    @Override
+    public void disconnect()
+    {
+        ByteBuffer bufferMeta = getByteBufferPool().get();
+        getSerializer().writeTo(bufferMeta, JSyncCommand.DISCONNECT);
+
+        // @formatter:off
+        getClient()
+            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
+                    .doOnSubscribe(subscription -> getByteBufferPool().free(bufferMeta))
+            )
+            .map(Payload::getDataUtf8)
+            .doOnNext(getLogger()::debug)
+            .doOnError(th -> getLogger().warn(th.getMessage()))
+            .block()
+            ;
+        // @formatter:on
+
+        getClient().dispose();
+        this.client = null;
+
+        Schedulers.shutdownNow();
+    }
+
+    /**
      * @param uri {@link URI}
      * @param tcpClientCustomizer {@link Function}
      */
@@ -113,31 +140,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
                 .build()
                 ;
         // @formatter:on
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
-     */
-    @Override
-    public void disconnect()
-    {
-        ByteBuffer bufferMeta = getByteBufferPool().get();
-        getSerializer().writeTo(bufferMeta, JSyncCommand.DISCONNECT);
-
-        // @formatter:off
-        getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> getByteBufferPool().free(bufferMeta))
-            )
-            .map(Payload::getDataUtf8)
-            .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().warn(th.getMessage()))
-            .block()
-            ;
-        // @formatter:on
-
-        getClient().dispose();
-        this.client = null;
     }
 
     /**

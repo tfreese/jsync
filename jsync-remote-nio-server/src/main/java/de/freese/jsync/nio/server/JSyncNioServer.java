@@ -10,14 +10,14 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.nio.server.dispatcher.Dispatcher;
 import de.freese.jsync.nio.server.dispatcher.DispatcherPool;
 import de.freese.jsync.nio.server.handler.IoHandler;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * Dieser Server arbeitet nach dem Acceptor-Reactor Pattern.<br>
@@ -125,14 +125,6 @@ public final class JSyncNioServer implements Runnable
         this.selectorProvider = Objects.requireNonNull(selectorProvider, "selectorProvider required");
 
         this.startLock.acquireUninterruptibly();
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    private Logger getLogger()
-    {
-        return LOGGER;
     }
 
     /**
@@ -268,8 +260,18 @@ public final class JSyncNioServer implements Runnable
             getLogger().error(null, ex);
         }
 
+        Schedulers.shutdownNow();
+
         getLogger().info("'{}' stopped on port: {}", this.name, this.port);
 
         ByteBufferPool.DEFAULT.clear();
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    private Logger getLogger()
+    {
+        return LOGGER;
     }
 }
