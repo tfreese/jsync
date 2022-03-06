@@ -4,9 +4,9 @@ package de.freese.jsync.model.serializer.adapter;
 /**
  * Interface für eine Datensenke.<br>
  *
- * @author Thomas Freese
- *
  * @param <W> Type of Sink
+ *
+ * @author Thomas Freese
  */
 public interface DataAdapterWrite<W>
 {

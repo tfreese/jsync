@@ -12,8 +12,7 @@ import reactor.core.publisher.SynchronousSink;
 
 /**
  * @author Thomas Freese
- *
- * @see de.freese.jsync.utils.io.springframework.core.io.buffer.DataBufferUtils.ReadableByteChannelGenerator
+ * @see org.springframework.core.io.buffer.DataBufferUtils.ReadableByteChannelGenerator
  */
 @SuppressWarnings("javadoc")
 public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<ByteBuffer>>

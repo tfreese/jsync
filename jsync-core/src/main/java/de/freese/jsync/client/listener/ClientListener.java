@@ -48,7 +48,7 @@ public interface ClientListener extends EventListener
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@linkSyncItem}
+     * @param syncItem {@link SyncItem}
      */
     void validate(Options options, final SyncItem syncItem);
 }

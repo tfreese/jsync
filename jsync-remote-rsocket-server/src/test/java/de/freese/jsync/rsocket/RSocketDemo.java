@@ -35,8 +35,8 @@ import reactor.util.function.Tuples;
 public class RSocketDemo
 {
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketDemo.class);
 
     /**
@@ -66,7 +66,8 @@ public class RSocketDemo
         // Debug einschalten.
         Hooks.onOperatorDebug();
 
-        Function<Integer, SocketAcceptor> socketAcceptor = port -> SocketAcceptor.forRequestResponse(payload -> {
+        Function<Integer, SocketAcceptor> socketAcceptor = port -> SocketAcceptor.forRequestResponse(payload ->
+        {
             String request = payload.getDataUtf8();
             LOGGER.info("Server {} got request {}", port, request);
             return Mono.just(DefaultPayload.create("Client of Server " + port + " got response " + request));
@@ -86,7 +87,7 @@ public class RSocketDemo
         Flux.range(0, 30).parallel().runOn(Schedulers.boundedElastic())
             .map(i ->
                 rSocketClient
-                    .requestResponse(Mono.just(DefaultPayload.create("flux-" + i.intValue())))
+                    .requestResponse(Mono.just(DefaultPayload.create("flux-" + i)))
                     .map(Payload::getDataUtf8)
                     .doOnNext(LOGGER::info)
                 )
@@ -225,7 +226,7 @@ public class RSocketDemo
      * @throws Exception Falls was schief geht.
      */
     static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor)
-        throws Exception
+            throws Exception
     {
         List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000, 8000, 9000).map(port -> new InetSocketAddress("localhost", port)).toList();
 

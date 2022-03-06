@@ -84,7 +84,7 @@ public class DefaultGenerator extends AbstractGenerator
     /**
      * @param directory {@link Path}
      * @param relativeDir String
-     * @param linkOptions {@link LinkOption}; wenn {@value LinkOption#NOFOLLOW_LINKS} null dann Follow
+     * @param linkOptions {@link LinkOption}; wenn LinkOption#NOFOLLOW_LINKS null dann Follow
      *
      * @return {@link SyncItem}
      */
@@ -148,7 +148,7 @@ public class DefaultGenerator extends AbstractGenerator
     /**
      * @param file {@link Path}
      * @param relativeFile String
-     * @param linkOptions {@link LinkOption}; wenn {@value LinkOption#NOFOLLOW_LINKS} null dann Follow
+     * @param linkOptions {@link LinkOption}; wenn LinkOption#NOFOLLOW_LINKS null dann Follow
      *
      * @return {@link SyncItem}
      */

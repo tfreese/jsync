@@ -11,14 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.client.Client;
@@ -32,6 +24,13 @@ import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.rsocket.server.JsyncRSocketServer;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Hooks;
 
 /***
@@ -40,6 +39,15 @@ import reactor.core.publisher.Hooks;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncRemote extends AbstractJSyncIoTest
 {
+    /**
+     *
+     */
+    private static final Map<String, AutoCloseable> CLOSEABLES = new HashMap<>();
+    /**
+     *
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestJSyncRemote.class);
+
     /**
      * @author Thomas Freese
      */
@@ -54,18 +62,9 @@ class TestJSyncRemote extends AbstractJSyncIoTest
             assertNull(th);
         }
     }
-
-    /**
-    *
-    */
-    private static final Map<String, AutoCloseable> CLOSEABLES = new HashMap<>();
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestJSyncRemote.class);
-    /**
-    *
-    */
     private static Options options = null;
 
     /**
@@ -97,84 +96,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     }
 
     /**
-     * @param port int
-     *
-     * @throws Exception Falls was schief geht.
-     */
-    private void startServerNio(final int port) throws Exception
-    {
-        if (!CLOSEABLES.containsKey("nio"))
-        {
-            JSyncNioServer server = new JSyncNioServer(port, 2, 4);
-            server.setName("nio");
-            server.setIoHandler(new JSyncIoHandler());
-            server.start();
-            CLOSEABLES.put("nio", () -> server.stop());
-        }
-    }
-
-    /**
-     * @param port int
-     *
-     * @throws Exception Falls was schief geht.
-     */
-    private void startServerRSocket(final int port) throws Exception
-    {
-        if (!CLOSEABLES.containsKey("rsocket"))
-        {
-            JsyncRSocketServer server = new JsyncRSocketServer();
-            server.start(port);
-            CLOSEABLES.put("rsocket", () -> server.stop());
-
-            // Fehlermeldungen beim Disconnect ausschalten.
-            Hooks.resetOnErrorDropped();
-            Hooks.onErrorDropped(th -> {
-            });
-        }
-    }
-
-    /**
-     * Sync directories.
-     *
-     * @param options {@link Options} options
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     *
-     * @throws Exception Falls was schief geht.
-     */
-    private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception
-    {
-        Client client = new DefaultClient(options, senderUri, receiverUri);
-        client.connectFileSystems();
-
-        List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.SENDER, null, syncItem -> {
-            syncItemsSender.add(syncItem);
-            String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
-                // System.out.println("Sender Bytes read: " + i);
-            });
-            syncItem.setChecksum(checksum);
-        });
-
-        List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.RECEIVER, null, syncItem -> {
-            syncItemsReceiver.add(syncItem);
-            String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
-                // System.out.println("Sender Bytes read: " + i);
-            });
-            syncItem.setChecksum(checksum);
-        });
-
-        List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
-
-        syncPairs.forEach(SyncPair::validateStatus);
-
-        client.syncReceiver(syncPairs, new TestClientListener());
-
-        client.disconnectFileSystems();
-    }
-
-    /**
      * @throws Exception Falls was schief geht.
      */
     @Test
@@ -189,19 +110,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
 
         assertTrue(true);
     }
-
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
-    // private void startServerNetty() throws Exception
-    // {
-    // if (!CLOSEABLES.containsKey("netty"))
-    // {
-    // JsyncNettyServer server = new JsyncNettyServer();
-    // server.start(8002, 2, 4);
-    // CLOSEABLES.put("netty", () -> server.stop());
-    // }
-    // }
 
     /**
      * @throws Exception Falls was schief geht.
@@ -220,6 +128,76 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         syncDirectories(options, senderUri, receiverUri);
 
         assertTrue(true);
+    }
+
+    /**
+     * @throws Exception Falls was schief geht.
+     */
+    @Test
+    void testRSocket() throws Exception
+    {
+        System.out.println();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        startServerRSocket(8002);
+
+        URI senderUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_QUELLE.toString());
+        URI receiverUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_ZIEL.toString());
+
+        syncDirectories(options, senderUri, receiverUri);
+
+        assertTrue(true);
+    }
+
+    /**
+     * @param port int
+     *
+     * @throws Exception Falls was schief geht.
+     */
+    private void startServerNio(final int port) throws Exception
+    {
+        if (!CLOSEABLES.containsKey("nio"))
+        {
+            JSyncNioServer server = new JSyncNioServer(port, 2, 4);
+            server.setName("nio");
+            server.setIoHandler(new JSyncIoHandler());
+            server.start();
+            CLOSEABLES.put("nio", server::stop);
+        }
+    }
+
+    // /**
+    // * @throws Exception Falls was schief geht.
+    // */
+    // private void startServerNetty() throws Exception
+    // {
+    // if (!CLOSEABLES.containsKey("netty"))
+    // {
+    // JsyncNettyServer server = new JsyncNettyServer();
+    // server.start(8002, 2, 4);
+    // CLOSEABLES.put("netty", () -> server.stop());
+    // }
+    // }
+
+    /**
+     * @param port int
+     *
+     * @throws Exception Falls was schief geht.
+     */
+    private void startServerRSocket(final int port) throws Exception
+    {
+        if (!CLOSEABLES.containsKey("rsocket"))
+        {
+            JsyncRSocketServer server = new JsyncRSocketServer();
+            server.start(port);
+            CLOSEABLES.put("rsocket", () -> server.stop());
+
+            // Fehlermeldungen beim Disconnect ausschalten.
+            Hooks.resetOnErrorDropped();
+            Hooks.onErrorDropped(th ->
+            {
+            });
+        }
     }
 
     // /**
@@ -262,22 +240,48 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // }
 
     /**
+     * Sync directories.
+     *
+     * @param options {@link Options} options
+     * @param senderUri {@link URI}
+     * @param receiverUri {@link URI}
+     *
      * @throws Exception Falls was schief geht.
      */
-    @Test
-    void testRSocket() throws Exception
+    private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception
     {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
+        Client client = new DefaultClient(options, senderUri, receiverUri);
+        client.connectFileSystems();
 
-        startServerRSocket(8002);
+        List<SyncItem> syncItemsSender = new ArrayList<>();
+        client.generateSyncItems(EFileSystem.SENDER, null, syncItem ->
+        {
+            syncItemsSender.add(syncItem);
+            String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i ->
+            {
+                // System.out.println("Sender Bytes read: " + i);
+            });
+            syncItem.setChecksum(checksum);
+        });
 
-        URI senderUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_QUELLE.toString());
-        URI receiverUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_ZIEL.toString());
+        List<SyncItem> syncItemsReceiver = new ArrayList<>();
+        client.generateSyncItems(EFileSystem.RECEIVER, null, syncItem ->
+        {
+            syncItemsReceiver.add(syncItem);
+            String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i ->
+            {
+                // System.out.println("Sender Bytes read: " + i);
+            });
+            syncItem.setChecksum(checksum);
+        });
 
-        syncDirectories(options, senderUri, receiverUri);
+        List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
 
-        assertTrue(true);
+        syncPairs.forEach(SyncPair::validateStatus);
+
+        client.syncReceiver(syncPairs, new TestClientListener());
+
+        client.disconnectFileSystems();
     }
 
     // /**

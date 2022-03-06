@@ -2,15 +2,12 @@
 package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.ByteBuffer;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.filter.PathFilterEndsWith;
@@ -21,6 +18,10 @@ import de.freese.jsync.model.User;
 import de.freese.jsync.model.serializer.DefaultSerializer;
 import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * @author Thomas Freese
@@ -33,8 +34,8 @@ class TestJsyncSerializers
      */
     private static final ByteBuffer BUFFER = ByteBuffer.allocate(1024 * 8);
     /**
-    *
-    */
+     *
+     */
     private static final Serializer<ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
@@ -47,7 +48,6 @@ class TestJsyncSerializers
     }
 
     /**
-     *
      *
      */
     @Test
@@ -166,8 +166,8 @@ class TestJsyncSerializers
         syncItem1 = SERIALIZER.readFrom(buffer, SyncItem.class);
         assertEquals("/", syncItem1.getRelativePath());
         assertEquals("ABC", syncItem1.getChecksum());
-        assertEquals(false, syncItem1.isFile());
-        assertEquals(true, syncItem1.isDirectory());
+        assertFalse(syncItem1.isFile());
+        assertTrue(syncItem1.isDirectory());
         assertEquals("TestGroupA", syncItem1.getGroup().getName());
         assertEquals(41, syncItem1.getGroup().getGid());
         assertEquals(123456789, syncItem1.getLastModifiedTime());
@@ -179,8 +179,8 @@ class TestJsyncSerializers
         syncItem2 = SERIALIZER.readFrom(buffer, SyncItem.class);
         assertEquals("/script.sh", syncItem2.getRelativePath());
         assertEquals("XYZ", syncItem2.getChecksum());
-        assertEquals(true, syncItem2.isFile());
-        assertEquals(false, syncItem2.isDirectory());
+        assertTrue(syncItem2.isFile());
+        assertFalse(syncItem2.isDirectory());
         assertEquals("TestGroupB", syncItem2.getGroup().getName());
         assertEquals(42, syncItem2.getGroup().getGid());
         assertEquals(987654321, syncItem2.getLastModifiedTime());
@@ -213,8 +213,8 @@ class TestJsyncSerializers
     }
 
     /**
-    *
-    */
+     *
+     */
     @Test
     void test060PathFilter()
     {

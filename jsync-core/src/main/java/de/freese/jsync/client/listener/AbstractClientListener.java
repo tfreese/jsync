@@ -34,7 +34,7 @@ public abstract class AbstractClientListener implements ClientListener
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@linkSyncItem}
+     * @param syncItem {@link SyncItem}
      * @param bytesRead long
      *
      * @return String
@@ -69,7 +69,7 @@ public abstract class AbstractClientListener implements ClientListener
 
     /**
      * @param options {@link Options}
-     * @param syncItem {@linkSyncItem}
+     * @param syncItem {@link SyncItem}
      * @param bytesTransferred long
      *
      * @return String
