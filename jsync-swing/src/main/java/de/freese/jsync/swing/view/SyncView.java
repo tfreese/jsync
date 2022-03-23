@@ -36,7 +36,7 @@ public interface SyncView
     /**
      * @param consumer {@link Consumer}
      */
-    void doOnSyncronize(Consumer<JButton> consumer);
+    void doOnSynchronize(Consumer<JButton> consumer);
 
     /**
      * @return {@link Component}

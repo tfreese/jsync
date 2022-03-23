@@ -35,13 +35,13 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      */
     private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
     /**
-    *
-    */
-    private RSocketClient client;
-    /**
-    *
-    */
+     *
+     */
     private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    /**
+     *
+     */
+    private RSocketClient client;
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#disconnect()
@@ -207,7 +207,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
                         getByteBufferPool().free(bufferData);
                     })
             )
-            .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf -> in anderen Thread auslagern sonst knallts !
+            .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf -> in anderen Thread auslagern sonst knallt es !
             .doOnError(th -> getLogger().error(null, th))
             .map(payload -> {
                 ByteBuffer buffer = payload.getData();

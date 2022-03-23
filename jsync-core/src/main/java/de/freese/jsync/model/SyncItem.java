@@ -28,14 +28,14 @@ public interface SyncItem
     long getLastModifiedTime();
 
     /**
-     * Können unter Windows oder Netzlaufwerken null sein.
+     * Unter Windows oder Netzlaufwerken können diese Null sein.
      *
      * @return Set<PosixFilePermission>
      */
     Set<PosixFilePermission> getPermissions();
 
     /**
-     * Können unter Windows oder Netzlaufwerken null sein.
+     * Unter Windows oder Netzlaufwerken können diese Null sein.
      *
      * @return {@link Set}
      */

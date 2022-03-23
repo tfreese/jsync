@@ -38,7 +38,8 @@ public final class SocketChannelPool extends Pool<SocketChannel>
     @Override
     public void clear()
     {
-        super.clear(channel -> {
+        super.clear(channel ->
+        {
             try
             {
                 channel.shutdownInput();
@@ -66,7 +67,7 @@ public final class SocketChannelPool extends Pool<SocketChannel>
 
             while (!channel.finishConnect())
             {
-                // can do something here...
+                // Empty
             }
 
             channel.configureBlocking(true);

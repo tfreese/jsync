@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Exclude-Filter, der nichts excludiert.
+ * Exclude-Filter, der nichts exkludiert.
  *
  * @author Thomas Freese
  */

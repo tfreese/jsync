@@ -5,7 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
 /**
- * ByteArrayOutputStream mit direkten Zugriff auf das ByteArray über einen {@link ByteBuffer} ohne es zu kopieren.
+ * ByteArrayOutputStream mit direktem Zugriff auf das ByteArray über einen {@link ByteBuffer} ohne es zu kopieren.
  *
  * @author Thomas Freese
  */

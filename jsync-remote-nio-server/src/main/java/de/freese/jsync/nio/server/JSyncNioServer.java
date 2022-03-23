@@ -23,7 +23,7 @@ import reactor.core.scheduler.Schedulers;
  * Dieser Server arbeitet nach dem Acceptor-Reactor Pattern.<br>
  * Der {@link Acceptor} nimmt die neuen Client-Verbindungen entgegen und übergibt sie einem {@link Dispatcher}.<br>
  * Der {@link Dispatcher} kümmert sich um das Connection-Handling der Clients nach dem 'accept'.<br>
- * Der {@link IoHandler} übernimmt das Lesen und Schreiben von Request und Response in einem separatem Thread.<br>
+ * Der {@link IoHandler} übernimmt das Lesen und Schreiben von Request und Response in einem separaten Thread.<br>
  *
  * @author Thomas Freese
  */
@@ -61,19 +61,7 @@ public final class JSyncNioServer implements Runnable
     /**
      *
      */
-    private Acceptor acceptor;
-    /**
-     *
-     */
     private final DispatcherPool dispatcherPool;
-    /**
-     *
-     */
-    private IoHandler<SelectionKey> ioHandler;
-    /**
-    *
-    */
-    private String name = getClass().getSimpleName();
     /**
      *
      */
@@ -83,13 +71,25 @@ public final class JSyncNioServer implements Runnable
      */
     private final SelectorProvider selectorProvider;
     /**
-     *
-     */
-    private ServerSocketChannel serverSocketChannel;
-    /**
      * ReentrantLock nicht möglich, da dort die Locks auf Thread-Ebene verwaltet werden.
      */
     private final Semaphore startLock = new Semaphore(1, true);
+    /**
+     *
+     */
+    private Acceptor acceptor;
+    /**
+     *
+     */
+    private IoHandler<SelectionKey> ioHandler;
+    /**
+     *
+     */
+    private String name = getClass().getSimpleName();
+    /**
+     *
+     */
+    private ServerSocketChannel serverSocketChannel;
 
     /**
      * Erstellt ein neues {@link JSyncNioServer} Object.
@@ -229,7 +229,7 @@ public final class JSyncNioServer implements Runnable
     {
         run();
 
-        // Warten bis fertich.
+        // Warten bis fertig.
         // this.startLock.acquireUninterruptibly();
         // this.startLock.release();
     }

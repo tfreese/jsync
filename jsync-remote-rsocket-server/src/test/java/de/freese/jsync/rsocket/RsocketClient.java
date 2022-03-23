@@ -26,8 +26,8 @@ import reactor.util.retry.Retry;
 public class RsocketClient
 {
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RsocketClient.class);
 
     /**
@@ -37,15 +37,16 @@ public class RsocketClient
      */
     public static void main(final String[] args) throws Exception
     {
-        // Globale Default-Resourcen.
+        // Globale Default-Ressourcen.
         // TcpResources.set(LoopResources.create("rsocket"));
         // TcpResources.set(LoopResources.create("rsocket", 2, 8, true));
         // TcpResources.set(ConnectionProvider.create("connectionPool", 16));
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.
-        // Nur einmalig definieren, sonst gibs mehrere Logs-Meldungen !!!
+        // Nur einmalig definieren, sonst gib es mehrere Logs-Meldungen !!!
         // Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
-        Hooks.onErrorDropped(th -> {
+        Hooks.onErrorDropped(th ->
+        {
         });
 
         // Debug einschalten.

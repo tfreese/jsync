@@ -52,13 +52,13 @@ public class RSocketDemo
         System.setProperty("reactor.netty.ioSelectCount", Integer.toString(4));
         System.setProperty("reactor.netty.ioWorkerCount", Integer.toString(8));
 
-        // Globale Default-Resourcen.
+        // Globale Default-Ressourcen.
         TcpResources.set(LoopResources.create("rsocket"));
         // TcpResources.set(LoopResources.create("rsocket", 2, 8, true));
         // TcpResources.set(ConnectionProvider.create("connectionPool", 16));
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.
-        // Nur einmalig definieren, sonst gibs mehrere Logs-Meldungen !!!
+        // Nur einmalig definieren, sonst gib es mehrere Logs-Meldungen !!!
         Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
         // Hooks.onErrorDropped(th -> {
         // });
@@ -101,7 +101,7 @@ public class RSocketDemo
         IntStream.range(0, 30).parallel()
             .mapToObj(i ->
                 rSocketClient
-                    .requestResponse(Mono.just(DefaultPayload.create("intstream-" + i)))
+                    .requestResponse(Mono.just(DefaultPayload.create("intStream-" + i)))
                     .map(Payload::getDataUtf8)
                     .doOnNext(LOGGER::info)
                 )

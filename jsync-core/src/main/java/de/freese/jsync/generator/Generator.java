@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * Der Generator sammelt alle relevanten Informationens des Dateisystems für den gewählten {@link Path}.
+ * Der Generator sammelt alle relevanten Informationen des Dateisystems für den gewählten {@link Path}.
  *
  * @author Thomas Freese
  */

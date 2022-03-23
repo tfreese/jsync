@@ -21,8 +21,8 @@ class Acceptor extends AbstractNioProcessor
      */
     private final Dispatcher dispatcher;
     /**
-    *
-    */
+     *
+     */
     private final ServerSocketChannel serverSocketChannel;
 
     /**
@@ -63,7 +63,7 @@ class Acceptor extends AbstractNioProcessor
             if (socketChannel == null)
             {
                 // Falls sich schon ein anderer Acceptor den Channel geschnappt hat.
-                // Dewegen ist es auch Blödsinn mehrere zu registrieren, da immer alle regaieren, aber nur einer den Channel hat.
+                // Deswegen ist es auch Blödsinn mehrere zu registrieren, da immer alle reagieren, aber nur einer den Channel hat.
                 return;
             }
 

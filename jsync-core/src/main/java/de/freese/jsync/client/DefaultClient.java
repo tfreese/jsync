@@ -46,7 +46,8 @@ public class DefaultClient extends AbstractClient
      */
     public Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver)
     {
-        return Flux.<SyncPair> create(sink -> {
+        return Flux.<SyncPair>create(sink ->
+        {
             mergeSyncItems(syncItemsSender.collectList().block(), syncItemsReceiver.collectList().block(), sink::next);
             sink.complete();
         }).sort(new SyncPairComparator());
@@ -68,27 +69,6 @@ public class DefaultClient extends AbstractClient
     }
 
     /**
-     * @param syncItemsSender {@link List}
-     * @param syncItemsReceiver {@link List}
-     * @param consumer {@link Consumer}
-     */
-    private void mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver, final Consumer<SyncPair> consumer)
-    {
-        // Map der ReceiverItems bauen.
-        Map<String, SyncItem> mapReceiver = syncItemsReceiver.stream().collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
-
-        // @formatter:off
-        syncItemsSender.stream()
-                .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
-                .forEach(consumer)
-                ;
-        // @formatter:on
-
-        // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
-        mapReceiver.forEach((key, value) -> consumer.accept(new SyncPair(null, value)));
-    }
-
-    /**
      * @see de.freese.jsync.client.Client#syncReceiver(java.util.List, de.freese.jsync.client.listener.ClientListener)
      */
     @Override
@@ -96,7 +76,7 @@ public class DefaultClient extends AbstractClient
     {
         ClientListener cl = clientListener != null ? clientListener : new EmptyClientListener();
 
-        // Alles rausfiltern was bereits synchronized ist.
+        // Alles raus filtern was bereits synchronized ist.
         Predicate<SyncPair> isSynchronised = p -> SyncStatus.SYNCHRONIZED.equals(p.getStatus());
         List<SyncPair> sync = syncPairs.stream().filter(isSynchronised.negate()).toList();
 
@@ -116,7 +96,28 @@ public class DefaultClient extends AbstractClient
         // Neue leere Verzeichnisse.
         createDirectories(sync, clientListener);
 
-        // Aktualisieren von Verzeichniss-Attributen.
+        // Aktualisieren von Verzeichnis-Attributen.
         updateDirectories(sync, cl);
+    }
+
+    /**
+     * @param syncItemsSender {@link List}
+     * @param syncItemsReceiver {@link List}
+     * @param consumer {@link Consumer}
+     */
+    private void mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver, final Consumer<SyncPair> consumer)
+    {
+        // Map der ReceiverItems bauen.
+        Map<String, SyncItem> mapReceiver = syncItemsReceiver.stream().collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
+
+        // @formatter:off
+        syncItemsSender.stream()
+                .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
+                .forEach(consumer)
+                ;
+        // @formatter:on
+
+        // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
+        mapReceiver.forEach((key, value) -> consumer.accept(new SyncPair(null, value)));
     }
 }

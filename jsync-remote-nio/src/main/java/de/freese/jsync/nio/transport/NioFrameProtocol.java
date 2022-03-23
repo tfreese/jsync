@@ -13,7 +13,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.core.publisher.Flux;
 
 /**
- * Abstraktion der NIO-Kommunikation mittles Frames.<br>
+ * Abstraktion der NIO-Kommunikation mittels Frames.<br>
  * Siehe <a href="https://github.com/rsocket/rsocket/blob/master/Protocol.md">rsocket-Protocol</a>
  *
  * @author Thomas Freese
@@ -58,32 +58,6 @@ public class NioFrameProtocol
     }
 
     /**
-     * Garantiert das alle Daten aus dem Channel gelesen werden wie angefordert.
-     *
-     * @param channel {@link ReadableByteChannel}
-     * @param buffer {@link ByteBuffer}
-     * @param contentLength int
-     *
-     * @throws IOException Falls was schief geht.
-     */
-    protected void read(final ReadableByteChannel channel, final ByteBuffer buffer, final int contentLength) throws IOException
-    {
-        // Der übergebene Buffer kann größer sein als benötigt.
-        ByteBuffer bb = buffer.slice(0, contentLength);
-
-        int totalRead = channel.read(bb);
-
-        while (totalRead < contentLength)
-        {
-            int bytesRead = channel.read(bb);
-            totalRead += bytesRead;
-        }
-
-        buffer.position(bb.position());
-        buffer.limit(bb.limit());
-    }
-
-    /**
      * Lesen aller Frames bis zum FINISH-Frame.<br>
      * Diese können nach der Verarbeitung wieder in den {@link ByteBufferPool}.
      *
@@ -93,7 +67,8 @@ public class NioFrameProtocol
      */
     public Flux<ByteBuffer> readAll(final ReadableByteChannel channel)
     {
-        return Flux.create(sink -> {
+        return Flux.create(sink ->
+        {
             try
             {
                 readAll(channel, sink::next);
@@ -182,61 +157,6 @@ public class NioFrameProtocol
         getBufferPool().free(buffer);
 
         return null;
-    }
-
-    /**
-     * @param channel {@link ReadableByteChannel}
-     *
-     * @return {@link ByteBuffer}
-     *
-     * @throws IOException Falls was schief geht.
-     */
-    protected ByteBuffer readFrameHeader(final ReadableByteChannel channel) throws IOException
-    {
-        ByteBuffer buffer = getBufferPool().get();
-
-        read(channel, buffer, 8);
-
-        return buffer.flip();
-    }
-
-    /**
-     * @param channel {@link WritableByteChannel}
-     * @param buffer {@link ByteBuffer}
-     *
-     * @return long
-     *
-     * @throws IOException Falls was schief geht
-     */
-    protected long write(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException
-    {
-        // for (ByteBuffer buffer : buffers)
-        // {
-        // if (buffer.position() > 0)
-        // // if (buffer.remaining() != buffer.limit())
-        // {
-        // buffer.flip();
-        // }
-        // }
-        //
-        // return channel.write(buffers);
-
-        if (buffer.position() > 0)
-        // if (buffer.remaining() != buffer.limit())
-        {
-            buffer.flip();
-        }
-
-        long totalWritten = 0;
-
-        while (buffer.hasRemaining())
-        {
-            long bytesWritten = channel.write(buffer);
-
-            totalWritten += bytesWritten;
-        }
-
-        return totalWritten;
     }
 
     /**
@@ -334,7 +254,8 @@ public class NioFrameProtocol
      */
     public void writeError(final WritableByteChannel channel, final Throwable th) throws IOException
     {
-        writeError(channel, buffer -> {
+        writeError(channel, buffer ->
+        {
             String message = th.getMessage() == null ? "" : th.getMessage();
             byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
             buffer.put(messageBytes);
@@ -351,6 +272,87 @@ public class NioFrameProtocol
     public void writeFinish(final WritableByteChannel channel) throws IOException
     {
         writeFrameHeader(channel, FrameType.FINISH, 0);
+    }
+
+    /**
+     * Garantiert das alle Daten aus dem Channel gelesen werden wie angefordert.
+     *
+     * @param channel {@link ReadableByteChannel}
+     * @param buffer {@link ByteBuffer}
+     * @param contentLength int
+     *
+     * @throws IOException Falls was schief geht.
+     */
+    protected void read(final ReadableByteChannel channel, final ByteBuffer buffer, final int contentLength) throws IOException
+    {
+        // Der übergebene Buffer kann größer sein als benötigt.
+        ByteBuffer bb = buffer.slice(0, contentLength);
+
+        int totalRead = channel.read(bb);
+
+        while (totalRead < contentLength)
+        {
+            int bytesRead = channel.read(bb);
+            totalRead += bytesRead;
+        }
+
+        buffer.position(bb.position());
+        buffer.limit(bb.limit());
+    }
+
+    /**
+     * @param channel {@link ReadableByteChannel}
+     *
+     * @return {@link ByteBuffer}
+     *
+     * @throws IOException Falls was schief geht.
+     */
+    protected ByteBuffer readFrameHeader(final ReadableByteChannel channel) throws IOException
+    {
+        ByteBuffer buffer = getBufferPool().get();
+
+        read(channel, buffer, 8);
+
+        return buffer.flip();
+    }
+
+    /**
+     * @param channel {@link WritableByteChannel}
+     * @param buffer {@link ByteBuffer}
+     *
+     * @return long
+     *
+     * @throws IOException Falls was schief geht
+     */
+    protected long write(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException
+    {
+        // for (ByteBuffer buffer : buffers)
+        // {
+        // if (buffer.position() > 0)
+        // // if (buffer.remaining() != buffer.limit())
+        // {
+        // buffer.flip();
+        // }
+        // }
+        //
+        // return channel.write(buffers);
+
+        if (buffer.position() > 0)
+        // if (buffer.remaining() != buffer.limit())
+        {
+            buffer.flip();
+        }
+
+        long totalWritten = 0;
+
+        while (buffer.hasRemaining())
+        {
+            long bytesWritten = channel.write(buffer);
+
+            totalWritten += bytesWritten;
+        }
+
+        return totalWritten;
     }
 
     /**

@@ -4,9 +4,6 @@ package de.freese.jsync;
 import java.net.URI;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.arguments.ArgumentParser;
 import de.freese.jsync.arguments.ArgumentParserApacheCommonsCli;
@@ -17,18 +14,20 @@ import de.freese.jsync.client.listener.ConsoleClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 /**
- * Consolen-Anwendung für jsync.<br>
+ * Konsolen-Anwendung für jsync.<br>
  *
  * @author Thomas Freese
  */
 public final class JSyncConsole
 {
     /**
-    *
-    */
+     *
+     */
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncConsole.class);
 
     /**
@@ -43,9 +42,9 @@ public final class JSyncConsole
         if (args2.length == 0)
         {
             args2 = new String[]
-            {
-                    "--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync-console"
-            };
+                    {
+                            "--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync-console"
+                    };
             // args2 = new String[]
             // {
             // "--delete",
@@ -114,9 +113,9 @@ public final class JSyncConsole
         URI senderUri = new URI(argumentParser.sender());
         URI receiverUri = new URI(argumentParser.receiver());
 
-        System.out.println("Start syncronisation");
+        System.out.println("Start synchronisation");
         syncDirectories(options, senderUri, receiverUri, new ConsoleClientListener());
-        System.out.println("Syncronisation finished");
+        System.out.println("Synchronisation finished");
     }
 
     /**

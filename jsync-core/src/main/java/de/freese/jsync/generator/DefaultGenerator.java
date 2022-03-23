@@ -102,9 +102,9 @@ public class DefaultGenerator extends AbstractGenerator
         {
             Predicate<Path> self = p -> p.getFileName().toString().startsWith(".");
 
-            try (Stream<Path> childs = Files.list(directory).filter(self.negate()))
+            try (Stream<Path> children = Files.list(directory).filter(self.negate()))
             {
-                syncItem.setSize(childs.count());
+                syncItem.setSize(children.count());
             }
 
             if (Options.IS_WINDOWS)

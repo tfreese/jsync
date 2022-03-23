@@ -3,9 +3,6 @@ package de.freese.jsync.rsocket.server;
 
 import java.net.InetSocketAddress;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.rsocket.JsyncRSocketHandlerByteBuf;
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
@@ -13,6 +10,8 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.transport.netty.server.CloseableChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Hooks;
 import reactor.netty.resources.LoopResources;
 import reactor.netty.tcp.TcpResources;
@@ -23,8 +22,8 @@ import reactor.netty.tcp.TcpResources;
 public final class JsyncRSocketServer
 {
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JsyncRSocketServer.class);
 
     /**
@@ -63,14 +62,6 @@ public final class JsyncRSocketServer
     private CloseableChannel server;
 
     /**
-     * @return {@link Logger}
-     */
-    Logger getLogger()
-    {
-        return LOGGER;
-    }
-
-    /**
      * @param port int
      */
     public void start(final int port)
@@ -82,13 +73,13 @@ public final class JsyncRSocketServer
         // System.setProperty("io.netty.leakDetection.level", "PARANOID");
         ResourceLeakDetector.setLevel(Level.ADVANCED);
 
-        // Globale Default-Resourcen.
+        // Globale Default-Ressourcen.
         TcpResources.set(LoopResources.create("server"));
         // TcpResources.set(LoopResources.create("server", selectCount, workerCount, true));
         // TcpResources.set(ConnectionProvider.create("connectionPool", 16));
 
         // Fehlermeldung, wenn Client die Verbindung schliesst.
-        // Nur einmalig definieren, sonst gibs mehrere Logs-Meldungen !!!
+        // Nur einmalig definieren, sonst gib es mehrere Logs-Meldungen !!!
         Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
         // Hooks.onErrorDropped(th -> {
         // });
@@ -107,8 +98,8 @@ public final class JsyncRSocketServer
     }
 
     /**
-    *
-    */
+     *
+     */
     public void stop()
     {
         getLogger().info("stopping jsync-rsocket server");
@@ -116,5 +107,13 @@ public final class JsyncRSocketServer
         this.server.dispose();
 
         ByteBufferPool.DEFAULT.clear();
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    Logger getLogger()
+    {
+        return LOGGER;
     }
 }

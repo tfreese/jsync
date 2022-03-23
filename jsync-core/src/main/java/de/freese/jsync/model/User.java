@@ -4,7 +4,7 @@ package de.freese.jsync.model;
 import java.util.Objects;
 
 /**
- * Enthält die Infos des Eigentümers der Datei.
+ * Enthält die Informationen des Eigentümers der Datei.
  *
  * @author Thomas Freese
  */

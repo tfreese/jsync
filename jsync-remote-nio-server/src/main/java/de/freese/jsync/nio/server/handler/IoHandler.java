@@ -7,9 +7,9 @@ import java.nio.charset.StandardCharsets;
 /**
  * Verarbeitet den Request und Response.
  *
- * @author Thomas Freese
- *
  * @param <T> <T> Type
+ *
+ * @author Thomas Freese
  */
 public interface IoHandler<T>
 {
@@ -36,7 +36,7 @@ public interface IoHandler<T>
     /**
      * Verarbeitet den Response.
      *
-     * @param outpuT Object
+     * @param output Object
      */
-    void write(final T outpuT);
+    void write(final T output);
 }

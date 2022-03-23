@@ -26,7 +26,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         super(controller);
 
         getSyncView().doOnCompare(button -> button.setEnabled(false));
-        getSyncView().doOnSyncronize(button -> button.setEnabled(false));
+        getSyncView().doOnSynchronize(button -> button.setEnabled(false));
 
         getSyncView().setProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
         getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
@@ -78,6 +78,33 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     }
 
     /**
+     * @see de.freese.jsync.client.listener.ClientListener#error(java.lang.String, java.lang.Throwable)
+     */
+    @Override
+    public void error(final String message, final Throwable th)
+    {
+        getLogger().error(message, th);
+    }
+
+    /**
+     * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
+     */
+    @Override
+    public void update(final Options options, final SyncItem syncItem)
+    {
+        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.update") + ": " + syncItem.getRelativePath());
+    }
+
+    /**
+     * @see de.freese.jsync.client.listener.ClientListener#validate(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
+     */
+    @Override
+    public void validate(final Options options, final SyncItem syncItem)
+    {
+        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
+    }
+
+    /**
      * @see javax.swing.SwingWorker#doInBackground()
      */
     @Override
@@ -117,33 +144,6 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
         getSyncView().setProgressBarFilesMax(0);
         getSyncView().doOnCompare(button -> button.setEnabled(true));
-        getSyncView().doOnSyncronize(button -> button.setEnabled(true));
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#error(java.lang.String, java.lang.Throwable)
-     */
-    @Override
-    public void error(final String message, final Throwable th)
-    {
-        getLogger().error(message, th);
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void update(final Options options, final SyncItem syncItem)
-    {
-        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.update") + ": " + syncItem.getRelativePath());
-    }
-
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#validate(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
-    @Override
-    public void validate(final Options options, final SyncItem syncItem)
-    {
-        getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
+        getSyncView().doOnSynchronize(button -> button.setEnabled(true));
     }
 }

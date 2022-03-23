@@ -29,7 +29,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         super(controller);
 
         getSyncView().doOnCompare(button -> button.setEnabled(false));
-        getSyncView().doOnSyncronize(button -> button.setEnabled(false));
+        getSyncView().doOnSynchronize(button -> button.setEnabled(false));
 
         getSyncView().clearTable();
 
@@ -40,39 +40,6 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, true);
 
         getSyncView().setProgressBarFilesMax(0);
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     * @param syncItem {@link SyncItem}
-     *
-     * @return {@link RunnableFuture}
-     */
-    private RunnableFuture<Void> createFutureChecksum(final EFileSystem fileSystem, final SyncItem syncItem)
-    {
-        if (syncItem == null)
-        {
-            return new FutureTask<>(() -> null);
-        }
-
-        Runnable runnable = () -> {
-            getSyncView().setProgressBarText(fileSystem, getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
-
-            String checksum = getClient().generateChecksum(fileSystem, syncItem, bytesRead -> {
-                if (bytesRead == 0)
-                {
-                    getSyncView().setProgressBarIndeterminate(fileSystem, false);
-                    getSyncView().setProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
-                            getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
-                }
-
-                getSyncView().setProgressBarValue(fileSystem, (int) bytesRead);
-            });
-
-            syncItem.setChecksum(checksum);
-        };
-
-        return new FutureTask<>(runnable, null);
     }
 
     /**
@@ -182,12 +149,47 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         }
 
         getSyncView().doOnCompare(button -> button.setEnabled(true));
-        getSyncView().doOnSyncronize(button -> button.setEnabled(true));
+        getSyncView().doOnSynchronize(button -> button.setEnabled(true));
 
         getSyncView().setProgressBarIndeterminate(EFileSystem.SENDER, false);
         getSyncView().setProgressBarIndeterminate(EFileSystem.RECEIVER, false);
 
         getSyncView().setProgressBarMinMaxText(EFileSystem.SENDER, 0, 0, "");
         getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
+    }
+
+    /**
+     * @param fileSystem {@link EFileSystem}
+     * @param syncItem {@link SyncItem}
+     *
+     * @return {@link RunnableFuture}
+     */
+    private RunnableFuture<Void> createFutureChecksum(final EFileSystem fileSystem, final SyncItem syncItem)
+    {
+        if (syncItem == null)
+        {
+            return new FutureTask<>(() -> null);
+        }
+
+        Runnable runnable = () ->
+        {
+            getSyncView().setProgressBarText(fileSystem, getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
+
+            String checksum = getClient().generateChecksum(fileSystem, syncItem, bytesRead ->
+            {
+                if (bytesRead == 0)
+                {
+                    getSyncView().setProgressBarIndeterminate(fileSystem, false);
+                    getSyncView().setProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(),
+                            getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
+                }
+
+                getSyncView().setProgressBarValue(fileSystem, (int) bytesRead);
+            });
+
+            syncItem.setChecksum(checksum);
+        };
+
+        return new FutureTask<>(runnable, null);
     }
 }

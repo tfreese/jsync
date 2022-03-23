@@ -58,45 +58,25 @@ import reactor.util.function.Tuples;
 public class DefaultSyncView extends AbstractView implements SyncView
 {
     /**
-    *
-    */
+     *
+     */
     private final Map<EFileSystem, Sinks.Many<Tuple3<Integer, Integer, String>>> accumulatorProgressBarMinMaxText = new EnumMap<>(EFileSystem.class);
-    /**
-    *
-    */
-    private final Map<EFileSystem, Sinks.Many<String>> accumulatorProgressBarText = new EnumMap<>(EFileSystem.class);
-    /**
-    *
-    */
-    private final Map<EFileSystem, Sinks.Many<Integer>> accumulatorProgressBarValue = new EnumMap<>(EFileSystem.class);
     /**
      *
      */
-    private Sinks.Many<Integer> accumulatorProgressFiles;
+    private final Map<EFileSystem, Sinks.Many<String>> accumulatorProgressBarText = new EnumMap<>(EFileSystem.class);
     /**
-    *
-    */
-    private Sinks.Many<SyncPair> accumulatorTableAdd;
+     *
+     */
+    private final Map<EFileSystem, Sinks.Many<Integer>> accumulatorProgressBarValue = new EnumMap<>(EFileSystem.class);
     /**
      *
      */
     private final ConfigView configView = new ConfigView();
     /**
-    *
-    */
+     *
+     */
     private final JPanel panel = new JPanel();
-    /**
-    *
-    */
-    private JProgressBar progressBarFiles;
-    /**
-    *
-    */
-    private JProgressBar progressBarReceiver;
-    /**
-    *
-    */
-    private JProgressBar progressBarSender;
     /**
      *
      */
@@ -108,18 +88,38 @@ public class DefaultSyncView extends AbstractView implements SyncView
     /**
      *
      */
+    private Sinks.Many<Integer> accumulatorProgressFiles;
+    /**
+     *
+     */
+    private Sinks.Many<SyncPair> accumulatorTableAdd;
+    /**
+     *
+     */
+    private JProgressBar progressBarFiles;
+    /**
+     *
+     */
+    private JProgressBar progressBarReceiver;
+    /**
+     *
+     */
+    private JProgressBar progressBarSender;
+    /**
+     *
+     */
     private JTextArea textAreaFilterDirs;
     /**
      *
      */
     private JTextArea textAreaFilterFiles;
     /**
-    *
-    */
+     *
+     */
     private UriView uriViewReceiver;
     /**
-    *
-    */
+     *
+     */
     private UriView uriViewSender;
 
     /**
@@ -130,7 +130,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
     {
         if (this.accumulatorTableAdd == null)
         {
-            this.accumulatorTableAdd = new AccumulativeSinkSwing().createForList(list -> {
+            this.accumulatorTableAdd = new AccumulativeSinkSwing().createForList(list ->
+            {
                 this.tableFacade.addAll(list);
 
                 this.tableFacade.scrollToLastRow();
@@ -161,107 +162,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
-     * Konfiguration der GUI.
-     */
-    private void configGui()
-    {
-        JComboBox<JSyncProtocol> comboboxProtocolSender = getComboBoxProtocol(EFileSystem.SENDER);
-        JComboBox<JSyncProtocol> comboboxProtocolReceiver = getComboBoxProtocol(EFileSystem.RECEIVER);
-
-        JTextField textFieldHostPortSender = getTextFieldHostPort(EFileSystem.SENDER);
-        JTextField textFieldHostPortReceiver = getTextFieldHostPort(EFileSystem.RECEIVER);
-
-        JTextField textFieldPathSender = getTextFieldPath(EFileSystem.SENDER);
-        JTextField textFieldPathReceiver = getTextFieldPath(EFileSystem.RECEIVER);
-
-        JButton buttonOpenSender = getButtonOpen(EFileSystem.SENDER);
-        JButton buttonOpenReceiver = getButtonOpen(EFileSystem.RECEIVER);
-
-        comboboxProtocolSender.addItemListener(event -> {
-            if (event.getStateChange() != ItemEvent.SELECTED)
-            {
-                return;
-            }
-
-            JSyncProtocol protocol = (JSyncProtocol) event.getItem();
-
-            textFieldHostPortSender.setVisible(protocol.isRemote());
-            buttonOpenSender.setVisible(JSyncProtocol.FILE.equals(protocol));
-
-            this.uriViewSender.getComponent().revalidate();
-            this.uriViewSender.getComponent().repaint();
-        });
-
-        comboboxProtocolReceiver.addItemListener(event -> {
-            if (event.getStateChange() != ItemEvent.SELECTED)
-            {
-                return;
-            }
-
-            JSyncProtocol protocol = (JSyncProtocol) event.getItem();
-
-            textFieldHostPortReceiver.setVisible(protocol.isRemote());
-            buttonOpenReceiver.setVisible(JSyncProtocol.FILE.equals(protocol));
-
-            this.uriViewReceiver.getComponent().revalidate();
-            this.uriViewReceiver.getComponent().repaint();
-        });
-
-        buttonOpenSender.addActionListener(event -> {
-            File folder = selectFolder(textFieldPathSender.getText());
-
-            if (folder != null)
-            {
-                textFieldPathSender.setText(folder.toString());
-            }
-            else
-            {
-                textFieldPathSender.setText(null);
-            }
-        });
-
-        buttonOpenReceiver.addActionListener(event -> {
-            File folder = selectFolder(textFieldPathReceiver.getText());
-
-            if (folder != null)
-            {
-                textFieldPathReceiver.setText(folder.toString());
-            }
-            else
-            {
-                textFieldPathReceiver.setText(null);
-            }
-        });
-
-        // Compare-Button steuern
-        textFieldPathSender.getDocument().addDocumentListener(new DocumentListenerAdapter()
-        {
-            /**
-             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
-             */
-            @Override
-            public void insertUpdate(final DocumentEvent event)
-            {
-                DefaultSyncView.this.configView.getButtonCompare()
-                        .setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());
-            }
-        });
-
-        textFieldPathReceiver.getDocument().addDocumentListener(new DocumentListenerAdapter()
-        {
-            /**
-             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
-             */
-            @Override
-            public void insertUpdate(final DocumentEvent event)
-            {
-                DefaultSyncView.this.configView.getButtonCompare()
-                        .setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());
-            }
-        });
-    }
-
-    /**
      * @see de.freese.jsync.swing.view.SyncView#doOnCompare(java.util.function.Consumer)
      */
     @Override
@@ -271,32 +171,12 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#doOnSyncronize(java.util.function.Consumer)
+     * @see de.freese.jsync.swing.view.SyncView#doOnSynchronize(java.util.function.Consumer)
      */
     @Override
-    public void doOnSyncronize(final Consumer<JButton> consumer)
+    public void doOnSynchronize(final Consumer<JButton> consumer)
     {
-        this.configView.doOnSyncronize(consumer);
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JButton}
-     */
-    private JButton getButtonOpen(final EFileSystem fileSystem)
-    {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getButtonOpen() : this.uriViewReceiver.getButtonOpen();
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JComboBox}
-     */
-    private JComboBox<JSyncProtocol> getComboBoxProtocol(final EFileSystem fileSystem)
-    {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getComboBoxProtocol() : this.uriViewReceiver.getComboBoxProtocol();
+        this.configView.doOnSynchronize(consumer);
     }
 
     /**
@@ -330,16 +210,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JProgressBar}
-     */
-    private JProgressBar getProgressBar(final EFileSystem fileSystem)
-    {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.progressBarSender : this.progressBarReceiver;
-    }
-
-    /**
      * @see de.freese.jsync.swing.view.SyncView#getSyncList()
      */
     @Override
@@ -348,26 +218,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
         Predicate<SyncPair> predicate = this.showView.getPredicate();
 
         return this.tableFacade.getStream().filter(predicate).toList();
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JTextField}
-     */
-    private JTextField getTextFieldHostPort(final EFileSystem fileSystem)
-    {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldHostPort() : this.uriViewReceiver.getTextFieldHostPort();
-    }
-
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JTextField}
-     */
-    private JTextField getTextFieldPath(final EFileSystem fileSystem)
-    {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldPath() : this.uriViewReceiver.getTextFieldPath();
     }
 
     /**
@@ -387,7 +237,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
     {
         if (this.accumulatorProgressFiles == null)
         {
-            this.accumulatorProgressFiles = new AccumulativeSinkSwing().createForList(list -> {
+            this.accumulatorProgressFiles = new AccumulativeSinkSwing().createForList(list ->
+            {
                 int v = list.stream().mapToInt(Integer::intValue).sum();
 
                 this.progressBarFiles.setValue(v + this.progressBarFiles.getValue());
@@ -595,6 +446,115 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFilesMax(int)
+     */
+    @Override
+    public void setProgressBarFilesMax(final int max)
+    {
+        runInEdt(() ->
+        {
+            this.progressBarFiles.setMinimum(0);
+            this.progressBarFiles.setMaximum(max);
+            this.progressBarFiles.setValue(0);
+            this.progressBarFiles.setString("");
+        });
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarIndeterminate(de.freese.jsync.filesystem.EFileSystem, boolean)
+     */
+    @Override
+    public void setProgressBarIndeterminate(final EFileSystem fileSystem, final boolean indeterminate)
+    {
+        runInEdt(() ->
+        {
+            JProgressBar progressBar = getProgressBar(fileSystem);
+            progressBar.setIndeterminate(indeterminate);
+        });
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarMinMaxText(de.freese.jsync.filesystem.EFileSystem, int, int, java.lang.String)
+     */
+    @Override
+    public void setProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
+    {
+        this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key ->
+        {
+            final JProgressBar progressBar = getProgressBar(fileSystem);
+
+            return new AccumulativeSinkSwing().createForSingle(value ->
+            {
+                progressBar.setMinimum(value.getT1());
+                progressBar.setMaximum(value.getT2());
+                progressBar.setString(value.getT3());
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("addProgressBarMinMaxText - {}: {}", fileSystem, value);
+                }
+            });
+        }).tryEmitNext(Tuples.of(min, max, text));
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarText(de.freese.jsync.filesystem.EFileSystem, java.lang.String)
+     */
+    @Override
+    public void setProgressBarText(final EFileSystem fileSystem, final String text)
+    {
+        this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key ->
+        {
+            final JProgressBar progressBar = getProgressBar(fileSystem);
+
+            return new AccumulativeSinkSwing().createForSingle(value ->
+            {
+                progressBar.setString(value);
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("addProgressBarText - {}: {}", fileSystem, value);
+                }
+            });
+        }).tryEmitNext(text);
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#setProgressBarValue(de.freese.jsync.filesystem.EFileSystem, int)
+     */
+    @Override
+    public void setProgressBarValue(final EFileSystem fileSystem, final int value)
+    {
+        this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key ->
+        {
+            final JProgressBar progressBar = getProgressBar(fileSystem);
+
+            return new AccumulativeSinkSwing().createForSingle(v ->
+            {
+                progressBar.setValue(v);
+
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("addProgressBarValue - {}: {}", fileSystem, v);
+                }
+            });
+        }).tryEmitNext(value);
+    }
+
+    /**
+     * @see de.freese.jsync.swing.view.SyncView#updateLastEntry()
+     */
+    @Override
+    public void updateLastEntry()
+    {
+        runInEdt(() ->
+        {
+            int rowCount = this.tableFacade.getRowCount();
+            this.tableFacade.fireTableRowsUpdated(rowCount - 1, rowCount - 1);
+        });
+    }
+
+    /**
      * @param selectedFolder String
      *
      * @return {@link File}
@@ -641,102 +601,157 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFilesMax(int)
+     * Konfiguration der GUI.
      */
-    @Override
-    public void setProgressBarFilesMax(final int max)
+    private void configGui()
     {
-        runInEdt(() -> {
-            this.progressBarFiles.setMinimum(0);
-            this.progressBarFiles.setMaximum(max);
-            this.progressBarFiles.setValue(0);
-            this.progressBarFiles.setString("");
+        JComboBox<JSyncProtocol> comboBoxProtocolSender = getComboBoxProtocol(EFileSystem.SENDER);
+        JComboBox<JSyncProtocol> comboBoxProtocolReceiver = getComboBoxProtocol(EFileSystem.RECEIVER);
+
+        JTextField textFieldHostPortSender = getTextFieldHostPort(EFileSystem.SENDER);
+        JTextField textFieldHostPortReceiver = getTextFieldHostPort(EFileSystem.RECEIVER);
+
+        JTextField textFieldPathSender = getTextFieldPath(EFileSystem.SENDER);
+        JTextField textFieldPathReceiver = getTextFieldPath(EFileSystem.RECEIVER);
+
+        JButton buttonOpenSender = getButtonOpen(EFileSystem.SENDER);
+        JButton buttonOpenReceiver = getButtonOpen(EFileSystem.RECEIVER);
+
+        comboBoxProtocolSender.addItemListener(event ->
+        {
+            if (event.getStateChange() != ItemEvent.SELECTED)
+            {
+                return;
+            }
+
+            JSyncProtocol protocol = (JSyncProtocol) event.getItem();
+
+            textFieldHostPortSender.setVisible(protocol.isRemote());
+            buttonOpenSender.setVisible(JSyncProtocol.FILE.equals(protocol));
+
+            this.uriViewSender.getComponent().revalidate();
+            this.uriViewSender.getComponent().repaint();
+        });
+
+        comboBoxProtocolReceiver.addItemListener(event ->
+        {
+            if (event.getStateChange() != ItemEvent.SELECTED)
+            {
+                return;
+            }
+
+            JSyncProtocol protocol = (JSyncProtocol) event.getItem();
+
+            textFieldHostPortReceiver.setVisible(protocol.isRemote());
+            buttonOpenReceiver.setVisible(JSyncProtocol.FILE.equals(protocol));
+
+            this.uriViewReceiver.getComponent().revalidate();
+            this.uriViewReceiver.getComponent().repaint();
+        });
+
+        buttonOpenSender.addActionListener(event ->
+        {
+            File folder = selectFolder(textFieldPathSender.getText());
+
+            if (folder != null)
+            {
+                textFieldPathSender.setText(folder.toString());
+            }
+            else
+            {
+                textFieldPathSender.setText(null);
+            }
+        });
+
+        buttonOpenReceiver.addActionListener(event ->
+        {
+            File folder = selectFolder(textFieldPathReceiver.getText());
+
+            if (folder != null)
+            {
+                textFieldPathReceiver.setText(folder.toString());
+            }
+            else
+            {
+                textFieldPathReceiver.setText(null);
+            }
+        });
+
+        // Compare-Button steuern
+        textFieldPathSender.getDocument().addDocumentListener(new DocumentListenerAdapter()
+        {
+            /**
+             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
+             */
+            @Override
+            public void insertUpdate(final DocumentEvent event)
+            {
+                DefaultSyncView.this.configView.getButtonCompare()
+                        .setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());
+            }
+        });
+
+        textFieldPathReceiver.getDocument().addDocumentListener(new DocumentListenerAdapter()
+        {
+            /**
+             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
+             */
+            @Override
+            public void insertUpdate(final DocumentEvent event)
+            {
+                DefaultSyncView.this.configView.getButtonCompare()
+                        .setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());
+            }
         });
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarIndeterminate(de.freese.jsync.filesystem.EFileSystem, boolean)
+     * @param fileSystem {@link EFileSystem}
+     *
+     * @return {@link JButton}
      */
-    @Override
-    public void setProgressBarIndeterminate(final EFileSystem fileSystem, final boolean indeterminate)
+    private JButton getButtonOpen(final EFileSystem fileSystem)
     {
-        runInEdt(() -> {
-            JProgressBar progressBar = getProgressBar(fileSystem);
-            progressBar.setIndeterminate(indeterminate);
-        });
+        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getButtonOpen() : this.uriViewReceiver.getButtonOpen();
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarMinMaxText(de.freese.jsync.filesystem.EFileSystem, int, int, java.lang.String)
+     * @param fileSystem {@link EFileSystem}
+     *
+     * @return {@link JComboBox}
      */
-    @Override
-    public void setProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
+    private JComboBox<JSyncProtocol> getComboBoxProtocol(final EFileSystem fileSystem)
     {
-        this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
-            final JProgressBar progressBar = getProgressBar(fileSystem);
-
-            return new AccumulativeSinkSwing().createForSingle(value -> {
-                progressBar.setMinimum(value.getT1());
-                progressBar.setMaximum(value.getT2());
-                progressBar.setString(value.getT3());
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("addProgressBarMinMaxText - {}: {}", fileSystem, value);
-                }
-            });
-        }).tryEmitNext(Tuples.of(min, max, text));
+        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getComboBoxProtocol() : this.uriViewReceiver.getComboBoxProtocol();
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarText(de.freese.jsync.filesystem.EFileSystem, java.lang.String)
+     * @param fileSystem {@link EFileSystem}
+     *
+     * @return {@link JProgressBar}
      */
-    @Override
-    public void setProgressBarText(final EFileSystem fileSystem, final String text)
+    private JProgressBar getProgressBar(final EFileSystem fileSystem)
     {
-        this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
-            final JProgressBar progressBar = getProgressBar(fileSystem);
-
-            return new AccumulativeSinkSwing().createForSingle(value -> {
-                progressBar.setString(value);
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("addProgressBarText - {}: {}", fileSystem, value);
-                }
-            });
-        }).tryEmitNext(text);
+        return EFileSystem.SENDER.equals(fileSystem) ? this.progressBarSender : this.progressBarReceiver;
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarValue(de.freese.jsync.filesystem.EFileSystem, int)
+     * @param fileSystem {@link EFileSystem}
+     *
+     * @return {@link JTextField}
      */
-    @Override
-    public void setProgressBarValue(final EFileSystem fileSystem, final int value)
+    private JTextField getTextFieldHostPort(final EFileSystem fileSystem)
     {
-        this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
-            final JProgressBar progressBar = getProgressBar(fileSystem);
-
-            return new AccumulativeSinkSwing().createForSingle(v -> {
-                progressBar.setValue(v);
-
-                if (getLogger().isDebugEnabled())
-                {
-                    getLogger().debug("addProgressBarValue - {}: {}", fileSystem, v);
-                }
-            });
-        }).tryEmitNext(value);
+        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldHostPort() : this.uriViewReceiver.getTextFieldHostPort();
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#updateLastEntry()
+     * @param fileSystem {@link EFileSystem}
+     *
+     * @return {@link JTextField}
      */
-    @Override
-    public void updateLastEntry()
+    private JTextField getTextFieldPath(final EFileSystem fileSystem)
     {
-        runInEdt(() -> {
-            int rowCount = this.tableFacade.getRowCount();
-            this.tableFacade.fireTableRowsUpdated(rowCount - 1, rowCount - 1);
-        });
+        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldPath() : this.uriViewReceiver.getTextFieldPath();
     }
 }

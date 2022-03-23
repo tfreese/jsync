@@ -10,15 +10,14 @@ import java.util.concurrent.ExecutorService;
 
 import javax.swing.SwingWorker;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.swing.JsyncContext;
 import de.freese.jsync.swing.view.SyncView;
 import de.freese.jsync.utils.JSyncUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @param <T> Result-Type
@@ -45,15 +44,14 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     {
         return JsyncContext.getMessages().getString(key);
     }
-
-    /**
-     *
-     */
-    private final JsyncController controller;
     /**
      *
      */
     public final Logger logger = LoggerFactory.getLogger(getClass());
+    /**
+     *
+     */
+    private final JsyncController controller;
     /**
      *
      */
@@ -85,7 +83,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     }
 
     /**
-     * Parallel-Verabeitung aktivieren, wenn<br>
+     * Parallel-Verarbeitung aktivieren, wenn<br>
      * - Sender und Receiver nicht auf dem gleichen File-Device laufen<br>
      * - Sender und Receiver nicht auf dem gleichen Server laufen<br>
      *

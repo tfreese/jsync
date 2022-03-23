@@ -23,11 +23,15 @@ public class ConfigView extends AbstractView
     /**
      *
      */
+    private final JPanel panel = new JPanel();
+    /**
+     *
+     */
     private JButton buttonCompare;
     /**
      *
      */
-    private JButton buttonSyncronize;
+    private JButton buttonSynchronize;
     /**
      *
      */
@@ -48,10 +52,6 @@ public class ConfigView extends AbstractView
      *
      */
     private JCheckBox checkBoxParallelism;
-    /**
-     *
-     */
-    private final JPanel panel = new JPanel();
 
     /**
      * @param consumer {@link Consumer}
@@ -64,9 +64,9 @@ public class ConfigView extends AbstractView
     /**
      * @param consumer {@link Consumer}
      */
-    void doOnSyncronize(final Consumer<JButton> consumer)
+    void doOnSynchronize(final Consumer<JButton> consumer)
     {
-        consumer.accept(this.buttonSyncronize);
+        consumer.accept(this.buttonSynchronize);
     }
 
     /**
@@ -80,9 +80,9 @@ public class ConfigView extends AbstractView
     /**
      * @return {@link JButton}
      */
-    JButton getButtonSyncronize()
+    JButton getButtonSynchronize()
     {
-        return this.buttonSyncronize;
+        return this.buttonSynchronize;
     }
 
     /**
@@ -150,10 +150,10 @@ public class ConfigView extends AbstractView
         this.panel.add(panelOptions, new GbcBuilder(1, 0));
 
         // Button Synchronize
-        this.buttonSyncronize = new JButton(getMessage("jsync.synchronize"));
-        this.buttonSyncronize.setEnabled(false);
-        this.buttonSyncronize.setMinimumSize(new Dimension(150, 20));
-        this.buttonSyncronize.setPreferredSize(new Dimension(200, 100));
-        this.panel.add(this.buttonSyncronize, new GbcBuilder(2, 0).insets(5, 20, 5, 5));
+        this.buttonSynchronize = new JButton(getMessage("jsync.synchronize"));
+        this.buttonSynchronize.setEnabled(false);
+        this.buttonSynchronize.setMinimumSize(new Dimension(150, 20));
+        this.buttonSynchronize.setPreferredSize(new Dimension(200, 100));
+        this.panel.add(this.buttonSynchronize, new GbcBuilder(2, 0).insets(5, 20, 5, 5));
     }
 }

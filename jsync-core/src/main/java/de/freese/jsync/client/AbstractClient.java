@@ -9,9 +9,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -24,6 +21,8 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
 import de.freese.jsync.utils.JSyncUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 /**
@@ -97,6 +96,72 @@ public abstract class AbstractClient implements Client
     }
 
     /**
+     * @see de.freese.jsync.client.Client#disconnectFileSystems()
+     */
+    @Override
+    public void disconnectFileSystems()
+    {
+        getSender().disconnect();
+        getReceiver().disconnect();
+    }
+
+    /**
+     * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
+     * java.util.function.LongConsumer)
+     */
+    @Override
+    public String generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer consumerChecksumBytesRead)
+    {
+        if (!getOptions().isChecksum() || !syncItem.isFile())
+        {
+            return null;
+        }
+
+        FileSystem fs = null;
+        String baseDir = null;
+
+        if (EFileSystem.SENDER.equals(fileSystem))
+        {
+            fs = getSender();
+            baseDir = getSenderPath();
+        }
+        else
+        {
+            fs = getReceiver();
+            baseDir = getReceiverPath();
+        }
+
+        return fs.generateChecksum(baseDir, syncItem.getRelativePath(), consumerChecksumBytesRead);
+    }
+
+    /**
+     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.filter.PathFilter)
+     */
+    @Override
+    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter)
+    {
+        FileSystem fs = null;
+        String baseDir = null;
+
+        if (EFileSystem.SENDER.equals(fileSystem))
+        {
+            fs = getSender();
+            baseDir = getSenderPath();
+        }
+        else
+        {
+            fs = getReceiver();
+            baseDir = getReceiverPath();
+        }
+
+        // @formatter:off
+        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), pathFilter)
+                .doOnError(ex -> getLogger().error(null, ex))
+                ;
+        // @formatter:on
+    }
+
+    /**
      * Kopieren der Dateien von der Quelle in die Senke<br>
      *
      * @param syncItem {@link SyncItem}
@@ -120,7 +185,8 @@ public abstract class AbstractClient implements Client
 
             AtomicLong bytesTransferred = new AtomicLong(0);
 
-            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).doOnNext(bytesWritten -> {
+            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).doOnNext(bytesWritten ->
+            {
                 getLogger().debug("CHUNK_COMPLETED: bytesWritten = {}", bytesWritten);
 
                 long writtenBytesSum = bytesTransferred.addAndGet(bytesWritten);
@@ -312,72 +378,6 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * @see de.freese.jsync.client.Client#disconnectFileSystems()
-     */
-    @Override
-    public void disconnectFileSystems()
-    {
-        getSender().disconnect();
-        getReceiver().disconnect();
-    }
-
-    /**
-     * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
-     *      java.util.function.LongConsumer)
-     */
-    @Override
-    public String generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer consumerChecksumBytesRead)
-    {
-        if (!getOptions().isChecksum() || !syncItem.isFile())
-        {
-            return null;
-        }
-
-        FileSystem fs = null;
-        String baseDir = null;
-
-        if (EFileSystem.SENDER.equals(fileSystem))
-        {
-            fs = getSender();
-            baseDir = getSenderPath();
-        }
-        else
-        {
-            fs = getReceiver();
-            baseDir = getReceiverPath();
-        }
-
-        return fs.generateChecksum(baseDir, syncItem.getRelativePath(), consumerChecksumBytesRead);
-    }
-
-    /**
-     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.filter.PathFilter)
-     */
-    @Override
-    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter)
-    {
-        FileSystem fs = null;
-        String baseDir = null;
-
-        if (EFileSystem.SENDER.equals(fileSystem))
-        {
-            fs = getSender();
-            baseDir = getSenderPath();
-        }
-        else
-        {
-            fs = getReceiver();
-            baseDir = getReceiverPath();
-        }
-
-        // @formatter:off
-        return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), pathFilter)
-                .doOnError(ex -> getLogger().error(null, ex))
-                ;
-        // @formatter:on
-    }
-
-    /**
      * @return {@link Logger}
      */
     protected Logger getLogger()
@@ -442,7 +442,7 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * Aktualisieren von Verzeichniss-Attributen auf dem {@link Receiver}.<br>
+     * Aktualisieren von Verzeichnis-Attributen auf dem {@link Receiver}.<br>
      *
      * @param syncItem {@link SyncItem}
      * @param clientListener {@link ClientListener}
@@ -467,7 +467,7 @@ public abstract class AbstractClient implements Client
     }
 
     /**
-     * Aktualisieren von Verzeichniss-Attributen auf dem {@link Receiver}.<br>
+     * Aktualisieren von Verzeichnis-Attributen auf dem {@link Receiver}.<br>
      * {@link SyncStatus#ONLY_IN_SOURCE}<br>
      * {@link SyncStatus#DIFFERENT_PERMISSIONS}<br>
      * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>

@@ -3,15 +3,14 @@ package de.freese.jsync.swing.controller;
 
 import java.net.URI;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.swing.JsyncContext;
 import de.freese.jsync.swing.util.SwingUtils;
 import de.freese.jsync.swing.view.SyncView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Thomas Freese
@@ -21,24 +20,38 @@ public class JsyncController
     /**
      *
      */
-    private Client client;
+    public final Logger logger = LoggerFactory.getLogger(getClass());
     /**
      *
      */
-    public final Logger logger = LoggerFactory.getLogger(getClass());
+    private Client client;
     /**
      *
      */
     private SyncView syncView;
 
     /**
+     * @param syncView {@link SyncView}
+     */
+    public void init(final SyncView syncView)
+    {
+        this.syncView = syncView;
+        this.syncView.restoreState();
+
+        syncView.doOnCompare(button -> button.addActionListener(event -> compare()));
+        syncView.doOnSynchronize(button -> button.addActionListener(event -> synchronize()));
+    }
+
+    /**
      *
      */
-    private void compare()
+    public void shutdown()
     {
-        CompareWorker worker = new CompareWorker(this);
+        getLogger().info("shutdown");
 
-        worker.execute();
+        getSyncView().saveState();
+
+        shutdownClient();
     }
 
     /**
@@ -68,14 +81,6 @@ public class JsyncController
     }
 
     /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
      * @param key String
      *
      * @return String
@@ -94,35 +99,11 @@ public class JsyncController
     }
 
     /**
-     * @param syncView {@link SyncView}
-     */
-    public void init(final SyncView syncView)
-    {
-        this.syncView = syncView;
-        this.syncView.restoreState();
-
-        syncView.doOnCompare(button -> button.addActionListener(event -> compare()));
-        syncView.doOnSyncronize(button -> button.addActionListener(event -> synchronize()));
-    }
-
-    /**
      * @param runnable {@link Runnable}
      */
     void runInEdt(final Runnable runnable)
     {
         SwingUtils.runInEdt(runnable);
-    }
-
-    /**
-     *
-     */
-    public void shutdown()
-    {
-        getLogger().info("shutdown");
-
-        getSyncView().saveState();
-
-        shutdownClient();
     }
 
     /**
@@ -135,6 +116,24 @@ public class JsyncController
             this.client.disconnectFileSystems();
             this.client = null;
         }
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return this.logger;
+    }
+
+    /**
+     *
+     */
+    private void compare()
+    {
+        CompareWorker worker = new CompareWorker(this);
+
+        worker.execute();
     }
 
     /**

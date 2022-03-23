@@ -15,19 +15,19 @@ import de.freese.jsync.nio.server.handler.IoHandler;
 
 /**
  * Der {@link Dispatcher} kümmert sich um das Connection-Handling der Clients nach dem 'accept'.<br>
- * Der {@link IoHandler} übernimmt das Lesen und Schreiben von Request und Response in einem separatem Thread.<br>
+ * Der {@link IoHandler} übernimmt das Lesen und Schreiben von Request und Response in einem separaten Thread.<br>
  *
  * @author Thomas Freese
  */
 class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
 {
     /**
-    *
-    */
+     *
+     */
     private final Executor executor;
     /**
-    *
-    */
+     *
+     */
     private final IoHandler<SelectionKey> ioHandler;
     /**
      *
@@ -50,6 +50,33 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
     }
 
     /**
+     * @see de.freese.jsync.nio.server.dispatcher.Dispatcher#register(java.nio.channels.SocketChannel)
+     */
+    @Override
+    public void register(final SocketChannel socketChannel)
+    {
+        if (isShutdown())
+        {
+            return;
+        }
+
+        Objects.requireNonNull(socketChannel, "socketChannel required");
+
+        try
+        {
+            getLogger().debug("{}: register new channel", socketChannel.getRemoteAddress());
+
+            getNewSessions().add(socketChannel);
+
+            getSelector().wakeup();
+        }
+        catch (Exception ex)
+        {
+            getLogger().error(null, ex);
+        }
+    }
+
+    /**
      * @see de.freese.jsync.nio.server.AbstractNioProcessor#afterSelectorLoop()
      */
     @Override
@@ -66,7 +93,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
     protected void afterSelectorWhile()
     {
         // Neue Channels gleich wieder schliessen.
-        for (Iterator<SocketChannel> iterator = getNewSessions().iterator(); iterator.hasNext();)
+        for (Iterator<SocketChannel> iterator = getNewSessions().iterator(); iterator.hasNext(); )
         {
             SocketChannel socketChannel = iterator.next();
             iterator.remove();
@@ -86,14 +113,6 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
     }
 
     /**
-     * @return {@link Queue}
-     */
-    private Queue<SocketChannel> getNewSessions()
-    {
-        return this.newSessions;
-    }
-
-    /**
      * @see de.freese.jsync.nio.server.AbstractNioProcessor#onReadable(java.nio.channels.SelectionKey)
      */
     @Override
@@ -104,7 +123,8 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
 
         selectionKey.interestOps(0); // Selector-Selektion deaktivieren.
 
-        this.executor.execute(() -> {
+        this.executor.execute(() ->
+        {
             this.ioHandler.read(selectionKey);
             selectionKey.selector().wakeup();
         });
@@ -121,10 +141,19 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
 
         selectionKey.interestOps(0); // Selector-Selektion deaktivieren.
 
-        this.executor.execute(() -> {
+        this.executor.execute(() ->
+        {
             this.ioHandler.write(selectionKey);
             selectionKey.selector().wakeup();
         });
+    }
+
+    /**
+     * @return {@link Queue}
+     */
+    private Queue<SocketChannel> getNewSessions()
+    {
+        return this.newSessions;
     }
 
     /**
@@ -163,33 +192,6 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
             {
                 getLogger().error(null, ex);
             }
-        }
-    }
-
-    /**
-     * @see de.freese.jsync.nio.server.dispatcher.Dispatcher#register(java.nio.channels.SocketChannel)
-     */
-    @Override
-    public void register(final SocketChannel socketChannel)
-    {
-        if (isShutdown())
-        {
-            return;
-        }
-
-        Objects.requireNonNull(socketChannel, "socketChannel required");
-
-        try
-        {
-            getLogger().debug("{}: register new channel", socketChannel.getRemoteAddress());
-
-            getNewSessions().add(socketChannel);
-
-            getSelector().wakeup();
-        }
-        catch (Exception ex)
-        {
-            getLogger().error(null, ex);
         }
     }
 }

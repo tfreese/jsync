@@ -13,7 +13,7 @@ import de.freese.jsync.utils.JSyncUtils;
 public abstract class AbstractClientListener implements ClientListener
 {
     /**
-     * Hängt bei Bedarf den String " (dry-run)" an die Message.
+     * Hängt bei Bedarf den String "(dry-run)" an die Message.
      *
      * @param options {@link Options}
      * @param message String

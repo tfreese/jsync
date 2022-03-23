@@ -22,7 +22,7 @@ public interface GeneratorListener extends EventListener
     void checksum(long bytesRead);
 
     /**
-     * Verzeichniss / Datei, was aktuell bearbeitet wird.
+     * Verzeichnis / Datei, was aktuell bearbeitet wird.
      *
      * @param syncItem {@link SyncItem}
      */

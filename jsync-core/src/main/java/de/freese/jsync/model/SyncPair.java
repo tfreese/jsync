@@ -112,12 +112,12 @@ public class SyncPair
     {
         if ((getSenderItem() == null) && (getReceiverItem() != null))
         {
-            // Löschen: In der Quelle nicht vorhanden, aber im Ziel.
+            // Löschen: in der Quelle nicht vorhanden, aber im Ziel.
             this.status = SyncStatus.ONLY_IN_TARGET;
         }
         else if ((getSenderItem() != null) && (getReceiverItem() == null))
         {
-            // Kopieren: In der Quelle vorhanden, aber nicht im Ziel.
+            // Kopieren: in der Quelle vorhanden, aber nicht im Ziel.
             this.status = SyncStatus.ONLY_IN_SOURCE;
         }
         else if ((getSenderItem() != null) && (getReceiverItem() != null))
