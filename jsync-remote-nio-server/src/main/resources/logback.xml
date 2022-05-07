@@ -7,13 +7,12 @@
     <!--property name="pattern" value="%date{HH:mm:ss.SSS} - %5level - [%12.-12thread] - %replace(%-22.-22logger{0}){' ', '.'} - %message%n" /-->
     <property name="pattern" value="%date{HH:mm:ss.SSS} - %5level - [%30.-30thread] - %-20logger{0} - %message%n" />
 
-    <property name="log.dir" value="../logs" />
-    <!--property name="log.dir" value="${user.home}/.jsync/logs" /-->
+    <property name="log.dir" value="${user.home}/.java/.jsync/logs" />
 
     <!-- Conditions brauchen org.codehaus.janino:janino -->
     <!--if condition='isNull("log.dir")'>
         <then>
-            <property name="log.dir" value="${user.home}/log/jsync" />
+            <property name="log.dir" value="${user.home}/.java/.jsync/logs" />
         </then>
         <else>
         </else>
@@ -46,12 +45,12 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.dir}/jsync.log</file>
+        <file>${log.dir}/server-nio.log</file>
         <append>true</append>
         <immediateFlush>true</immediateFlush>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${log.dir}/%d{yyyy-MM,aux}/jsync.%d{yyyy-MM-dd}_%i.log.gz</fileNamePattern>
+            <fileNamePattern>${log.dir}/%d{yyyy-MM,aux}/server-nio.%d{yyyy-MM-dd}_%i.log.gz</fileNamePattern>
             <maxFileSize>${LOG_FILE_MAX_SIZE:-10MB}</maxFileSize>
             <maxHistory>${LOG_FILE_MAX_HISTORY:-30}</maxHistory>
             <totalSizeCap>${LOG_FILE_SIZE_CAP:-1GB}</totalSizeCap>
