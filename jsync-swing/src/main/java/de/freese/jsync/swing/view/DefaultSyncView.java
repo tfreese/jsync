@@ -378,7 +378,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void restoreState()
     {
-        Path path = Paths.get(System.getProperty("user.home"), ".java", ".jsync", ".jsyncGuiState");
+        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", ".jsyncGuiState");
         Properties properties = new Properties();
 
         try
@@ -421,7 +421,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void saveState()
     {
-        Path path = Paths.get(System.getProperty("user.home"), ".java", ".jsync", ".jsyncGuiState");
+        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jsyncGuiState");
 
         Properties properties = new Properties();
         properties.setProperty("sender.textfieldHostPort", getTextFieldHostPort(EFileSystem.SENDER).getText());
