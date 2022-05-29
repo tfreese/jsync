@@ -22,10 +22,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.utils.io.FileVisitorDelete;
+import org.slf4j.Logger;
 
 /**
  * @author Thomas Freese
@@ -41,17 +40,17 @@ public final class JSyncUtils
      * @see Files#walk(Path, FileVisitOption...)
      */
     private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS =
-    {
-            FileVisitOption.FOLLOW_LINKS
-    };
+            {
+                    FileVisitOption.FOLLOW_LINKS
+            };
 
     /**
      *
      */
     private static final char[] HEX_CHARS =
-    {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-    };
+            {
+                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+            };
 
     /**
      * @see Files#exists(Path, LinkOption...)
@@ -61,9 +60,9 @@ public final class JSyncUtils
      * @see Files#readAttributes(Path, String, LinkOption...)
      */
     private static final LinkOption[] LINKOPTION_NO_SYMLINKS =
-    {
-            LinkOption.NOFOLLOW_LINKS
-    };
+            {
+                    LinkOption.NOFOLLOW_LINKS
+            };
 
     /**
      * @see Files#exists(Path, LinkOption...)
@@ -75,17 +74,17 @@ public final class JSyncUtils
     private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = {};
 
     /**
-    *
-    */
+     *
+     */
     private static final Pattern PATTERN_FILTER = Pattern.compile("[;,]");
 
     /**
      *
      */
     private static final String[] SIZE_UNITS =
-    {
-            "B", "KB", "MB", "GB", "TB", "PB", "EB"
-    };
+            {
+                    "B", "KB", "MB", "GB", "TB", "PB", "EB"
+            };
 
     /**
      * String hex = javax.xml.bind.DatatypeConverter.printHexBinary(checksum);<br>
@@ -505,7 +504,7 @@ public final class JSyncUtils
 
         String[] splits = PATTERN_FILTER.split(value);
 
-        return Arrays.stream(splits).map(String::trim).collect(Collectors.toSet());
+        return Arrays.stream(splits).map(String::strip).collect(Collectors.toSet());
     }
 
     /**
