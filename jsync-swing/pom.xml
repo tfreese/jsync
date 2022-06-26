@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -17,7 +17,10 @@
 
     <build>
         <plugins>
-            <!-- spring-boot:run, clean package spring-boot:repackage für executable jar -->
+            <!-- spring-boot:run -->
+            <!-- spring-boot:repackage für executable jar -->
+            <!-- mvn package enthält hiermit schon spring-boot:repackage-->
+            <!-- mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dmavenproxy.fileCache=/mnt/ssd850/maven-proxy/repository" -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -67,7 +70,7 @@
             <artifactId>jsync-remote-nio</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
 
         <!-- runtime scope -->
         <dependency>
@@ -75,7 +78,7 @@
             <artifactId>logback-classic</artifactId>
             <scope>runtime</scope>
         </dependency>
-                
+
         <!-- provided scope -->
         <!-- test scope -->
     </dependencies>
