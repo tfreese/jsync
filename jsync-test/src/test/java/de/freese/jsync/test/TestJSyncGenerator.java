@@ -11,10 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.filter.PathFilterEndsWith;
@@ -22,18 +18,21 @@ import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Thomas Freese
  */
-@TestMethodOrder(MethodOrderer.MethodName.class)
+//@TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncGenerator extends AbstractJSyncIoTest
 {
     /**
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test010GeneratorQuelle() throws Exception
+    @Order(10)
+    void testGeneratorQuelle() throws Exception
     {
         System.out.println();
 
@@ -55,7 +54,8 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test020GeneratorZiel() throws Exception
+    @Order(20)
+    void testGeneratorZiel() throws Exception
     {
         System.out.println();
 
@@ -77,7 +77,8 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test030Filter() throws Exception
+    @Order(30)
+    void testFilter() throws Exception
     {
         System.out.println();
 
@@ -105,7 +106,8 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test040FileAttributes() throws Exception
+    @Order(40)
+    void testFileAttributes() throws Exception
     {
         System.out.println();
 

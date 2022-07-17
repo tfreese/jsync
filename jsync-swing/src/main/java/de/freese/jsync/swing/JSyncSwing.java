@@ -14,12 +14,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.FontUIResource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.swing.controller.JsyncController;
 import de.freese.jsync.swing.view.DefaultSyncView;
 import de.freese.jsync.swing.view.SyncView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Thomas Freese
@@ -133,10 +132,8 @@ public final class JSyncSwing
         // Fonts: Dialog, Monospaced, Arial, DejaVu Sans
         Font font = new Font("DejaVu Sans", Font.PLAIN, 16);
 
-        UIManager.getLookAndFeelDefaults().entrySet().forEach(entry -> {
-            Object key = entry.getKey();
-            Object value = entry.getValue();
-
+        UIManager.getLookAndFeelDefaults().forEach((key, value) ->
+        {
             if (value instanceof FontUIResource)
             {
                 UIManager.put(key, new FontUIResource(font));

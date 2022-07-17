@@ -9,11 +9,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import de.freese.jsync.nio.server.handler.IoHandler;
+import de.freese.jsync.utils.JsyncThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.freese.jsync.nio.server.ServerThreadFactory;
-import de.freese.jsync.nio.server.handler.IoHandler;
 
 /**
  * Der {@link Dispatcher} kümmert sich um das Connection-Handling der Clients nach dem 'accept'.<br>
@@ -115,8 +114,8 @@ public class DispatcherPool implements Dispatcher
      */
     public void start(final IoHandler<SelectionKey> ioHandler, final SelectorProvider selectorProvider, final String serverName) throws Exception
     {
-        ThreadFactory threadFactoryDispatcher = new ServerThreadFactory(serverName + "-dispatcher-");
-        ThreadFactory threadFactoryWorker = new ServerThreadFactory(serverName + "-worker-");
+        ThreadFactory threadFactoryDispatcher = new JsyncThreadFactory(serverName + "-dispatcher-");
+        ThreadFactory threadFactoryWorker = new JsyncThreadFactory(serverName + "-worker-");
 
         // this.executorServiceWorker = new ThreadPoolExecutor(1, this.numOfWorker, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactoryWorker);
         this.executorServiceWorker = Executors.newFixedThreadPool(this.numOfWorker, threadFactoryWorker);

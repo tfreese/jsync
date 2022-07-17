@@ -14,6 +14,7 @@ import de.freese.jsync.nio.server.dispatcher.Dispatcher;
 import de.freese.jsync.nio.server.dispatcher.DispatcherPool;
 import de.freese.jsync.nio.server.handler.IoHandler;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
+import de.freese.jsync.utils.JsyncThreadFactory;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -193,7 +194,7 @@ public final class JSyncNioServer implements Runnable
             // Erzeugen des Acceptors
             this.acceptor = new Acceptor(this.selectorProvider.openSelector(), this.serverSocketChannel, this.dispatcherPool);
 
-            Thread thread = new ServerThreadFactory(this.name + "-" + this.port + "-acceptor-").newThread(this.acceptor);
+            Thread thread = new JsyncThreadFactory(this.name + "-" + this.port + "-acceptor-").newThread(this.acceptor);
             getLogger().debug("start {}", thread.getName());
             thread.start();
 

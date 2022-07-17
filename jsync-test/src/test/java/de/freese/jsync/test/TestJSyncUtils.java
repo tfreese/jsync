@@ -6,12 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import de.freese.jsync.utils.DigestUtils;
+import de.freese.jsync.utils.JSyncUtils;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
-import de.freese.jsync.utils.DigestUtils;
-import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
@@ -23,7 +22,7 @@ class TestJSyncUtils
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test010BytesToHex() throws Exception
+    void testBytesToHex() throws Exception
     {
         String hex = "0123456789ABCDEF";
         byte[] bytes = JSyncUtils.hexToBytes(hex);
@@ -35,7 +34,7 @@ class TestJSyncUtils
      * @throws Exception Falls was schief geht.
      */
     @Test
-    void test020Checksum() throws Exception
+    void testChecksum() throws Exception
     {
         Path path = Paths.get("pom.xml");
 

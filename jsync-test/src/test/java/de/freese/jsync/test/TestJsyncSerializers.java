@@ -51,7 +51,7 @@ class TestJsyncSerializers
      *
      */
     @Test
-    void test010String()
+    void testString()
     {
         ByteBuffer buffer = BUFFER;
 
@@ -74,7 +74,7 @@ class TestJsyncSerializers
      *
      */
     @Test
-    void test020Group()
+    void testGroup()
     {
         ByteBuffer buffer = BUFFER;
 
@@ -103,7 +103,7 @@ class TestJsyncSerializers
      *
      */
     @Test
-    void test030User()
+    void testUser()
     {
         ByteBuffer buffer = BUFFER;
 
@@ -132,7 +132,7 @@ class TestJsyncSerializers
      *
      */
     @Test
-    void test040SyncItem()
+    void testSyncItem()
     {
         ByteBuffer buffer = BUFFER;
 
@@ -194,7 +194,7 @@ class TestJsyncSerializers
      *
      */
     @Test
-    void test050Exception()
+    void testException()
     {
         ByteBuffer buffer = BUFFER;
 
@@ -216,7 +216,7 @@ class TestJsyncSerializers
      *
      */
     @Test
-    void test060PathFilter()
+    void testPathFilter()
     {
         ByteBuffer buffer = BUFFER;
 
