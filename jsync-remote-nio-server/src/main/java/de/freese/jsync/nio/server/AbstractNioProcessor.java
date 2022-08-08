@@ -18,20 +18,20 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractNioProcessor implements Runnable
 {
     /**
-    *
-    */
+     *
+     */
     private boolean isShutdown;
     /**
      *
      */
     private final Logger logger = LoggerFactory.getLogger(getClass());
     /**
-    *
-    */
+     *
+     */
     private final Selector selector;
     /**
-    *
-    */
+     *
+     */
     private final Semaphore stopLock = new Semaphore(1, true);
 
     /**
@@ -66,7 +66,7 @@ public abstract class AbstractNioProcessor implements Runnable
     /**
      * Methode vor der while-Schleife.
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     protected void beforeSelectorWhile() throws Exception
     {
@@ -74,8 +74,8 @@ public abstract class AbstractNioProcessor implements Runnable
     }
 
     /**
-    *
-    */
+     *
+     */
     protected void cancelKeys()
     {
         Set<SelectionKey> selected = getSelector().selectedKeys();

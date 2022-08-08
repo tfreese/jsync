@@ -33,7 +33,7 @@ public final class JSyncConsole
     /**
      * @param args String[]
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     public static void main(final String[] args) throws Exception
     {
@@ -96,7 +96,7 @@ public final class JSyncConsole
     /**
      * @param argumentParser {@link ArgumentParser}
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     public void run(final ArgumentParser argumentParser) throws Exception
     {

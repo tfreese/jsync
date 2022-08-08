@@ -37,8 +37,8 @@ import reactor.util.retry.Retry;
 public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSocketServerRemoteBuilder>
 {
     /**
-    *
-    */
+     *
+     */
     private final List<Function<TcpServer, TcpServer>> tcpServerCustomizers = new ArrayList<>();
 
     /**
@@ -121,7 +121,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     /**
      * @return {@link RSocketServerRemoteBuilder}
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     public RSocketServerRemoteBuilder protocolSslContextSpecCertificate() throws Exception
     {
@@ -169,7 +169,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     /**
      * @return {@link RSocketServerRemoteBuilder}
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     public RSocketServerRemoteBuilder protocolSslContextSpecCertificateSelfSigned() throws Exception
     {
@@ -271,7 +271,8 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     {
         String name = "startDaemon-rsocket-" + channel.address().getPort();
 
-        Thread thread = new Thread(() -> {
+        Thread thread = new Thread(() ->
+        {
             channel.onClose().block();
             getLogger().info("terminated: {}", name);
         }, name);

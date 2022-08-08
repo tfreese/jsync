@@ -3,10 +3,9 @@ package de.freese.jsync.http;
 
 import java.util.function.Consumer;
 
+import io.netty.handler.codec.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.netty.handler.codec.http.HttpHeaders;
 import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufFlux;
 import reactor.netty.DisposableServer;
@@ -23,13 +22,14 @@ import reactor.util.function.Tuple2;
 public class ReactiveHttp
 {
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveHttp.class);
 
     /**
      * @param args String[]
-     * @throws Exception Falls was schief geht.
+     *
+     * @throws Exception Falls was schiefgeht.
      */
     public static void main(final String[] args) throws Exception
     {
@@ -63,7 +63,8 @@ public class ReactiveHttp
         httpClient.get().uri("/hello").responseContent().aggregate().asString().subscribe(LOGGER::info);
         httpClient.post().uri("/echo").send(ByteBufFlux.fromString(Mono.just("Echo!"))).responseContent().aggregate().asString().subscribe(LOGGER::info);
 
-        Consumer<Tuple2<String, HttpHeaders>> responseSubscriber = response -> {
+        Consumer<Tuple2<String, HttpHeaders>> responseSubscriber = response ->
+        {
             LOGGER.info("Response: {}", response.getT1());
             LOGGER.info("Used stream ID: {}", response.getT2().get("x-http2-stream-id"));
         };

@@ -61,7 +61,7 @@ public final class JsyncServerResponse
     /**
      * @param selectionKey {@link SelectionKey}
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public void write(final SelectionKey selectionKey) throws IOException
     {
@@ -92,7 +92,7 @@ public final class JsyncServerResponse
      * @param selectionKey {@link SelectionKey}
      * @param consumer {@link Consumer}
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public void write(final SelectionKey selectionKey, final Consumer<ByteBuffer> consumer) throws IOException
     {
@@ -109,16 +109,16 @@ public final class JsyncServerResponse
 
         SocketChannel channel = (SocketChannel) selectionKey.channel();
         channel.write(new ByteBuffer[]
-        {
-                bufferHeader, this.bufferBody
-        });
+                {
+                        bufferHeader, this.bufferBody
+                });
     }
 
     /**
      * @param channel {@link SocketChannel}
      * @param buffer {@link ByteBuffer}
      *
-     * @throws IOException Falls was schief geht
+     * @throws IOException Falls was schiefgeht
      */
     void write(final SocketChannel channel, final ByteBuffer buffer) throws IOException
     {

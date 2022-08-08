@@ -8,9 +8,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.client.Client;
@@ -19,6 +16,8 @@ import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Thomas Freese
@@ -41,12 +40,12 @@ class TestJsyncClient extends AbstractJSyncIoTest
     }
 
     /**
-    *
-    */
+     *
+     */
     private static Options options = null;
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @BeforeAll
     static void beforeAll() throws Exception
@@ -61,7 +60,7 @@ class TestJsyncClient extends AbstractJSyncIoTest
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception
     {
@@ -69,18 +68,22 @@ class TestJsyncClient extends AbstractJSyncIoTest
         client.connectFileSystems();
 
         List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.SENDER, null, syncItem -> {
+        client.generateSyncItems(EFileSystem.SENDER, null, syncItem ->
+        {
             syncItemsSender.add(syncItem);
-            String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+            String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i ->
+            {
                 // System.out.println("Sender Bytes read: " + i);
             });
             syncItem.setChecksum(checksum);
         });
 
         List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.RECEIVER, null, syncItem -> {
+        client.generateSyncItems(EFileSystem.RECEIVER, null, syncItem ->
+        {
             syncItemsReceiver.add(syncItem);
-            String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+            String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i ->
+            {
                 // System.out.println("Sender Bytes read: " + i);
             });
             syncItem.setChecksum(checksum);
@@ -96,7 +99,7 @@ class TestJsyncClient extends AbstractJSyncIoTest
     }
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     void testLocalToLocal() throws Exception

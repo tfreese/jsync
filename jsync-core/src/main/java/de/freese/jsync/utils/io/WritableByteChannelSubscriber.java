@@ -8,9 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-import org.reactivestreams.Subscription;
-
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
+import org.reactivestreams.Subscription;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.FluxSink;
 
@@ -41,7 +40,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
      * @param sink {@link FluxSink} Geschriebene Bytes pro ByteBuffer/Chunk
      * @param path {@link Path}
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public WritableByteChannelSubscriber(final FluxSink<Long> sink, final Path path) throws IOException
     {

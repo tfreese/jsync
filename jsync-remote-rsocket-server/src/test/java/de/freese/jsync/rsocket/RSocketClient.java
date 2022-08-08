@@ -5,7 +5,6 @@ import java.time.Duration;
 
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
-import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketConnector;
 import io.rsocket.core.Resume;
 import io.rsocket.frame.decoder.PayloadDecoder;
@@ -23,17 +22,17 @@ import reactor.util.retry.Retry;
 /**
  * @author Thomas Freese
  */
-public class RsocketClient
+public class RSocketClient
 {
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(RsocketClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RSocketClient.class);
 
     /**
      * @param args String[]
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     public static void main(final String[] args) throws Exception
     {
@@ -99,7 +98,7 @@ public class RsocketClient
         // ClientTransport clientTransport = LocalClientTransport.create("alias");
 
         Mono<RSocket> rSocket = connector.connect(clientTransport);
-        RSocketClient rSocketClient = RSocketClient.from(rSocket);
+        io.rsocket.core.RSocketClient rSocketClient = io.rsocket.core.RSocketClient.from(rSocket);
 
         // @formatter:off
         rSocketClient

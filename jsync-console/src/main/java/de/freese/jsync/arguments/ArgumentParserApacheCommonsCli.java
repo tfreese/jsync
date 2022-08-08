@@ -20,8 +20,8 @@ import org.apache.commons.cli.ParseException;
 public class ArgumentParserApacheCommonsCli implements ArgumentParser
 {
     /**
-    *
-    */
+     *
+     */
     private final CommandLine line;
     /**
      *
@@ -33,7 +33,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      *
      * @param args String[]
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     public ArgumentParserApacheCommonsCli(final String[] args) throws Exception
     {

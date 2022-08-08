@@ -33,7 +33,7 @@ public final class DigestUtils
      *
      * @return {@link MessageDigest}
      *
-     * @throws RuntimeException Falls was schief geht.
+     * @throws RuntimeException Falls was schiefgeht.
      */
     private static MessageDigest createMessageDigest(final String algorithm)
     {
@@ -105,7 +105,7 @@ public final class DigestUtils
      *
      * @return byte[]
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public static byte[] sha256Digest(final InputStream inputStream) throws IOException
     {
@@ -131,7 +131,7 @@ public final class DigestUtils
      *
      * @return byte[]
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     private static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final LongConsumer consumerBytesRead) throws IOException
     {
@@ -180,7 +180,8 @@ public final class DigestUtils
      */
     public static String sha256DigestAsHex(final Path path)
     {
-        return sha256DigestAsHex(path, i -> {
+        return sha256DigestAsHex(path, i ->
+        {
             // Empty
         });
     }

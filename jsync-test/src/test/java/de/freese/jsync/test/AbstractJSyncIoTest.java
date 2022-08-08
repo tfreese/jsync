@@ -9,10 +9,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
+import de.freese.jsync.utils.JSyncUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-
-import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
@@ -36,7 +35,7 @@ public abstract class AbstractJSyncIoTest
     /**
      * Verzeichnis-Struktur zum Testen löschen.
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @AfterEach
     public void afterEach() throws Exception
@@ -48,7 +47,7 @@ public abstract class AbstractJSyncIoTest
     /**
      * Verzeichnis-Struktur zum Testen aufbauen.
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @BeforeEach
     public void beforeEach() throws Exception

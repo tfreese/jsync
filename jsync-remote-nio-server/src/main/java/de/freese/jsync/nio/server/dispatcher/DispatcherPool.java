@@ -110,7 +110,7 @@ public class DispatcherPool implements Dispatcher
      * @param selectorProvider {@link SelectorProvider}
      * @param serverName String
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     public void start(final IoHandler<SelectionKey> ioHandler, final SelectorProvider selectorProvider, final String serverName) throws Exception
     {

@@ -77,7 +77,7 @@ public final class JSyncSwing
      *
      * @param consumer {@link Consumer}
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     void initGui(final Consumer<JFrame> consumer) throws Exception
     {

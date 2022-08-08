@@ -164,7 +164,7 @@ public final class JSyncUtils
      * @param path {@link Path}
      * @param followSymLinks boolean
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public static void delete(final Path path, final boolean followSymLinks) throws IOException
     {

@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 class TestJSyncGenerator extends AbstractJSyncIoTest
 {
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     @Order(10)
@@ -51,7 +51,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
     }
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     @Order(20)
@@ -74,7 +74,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
     }
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     @Order(30)
@@ -103,7 +103,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
     }
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     @Order(40)

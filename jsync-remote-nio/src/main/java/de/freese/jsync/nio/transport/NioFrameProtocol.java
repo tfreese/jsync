@@ -91,7 +91,7 @@ public class NioFrameProtocol
      * @param channel {@link ReadableByteChannel}
      * @param consumer {@link Consumer}
      *
-     * @throws Exception Falls was schief geht
+     * @throws Exception Falls was schiefgeht
      */
     public void readAll(final ReadableByteChannel channel, final Consumer<ByteBuffer> consumer) throws Exception
     {
@@ -118,7 +118,7 @@ public class NioFrameProtocol
      *
      * @return {@link ByteBuffer}
      *
-     * @throws Exception Falls was schief geht
+     * @throws Exception Falls was schiefgeht
      */
     public ByteBuffer readFrame(final ReadableByteChannel channel) throws Exception
     {
@@ -165,7 +165,7 @@ public class NioFrameProtocol
      * @param channel {@link WritableByteChannel}
      * @param buffer {@link ByteBuffer}
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public void writeData(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException
     {
@@ -190,7 +190,7 @@ public class NioFrameProtocol
      * @param channel {@link WritableByteChannel}
      * @param consumer {@link Consumer}
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public void writeData(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
     {
@@ -214,7 +214,7 @@ public class NioFrameProtocol
      * @param channel {@link WritableByteChannel}
      * @param consumer {@link Consumer}
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public void writeError(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
     {
@@ -250,7 +250,7 @@ public class NioFrameProtocol
      * @param channel {@link WritableByteChannel}
      * @param th {@link Throwable}
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public void writeError(final WritableByteChannel channel, final Throwable th) throws IOException
     {
@@ -267,7 +267,7 @@ public class NioFrameProtocol
      *
      * @param channel {@link WritableByteChannel}
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     public void writeFinish(final WritableByteChannel channel) throws IOException
     {
@@ -281,7 +281,7 @@ public class NioFrameProtocol
      * @param buffer {@link ByteBuffer}
      * @param contentLength int
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     protected void read(final ReadableByteChannel channel, final ByteBuffer buffer, final int contentLength) throws IOException
     {
@@ -305,7 +305,7 @@ public class NioFrameProtocol
      *
      * @return {@link ByteBuffer}
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     protected ByteBuffer readFrameHeader(final ReadableByteChannel channel) throws IOException
     {
@@ -322,7 +322,7 @@ public class NioFrameProtocol
      *
      * @return long
      *
-     * @throws IOException Falls was schief geht
+     * @throws IOException Falls was schiefgeht
      */
     protected long write(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException
     {
@@ -360,7 +360,7 @@ public class NioFrameProtocol
      * @param frameType {@link FrameType}
      * @param contentLength int
      *
-     * @throws IOException Falls was schief geht.
+     * @throws IOException Falls was schiefgeht.
      */
     protected void writeFrameHeader(final WritableByteChannel channel, final FrameType frameType, final int contentLength) throws IOException
     {

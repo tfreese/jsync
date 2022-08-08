@@ -431,7 +431,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param channel {@link SocketChannel}
      * @param sender {@link Sender}
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     protected void readFile(final SocketChannel channel, final Sender sender) throws Exception
     {
@@ -573,7 +573,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
      * @param channel {@link SocketChannel}
      * @param receiver {@link Receiver}
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     protected void writeFile(final SocketChannel channel, final Receiver receiver) throws Exception
     {

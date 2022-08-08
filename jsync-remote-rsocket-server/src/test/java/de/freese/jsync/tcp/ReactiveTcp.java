@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
@@ -29,7 +28,7 @@ public class ReactiveTcp
     /**
      * @param args String[]
      *
-     * @throws Exception Falls was schief geht
+     * @throws Exception Falls was schiefgeht
      */
     public static void main(final String[] args) throws Exception
     {

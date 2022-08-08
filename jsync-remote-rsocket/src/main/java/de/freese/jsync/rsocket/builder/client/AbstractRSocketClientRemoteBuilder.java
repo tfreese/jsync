@@ -24,16 +24,16 @@ import reactor.netty.tcp.TcpSslContextSpec;
 import reactor.util.retry.Retry;
 
 /**
- * @author Thomas Freese
- *
  * @param <T> Builder Type
+ *
+ * @author Thomas Freese
  */
 public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSocketClientRemoteBuilder<?>>
         extends AbstractRSocketClientBuilder<AbstractRSocketClientRemoteBuilder<T>>
 {
     /**
-    *
-    */
+     *
+     */
     private final List<Function<TcpClient, TcpClient>> tcpClientCustomizers = new ArrayList<>();
 
     /**
@@ -101,7 +101,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     /**
      * @return {@link RSocketServerRemoteBuilder}
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @SuppressWarnings("unchecked")
     public T protocolSslContextSpecCertificate() throws Exception

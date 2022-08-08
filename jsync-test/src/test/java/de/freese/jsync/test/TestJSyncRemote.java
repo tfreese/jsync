@@ -62,13 +62,14 @@ class TestJSyncRemote extends AbstractJSyncIoTest
             assertNull(th);
         }
     }
+
     /**
      *
      */
     private static Options options = null;
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @AfterAll
     static void afterAll() throws Exception
@@ -87,7 +88,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     }
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @BeforeAll
     static void beforeAll() throws Exception
@@ -96,7 +97,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     }
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     void testLocal() throws Exception
@@ -112,7 +113,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     }
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     void testNio() throws Exception
@@ -131,7 +132,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     }
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     void testRSocket() throws Exception
@@ -152,7 +153,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     /**
      * @param port int
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     private void startServerNio(final int port) throws Exception
     {
@@ -182,7 +183,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     /**
      * @param port int
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     private void startServerRSocket(final int port) throws Exception
     {
@@ -205,7 +206,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // */
     // private void startServerSpringRest() throws Exception
     // {
-////      // @formatter:off
+    ////      // @formatter:off
 ////      new SpringApplicationBuilder(JsyncServerApplication.class)
 ////              //.properties("server.port=8081") // Funktioniert nicht, wenn server.port in application.yml enthalten ist.
 ////              //.run(args);
@@ -246,7 +247,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
      * @param senderUri {@link URI}
      * @param receiverUri {@link URI}
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception
     {

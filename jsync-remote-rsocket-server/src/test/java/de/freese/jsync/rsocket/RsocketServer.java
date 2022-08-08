@@ -32,7 +32,7 @@ public class RsocketServer
     /**
      * @param args String[]
      *
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @SuppressWarnings("unused")
     public static void main(final String[] args) throws Exception

@@ -19,7 +19,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 class TestJSyncUtils
 {
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     void testBytesToHex() throws Exception
@@ -31,7 +31,7 @@ class TestJSyncUtils
     }
 
     /**
-     * @throws Exception Falls was schief geht.
+     * @throws Exception Falls was schiefgeht.
      */
     @Test
     void testChecksum() throws Exception
