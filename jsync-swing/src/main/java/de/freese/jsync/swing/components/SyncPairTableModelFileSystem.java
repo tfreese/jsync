@@ -1,6 +1,7 @@
 // Created: 12.07.2020
 package de.freese.jsync.swing.components;
 
+import java.io.Serial;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,6 +19,7 @@ public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPai
     /**
      *
      */
+    @Serial
     private static final long serialVersionUID = -5500863230405594620L;
     /**
      *
@@ -43,10 +45,10 @@ public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPai
     public Class<? extends Object> getColumnClass(final int columnIndex)
     {
         return switch (columnIndex)
-        {
-            case 0, 1 -> String.class;
-            default -> Object.class;
-        };
+                {
+                    case 0, 1 -> String.class;
+                    default -> Object.class;
+                };
     }
 
     /**
@@ -59,10 +61,10 @@ public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPai
         SyncItem syncItem = EFileSystem.SENDER.equals(this.fileSystem) ? syncPair.getSenderItem() : syncPair.getReceiverItem();
 
         return switch (columnIndex)
-        {
-            case 0 -> syncItem != null ? syncItem.getRelativePath() : null;
-            case 1 -> (syncItem != null) && syncItem.isFile() ? JSyncUtils.toHumanReadableSize(syncItem.getSize()) : null;
-            default -> null;
-        };
+                {
+                    case 0 -> syncItem != null ? syncItem.getRelativePath() : null;
+                    case 1 -> (syncItem != null) && syncItem.isFile() ? JSyncUtils.toHumanReadableSize(syncItem.getSize()) : null;
+                    default -> null;
+                };
     }
 }

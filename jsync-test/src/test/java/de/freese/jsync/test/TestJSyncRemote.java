@@ -191,7 +191,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         {
             JsyncRSocketServer server = new JsyncRSocketServer();
             server.start(port);
-            CLOSEABLES.put("rsocket", () -> server.stop());
+            CLOSEABLES.put("rsocket", server::stop);
 
             // Fehlermeldungen beim Disconnect ausschalten.
             Hooks.resetOnErrorDropped();

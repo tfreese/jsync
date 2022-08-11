@@ -1,6 +1,7 @@
 // Created: 22.06.2021
 package de.freese.jsync.utils.pool;
 
+import java.io.Serial;
 import java.lang.ref.SoftReference;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -19,11 +20,11 @@ import org.slf4j.LoggerFactory;
  * The pool is optionally thread safe and can be configured to use soft references.<br>
  * <a href="https://github.com/EsotericSoftware/kryo/blob/master/src/com/esotericsoftware/kryo/util/Pool.java">Github</a>
  *
+ * @param <T> Type
+ *
  * @author Nathan Sweet
  * @author Martin Grotzke
  * @author Thomas Freese
- *
- * @param <T> Type
  */
 public abstract class Pool<T>
 {
@@ -41,10 +42,10 @@ public abstract class Pool<T>
     /**
      * Wraps queue values with {@link SoftReference} for {@link Pool}.
      *
+     * @param <T> Type
+     *
      * @author Martin Grotzke
      * @author Thomas Freese
-     *
-     * @param <T> Type
      */
     static class SoftReferenceQueue<T> implements Queue<T>
     {
@@ -94,7 +95,7 @@ public abstract class Pool<T>
          */
         void cleanOne()
         {
-            for (Iterator<SoftReference<T>> iter = this.delegate.iterator(); iter.hasNext();)
+            for (Iterator<SoftReference<T>> iter = this.delegate.iterator(); iter.hasNext(); )
             {
                 if (iter.next().get() == null)
                 {
@@ -265,16 +266,16 @@ public abstract class Pool<T>
     }
 
     /**
-    *
-    */
+     *
+     */
     private int created;
     /**
      *
      */
     private final Queue<T> freeObjects;
     /**
-    *
-    */
+     *
+     */
     private final Logger logger = LoggerFactory.getLogger(getClass());
     /**
      *
@@ -296,7 +297,7 @@ public abstract class Pool<T>
      * @param threadSafe boolean
      * @param softReferences boolean
      * @param maximumCapacity int; The maximum number of free objects to store in this pool.<br>
-     *            Objects are not created until {@link #obtain()} is called and no free objects are available.
+     * Objects are not created until {@link #obtain()} is called and no free objects are available.
      */
     @SuppressWarnings("unchecked")
     protected Pool(final boolean threadSafe, final boolean softReferences, final int maximumCapacity)
@@ -310,6 +311,7 @@ public abstract class Pool<T>
                 /**
                  *
                  */
+                @Serial
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -327,6 +329,7 @@ public abstract class Pool<T>
                 /**
                  *
                  */
+                @Serial
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -350,6 +353,7 @@ public abstract class Pool<T>
                 /**
                  *
                  */
+                @Serial
                 private static final long serialVersionUID = 1L;
 
                 @Override

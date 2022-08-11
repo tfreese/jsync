@@ -1,6 +1,7 @@
 // Created: 12.07.2020
 package de.freese.jsync.swing.components;
 
+import java.io.Serial;
 import java.util.List;
 
 import de.freese.jsync.model.SyncPair;
@@ -14,6 +15,7 @@ public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair>
     /**
      *
      */
+    @Serial
     private static final long serialVersionUID = 871089543329340184L;
 
     /**
@@ -31,10 +33,10 @@ public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair>
     public Class<? extends Object> getColumnClass(final int columnIndex)
     {
         return switch (columnIndex)
-        {
-            case 0 -> String.class;
-            default -> Object.class;
-        };
+                {
+                    case 0 -> String.class;
+                    default -> Object.class;
+                };
     }
 
     /**
@@ -46,9 +48,9 @@ public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair>
         SyncPair syncPair = getObjectAt(rowIndex);
 
         return switch (columnIndex)
-        {
-            case 0 -> syncPair.getStatus();
-            default -> null;
-        };
+                {
+                    case 0 -> syncPair.getStatus();
+                    default -> null;
+                };
     }
 }
