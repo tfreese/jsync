@@ -112,70 +112,38 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
             switch (command)
             {
-                case DISCONNECT:
+                case DISCONNECT ->
+                {
                     // FINISH-Frame lesen
                     this.frameProtocol.readFrame(channel);
-
                     this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, "DISCONNECTED"));
                     this.frameProtocol.writeFinish(channel);
-
                     selectionKey.attach(null);
                     // selectionKey.interestOps(SelectionKey.OP_CONNECT);
                     selectionKey.channel().close();
                     selectionKey.cancel();
-
-                    break;
-
-                case CONNECT:
+                }
+                case CONNECT ->
+                {
                     // FINISH-Frame lesen
                     this.frameProtocol.readFrame(channel);
-
                     this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, "CONNECTED"));
                     this.frameProtocol.writeFinish(channel);
-                    break;
-
-                case SOURCE_CHECKSUM:
-                    createChecksum(channel, sender);
-                    break;
-
-                case SOURCE_CREATE_SYNC_ITEMS:
-                    createSyncItems(channel, sender);
-                    break;
-
-                case SOURCE_READ_FILE:
-                    readFile(channel, sender);
-                    break;
-
-                case TARGET_CHECKSUM:
-                    createChecksum(channel, receiver);
-                    break;
-
-                case TARGET_CREATE_DIRECTORY:
-                    createDirectory(channel, receiver);
-                    break;
-
-                case TARGET_CREATE_SYNC_ITEMS:
-                    createSyncItems(channel, receiver);
-                    break;
-
-                case TARGET_DELETE:
-                    delete(channel, receiver);
-                    break;
-
-                case TARGET_UPDATE:
-                    update(channel, receiver);
-                    break;
-
-                case TARGET_VALIDATE_FILE:
-                    validate(channel, receiver);
-                    break;
-
-                case TARGET_WRITE_FILE:
-                    writeFile(channel, receiver);
-                    break;
-
-                default:
-                    break;
+                }
+                case SOURCE_CHECKSUM -> createChecksum(channel, sender);
+                case SOURCE_CREATE_SYNC_ITEMS -> createSyncItems(channel, sender);
+                case SOURCE_READ_FILE -> readFile(channel, sender);
+                case TARGET_CHECKSUM -> createChecksum(channel, receiver);
+                case TARGET_CREATE_DIRECTORY -> createDirectory(channel, receiver);
+                case TARGET_CREATE_SYNC_ITEMS -> createSyncItems(channel, receiver);
+                case TARGET_DELETE -> delete(channel, receiver);
+                case TARGET_UPDATE -> update(channel, receiver);
+                case TARGET_VALIDATE_FILE -> validate(channel, receiver);
+                case TARGET_WRITE_FILE -> writeFile(channel, receiver);
+                default ->
+                {
+                    // Empty
+                }
             }
 
             if (selectionKey.isValid())
