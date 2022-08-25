@@ -10,7 +10,6 @@ import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.filter.PathFilter;
-import de.freese.jsync.filter.PathFilterTrue;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
@@ -26,16 +25,16 @@ import reactor.core.publisher.Flux;
 public abstract class AbstractNioFileSystem extends AbstractFileSystem
 {
     /**
-    *
-    */
+     *
+     */
     private SocketChannelPool channelPool;
     /**
-    *
-    */
+     *
+     */
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
     /**
-    *
-    */
+     *
+     */
     private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
@@ -100,7 +99,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
         finally
         {
@@ -131,7 +130,8 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
             getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, command));
 
             // Data-Frame
-            getFrameProtocol().writeData(channel, buffer -> {
+            getFrameProtocol().writeData(channel, buffer ->
+            {
                 getSerializer().writeTo(buffer, baseDir);
                 getSerializer().writeTo(buffer, relativeFile);
             });
@@ -140,12 +140,14 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
             getFrameProtocol().writeFinish(channel);
 
             // Response lesen
-            return getFrameProtocol().readAll(channel).map(buffer -> {
+            return getFrameProtocol().readAll(channel).map(buffer ->
+            {
                 String value = getSerializer().readFrom(buffer, String.class);
                 getFrameProtocol().getBufferPool().free(buffer);
 
                 return value;
-            }).doOnNext(value -> {
+            }).doOnNext(value ->
+            {
                 if (PATTERN_NUMBER.matcher(value).matches())
                 {
                     consumerChecksumBytesRead.accept(Long.parseLong(value));
@@ -180,8 +182,8 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
      */
     protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command)
     {
-        return Flux.create(sink -> {
-
+        return Flux.create(sink ->
+        {
             SocketChannel channel = getChannelPool().obtain();
 
             try
@@ -190,17 +192,19 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
                 getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, command));
 
                 // Data-Frame
-                getFrameProtocol().writeData(channel, buffer -> {
+                getFrameProtocol().writeData(channel, buffer ->
+                {
                     getSerializer().writeTo(buffer, baseDir);
                     getSerializer().writeTo(buffer, followSymLinks);
-                    getSerializer().writeTo(buffer, pathFilter != null ? pathFilter : new PathFilterTrue());
+                    getSerializer().writeTo(buffer, pathFilter);
                 });
 
                 // Finish-Frame
                 getFrameProtocol().writeFinish(channel);
 
                 // Response lesen
-                getFrameProtocol().readAll(channel, buffer -> {
+                getFrameProtocol().readAll(channel, buffer ->
+                {
                     SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
 
                     sink.next(syncItem);

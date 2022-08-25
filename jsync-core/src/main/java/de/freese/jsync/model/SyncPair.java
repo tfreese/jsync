@@ -28,8 +28,8 @@ public class SyncPair
      * Erstellt ein neues {@link SyncPair} Object.<br>
      * Nur eines der beiden {@link SyncItem}s darf null sein.
      *
-     * @param senderItem {@link SyncItem}; wenn null -> nur im Receiver enthalten
-     * @param receiverItem {@link SyncItem}; wenn null -> nur im Sender enthalten
+     * @param senderItem {@link SyncItem}; wenn null = nur im Receiver enthalten
+     * @param receiverItem {@link SyncItem}; wenn null = nur im Sender enthalten
      */
     public SyncPair(final SyncItem senderItem, final SyncItem receiverItem)
     {
@@ -45,7 +45,7 @@ public class SyncPair
     }
 
     /**
-     * Wenn null -> nur im Sender enthalten.
+     * Wenn null = nur im Sender enthalten.
      *
      * @return {@link SyncItem}
      */
@@ -63,7 +63,7 @@ public class SyncPair
     }
 
     /**
-     * Wenn null -> nur im Receiver enthalten.
+     * Wenn null = nur im Receiver enthalten.
      *
      * @return {@link SyncItem}
      */

@@ -6,7 +6,7 @@ import java.util.Set;
 
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.filter.PathFilterEndsWith;
-import de.freese.jsync.filter.PathFilterTrue;
+import de.freese.jsync.filter.PathFilterNoOp;
 import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
 import de.freese.jsync.model.serializer.objectserializer.AbstractObjectSerializer;
@@ -18,7 +18,7 @@ public class PathFilterSerializer extends AbstractObjectSerializer<PathFilter>
 {
     /**
      * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.SerializerRegistry,
-     *      de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
+     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
     public <D> PathFilter readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
@@ -43,7 +43,7 @@ public class PathFilterSerializer extends AbstractObjectSerializer<PathFilter>
 
         if (directoryFilters.isEmpty() && fileFilters.isEmpty())
         {
-            return new PathFilterTrue();
+            return PathFilterNoOp.INSTANCE;
         }
 
         return new PathFilterEndsWith(directoryFilters, fileFilters);
@@ -51,7 +51,7 @@ public class PathFilterSerializer extends AbstractObjectSerializer<PathFilter>
 
     /**
      * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.SerializerRegistry,
-     *      de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
+     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
     public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final PathFilter value)

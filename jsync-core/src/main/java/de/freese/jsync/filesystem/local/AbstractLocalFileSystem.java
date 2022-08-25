@@ -1,6 +1,7 @@
 // Created: 05.04.2018
 package de.freese.jsync.filesystem.local;
 
+import java.net.URI;
 import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
@@ -16,6 +17,24 @@ import reactor.core.publisher.Flux;
  */
 public abstract class AbstractLocalFileSystem extends AbstractFileSystem
 {
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
+     */
+    @Override
+    public void connect(final URI uri)
+    {
+        // Empty
+    }
+
+    /**
+     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
+     */
+    @Override
+    public void disconnect()
+    {
+        // Empty
+    }
+
     /**
      * @see de.freese.jsync.filesystem.FileSystem#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */

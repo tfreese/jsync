@@ -5,9 +5,7 @@ import java.net.URI;
 
 import de.freese.jsync.filesystem.FileSystemProvider;
 import de.freese.jsync.filesystem.Receiver;
-import de.freese.jsync.filesystem.ReceiverDelegateLogger;
 import de.freese.jsync.filesystem.Sender;
-import de.freese.jsync.filesystem.SenderDelegateLogger;
 import de.freese.jsync.model.JSyncProtocol;
 
 /**
@@ -21,7 +19,7 @@ public class RemoteRsocketFileSystemProvider implements FileSystemProvider
     @Override
     public Receiver createReceiver(final URI uri)
     {
-        return new ReceiverDelegateLogger(new RemoteReceiverRSocket());
+        return new RemoteReceiverRSocket();
     }
 
     /**
@@ -30,7 +28,7 @@ public class RemoteRsocketFileSystemProvider implements FileSystemProvider
     @Override
     public Sender createSender(final URI uri)
     {
-        return new SenderDelegateLogger(new RemoteSenderRSocket());
+        return new RemoteSenderRSocket();
     }
 
     /**

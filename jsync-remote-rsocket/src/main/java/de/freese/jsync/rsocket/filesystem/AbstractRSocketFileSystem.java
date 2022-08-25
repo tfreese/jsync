@@ -9,7 +9,6 @@ import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.filter.PathFilter;
-import de.freese.jsync.filter.PathFilterTrue;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.serializer.DefaultSerializer;
@@ -97,7 +96,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
             )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(null, th))
+            .doOnError(th -> getLogger().error(th.getMessage(), th))
             .block() // Wartet auf jeden Response.
             //.subscribe() // Führt alles im Hintergrund aus.
             ;
@@ -169,7 +168,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
                 )
                 .map(Payload::getDataUtf8)
                 .doOnNext(getLogger()::debug)
-                .doOnError(th -> getLogger().error(null, th))
+                .doOnError(th -> getLogger().error(th.getMessage(), th))
                 .doOnNext(value -> {
                     if(PATTERN_NUMBER.matcher(value).matches())
                     {
@@ -197,7 +196,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         ByteBuffer bufferData = getByteBufferPool().get();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, followSymLinks);
-        getSerializer().writeTo(bufferData, pathFilter != null ? pathFilter : new PathFilterTrue());
+        getSerializer().writeTo(bufferData, pathFilter);
 
         // @formatter:off
         return getClient()
@@ -208,7 +207,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
                     })
             )
             .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf -> in anderen Thread auslagern sonst knallt es !
-            .doOnError(th -> getLogger().error(null, th))
+            .doOnError(th -> getLogger().error(th.getMessage(), th))
             .map(payload -> {
                 ByteBuffer buffer = payload.getData();
                 return getSerializer().readFrom(buffer, SyncItem.class);

@@ -15,25 +15,23 @@ public abstract class AbstractGeneratorListener implements GeneratorListener
     /**
      * @param syncItem {@link SyncItem}
      * @param prefix String
+     *
      * @return String
      */
     protected String currentItemMessage(final SyncItem syncItem, final String prefix)
     {
-        String message = String.format("%s current SyncItem: %s", prefix, syncItem.getRelativePath());
-
-        return message;
+        return String.format("%s current SyncItem: %s", prefix, syncItem.getRelativePath());
     }
 
     /**
      * @param path {@link Path}
      * @param itemCount int
      * @param prefix String
+     *
      * @return String
      */
     protected String itemCountMessage(final Path path, final int itemCount, final String prefix)
     {
-        String message = String.format("%s size of SyncItems in %s: %d", prefix, path.toString(), itemCount);
-
-        return message;
+        return String.format("%s size of SyncItems in %s: %d", prefix, path.toString(), itemCount);
     }
 }

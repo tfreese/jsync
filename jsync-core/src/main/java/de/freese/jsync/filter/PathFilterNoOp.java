@@ -10,8 +10,15 @@ import java.util.Set;
  *
  * @author Thomas Freese
  */
-public class PathFilterTrue implements PathFilter
+public class PathFilterNoOp implements PathFilter
 {
+    public static final PathFilter INSTANCE = new PathFilterNoOp();
+
+    private PathFilterNoOp()
+    {
+        super();
+    }
+
     /**
      * @see de.freese.jsync.filter.PathFilter#getDirectoryFilter()
      */

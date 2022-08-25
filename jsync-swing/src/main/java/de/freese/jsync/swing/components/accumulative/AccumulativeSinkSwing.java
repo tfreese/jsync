@@ -15,7 +15,6 @@ import reactor.core.scheduler.Schedulers;
  *
  * @author Thomas Freese
  */
-@SuppressWarnings("javadoc")
 public class AccumulativeSinkSwing extends AbstractAccumulativeSink
 {
     /**

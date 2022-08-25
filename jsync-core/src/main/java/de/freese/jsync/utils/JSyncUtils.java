@@ -234,9 +234,8 @@ public final class JSyncUtils
     public static float getPercent(final long value, final long max)
     {
         float progress = getProgress(value, max);
-        float percentage = progress * 100F;
 
-        return percentage;
+        return progress * 100F;
     }
 
     /**
@@ -439,9 +438,9 @@ public final class JSyncUtils
                 // Cancel currently executing tasks.
                 for (Runnable remainingTask : executorService.shutdownNow())
                 {
-                    if (remainingTask instanceof Future)
+                    if (remainingTask instanceof Future f)
                     {
-                        ((Future<?>) remainingTask).cancel(true);
+                        f.cancel(true);
                     }
                 }
 
@@ -523,11 +522,9 @@ public final class JSyncUtils
 
         double unitValue = 1 << (unitIndex * 10);
 
-        // String readableSize = new DecimalFormat("#,##0.#").format(size / unitValue) + " " + SIZE_UNITS[unitIndex];
-        // String readableSize = String.format("%7.0f %s", size / unitValue, SIZE_UNITS[unitIndex]);
-        String readableSize = String.format("%.1f %s", size / unitValue, SIZE_UNITS[unitIndex]);
-
-        return readableSize;
+        // return new DecimalFormat("#,##0.#").format(size / unitValue) + " " + SIZE_UNITS[unitIndex];
+        // return String.format("%7.0f %s", size / unitValue, SIZE_UNITS[unitIndex]);
+        return String.format("%.1f %s", size / unitValue, SIZE_UNITS[unitIndex]);
 
         // Variante 2: Micrometer
         // io.micrometer.core.instrument.logging.LoggingMeterRegistry.Printer.humanReadableByteCount(double)

@@ -17,12 +17,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongConsumer;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.filter.PathFilter;
-import de.freese.jsync.filter.PathFilterTrue;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
@@ -62,13 +60,11 @@ public class DefaultGenerator extends AbstractGenerator
             return Flux.empty();
         }
 
-        PathFilter filter = pathFilter != null ? pathFilter : new PathFilterTrue();
-
         FileVisitOption[] visitOptions = JSyncUtils.getFileVisitOptions(followSymLinks);
         LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
 
         // @formatter:off
-        return getPathsAsFlux(base, visitOptions,filter)
+        return getPathsAsFlux(base, visitOptions, pathFilter)
                 .mapNotNull(path -> {
                     if (Files.isDirectory(path))
                     {
@@ -100,11 +96,16 @@ public class DefaultGenerator extends AbstractGenerator
 
         try
         {
-            Predicate<Path> self = p -> p.getFileName().toString().startsWith(".");
-
-            try (Stream<Path> children = Files.list(directory).filter(self.negate()))
+            try (Stream<Path> children = Files.list(directory))
             {
-                syncItem.setSize(children.count());
+                // @formatter:off
+                long count = children
+                        .filter(child -> !child.equals(directory)) // Das Basisverzeichnis wollen wir nicht.
+                        .count()
+                        ;
+                // @formatter:on
+
+                syncItem.setSize(count);
             }
 
             if (Options.IS_WINDOWS)
@@ -120,7 +121,6 @@ public class DefaultGenerator extends AbstractGenerator
 
                 long lastModifiedTime = ((FileTime) attributes.get("lastModifiedTime")).to(TimeUnit.SECONDS);
 
-                @SuppressWarnings("unchecked")
                 Set<PosixFilePermission> filePermissions = (Set<PosixFilePermission>) attributes.get("permissions");
 
                 String userName = ((UserPrincipal) attributes.get("owner")).getName();

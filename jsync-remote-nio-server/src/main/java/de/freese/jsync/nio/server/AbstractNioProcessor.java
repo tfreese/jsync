@@ -125,7 +125,7 @@ public abstract class AbstractNioProcessor implements Runnable
      *
      * @return boolean
      */
-    protected boolean exitCondition(final int readyChannels)
+    protected boolean isExitCondition(final int readyChannels)
     {
         return isShutdown() || !getSelector().isOpen();
     }
@@ -220,7 +220,7 @@ public abstract class AbstractNioProcessor implements Runnable
 
                 getLogger().debug("readyChannels = {}", readyChannels);
 
-                if (exitCondition(readyChannels))
+                if (isExitCondition(readyChannels))
                 {
                     break;
                 }

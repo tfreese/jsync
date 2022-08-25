@@ -30,7 +30,7 @@ public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair>
      * @see de.freese.jsync.swing.components.AbstractListTableModel#getColumnClass(int)
      */
     @Override
-    public Class<? extends Object> getColumnClass(final int columnIndex)
+    public Class<?> getColumnClass(final int columnIndex)
     {
         return switch (columnIndex)
                 {

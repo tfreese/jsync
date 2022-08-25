@@ -3,7 +3,6 @@ package de.freese.jsync.filesystem.local;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -23,24 +22,6 @@ import reactor.core.publisher.Flux;
 public class LocalhostSender extends AbstractLocalFileSystem implements Sender
 {
     /**
-     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
-     */
-    @Override
-    public void connect(final URI uri)
-    {
-        // Empty
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
-     */
-    @Override
-    public void disconnect()
-    {
-        // Empty
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.Sender#readFile(java.lang.String, java.lang.String, long)
      */
     @Override
@@ -52,6 +33,7 @@ public class LocalhostSender extends AbstractLocalFileSystem implements Sender
         {
             String message = String.format("file doesn't exist anymore: %s", path);
             getLogger().warn(message);
+            
             return Flux.empty();
         }
 

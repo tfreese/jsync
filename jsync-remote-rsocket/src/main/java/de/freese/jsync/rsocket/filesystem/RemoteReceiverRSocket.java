@@ -7,6 +7,7 @@ import java.util.function.LongConsumer;
 
 import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.filter.PathFilter;
+import de.freese.jsync.filter.PathFilterNoOp;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import io.rsocket.Payload;
@@ -57,7 +58,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
             )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(null, th))
+            .doOnError(th -> getLogger().error(th.getMessage(), th))
             .block()
             ;
         // @formatter:on
@@ -87,7 +88,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
             )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(null, th))
+            .doOnError(th -> getLogger().error(th.getMessage(), th))
             .block()
             ;
         // @formatter:on
@@ -108,7 +109,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
     @Override
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
     {
-        return generateSyncItems(baseDir, followSymLinks, pathFilter, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
+        return generateSyncItems(baseDir, followSymLinks, PathFilterNoOp.INSTANCE, JSyncCommand.TARGET_CREATE_SYNC_ITEMS);
     }
 
     /**
@@ -134,7 +135,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
             )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(null, th))
+            .doOnError(th -> getLogger().error(th.getMessage(), th))
             .block()
             ;
         // @formatter:on
@@ -164,7 +165,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
             )
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(null, th))
+            .doOnError(th -> getLogger().error(th.getMessage(), th))
             .map(Long::parseLong)
             .subscribe(consumerChecksumBytesRead::accept)
             ;
@@ -200,7 +201,7 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
         return getClient()
           .requestChannel(flux)
           .map(payload -> payload.data().readLong())
-          .doOnError(th -> getLogger().error(null, th))
+          .doOnError(th -> getLogger().error(th.getMessage(), th))
           ;
        // @formatter:on
     }

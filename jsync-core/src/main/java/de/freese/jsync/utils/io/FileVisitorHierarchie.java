@@ -9,10 +9,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import de.freese.jsync.filter.PathFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.freese.jsync.filter.PathFilter;
 
 /**
  * @author Thomas Freese
@@ -31,17 +30,19 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
      *
      */
     private final PathFilter pathFilter;
+    /**
+     *
+     */
+    private final Path basePath;
 
     /**
-     * Erstellt ein neues {@link FileVisitorHierarchie} Object.
      *
-     * @param pathFilter {@link PathFilter}
-     * @param consumer {@link Consumer}
      */
-    public FileVisitorHierarchie(final PathFilter pathFilter, final Consumer<Path> consumer)
+    public FileVisitorHierarchie(Path basePath, final PathFilter pathFilter, final Consumer<Path> consumer)
     {
         super();
 
+        this.basePath = Objects.requireNonNull(basePath, "basePath required");
         this.pathFilter = Objects.requireNonNull(pathFilter, "pathFilter required");
         this.consumer = Objects.requireNonNull(consumer, "consumer required");
     }
@@ -64,12 +65,9 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
 
         if (ex != null)
         {
-            if (getLogger().isErrorEnabled())
-            {
-                getLogger().error(dir.toString(), ex);
-            }
+            getLogger().error(dir.toString(), ex);
         }
-        else
+        else if (!basePath.endsWith(dir)) // Das Basisverzeichnis wollen wir nicht.
         {
             this.consumer.accept(dir);
         }
@@ -89,6 +87,7 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
         if (this.pathFilter.isExcludedDirectory(dir))
         {
             getLogger().debug("exclude directory: {}", dir);
+
             return FileVisitResult.SKIP_SUBTREE;
         }
 
@@ -126,10 +125,7 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
 
         if (ex != null)
         {
-            if (getLogger().isErrorEnabled())
-            {
-                getLogger().error(file.toString(), ex);
-            }
+            getLogger().error(file.toString(), ex);
         }
 
         return FileVisitResult.CONTINUE;

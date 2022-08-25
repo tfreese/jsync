@@ -47,8 +47,8 @@ public final class FileSystemFactory
     }
 
     /**
-    *
-    */
+     *
+     */
     private final ServiceLoader<FileSystemProvider> serviceLoader = ServiceLoader.load(FileSystemProvider.class);
 
     /**
@@ -74,7 +74,7 @@ public final class FileSystemFactory
         {
             if (provider.supportsProtocol(scheme))
             {
-                return provider.createReceiver(uri);
+                return new ReceiverDelegateLogger(provider.createReceiver(uri));
             }
         }
 
@@ -96,7 +96,7 @@ public final class FileSystemFactory
         {
             if (provider.supportsProtocol(scheme))
             {
-                return provider.createSender(uri);
+                return new SenderDelegateLogger(provider.createSender(uri));
             }
         }
 

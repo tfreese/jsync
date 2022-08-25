@@ -8,25 +8,32 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Thomas Freese
  */
 public class FileVisitorDelete extends SimpleFileVisitor<Path>
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileVisitorDelete.class);
+
     /**
      * @see java.nio.file.SimpleFileVisitor#postVisitDirectory(java.lang.Object, java.io.IOException)
      */
     @Override
     public FileVisitResult postVisitDirectory(final Path dir, final IOException ex) throws IOException
     {
-        if (ex == null)
+        if (ex != null)
+        {
+            LOGGER.error(dir.toString(), ex);
+        }
+        else
         {
             Files.delete(dir);
-
-            return FileVisitResult.CONTINUE;
         }
 
-        throw ex;
+        return FileVisitResult.CONTINUE;
     }
 
     /**

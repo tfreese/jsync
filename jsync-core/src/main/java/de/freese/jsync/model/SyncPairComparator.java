@@ -39,8 +39,6 @@ public class SyncPairComparator implements Comparator<SyncPair>
             value2 = "";
         }
 
-        int comp = value1.compareTo(value2);
-
-        return comp;
+        return value1.compareTo(value2);
     }
 }

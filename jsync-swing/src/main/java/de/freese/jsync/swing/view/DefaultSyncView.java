@@ -436,7 +436,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         properties.setProperty("filter.directories", this.textAreaFilterDirs.getText());
         properties.setProperty("filter.files", this.textAreaFilterFiles.getText());
 
-        try (OutputStream os = Files.newOutputStream(path, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))
+        try (OutputStream os = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))
         {
             properties.store(os, null);
         }

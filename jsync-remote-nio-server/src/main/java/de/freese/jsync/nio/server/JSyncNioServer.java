@@ -144,7 +144,7 @@ public final class JSyncNioServer implements Runnable
     {
         getLogger().info("starting '{}' on port: {}", this.name, this.port);
 
-        Objects.requireNonNull(this.ioHandler, "ioHandler requried");
+        Objects.requireNonNull(this.ioHandler, "ioHandler required");
 
         try
         {

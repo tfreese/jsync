@@ -3,10 +3,6 @@ package de.freese.jsync.rsocket;
 
 import java.util.function.LongConsumer;
 
-import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.filesystem.ReceiverDelegateLogger;
@@ -28,6 +24,9 @@ import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.util.ByteBufPayload;
 import io.rsocket.util.DefaultPayload;
+import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -97,7 +96,8 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
         String baseDir = getSerializer().readFrom(bufferData, String.class);
         String relativeFile = getSerializer().readFrom(bufferData, String.class);
 
-        return Flux.create(sink -> {
+        return Flux.create(sink ->
+        {
             LongConsumer consumer = checksumBytesRead -> sink.next(ByteBufPayload.create(Long.toString(checksumBytesRead)));
 
             String checksum = fileSystem.generateChecksum(baseDir, relativeFile, consumer);
@@ -188,7 +188,8 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
         boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
         PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
 
-        return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem -> {
+        return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem ->
+        {
             ByteBuf byteBuf = getByteBufAllocator().buffer();
             getSerializer().writeTo(byteBuf, syncItem);
             return byteBuf;
@@ -261,7 +262,8 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
     {
         Receiver receiver = POOL_RECEIVER.obtain();
 
-        return Flux.from(payloads).switchOnFirst((firstSignal, flux) -> {
+        return Flux.from(payloads).switchOnFirst((firstSignal, flux) ->
+        {
             try
             {
                 final Payload payload = firstSignal.get();
@@ -272,11 +274,11 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
                 RSocketUtils.release(payload);
 
                 return switch (command)
-                {
-                    case TARGET_WRITE_FILE -> writeFile(payload, flux.skip(1), receiver);
+                        {
+                            case TARGET_WRITE_FILE -> writeFile(payload, flux.skip(1), receiver);
 
-                    default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
-                };
+                            default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                        };
             }
             catch (Exception ex)
             {
@@ -308,15 +310,15 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
             getLogger().debug("read command: {}", command);
 
             return switch (command)
-            {
-                case CONNECT -> connect();
-                case DISCONNECT -> disconnect();
-                case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
-                case TARGET_DELETE -> delete(payload, receiver);
-                case TARGET_UPDATE -> update(payload, receiver);
+                    {
+                        case CONNECT -> connect();
+                        case DISCONNECT -> disconnect();
+                        case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
+                        case TARGET_DELETE -> delete(payload, receiver);
+                        case TARGET_UPDATE -> update(payload, receiver);
 
-                default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
-            };
+                        default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                    };
         }
         catch (Exception ex)
         {
@@ -350,16 +352,16 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
             getLogger().debug("read command: {}", command);
 
             return switch (command)
-            {
-                case SOURCE_CHECKSUM -> checksum(payload, sender);
-                case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
-                case SOURCE_READ_FILE -> readFile(payload, sender);
-                case TARGET_CHECKSUM -> checksum(payload, receiver);
-                case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
-                case TARGET_VALIDATE_FILE -> validate(payload, receiver);
+                    {
+                        case SOURCE_CHECKSUM -> checksum(payload, sender);
+                        case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
+                        case SOURCE_READ_FILE -> readFile(payload, sender);
+                        case TARGET_CHECKSUM -> checksum(payload, receiver);
+                        case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
+                        case TARGET_VALIDATE_FILE -> validate(payload, receiver);
 
-                default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
-            };
+                        default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                    };
         }
         catch (Exception ex)
         {
@@ -408,7 +410,8 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
      */
     private Flux<Payload> validate(final Payload payload, final Receiver receiver)
     {
-        return Flux.create(sink -> {
+        return Flux.create(sink ->
+        {
             ByteBuf bufferData = payload.data();
 
             try
@@ -450,7 +453,7 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
         long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
 
         // @formatter:off
-        Flux<Payload> response = receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
+        return receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
                 .map(bytesWritten -> {
                     ByteBuf data = getByteBufAllocator().buffer().writeLong(bytesWritten);
                     return ByteBufPayload.create(data);
@@ -458,8 +461,6 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
                 .doOnError(th -> ByteBufPayload.create(th.getMessage()))
                 ;
         // @formatter:on
-
-        return response;
 
         // return Flux.concat(response, Mono.just(DefaultPayload.create("TRANSFER COMPLETED"))).onErrorReturn(DefaultPayload.create("FAILED"));
     }

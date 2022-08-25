@@ -17,7 +17,7 @@ public enum SyncStatus
      */
     DIFFERENT_GROUP,
     /**
-     * Timstamp unterschiedlich.
+     * Timestamp unterschiedlich.
      */
     DIFFERENT_LAST_MODIFIEDTIME,
     /**

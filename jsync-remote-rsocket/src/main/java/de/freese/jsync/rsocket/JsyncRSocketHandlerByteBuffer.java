@@ -4,10 +4,6 @@ package de.freese.jsync.rsocket;
 import java.nio.ByteBuffer;
 import java.util.function.LongConsumer;
 
-import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.filesystem.FileSystem;
 import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.filesystem.ReceiverDelegateLogger;
@@ -27,6 +23,9 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.util.DefaultPayload;
+import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -34,25 +33,24 @@ import reactor.core.publisher.Mono;
  * Verwendet primär {@link ByteBuffer} und somit {@link DefaultPayload}.
  *
  * @author Thomas Freese
- *
  * @deprecated Wirft beim Kopiervorgang eine BufferUnderflowException
  */
 @Deprecated
 class JsyncRSocketHandlerByteBuffer implements RSocket
 {
     /**
-    *
-    */
+     *
+     */
     private static final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
 
     /**
-    *
-    */
+     *
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JsyncRSocketHandlerByteBuffer.class);
 
     /**
-    *
-    */
+     *
+     */
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true)
     {
         /**
@@ -66,8 +64,8 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
     };
 
     /**
-    *
-    */
+     *
+     */
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true)
     {
         /**
@@ -80,8 +78,8 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         }
     };
     /**
-    *
-    */
+     *
+     */
     private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
@@ -99,7 +97,8 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         String baseDir = getSerializer().readFrom(bufferData, String.class);
         String relativeFile = getSerializer().readFrom(bufferData, String.class);
 
-        return Flux.create(sink -> {
+        return Flux.create(sink ->
+        {
             LongConsumer consumer = checksumBytesRead -> sink.next(DefaultPayload.create(Long.toString(checksumBytesRead)));
 
             String checksum = fileSystem.generateChecksum(baseDir, relativeFile, consumer);
@@ -190,7 +189,8 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
         PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
 
-        return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem -> {
+        return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem ->
+        {
             ByteBuffer buffer = JsyncRSocketHandlerByteBuffer.byteBufferPool.get();
             getSerializer().writeTo(buffer, syncItem);
             return buffer.flip();
@@ -257,7 +257,8 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
     {
         Receiver receiver = POOL_RECEIVER.obtain();
 
-        return Flux.from(payloads).switchOnFirst((firstSignal, flux) -> {
+        return Flux.from(payloads).switchOnFirst((firstSignal, flux) ->
+        {
             try
             {
                 final Payload payload = firstSignal.get();
@@ -268,11 +269,11 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
                 RSocketUtils.release(payload);
 
                 return switch (command)
-                {
-                    case TARGET_WRITE_FILE -> writeFile(payload, flux.skip(1), receiver);
+                        {
+                            case TARGET_WRITE_FILE -> writeFile(payload, flux.skip(1), receiver);
 
-                    default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
-                };
+                            default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                        };
             }
             catch (Exception ex)
             {
@@ -304,16 +305,16 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
             getLogger().debug("read command: {}", command);
 
             return switch (command)
-            {
-                case CONNECT -> connect();
-                case DISCONNECT -> disconnect();
-                case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
-                case TARGET_DELETE -> delete(payload, receiver);
-                case TARGET_UPDATE -> update(payload, receiver);
-                case TARGET_VALIDATE_FILE -> validate(payload, receiver);
+                    {
+                        case CONNECT -> connect();
+                        case DISCONNECT -> disconnect();
+                        case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
+                        case TARGET_DELETE -> delete(payload, receiver);
+                        case TARGET_UPDATE -> update(payload, receiver);
+                        case TARGET_VALIDATE_FILE -> validate(payload, receiver);
 
-                default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
-            };
+                        default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                    };
         }
         catch (Exception ex)
         {
@@ -347,15 +348,15 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
             getLogger().debug("read command: {}", command);
 
             return switch (command)
-            {
-                case SOURCE_CHECKSUM -> checksum(payload, sender);
-                case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
-                case SOURCE_READ_FILE -> readFile(payload, sender);
-                case TARGET_CHECKSUM -> checksum(payload, receiver);
-                case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
+                    {
+                        case SOURCE_CHECKSUM -> checksum(payload, sender);
+                        case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
+                        case SOURCE_READ_FILE -> readFile(payload, sender);
+                        case TARGET_CHECKSUM -> checksum(payload, receiver);
+                        case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
 
-                default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
-            };
+                        default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                    };
         }
         catch (Exception ex)
         {
@@ -435,7 +436,7 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
 
         // @formatter:off
-        Flux<Payload> response = receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
+        return receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
                 .map(bytesWritten -> {
                     ByteBuffer buffer = JsyncRSocketHandlerByteBuffer.byteBufferPool.get();
                     buffer.putLong(bytesWritten).flip();
@@ -444,8 +445,6 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
                 .doOnError(th -> DefaultPayload.create(th.getMessage()))
                 ;
         // @formatter:on
-
-        return response;
 
         // return Flux.concat(response, Mono.just(JsyncPayload.create("TRANSFER COMPLETED"))).onErrorReturn(JsyncPayload.create("FAILED"));
     }

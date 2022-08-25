@@ -14,6 +14,7 @@ import java.util.Set;
 import de.freese.jsync.Options;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.filter.PathFilterEndsWith;
+import de.freese.jsync.filter.PathFilterNoOp;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
@@ -41,7 +42,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
 
         List<SyncItem> syncItems = new ArrayList<>();
 
-        new DefaultGenerator().generateItems(base.toString(), false, null, syncItems::add);
+        new DefaultGenerator().generateItems(base.toString(), false, PathFilterNoOp.INSTANCE, syncItems::add);
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 
@@ -64,7 +65,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
 
         List<SyncItem> syncItems = new ArrayList<>();
 
-        new DefaultGenerator().generateItems(base.toString(), false, null, syncItems::add);
+        new DefaultGenerator().generateItems(base.toString(), false, PathFilterNoOp.INSTANCE, syncItems::add);
 
         System.out.printf("Anzahl SyncItems: %d%n", syncItems.size());
 
@@ -112,7 +113,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
         System.out.println();
 
         // @formatter:off
-        SyncItem syncItem = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, null)
+        SyncItem syncItem = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, PathFilterNoOp.INSTANCE)
                 .filter(si -> si.getRelativePath().endsWith("pom.xml"))
                 .blockFirst()
                 ;

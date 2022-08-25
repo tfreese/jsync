@@ -156,7 +156,7 @@ public abstract class AbstractClient implements Client
 
         // @formatter:off
         return fs.generateSyncItems(baseDir, getOptions().isFollowSymLinks(), pathFilter)
-                .doOnError(ex -> getLogger().error(null, ex))
+                .doOnError(ex -> getLogger().error(ex.getMessage(), ex))
                 ;
         // @formatter:on
     }
@@ -195,7 +195,7 @@ public abstract class AbstractClient implements Client
         }
         catch (Exception ex)
         {
-            clientListener.error(null, ex);
+            clientListener.error(ex.getMessage(), ex);
 
             return;
         }
@@ -209,7 +209,7 @@ public abstract class AbstractClient implements Client
         }
         catch (Exception ex)
         {
-            clientListener.error(null, ex);
+            clientListener.error(ex.getMessage(), ex);
         }
     }
 
@@ -296,7 +296,7 @@ public abstract class AbstractClient implements Client
         }
         catch (Exception ex)
         {
-            clientListener.error(null, ex);
+            clientListener.error(ex.getMessage(), ex);
         }
     }
 
@@ -321,7 +321,7 @@ public abstract class AbstractClient implements Client
         }
         catch (Exception ex)
         {
-            clientListener.error(null, ex);
+            clientListener.error(ex.getMessage(), ex);
         }
     }
 
@@ -462,7 +462,7 @@ public abstract class AbstractClient implements Client
         }
         catch (Exception ex)
         {
-            clientListener.error(null, ex);
+            clientListener.error(ex.getMessage(), ex);
         }
     }
 

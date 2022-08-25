@@ -3,7 +3,6 @@ package de.freese.jsync.filesystem.local;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystem;
@@ -24,6 +23,8 @@ import java.util.function.LongConsumer;
 
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.Receiver;
+import de.freese.jsync.filter.PathFilter;
+import de.freese.jsync.filter.PathFilterNoOp;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.utils.DigestUtils;
 import de.freese.jsync.utils.JSyncUtils;
@@ -37,13 +38,10 @@ import reactor.core.publisher.Flux;
  */
 public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiver
 {
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
-     */
     @Override
-    public void connect(final URI uri)
+    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
     {
-        // Empty
+        return super.generateSyncItems(baseDir, followSymLinks, PathFilterNoOp.INSTANCE);
     }
 
     /**
@@ -83,15 +81,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
         {
             throw new UncheckedIOException(ex);
         }
-    }
-
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
-     */
-    @Override
-    public void disconnect()
-    {
-        // Empty
     }
 
     /**

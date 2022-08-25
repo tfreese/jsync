@@ -161,7 +161,6 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
      *
      * @see #register(SocketChannel)
      */
-    @SuppressWarnings("unused")
     private void processNewChannels()
     {
         if (isShutdown())

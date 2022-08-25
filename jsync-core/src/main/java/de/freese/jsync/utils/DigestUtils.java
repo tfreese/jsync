@@ -81,9 +81,8 @@ public final class DigestUtils
     public static String digestAsHex(final MessageDigest messageDigest)
     {
         final byte[] digest = messageDigest.digest();
-        final String hex = JSyncUtils.bytesToHex(digest);
 
-        return hex;
+        return JSyncUtils.bytesToHex(digest);
     }
 
     /**
@@ -198,9 +197,7 @@ public final class DigestUtils
         {
             byte[] bytes = sha256Digest(channel, consumerBytesRead);
 
-            String hex = JSyncUtils.bytesToHex(bytes);
-
-            return hex;
+            return JSyncUtils.bytesToHex(bytes);
         }
         catch (IOException iex)
         {

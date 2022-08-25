@@ -13,7 +13,6 @@ import de.freese.jsync.model.SyncItem;
  *
  * @author Thomas Freese
  */
-@SuppressWarnings("resource")
 public class ConsoleClientListener extends AbstractClientListener
 {
     /**

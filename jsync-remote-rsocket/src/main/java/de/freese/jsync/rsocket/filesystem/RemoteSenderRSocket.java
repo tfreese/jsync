@@ -75,7 +75,7 @@ public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Se
                     })
             )
             .map(Payload::getData)
-            .doOnError(th -> getLogger().error(null, th))
+            .doOnError(th -> getLogger().error(th.getMessage(), th))
             ;
         // @formatter:on
     }

@@ -32,7 +32,8 @@ public abstract class AbstractGenerator implements Generator
      */
     protected Flux<Path> getPathsAsFlux(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter)
     {
-        return Flux.<Path> create(sink -> {
+        return Flux.<Path>create(sink ->
+        {
             walkFileTree(base, visitOptions, pathFilter, sink::next);
             sink.complete();
         }).sort();
@@ -64,23 +65,16 @@ public abstract class AbstractGenerator implements Generator
      */
     private void walkFileTree(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter, final Consumer<Path> consumer)
     {
+        //  Wenn Dateien fehlerhaft sind, knallt es hier bereits, eigenen FileWalker implementieren !
+        // try (Stream<Path> stream = Files.walk(base, visitOptions)) {...}
+
         try
         {
-            Files.walkFileTree(base, Set.of(visitOptions), Integer.MAX_VALUE, new FileVisitorHierarchie(pathFilter, consumer));
+            Files.walkFileTree(base, Set.of(visitOptions), Integer.MAX_VALUE, new FileVisitorHierarchie(base, pathFilter, consumer));
         }
         catch (IOException ex)
         {
             throw new UncheckedIOException(ex);
         }
-
-        // try (Stream<Path> stream = Files.walk(base, visitOptions))
-        // {
-        // TODO Wenn Dateien fehlerhaft sind, knallt es hier bereits -> eigenen FileWalker implementieren !
-        // stream.forEach(consumer);
-        // }
-        // catch (IOException ex)
-        // {
-        // throw new UncheckedIOException(ex);
-        // }
     }
 }

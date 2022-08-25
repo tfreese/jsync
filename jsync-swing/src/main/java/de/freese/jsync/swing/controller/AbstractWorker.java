@@ -44,6 +44,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     {
         return JsyncContext.getMessages().getString(key);
     }
+
     /**
      *
      */
@@ -78,7 +79,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
 
         controller.createNewClient(this.options, senderUri, receiverUri);
 
-        // this.parallel = determineParallel(senderUri, receiverUri);
+        // this.parallel = isDetermineParallel(senderUri, receiverUri);
         this.parallel = this.options.isParallel();
     }
 
@@ -92,7 +93,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      *
      * @return boolean
      */
-    boolean determineParallel(final URI senderUri, final URI receiverUri)
+    boolean isDetermineParallel(final URI senderUri, final URI receiverUri)
     {
         boolean parallel = false;
 

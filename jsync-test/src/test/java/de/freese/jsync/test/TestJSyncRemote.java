@@ -17,6 +17,7 @@ import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.client.listener.EmptyClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
+import de.freese.jsync.filter.PathFilterNoOp;
 import de.freese.jsync.model.JSyncProtocol;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
@@ -255,7 +256,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         client.connectFileSystems();
 
         List<SyncItem> syncItemsSender = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.SENDER, null, syncItem ->
+        client.generateSyncItems(EFileSystem.SENDER, PathFilterNoOp.INSTANCE, syncItem ->
         {
             syncItemsSender.add(syncItem);
             String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i ->
@@ -266,7 +267,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         });
 
         List<SyncItem> syncItemsReceiver = new ArrayList<>();
-        client.generateSyncItems(EFileSystem.RECEIVER, null, syncItem ->
+        client.generateSyncItems(EFileSystem.RECEIVER, PathFilterNoOp.INSTANCE, syncItem ->
         {
             syncItemsReceiver.add(syncItem);
             String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i ->
