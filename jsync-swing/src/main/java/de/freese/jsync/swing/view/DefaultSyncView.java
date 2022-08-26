@@ -378,7 +378,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void restoreState()
     {
-        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", ".jsyncGuiState");
+        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jsyncGuiState");
         Properties properties = new Properties();
 
         try
@@ -390,7 +390,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
 
         try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ))
@@ -399,7 +399,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
 
         getTextFieldHostPort(EFileSystem.SENDER).setText(properties.getProperty("sender.textfieldHostPort"));
@@ -442,7 +442,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
     }
 

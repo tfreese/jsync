@@ -117,7 +117,7 @@ public final class JSyncSwing
         }
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
 
         UIManager.put("FileChooser.useSystemIcons", Boolean.TRUE);

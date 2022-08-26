@@ -72,7 +72,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
     }
 
@@ -105,7 +105,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
             }
             catch (Exception ex)
             {
-                getLogger().error(null, ex);
+                getLogger().error(ex.getMessage(), ex);
             }
         }
 
@@ -189,7 +189,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
             }
             catch (Exception ex)
             {
-                getLogger().error(null, ex);
+                getLogger().error(ex.getMessage(), ex);
             }
         }
     }

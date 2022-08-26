@@ -203,7 +203,7 @@ public final class JSyncNioServer implements Runnable
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
     }
 
@@ -258,7 +258,7 @@ public final class JSyncNioServer implements Runnable
         }
         catch (IOException ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
 
         Schedulers.shutdownNow();

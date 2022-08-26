@@ -66,7 +66,7 @@ public final class JSyncConsole
         }
         catch (Exception ex)
         {
-            LOGGER.error(null, ex);
+            LOGGER.error(ex.getMessage(), ex);
         }
 
         if (!argumentParser.hasArgs())

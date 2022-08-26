@@ -74,7 +74,7 @@ class Acceptor extends AbstractNioProcessor
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
     }
 }

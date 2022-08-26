@@ -153,7 +153,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
         finally
         {
@@ -181,7 +181,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
     }
 
@@ -219,7 +219,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             try
             {
@@ -227,7 +227,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             }
             catch (Exception ex2)
             {
-                getLogger().error(null, ex2);
+                getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally
@@ -257,7 +257,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             try
             {
@@ -265,7 +265,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             }
             catch (IOException ex2)
             {
-                getLogger().error(null, ex2);
+                getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally
@@ -306,7 +306,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             try
             {
@@ -314,7 +314,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             }
             catch (Exception ex2)
             {
-                getLogger().error(null, ex2);
+                getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally
@@ -351,7 +351,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             }
             catch (IOException ex2)
             {
-                getLogger().error(null, ex2);
+                getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally
@@ -437,7 +437,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             }
             catch (IOException ex2)
             {
-                getLogger().error(null, ex2);
+                getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally
@@ -467,7 +467,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             try
             {
@@ -475,7 +475,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             }
             catch (IOException ex2)
             {
-                getLogger().error(null, ex2);
+                getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally
@@ -518,7 +518,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             try
             {
@@ -526,7 +526,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             }
             catch (IOException ex2)
             {
-                getLogger().error(null, ex2);
+                getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally
@@ -571,7 +571,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             try
             {
@@ -579,7 +579,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             }
             catch (IOException ex2)
             {
-                getLogger().error(null, ex2);
+                getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally

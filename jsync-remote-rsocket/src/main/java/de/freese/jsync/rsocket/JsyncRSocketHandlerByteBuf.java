@@ -282,7 +282,7 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
             }
             catch (Exception ex)
             {
-                getLogger().error(null, ex);
+                getLogger().error(ex.getMessage(), ex);
 
                 return Flux.error(ex);
             }
@@ -322,7 +322,7 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             return Mono.error(ex);
         }
@@ -365,7 +365,7 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             return Flux.error(ex);
         }

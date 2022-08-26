@@ -97,7 +97,7 @@ public abstract class AbstractNioProcessor implements Runnable
             }
             catch (Exception ex)
             {
-                getLogger().error(null, ex);
+                getLogger().error(ex.getMessage(), ex);
             }
         }
     }
@@ -115,7 +115,7 @@ public abstract class AbstractNioProcessor implements Runnable
             }
             catch (Exception ex)
             {
-                getLogger().error(null, ex);
+                getLogger().error(ex.getMessage(), ex);
             }
         }
     }
@@ -282,7 +282,7 @@ public abstract class AbstractNioProcessor implements Runnable
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
         finally
         {

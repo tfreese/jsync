@@ -240,10 +240,8 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         String relativeFile = getSerializer().readFrom(bufferData, String.class);
         long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
 
-        Flux<ByteBuffer> fileFlux = sender.readFile(baseDir, relativeFile, sizeOfFile);
-
         // @formatter:off
-        return fileFlux
+        return sender.readFile(baseDir, relativeFile, sizeOfFile)
                 .map(DefaultPayload::create)
                 ;
         // @formatter:on
@@ -277,7 +275,7 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
             }
             catch (Exception ex)
             {
-                getLogger().error(null, ex);
+                getLogger().error(ex.getMessage(), ex);
 
                 return Flux.error(ex);
             }
@@ -318,7 +316,7 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             return Mono.error(ex);
         }
@@ -360,7 +358,7 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
 
             return Flux.error(ex);
         }
