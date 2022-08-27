@@ -4,7 +4,7 @@ package de.freese.jsync.rsocket.builder.client;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import de.freese.jsync.rsocket.builder.AbstractRSocketBuilder;
 import io.rsocket.core.RSocketClient;
@@ -12,26 +12,37 @@ import io.rsocket.core.RSocketConnector;
 import io.rsocket.frame.decoder.PayloadDecoder;
 
 /**
- * @author Thomas Freese
- *
  * @param <T> Builder Type
+ *
+ * @author Thomas Freese
  */
 public abstract class AbstractRSocketClientBuilder<T extends AbstractRSocketClientBuilder<?>> extends AbstractRSocketBuilder<T, RSocketClient>
 {
     /**
-    *
-    */
-    private final List<Function<RSocketConnector, RSocketConnector>> rSocketConnectorCustomizers = new ArrayList<>();
+     *
+     */
+    private final List<UnaryOperator<RSocketConnector>> rSocketConnectorCustomizers = new ArrayList<>();
 
     /**
-     * @param rSocketConnectorCustomizer {@link Function}
+     *
+     */
+    public T addRSocketConnectorCustomizer(final UnaryOperator<RSocketConnector> rSocketConnectorCustomizer)
+    {
+        this.rSocketConnectorCustomizers.add(Objects.requireNonNull(rSocketConnectorCustomizer, "rSocketConnectorCustomizer required"));
+
+        return (T) this;
+    }
+
+    /**
+     * @param payloadDecoder {@link PayloadDecoder}
      *
      * @return {@link AbstractRSocketBuilder}
      */
-    @SuppressWarnings("unchecked")
-    public T addRSocketConnectorCustomizer(final Function<RSocketConnector, RSocketConnector> rSocketConnectorCustomizer)
+    public T payloadDecoder(final PayloadDecoder payloadDecoder)
     {
-        this.rSocketConnectorCustomizers.add(Objects.requireNonNull(rSocketConnectorCustomizer, "rSocketConnectorCustomizer required"));
+        Objects.requireNonNull(payloadDecoder, "payloadDecoder required");
+
+        addRSocketConnectorCustomizer(rSocketConnector -> rSocketConnector.payloadDecoder(payloadDecoder));
 
         return (T) this;
     }
@@ -45,26 +56,11 @@ public abstract class AbstractRSocketClientBuilder<T extends AbstractRSocketClie
     {
         RSocketConnector connector = rSocketConnector;
 
-        for (Function<RSocketConnector, RSocketConnector> connectorCustomizer : this.rSocketConnectorCustomizers)
+        for (UnaryOperator<RSocketConnector> connectorCustomizer : this.rSocketConnectorCustomizers)
         {
             connector = connectorCustomizer.apply(connector);
         }
 
         return connector;
-    }
-
-    /**
-     * @param payloadDecoder {@link PayloadDecoder}
-     *
-     * @return {@link AbstractRSocketBuilder}
-     */
-    @SuppressWarnings("unchecked")
-    public T payloadDecoder(final PayloadDecoder payloadDecoder)
-    {
-        Objects.requireNonNull(payloadDecoder, "payloadDecoder required");
-
-        addRSocketConnectorCustomizer(rSocketConnector -> rSocketConnector.payloadDecoder(payloadDecoder));
-
-        return (T) this;
     }
 }

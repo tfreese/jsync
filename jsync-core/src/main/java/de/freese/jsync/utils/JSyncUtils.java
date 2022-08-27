@@ -90,6 +90,7 @@ public final class JSyncUtils
      * String hex = javax.xml.bind.DatatypeConverter.printHexBinary(checksum);<br>
      * String hex = org.apache.commons.codec.binary.Hex.encodeHexString(messageDigest);<br>
      * String hex = String.format("%02x", element);<br>
+     * String hex = HexFormat.of().withUpperCase().formatHex(bytes)
      *
      * @param bytes byte[]
      *
@@ -97,20 +98,17 @@ public final class JSyncUtils
      */
     public static String bytesToHex(final byte[] bytes)
     {
-        StringBuilder sbuf = new StringBuilder(bytes.length * 2);
+        //        return HexFormat.of().withUpperCase().formatHex(bytes);
+
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
 
         for (byte b : bytes)
         {
-            // int temp = b & 0xFF;
-            //
-            // sbuf.append(HEX_CHARS[temp >> 4]);
-            // sbuf.append(HEX_CHARS[temp & 0x0F]);
-
-            sbuf.append(HEX_CHARS[(b & 0xF0) >>> 4]);
-            sbuf.append(HEX_CHARS[b & 0x0F]);
+            sb.append(HEX_CHARS[(b & 0xF0) >>> 4]);
+            sb.append(HEX_CHARS[b & 0x0F]);
         }
 
-        return sbuf.toString().toUpperCase();
+        return sb.toString().toUpperCase();
     }
 
     /**
@@ -224,41 +222,30 @@ public final class JSyncUtils
     }
 
     /**
-     * Mit 2 Nachkommastellen.
-     *
-     * @param value long
-     * @param max long
-     *
-     * @return float 0.0 - 100.0
+     * @return double 0.0 - 100.0
      */
-    public static float getPercent(final long value, final long max)
+    public static double getPercent(final long value, final long max)
     {
-        float progress = getProgress(value, max);
+        double progress = getProgress(value, max);
 
-        return progress * 100F;
+        return progress * 100D;
     }
 
     /**
-     * @param value long
-     * @param max long
-     *
-     * @return float 0.0 - 1.0
+     * @return double 0.0 - 1.0
      */
-    public static float getProgress(final long value, final long max)
+    public static double getProgress(final long value, final long max)
     {
         if ((value <= 0) || (value > max))
         {
             // throw new IllegalArgumentException("invalid value: " + value);
-            return 0.0F;
+            return 0.0D;
         }
 
-        float progress = (float) value / (float) max;
+        return (double) value / (double) max;
 
-        // // Nachkommastellen
-        // int rounded = Math.round(progress * 100);
-        // progress = rounded / 100F;
-
-        return progress;
+        // Nachkommastellen
+        // return Math.round(((double) value / (double) max) * 100) / 100D;
     }
 
     /**
@@ -438,7 +425,7 @@ public final class JSyncUtils
                 // Cancel currently executing tasks.
                 for (Runnable remainingTask : executorService.shutdownNow())
                 {
-                    if (remainingTask instanceof Future f)
+                    if (remainingTask instanceof Future<?> f)
                     {
                         f.cancel(true);
                     }

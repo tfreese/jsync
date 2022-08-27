@@ -5,7 +5,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.swing.JFrame;
 
-import de.freese.jsync.rsocket.JsyncRSocketHandlerByteBuf;
+import de.freese.jsync.rsocket.JSyncRSocketHandlerByteBuf;
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import de.freese.jsync.swing.messages.Messages;
 import de.freese.jsync.utils.JSyncUtils;
@@ -19,16 +19,16 @@ import io.rsocket.SocketAcceptor;
 public final class JsyncContext
 {
     /**
-    *
-    */
+     *
+     */
     private static ExecutorService executorService;
     /**
-    *
-    */
+     *
+     */
     private static JFrame mainFrame;
     /**
-    *
-    */
+     *
+     */
     private static Messages messages;
     /**
      *
@@ -60,32 +60,8 @@ public final class JsyncContext
     }
 
     /**
-     * @param executorService {@link ExecutorService}
+     *
      */
-    static void setExecutorService(final ExecutorService executorService)
-    {
-        JsyncContext.executorService = executorService;
-    }
-
-    /**
-     * @param mainFrame {@link JFrame}
-     */
-    static void setMainFrame(final JFrame mainFrame)
-    {
-        JsyncContext.mainFrame = mainFrame;
-    }
-
-    /**
-     * @param messages {@link Messages}
-     */
-    static void setMessages(final Messages messages)
-    {
-        JsyncContext.messages = messages;
-    }
-
-    /**
-    *
-    */
     public static void shutdown()
     {
         if (rsocketServerLocal != null)
@@ -110,16 +86,40 @@ public final class JsyncContext
     {
         if (rsocketServerLocal == null)
         {
-          // @formatter:off
+            // @formatter:off
             rsocketServerLocal = RSocketBuilders.serverLocal()
               .name("jsync")
-              .socketAcceptor(SocketAcceptor.with(new JsyncRSocketHandlerByteBuf()))
+              .socketAcceptor(SocketAcceptor.with(new JSyncRSocketHandlerByteBuf()))
               .logger(JSyncSwing.getLogger())
               .build()
               .block()
               ;
           // @formatter:on
         }
+    }
+
+    /**
+     * @param executorService {@link ExecutorService}
+     */
+    static void setExecutorService(final ExecutorService executorService)
+    {
+        JsyncContext.executorService = executorService;
+    }
+
+    /**
+     * @param mainFrame {@link JFrame}
+     */
+    static void setMainFrame(final JFrame mainFrame)
+    {
+        JsyncContext.mainFrame = mainFrame;
+    }
+
+    /**
+     * @param messages {@link Messages}
+     */
+    static void setMessages(final Messages messages)
+    {
+        JsyncContext.messages = messages;
     }
 
     /**

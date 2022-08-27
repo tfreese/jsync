@@ -23,7 +23,7 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
-import de.freese.jsync.rsocket.server.JsyncRSocketServer;
+import de.freese.jsync.rsocket.server.JSyncRSocketServer;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -190,7 +190,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     {
         if (!CLOSEABLES.containsKey("rsocket"))
         {
-            JsyncRSocketServer server = new JsyncRSocketServer();
+            JSyncRSocketServer server = new JSyncRSocketServer();
             server.start(port);
             CLOSEABLES.put("rsocket", server::stop);
 

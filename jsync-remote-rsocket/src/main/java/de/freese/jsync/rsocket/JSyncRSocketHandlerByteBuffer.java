@@ -36,18 +36,12 @@ import reactor.core.publisher.Mono;
  * @deprecated Wirft beim Kopiervorgang eine BufferUnderflowException
  */
 @Deprecated
-class JsyncRSocketHandlerByteBuffer implements RSocket
+class JSyncRSocketHandlerByteBuffer implements RSocket
 {
     /**
      *
      */
-    private static final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
-
-    /**
-     *
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsyncRSocketHandlerByteBuffer.class);
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketHandlerByteBuffer.class);
     /**
      *
      */
@@ -62,7 +56,6 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
             return new ReceiverDelegateLogger(new LocalhostReceiver());
         }
     };
-
     /**
      *
      */
@@ -80,172 +73,11 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
     /**
      *
      */
+    private static final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
+    /**
+     *
+     */
     private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
-
-    /**
-     * Create the checksum.
-     *
-     * @param payload {@link Payload}
-     * @param fileSystem {@link FileSystem}
-     *
-     * @return {@link Mono}
-     */
-    private Flux<Payload> checksum(final Payload payload, final FileSystem fileSystem)
-    {
-        ByteBuffer bufferData = payload.getData();
-
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        String relativeFile = getSerializer().readFrom(bufferData, String.class);
-
-        return Flux.create(sink ->
-        {
-            LongConsumer consumer = checksumBytesRead -> sink.next(DefaultPayload.create(Long.toString(checksumBytesRead)));
-
-            String checksum = fileSystem.generateChecksum(baseDir, relativeFile, consumer);
-            sink.next(DefaultPayload.create(checksum));
-
-            sink.complete();
-        });
-    }
-
-    /**
-     * @return {@link Mono}
-     */
-    private Mono<Payload> connect()
-    {
-        Payload responsePayload = DefaultPayload.create("OK");
-
-        return Mono.just(responsePayload);
-    }
-
-    /**
-     * Create the Directory.
-     *
-     * @param payload {@link Payload}
-     * @param receiver {@link Receiver}
-     *
-     * @return {@link Mono}
-     */
-    private Mono<Payload> createDirectory(final Payload payload, final Receiver receiver)
-    {
-        ByteBuffer bufferData = payload.getData();
-
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        String relativePath = getSerializer().readFrom(bufferData, String.class);
-
-        receiver.createDirectory(baseDir, relativePath);
-
-        Payload responsePayload = DefaultPayload.create("OK");
-
-        return Mono.just(responsePayload);
-    }
-
-    /**
-     * Delete Directory or File.
-     *
-     * @param payload {@link Payload}
-     * @param receiver {@link Receiver}
-     *
-     * @return {@link Mono}
-     */
-    private Mono<Payload> delete(final Payload payload, final Receiver receiver)
-    {
-        ByteBuffer bufferData = payload.getData();
-
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        String relativePath = getSerializer().readFrom(bufferData, String.class);
-        boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
-
-        receiver.delete(baseDir, relativePath, followSymLinks);
-
-        Payload responsePayload = DefaultPayload.create("OK");
-
-        return Mono.just(responsePayload);
-    }
-
-    /**
-     * @return {@link Mono}
-     */
-    private Mono<Payload> disconnect()
-    {
-        Payload responsePayload = DefaultPayload.create("OK");
-
-        return Mono.just(responsePayload);
-    }
-
-    /**
-     * Create the Sync-Items.
-     *
-     * @param payload {@link Payload}
-     * @param fileSystem {@link FileSystem}
-     *
-     * @return {@link Mono}
-     */
-    private Flux<Payload> generateSyncItems(final Payload payload, final FileSystem fileSystem)
-    {
-        ByteBuffer bufferData = payload.getData();
-
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
-        PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
-
-        return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem ->
-        {
-            ByteBuffer buffer = JsyncRSocketHandlerByteBuffer.byteBufferPool.get();
-            getSerializer().writeTo(buffer, syncItem);
-            return buffer.flip();
-        }).map(DefaultPayload::create);
-
-        // Consumer<FluxSink<SyncItem>> syncItemConsumer = sink -> {
-        // fileSystem.generateSyncItems(baseDir, followSymLinks, sink::next);
-        // sink.complete();
-        // };
-        //
-        // return Flux.create(syncItemConsumer).map(syncItem -> {
-        // ByteBuffer buffer = getPooledBuffer();
-        // getSerializer().writeTo(buffer, syncItem);
-        // return buffer.flip();
-        // }).map(DefaultPayload::create);
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    private Logger getLogger()
-    {
-        return LOGGER;
-    }
-
-    /**
-     * @return {@link Serializer}
-     */
-    protected Serializer<ByteBuffer> getSerializer()
-    {
-        return this.serializer;
-    }
-
-    /**
-     * Die Daten werden zum Client gesendet.
-     *
-     * @param payload {@link Payload}
-     * @param sender {@link Sender}
-     *
-     * @return {@link Flux}
-     */
-    private Flux<Payload> readFile(final Payload payload, final Sender sender)
-    {
-        ByteBuffer bufferData = payload.getData();
-
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        String relativeFile = getSerializer().readFrom(bufferData, String.class);
-        long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
-
-        // @formatter:off
-        return sender.readFile(baseDir, relativeFile, sizeOfFile)
-                .map(DefaultPayload::create)
-                ;
-        // @formatter:on
-    }
 
     /**
      * @see io.rsocket.RSocket#requestChannel(org.reactivestreams.Publisher)
@@ -372,6 +204,171 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
     }
 
     /**
+     * @return {@link Serializer}
+     */
+    protected Serializer<ByteBuffer> getSerializer()
+    {
+        return this.serializer;
+    }
+
+    /**
+     * Create the checksum.
+     *
+     * @param payload {@link Payload}
+     * @param fileSystem {@link FileSystem}
+     *
+     * @return {@link Mono}
+     */
+    private Flux<Payload> checksum(final Payload payload, final FileSystem fileSystem)
+    {
+        ByteBuffer bufferData = payload.getData();
+
+        String baseDir = getSerializer().readFrom(bufferData, String.class);
+        String relativeFile = getSerializer().readFrom(bufferData, String.class);
+
+        return Flux.create(sink ->
+        {
+            LongConsumer consumer = checksumBytesRead -> sink.next(DefaultPayload.create(Long.toString(checksumBytesRead)));
+
+            String checksum = fileSystem.generateChecksum(baseDir, relativeFile, consumer);
+            sink.next(DefaultPayload.create(checksum));
+
+            sink.complete();
+        });
+    }
+
+    /**
+     * @return {@link Mono}
+     */
+    private Mono<Payload> connect()
+    {
+        Payload responsePayload = DefaultPayload.create("OK");
+
+        return Mono.just(responsePayload);
+    }
+
+    /**
+     * Create the Directory.
+     *
+     * @param payload {@link Payload}
+     * @param receiver {@link Receiver}
+     *
+     * @return {@link Mono}
+     */
+    private Mono<Payload> createDirectory(final Payload payload, final Receiver receiver)
+    {
+        ByteBuffer bufferData = payload.getData();
+
+        String baseDir = getSerializer().readFrom(bufferData, String.class);
+        String relativePath = getSerializer().readFrom(bufferData, String.class);
+
+        receiver.createDirectory(baseDir, relativePath);
+
+        Payload responsePayload = DefaultPayload.create("OK");
+
+        return Mono.just(responsePayload);
+    }
+
+    /**
+     * Delete Directory or File.
+     *
+     * @param payload {@link Payload}
+     * @param receiver {@link Receiver}
+     *
+     * @return {@link Mono}
+     */
+    private Mono<Payload> delete(final Payload payload, final Receiver receiver)
+    {
+        ByteBuffer bufferData = payload.getData();
+
+        String baseDir = getSerializer().readFrom(bufferData, String.class);
+        String relativePath = getSerializer().readFrom(bufferData, String.class);
+        boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
+
+        receiver.delete(baseDir, relativePath, followSymLinks);
+
+        Payload responsePayload = DefaultPayload.create("OK");
+
+        return Mono.just(responsePayload);
+    }
+
+    /**
+     * @return {@link Mono}
+     */
+    private Mono<Payload> disconnect()
+    {
+        Payload responsePayload = DefaultPayload.create("OK");
+
+        return Mono.just(responsePayload);
+    }
+
+    /**
+     * Create the Sync-Items.
+     *
+     * @param payload {@link Payload}
+     * @param fileSystem {@link FileSystem}
+     *
+     * @return {@link Mono}
+     */
+    private Flux<Payload> generateSyncItems(final Payload payload, final FileSystem fileSystem)
+    {
+        ByteBuffer bufferData = payload.getData();
+
+        String baseDir = getSerializer().readFrom(bufferData, String.class);
+        boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
+        PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
+
+        return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem ->
+        {
+            ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.byteBufferPool.get();
+            getSerializer().writeTo(buffer, syncItem);
+            return buffer.flip();
+        }).map(DefaultPayload::create);
+
+        // Consumer<FluxSink<SyncItem>> syncItemConsumer = sink -> {
+        // fileSystem.generateSyncItems(baseDir, followSymLinks, sink::next);
+        // sink.complete();
+        // };
+        //
+        // return Flux.create(syncItemConsumer).map(syncItem -> {
+        // ByteBuffer buffer = getPooledBuffer();
+        // getSerializer().writeTo(buffer, syncItem);
+        // return buffer.flip();
+        // }).map(DefaultPayload::create);
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    private Logger getLogger()
+    {
+        return LOGGER;
+    }
+
+    /**
+     * Die Daten werden zum Client gesendet.
+     *
+     * @param payload {@link Payload}
+     * @param sender {@link Sender}
+     *
+     * @return {@link Flux}
+     */
+    private Flux<Payload> readFile(final Payload payload, final Sender sender)
+    {
+        ByteBuffer bufferData = payload.getData();
+
+        String baseDir = getSerializer().readFrom(bufferData, String.class);
+        String relativeFile = getSerializer().readFrom(bufferData, String.class);
+        long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
+
+        // @formatter:off
+        return sender.readFile(baseDir, relativeFile, sizeOfFile)
+                .map(DefaultPayload::create)
+                ;
+        // @formatter:on
+    }
+
+    /**
      * Update Directory or File.
      *
      * @param payload {@link Payload}
@@ -436,7 +433,7 @@ class JsyncRSocketHandlerByteBuffer implements RSocket
         // @formatter:off
         return receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
                 .map(bytesWritten -> {
-                    ByteBuffer buffer = JsyncRSocketHandlerByteBuffer.byteBufferPool.get();
+                    ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.byteBufferPool.get();
                     buffer.putLong(bytesWritten).flip();
                     return DefaultPayload.create(buffer);
                 })

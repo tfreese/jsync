@@ -3,7 +3,7 @@ package de.freese.jsync.rsocket.server;
 
 import java.net.InetSocketAddress;
 
-import de.freese.jsync.rsocket.JsyncRSocketHandlerByteBuf;
+import de.freese.jsync.rsocket.JSyncRSocketHandlerByteBuf;
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import io.netty.util.ResourceLeakDetector;
@@ -19,12 +19,12 @@ import reactor.netty.tcp.TcpResources;
 /**
  * @author Thomas Freese
  */
-public final class JsyncRSocketServer
+public final class JSyncRSocketServer
 {
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsyncRSocketServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketServer.class);
 
     /**
      * @param args String[]
@@ -41,7 +41,7 @@ public final class JsyncRSocketServer
 
         int port = Integer.parseInt(args[0]);
 
-        JsyncRSocketServer server = new JsyncRSocketServer();
+        JSyncRSocketServer server = new JSyncRSocketServer();
 
         server.start(port);
 
@@ -87,7 +87,7 @@ public final class JsyncRSocketServer
         // @formatter:off
         this.server = RSocketBuilders.serverRemote()
                 .socketAddress(new InetSocketAddress(port))
-                .socketAcceptor(SocketAcceptor.with(new JsyncRSocketHandlerByteBuf()))
+                .socketAcceptor(SocketAcceptor.with(new JSyncRSocketHandlerByteBuf()))
                 .resumeDefault()
                 .logTcpServerBoundStatus()
                 .logger(LOGGER)

@@ -13,26 +13,26 @@ import de.freese.jsync.nio.utils.RemoteUtils;
 /**
  * @author Thomas Freese
  */
-public final class JsyncServerResponse
+public final class JSyncServerResponse
 {
     /**
      * @param bufferBody {@link ByteBuffer}
      *
-     * @return {@link JsyncServerResponse}
+     * @return {@link JSyncServerResponse}
      */
-    public static JsyncServerResponse error(final ByteBuffer bufferBody)
+    public static JSyncServerResponse error(final ByteBuffer bufferBody)
     {
-        return new JsyncServerResponse(RemoteUtils.STATUS_ERROR, bufferBody);
+        return new JSyncServerResponse(RemoteUtils.STATUS_ERROR, bufferBody);
     }
 
     /**
      * @param bufferBody {@link ByteBuffer}
      *
-     * @return {@link JsyncServerResponse}
+     * @return {@link JSyncServerResponse}
      */
-    public static JsyncServerResponse ok(final ByteBuffer bufferBody)
+    public static JSyncServerResponse ok(final ByteBuffer bufferBody)
     {
-        return new JsyncServerResponse(RemoteUtils.STATUS_OK, bufferBody);
+        return new JSyncServerResponse(RemoteUtils.STATUS_OK, bufferBody);
     }
 
     /**
@@ -45,12 +45,12 @@ public final class JsyncServerResponse
     private final int status;
 
     /**
-     * Erstellt ein neues {@link JsyncServerResponse} Object.
+     * Erstellt ein neues {@link JSyncServerResponse} Object.
      *
      * @param status int
      * @param bufferBody {@link ByteBuffer}
      */
-    private JsyncServerResponse(final int status, final ByteBuffer bufferBody)
+    private JSyncServerResponse(final int status, final ByteBuffer bufferBody)
     {
         super();
 
@@ -77,19 +77,6 @@ public final class JsyncServerResponse
 
     /**
      * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
-     *
-     * @throws IOException @throws Exception Falls was schief geht
-     */
-    void write(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
-    {
-        SocketChannel channel = (SocketChannel) selectionKey.channel();
-
-        write(channel, buffer);
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
      * @param consumer {@link Consumer}
      *
      * @throws IOException Falls was schiefgeht.
@@ -112,6 +99,19 @@ public final class JsyncServerResponse
                 {
                         bufferHeader, this.bufferBody
                 });
+    }
+
+    /**
+     * @param selectionKey {@link SelectionKey}
+     * @param buffer {@link ByteBuffer}
+     *
+     * @throws IOException @throws Exception Falls was schief geht
+     */
+    void write(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
+    {
+        SocketChannel channel = (SocketChannel) selectionKey.channel();
+
+        write(channel, buffer);
     }
 
     /**

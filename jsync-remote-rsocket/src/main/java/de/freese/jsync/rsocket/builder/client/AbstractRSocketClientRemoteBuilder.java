@@ -8,7 +8,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import javax.net.ssl.TrustManagerFactory;
 
@@ -34,15 +34,12 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     /**
      *
      */
-    private final List<Function<TcpClient, TcpClient>> tcpClientCustomizers = new ArrayList<>();
+    private final List<UnaryOperator<TcpClient>> tcpClientCustomizers = new ArrayList<>();
 
     /**
-     * @param tcpClientCustomizer {@link Function}
      *
-     * @return {@link AbstractRSocketClientRemoteBuilder}
      */
-    @SuppressWarnings("unchecked")
-    public T addTcpClientCustomizer(final Function<TcpClient, TcpClient> tcpClientCustomizer)
+    public T addTcpClientCustomizer(final UnaryOperator<TcpClient> tcpClientCustomizer)
     {
         this.tcpClientCustomizers.add(Objects.requireNonNull(tcpClientCustomizer, "tcpClientCustomizer required"));
 
@@ -50,26 +47,8 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     }
 
     /**
-     * @param tcpClient {@link TcpClient}
-     *
-     * @return {@link TcpClient}
-     */
-    protected TcpClient configure(final TcpClient tcpClient)
-    {
-        TcpClient client = tcpClient;
-
-        for (Function<TcpClient, TcpClient> clientCustomizer : this.tcpClientCustomizers)
-        {
-            client = clientCustomizer.apply(client);
-        }
-
-        return client;
-    }
-
-    /**
      * @return {@link AbstractRSocketClientRemoteBuilder}
      */
-    @SuppressWarnings("unchecked")
     public T logTcpClientBoundStatus()
     {
         // @formatter:off
@@ -88,7 +67,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
      *
      * @return {@link RSocketServerRemoteBuilder}
      */
-    @SuppressWarnings("unchecked")
     public T protocolSslContextSpec(final ProtocolSslContextSpec protocolSslContextSpec)
     {
         Objects.requireNonNull(protocolSslContextSpec, "protocolSslContextSpec required");
@@ -103,7 +81,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
      *
      * @throws Exception Falls was schiefgeht.
      */
-    @SuppressWarnings("unchecked")
     public T protocolSslContextSpecCertificate() throws Exception
     {
         // KeyStore keyStore = KeyStore.getInstance("PKCS12");
@@ -145,7 +122,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     /**
      * @return {@link RSocketServerRemoteBuilder}
      */
-    @SuppressWarnings("unchecked")
     public T protocolSslContextSpecTrusted()
     {
         // @formatter:off
@@ -168,7 +144,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
      *
      * @return {@link AbstractRSocketClientRemoteBuilder}
      */
-    @SuppressWarnings("unchecked")
     public T resume(final Resume resume)
     {
         Objects.requireNonNull(resume, "resume required");
@@ -200,7 +175,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
      *
      * @return {@link AbstractRSocketClientRemoteBuilder}
      */
-    @SuppressWarnings("unchecked")
     public T retry(final Retry retry)
     {
         Objects.requireNonNull(retry, "retry required");
@@ -226,7 +200,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
      *
      * @return {@link AbstractRSocketClientRemoteBuilder}
      */
-    @SuppressWarnings("unchecked")
     public T runOn(final EventLoopGroup eventLoopGroup)
     {
         Objects.requireNonNull(eventLoopGroup, "eventLoopGroup required");
@@ -241,7 +214,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
      *
      * @return {@link AbstractRSocketClientRemoteBuilder}
      */
-    @SuppressWarnings("unchecked")
     public T runOn(final LoopResources loopResources)
     {
         Objects.requireNonNull(loopResources, "loopResources required");
@@ -249,5 +221,22 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         addTcpClientCustomizer(tcpClient -> tcpClient.runOn(loopResources));
 
         return (T) this;
+    }
+
+    /**
+     * @param tcpClient {@link TcpClient}
+     *
+     * @return {@link TcpClient}
+     */
+    protected TcpClient configure(final TcpClient tcpClient)
+    {
+        TcpClient client = tcpClient;
+
+        for (UnaryOperator<TcpClient> clientCustomizer : this.tcpClientCustomizers)
+        {
+            client = clientCustomizer.apply(client);
+        }
+
+        return client;
     }
 }

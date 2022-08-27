@@ -17,19 +17,18 @@ import reactor.util.annotation.Nullable;
  * {@link DefaultPayload} mit Verwendung des {@link ByteBufferPool}.
  *
  * @author Thomas Freese
- *
  * @deprecated Funktioniert nicht
  */
 @Deprecated
-class JsyncPayload implements Payload
+class JSyncPayload implements Payload
 {
     /**
-    *
-    */
+     *
+     */
     private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
     /**
-    *
-    */
+     *
+     */
     private static final Serializer<ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
@@ -50,7 +49,7 @@ class JsyncPayload implements Payload
      */
     public static Payload create(final ByteBuffer data, @Nullable final ByteBuffer metadata)
     {
-        return new JsyncPayload(data, metadata);
+        return new JSyncPayload(data, metadata);
     }
 
     /**
@@ -78,12 +77,12 @@ class JsyncPayload implements Payload
     private final ByteBuffer metadata;
 
     /**
-     * Erstellt ein neues {@link JsyncPayload} Object.
+     * Erstellt ein neues {@link JSyncPayload} Object.
      *
      * @param data {@link ByteBuffer}
      * @param metadata {@link ByteBuffer}
      */
-    private JsyncPayload(final ByteBuffer data, final ByteBuffer metadata)
+    private JSyncPayload(final ByteBuffer data, final ByteBuffer metadata)
     {
         super();
 

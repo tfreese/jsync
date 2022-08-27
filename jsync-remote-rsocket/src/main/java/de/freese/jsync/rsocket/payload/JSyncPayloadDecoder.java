@@ -21,15 +21,14 @@ import io.rsocket.frame.decoder.PayloadDecoder;
  * DefaultPayloadDecoder mit Verwendung des {@link ByteBufferPool}.
  *
  * @author Thomas Freese
- *
  * @deprecated Funktioniert nicht
  */
 @Deprecated
-class JsyncPayloadDecoder implements PayloadDecoder
+class JSyncPayloadDecoder implements PayloadDecoder
 {
     /**
-    *
-    */
+     *
+     */
     private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
 
     /**
@@ -88,9 +87,9 @@ class JsyncPayloadDecoder implements PayloadDecoder
             metadata.put(m.nioBuffer());
             metadata.flip();
 
-            return JsyncPayload.create(data, metadata);
+            return JSyncPayload.create(data, metadata);
         }
 
-        return JsyncPayload.create(data);
+        return JSyncPayload.create(data);
     }
 }

@@ -6,6 +6,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.function.Function;
 import java.util.function.LongConsumer;
+import java.util.function.UnaryOperator;
 
 import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.filter.PathFilter;
@@ -32,7 +33,16 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     /**
      *
      */
-    private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
+    private static final ByteBufferPool BYTEBUFFER_POOL = ByteBufferPool.DEFAULT;
+
+    /**
+     * @return {@link ByteBufferPool}
+     */
+    protected static ByteBufferPool getByteBufferPool()
+    {
+        return BYTEBUFFER_POOL;
+    }
+
     /**
      *
      */
@@ -73,7 +83,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      * @param uri {@link URI}
      * @param tcpClientCustomizer {@link Function}
      */
-    protected void connect(final URI uri, final Function<TcpClient, TcpClient> tcpClientCustomizer)
+    protected void connect(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer)
     {
         if ("rsocket".equals(uri.getScheme()))
         {
@@ -109,7 +119,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      *
      * @return {@link RSocketClient}
      */
-    protected RSocketClient createClientLocal(final URI uri, final Function<TcpClient, TcpClient> tcpClientCustomizer)
+    protected RSocketClient createClientLocal(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer)
     {
         // @formatter:off
         return RSocketBuilders.clientLocal()
@@ -126,7 +136,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      *
      * @return {@link RSocketClient}
      */
-    protected RSocketClient createClientRemote(final URI uri, final Function<TcpClient, TcpClient> tcpClientCustomizer)
+    protected RSocketClient createClientRemote(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer)
     {
         // @formatter:off
         return RSocketBuilders.clientRemote()
@@ -206,7 +216,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
                         getByteBufferPool().free(bufferData);
                     })
             )
-            .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf -> in anderen Thread auslagern sonst knallt es !
+            .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf = in anderen Thread auslagern sonst knallt es !
             .doOnError(th -> getLogger().error(th.getMessage(), th))
             .map(payload -> {
                 ByteBuffer buffer = payload.getData();
@@ -214,14 +224,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
             })
             ;
         // @formatter:on
-    }
-
-    /**
-     * @return {@link ByteBufferPool}
-     */
-    protected ByteBufferPool getByteBufferPool()
-    {
-        return this.byteBufferPool;
     }
 
     /**

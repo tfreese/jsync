@@ -12,7 +12,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import javax.net.ssl.TrustManagerFactory;
 
@@ -39,14 +39,12 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     /**
      *
      */
-    private final List<Function<TcpServer, TcpServer>> tcpServerCustomizers = new ArrayList<>();
+    private final List<UnaryOperator<TcpServer>> tcpServerCustomizers = new ArrayList<>();
 
     /**
-     * @param tcpServerCustomizer {@link Function}
      *
-     * @return {@link RSocketServerRemoteBuilder}
      */
-    public RSocketServerRemoteBuilder addTcpServerCustomizer(final Function<TcpServer, TcpServer> tcpServerCustomizer)
+    public RSocketServerRemoteBuilder addTcpServerCustomizer(final UnaryOperator<TcpServer> tcpServerCustomizer)
     {
         this.tcpServerCustomizers.add(Objects.requireNonNull(tcpServerCustomizer, "tcpServerCustomizer required"));
 
@@ -69,23 +67,6 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
                 .doOnNext(this::startDaemonOnCloseThread)
                 ;
         // @formatter:on
-    }
-
-    /**
-     * @param tcpServer {@link TcpServer}
-     *
-     * @return {@link TcpServer}
-     */
-    protected TcpServer configure(final TcpServer tcpServer)
-    {
-        TcpServer server = tcpServer;
-
-        for (Function<TcpServer, TcpServer> serverCustomizer : this.tcpServerCustomizers)
-        {
-            server = serverCustomizer.apply(server);
-        }
-
-        return server;
     }
 
     /**
@@ -262,6 +243,23 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         addTcpServerCustomizer(tcpServer -> tcpServer.bindAddress(() -> socketAddress));
 
         return this;
+    }
+
+    /**
+     * @param tcpServer {@link TcpServer}
+     *
+     * @return {@link TcpServer}
+     */
+    protected TcpServer configure(final TcpServer tcpServer)
+    {
+        TcpServer server = tcpServer;
+
+        for (UnaryOperator<TcpServer> serverCustomizer : this.tcpServerCustomizers)
+        {
+            server = serverCustomizer.apply(server);
+        }
+
+        return server;
     }
 
     /**

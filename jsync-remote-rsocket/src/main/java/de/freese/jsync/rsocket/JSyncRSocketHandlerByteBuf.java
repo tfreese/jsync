@@ -35,7 +35,7 @@ import reactor.core.publisher.Mono;
  *
  * @author Thomas Freese
  */
-public class JsyncRSocketHandlerByteBuf implements RSocket
+public class JSyncRSocketHandlerByteBuf implements RSocket
 {
     /**
      *
@@ -44,7 +44,7 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsyncRSocketHandlerByteBuf.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketHandlerByteBuf.class);
 
     /**
      *
@@ -80,6 +80,138 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
      *
      */
     private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
+
+    /**
+     * @see io.rsocket.RSocket#requestChannel(org.reactivestreams.Publisher)
+     */
+    @Override
+    public Flux<Payload> requestChannel(final Publisher<Payload> payloads)
+    {
+        Receiver receiver = POOL_RECEIVER.obtain();
+
+        return Flux.from(payloads).switchOnFirst((firstSignal, flux) ->
+        {
+            try
+            {
+                final Payload payload = firstSignal.get();
+                ByteBuf bufferMeta = payload.metadata();
+
+                JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
+                getLogger().debug("read command: {}", command);
+                RSocketUtils.release(payload);
+
+                return switch (command)
+                        {
+                            case TARGET_WRITE_FILE -> writeFile(payload, flux.skip(1), receiver);
+
+                            default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                        };
+            }
+            catch (Exception ex)
+            {
+                getLogger().error(ex.getMessage(), ex);
+
+                return Flux.error(ex);
+            }
+            finally
+            {
+                POOL_RECEIVER.free(receiver);
+            }
+        });
+    }
+
+    /**
+     * @see io.rsocket.RSocket#requestResponse(io.rsocket.Payload)
+     */
+    @Override
+    public Mono<Payload> requestResponse(final Payload payload)
+    {
+        Sender sender = POOL_SENDER.obtain();
+        Receiver receiver = POOL_RECEIVER.obtain();
+
+        try
+        {
+            ByteBuf bufferMeta = payload.metadata();
+
+            JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
+            getLogger().debug("read command: {}", command);
+
+            return switch (command)
+                    {
+                        case CONNECT -> connect();
+                        case DISCONNECT -> disconnect();
+                        case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
+                        case TARGET_DELETE -> delete(payload, receiver);
+                        case TARGET_UPDATE -> update(payload, receiver);
+
+                        default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                    };
+        }
+        catch (Exception ex)
+        {
+            getLogger().error(ex.getMessage(), ex);
+
+            return Mono.error(ex);
+        }
+        finally
+        {
+            RSocketUtils.release(payload);
+
+            POOL_SENDER.free(sender);
+            POOL_RECEIVER.free(receiver);
+        }
+    }
+
+    /**
+     * @see io.rsocket.RSocket#requestStream(io.rsocket.Payload)
+     */
+    @Override
+    public Flux<Payload> requestStream(final Payload payload)
+    {
+        Sender sender = POOL_SENDER.obtain();
+        Receiver receiver = POOL_RECEIVER.obtain();
+
+        try
+        {
+            ByteBuf bufferMeta = payload.metadata();
+
+            JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
+            getLogger().debug("read command: {}", command);
+
+            return switch (command)
+                    {
+                        case SOURCE_CHECKSUM -> checksum(payload, sender);
+                        case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
+                        case SOURCE_READ_FILE -> readFile(payload, sender);
+                        case TARGET_CHECKSUM -> checksum(payload, receiver);
+                        case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
+                        case TARGET_VALIDATE_FILE -> validate(payload, receiver);
+
+                        default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
+                    };
+        }
+        catch (Exception ex)
+        {
+            getLogger().error(ex.getMessage(), ex);
+
+            return Flux.error(ex);
+        }
+        finally
+        {
+            RSocketUtils.release(payload);
+
+            POOL_SENDER.free(sender);
+            POOL_RECEIVER.free(receiver);
+        }
+    }
+
+    /**
+     * @return {@link Serializer}<ByteBuf>
+     */
+    protected Serializer<ByteBuf> getSerializer()
+    {
+        return this.serializer;
+    }
 
     /**
      * Create the checksum.
@@ -224,14 +356,6 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
     }
 
     /**
-     * @return {@link Serializer}<ByteBuf>
-     */
-    protected Serializer<ByteBuf> getSerializer()
-    {
-        return this.serializer;
-    }
-
-    /**
      * Die Daten werden zum Client gesendet.
      *
      * @param payload {@link Payload}
@@ -252,130 +376,6 @@ public class JsyncRSocketHandlerByteBuf implements RSocket
                 .map(DefaultPayload::create)
                 ;
         // @formatter:on
-    }
-
-    /**
-     * @see io.rsocket.RSocket#requestChannel(org.reactivestreams.Publisher)
-     */
-    @Override
-    public Flux<Payload> requestChannel(final Publisher<Payload> payloads)
-    {
-        Receiver receiver = POOL_RECEIVER.obtain();
-
-        return Flux.from(payloads).switchOnFirst((firstSignal, flux) ->
-        {
-            try
-            {
-                final Payload payload = firstSignal.get();
-                ByteBuf bufferMeta = payload.metadata();
-
-                JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
-                getLogger().debug("read command: {}", command);
-                RSocketUtils.release(payload);
-
-                return switch (command)
-                        {
-                            case TARGET_WRITE_FILE -> writeFile(payload, flux.skip(1), receiver);
-
-                            default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
-                        };
-            }
-            catch (Exception ex)
-            {
-                getLogger().error(ex.getMessage(), ex);
-
-                return Flux.error(ex);
-            }
-            finally
-            {
-                POOL_RECEIVER.free(receiver);
-            }
-        });
-    }
-
-    /**
-     * @see io.rsocket.RSocket#requestResponse(io.rsocket.Payload)
-     */
-    @Override
-    public Mono<Payload> requestResponse(final Payload payload)
-    {
-        Sender sender = POOL_SENDER.obtain();
-        Receiver receiver = POOL_RECEIVER.obtain();
-
-        try
-        {
-            ByteBuf bufferMeta = payload.metadata();
-
-            JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
-            getLogger().debug("read command: {}", command);
-
-            return switch (command)
-                    {
-                        case CONNECT -> connect();
-                        case DISCONNECT -> disconnect();
-                        case TARGET_CREATE_DIRECTORY -> createDirectory(payload, receiver);
-                        case TARGET_DELETE -> delete(payload, receiver);
-                        case TARGET_UPDATE -> update(payload, receiver);
-
-                        default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
-                    };
-        }
-        catch (Exception ex)
-        {
-            getLogger().error(ex.getMessage(), ex);
-
-            return Mono.error(ex);
-        }
-        finally
-        {
-            RSocketUtils.release(payload);
-
-            POOL_SENDER.free(sender);
-            POOL_RECEIVER.free(receiver);
-        }
-    }
-
-    /**
-     * @see io.rsocket.RSocket#requestStream(io.rsocket.Payload)
-     */
-    @Override
-    public Flux<Payload> requestStream(final Payload payload)
-    {
-        Sender sender = POOL_SENDER.obtain();
-        Receiver receiver = POOL_RECEIVER.obtain();
-
-        try
-        {
-            ByteBuf bufferMeta = payload.metadata();
-
-            JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
-            getLogger().debug("read command: {}", command);
-
-            return switch (command)
-                    {
-                        case SOURCE_CHECKSUM -> checksum(payload, sender);
-                        case SOURCE_CREATE_SYNC_ITEMS -> generateSyncItems(payload, sender);
-                        case SOURCE_READ_FILE -> readFile(payload, sender);
-                        case TARGET_CHECKSUM -> checksum(payload, receiver);
-                        case TARGET_CREATE_SYNC_ITEMS -> generateSyncItems(payload, receiver);
-                        case TARGET_VALIDATE_FILE -> validate(payload, receiver);
-
-                        default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
-                    };
-        }
-        catch (Exception ex)
-        {
-            getLogger().error(ex.getMessage(), ex);
-
-            return Flux.error(ex);
-        }
-        finally
-        {
-            RSocketUtils.release(payload);
-
-            POOL_SENDER.free(sender);
-            POOL_RECEIVER.free(receiver);
-        }
     }
 
     /**

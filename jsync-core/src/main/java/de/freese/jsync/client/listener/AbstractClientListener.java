@@ -41,10 +41,10 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String checksumProgressMessage(final Options options, final SyncItem syncItem, final long bytesRead)
     {
-        float percent = JSyncUtils.getPercent(bytesRead, syncItem.getSize());
+        double percent = JSyncUtils.getPercent(bytesRead, syncItem.getSize());
         String message = null;
 
-        if ((bytesRead == 0) || Float.compare(percent % 10, 0F) == 0)
+        if ((bytesRead == 0) || Double.compare(percent % 10, 0D) == 0)
         {
             message = String.format("checksum %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(bytesRead), percent);
         }
@@ -76,10 +76,10 @@ public abstract class AbstractClientListener implements ClientListener
      */
     protected String copyProgressMessage(final Options options, final SyncItem syncItem, final long bytesTransferred)
     {
-        float percent = JSyncUtils.getPercent(bytesTransferred, syncItem.getSize());
+        double percent = JSyncUtils.getPercent(bytesTransferred, syncItem.getSize());
         String message = null;
 
-        if ((bytesTransferred == 0) || Float.compare(percent % 10, 0F) == 0)
+        if ((bytesTransferred == 0) || Double.compare(percent % 10, 0D) == 0)
         {
             message = String.format("copy %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(bytesTransferred), percent);
         }

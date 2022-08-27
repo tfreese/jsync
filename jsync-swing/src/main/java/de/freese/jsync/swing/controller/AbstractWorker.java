@@ -79,7 +79,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
 
         controller.createNewClient(this.options, senderUri, receiverUri);
 
-        // this.parallel = isDetermineParallel(senderUri, receiverUri);
+        // this.parallel = canRunParallel(senderUri, receiverUri);
         this.parallel = this.options.isParallel();
     }
 
@@ -93,9 +93,9 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      *
      * @return boolean
      */
-    boolean isDetermineParallel(final URI senderUri, final URI receiverUri)
+    boolean canRunParallel(final URI senderUri, final URI receiverUri)
     {
-        boolean parallel = false;
+        boolean canRunParallel = false;
 
         if ("file".equals(senderUri.getScheme()) && "file".equals(receiverUri.getScheme()))
         {
@@ -115,7 +115,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
 
                 if (!fileStoreSender.name().equals(fileStoreReceiver.name()))
                 {
-                    parallel = true;
+                    canRunParallel = true;
                 }
             }
             catch (Exception ex)
@@ -128,19 +128,19 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
             // Remote
             if (!senderUri.getHost().equals(receiverUri.getHost()))
             {
-                parallel = true;
+                canRunParallel = true;
             }
         }
         else if (!senderUri.getScheme().equals(receiverUri.getScheme()))
         {
             // Local -> Remote
             // Remote -> Lokal
-            parallel = true;
+            canRunParallel = true;
         }
 
-        getLogger().info("Parallelism = {}", parallel);
+        getLogger().info("Parallelism = {}", canRunParallel);
 
-        return parallel;
+        return canRunParallel;
     }
 
     /**

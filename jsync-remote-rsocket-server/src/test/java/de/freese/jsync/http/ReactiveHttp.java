@@ -46,7 +46,7 @@ public class ReactiveHttp
             )
             .doOnBound(server -> LOGGER.info("Server started on port: {}", server.port()))
             .doOnUnbound(server -> LOGGER.info("Server stopped on port: {}", server.port()))
-            //.runOn(new NioEventLoopGroup(3, new JsyncThreadFactory("server-"))) // EpollEventLoopGroup geht nur auf Linux
+            //.runOn(new NioEventLoopGroup(3, new JSyncThreadFactory("server-"))) // EpollEventLoopGroup geht nur auf Linux
             .bindNow()
             ;
         // @formatter:on
@@ -56,7 +56,7 @@ public class ReactiveHttp
             .host("localhost")
             .port(httpServer.port())
             .protocol(HttpProtocol.H2C)
-            //.runOn(new NioEventLoopGroup(3, new JsyncThreadFactory("client-"))) // EpollEventLoopGroup geht nur auf Linux
+            //.runOn(new NioEventLoopGroup(3, new JSyncThreadFactory("client-"))) // EpollEventLoopGroup geht nur auf Linux
             ;
         // @formatter:on
 

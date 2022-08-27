@@ -14,7 +14,7 @@ import de.freese.jsync.nio.server.dispatcher.Dispatcher;
 import de.freese.jsync.nio.server.dispatcher.DispatcherPool;
 import de.freese.jsync.nio.server.handler.IoHandler;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
-import de.freese.jsync.utils.JsyncThreadFactory;
+import de.freese.jsync.utils.JSyncThreadFactory;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,11 +52,19 @@ public final class JSyncNioServer implements Runnable
 
         // server.stop();
 
-        // Thread thread = new Thread(() -> server.start(8888), "rsocket-server");
+        // Thread thread = new Thread(() -> server.start(8888), "nio-server");
         // thread.setDaemon(false);
         // thread.start();
 
         // System.in.read();
+    }
+
+    /**
+     *
+     */
+    private static Logger getLogger()
+    {
+        return LOGGER;
     }
 
     /**
@@ -194,7 +202,7 @@ public final class JSyncNioServer implements Runnable
             // Erzeugen des Acceptors
             this.acceptor = new Acceptor(this.selectorProvider.openSelector(), this.serverSocketChannel, this.dispatcherPool);
 
-            Thread thread = new JsyncThreadFactory(this.name + "-" + this.port + "-acceptor-").newThread(this.acceptor);
+            Thread thread = new JSyncThreadFactory(this.name + "-" + this.port + "-acceptor-").newThread(this.acceptor);
             getLogger().debug("start {}", thread.getName());
             thread.start();
 
@@ -266,13 +274,5 @@ public final class JSyncNioServer implements Runnable
         getLogger().info("'{}' stopped on port: {}", this.name, this.port);
 
         ByteBufferPool.DEFAULT.clear();
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    private Logger getLogger()
-    {
-        return LOGGER;
     }
 }

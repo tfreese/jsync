@@ -11,7 +11,7 @@ import de.freese.jsync.model.JSyncProtocol;
 /**
  * @author Thomas Freese
  */
-public class RemoteRsocketFileSystemProvider implements FileSystemProvider
+public class RemoteRSocketFileSystemProvider implements FileSystemProvider
 {
     /**
      * @see de.freese.jsync.filesystem.FileSystemProvider#createReceiver(java.net.URI)

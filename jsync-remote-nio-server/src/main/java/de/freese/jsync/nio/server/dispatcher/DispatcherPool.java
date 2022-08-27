@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import de.freese.jsync.nio.server.handler.IoHandler;
-import de.freese.jsync.utils.JsyncThreadFactory;
+import de.freese.jsync.utils.JSyncThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,15 +32,15 @@ public class DispatcherPool implements Dispatcher
     /**
      *
      */
-    private ExecutorService executorServiceWorker;
-    /**
-     *
-     */
     private final int numOfDispatcher;
     /**
      *
      */
     private final int numOfWorker;
+    /**
+     *
+     */
+    private ExecutorService executorServiceWorker;
 
     /**
      * Erstellt ein neues {@link DispatcherPool} Object.
@@ -73,30 +73,6 @@ public class DispatcherPool implements Dispatcher
     }
 
     /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return LOGGER;
-    }
-
-    /**
-     * Liefert den nächsten {@link Dispatcher} im Round-Robin Verfahren.<br>
-     *
-     * @return {@link Dispatcher}
-     */
-    private synchronized Dispatcher nextDispatcher()
-    {
-        // Ersten Dispatcher entnehmen.
-        DefaultDispatcher dispatcher = this.dispatchers.poll();
-
-        // Dispatcher wieder hinten dran hängen.
-        this.dispatchers.add(dispatcher);
-
-        return dispatcher;
-    }
-
-    /**
      * @see de.freese.jsync.nio.server.dispatcher.Dispatcher#register(java.nio.channels.SocketChannel)
      */
     @Override
@@ -114,8 +90,8 @@ public class DispatcherPool implements Dispatcher
      */
     public void start(final IoHandler<SelectionKey> ioHandler, final SelectorProvider selectorProvider, final String serverName) throws Exception
     {
-        ThreadFactory threadFactoryDispatcher = new JsyncThreadFactory(serverName + "-dispatcher-");
-        ThreadFactory threadFactoryWorker = new JsyncThreadFactory(serverName + "-worker-");
+        ThreadFactory threadFactoryDispatcher = new JSyncThreadFactory(serverName + "-dispatcher-");
+        ThreadFactory threadFactoryWorker = new JSyncThreadFactory(serverName + "-worker-");
 
         // this.executorServiceWorker = new ThreadPoolExecutor(1, this.numOfWorker, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactoryWorker);
         this.executorServiceWorker = Executors.newFixedThreadPool(this.numOfWorker, threadFactoryWorker);
@@ -139,5 +115,29 @@ public class DispatcherPool implements Dispatcher
     {
         this.dispatchers.forEach(DefaultDispatcher::stop);
         this.executorServiceWorker.shutdown();
+    }
+
+    /**
+     * @return {@link Logger}
+     */
+    protected Logger getLogger()
+    {
+        return LOGGER;
+    }
+
+    /**
+     * Liefert den nächsten {@link Dispatcher} im Round-Robin Verfahren.<br>
+     *
+     * @return {@link Dispatcher}
+     */
+    private synchronized Dispatcher nextDispatcher()
+    {
+        // Ersten Dispatcher entnehmen.
+        DefaultDispatcher dispatcher = this.dispatchers.poll();
+
+        // Dispatcher wieder hinten dran hängen.
+        this.dispatchers.add(dispatcher);
+
+        return dispatcher;
     }
 }

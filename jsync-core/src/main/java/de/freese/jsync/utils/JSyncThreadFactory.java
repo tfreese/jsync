@@ -9,11 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Thomas Freese
  */
-public class JsyncThreadFactory implements ThreadFactory
+public class JSyncThreadFactory implements ThreadFactory
 {
     /**
-    *
-    */
+     *
+     */
     private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
     /**
      *
@@ -25,11 +25,11 @@ public class JsyncThreadFactory implements ThreadFactory
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
     /**
-     * Erstellt ein neues {@link JsyncThreadFactory} Object.
+     * Erstellt ein neues {@link JSyncThreadFactory} Object.
      *
      * @param namePrefix String
      */
-    public JsyncThreadFactory(final String namePrefix)
+    public JSyncThreadFactory(final String namePrefix)
     {
         super();
 
