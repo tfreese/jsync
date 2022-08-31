@@ -145,7 +145,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
 
         getSyncView().doOnCompare(button -> button.setEnabled(true));

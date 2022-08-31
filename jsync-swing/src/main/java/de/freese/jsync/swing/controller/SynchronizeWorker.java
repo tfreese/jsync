@@ -136,7 +136,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
         }
         catch (Exception ex)
         {
-            getLogger().error(null, ex);
+            getLogger().error(ex.getMessage(), ex);
         }
 
         getSyncView().clearTable();

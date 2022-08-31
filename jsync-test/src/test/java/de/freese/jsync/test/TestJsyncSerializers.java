@@ -51,23 +51,22 @@ class TestJsyncSerializers
      *
      */
     @Test
-    void testString()
+    void testException()
     {
         ByteBuffer buffer = BUFFER;
 
-        SERIALIZER.writeTo(buffer, "A");
-        SERIALIZER.writeTo(buffer, "BB");
-        SERIALIZER.writeTo(buffer, "CCC");
+        Exception exception1 = new UnsupportedOperationException("Test Fail");
+        SERIALIZER.writeTo(buffer, exception1, Exception.class);
 
         buffer.flip();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
+        Exception exception2 = SERIALIZER.readFrom(buffer, Exception.class);
 
-        buffer = ByteBuffer.wrap(bytes);
+        assertEquals(UnsupportedOperationException.class, exception2.getClass());
+        assertEquals("Test Fail", exception2.getMessage());
+        assertEquals(exception1.getStackTrace().length, exception2.getStackTrace().length);
 
-        assertEquals("A", SERIALIZER.readFrom(buffer, String.class));
-        assertEquals("BB", SERIALIZER.readFrom(buffer, String.class));
-        assertEquals("CCC", SERIALIZER.readFrom(buffer, String.class));
+        // LoggerFactory.getLogger(getClass()).error(ex.getMessage(), exception1);
+        // LoggerFactory.getLogger(getClass()).error(ex.getMessage(), exception2);
     }
 
     /**
@@ -103,15 +102,35 @@ class TestJsyncSerializers
      *
      */
     @Test
-    void testUser()
+    void testPathFilter()
     {
         ByteBuffer buffer = BUFFER;
 
-        User user1 = new User("TestUserA", 41);
-        User user2 = new User("TestUserB", 42);
+        Set<String> directoryFiltersOrigin = Set.of("a", "b");
+        Set<String> fileFiltersOrigin = Set.of("c", "d");
 
-        SERIALIZER.writeTo(buffer, user1);
-        SERIALIZER.writeTo(buffer, user2);
+        SERIALIZER.writeTo(buffer, new PathFilterEndsWith(directoryFiltersOrigin, fileFiltersOrigin), PathFilterEndsWith.class);
+
+        buffer.flip();
+        PathFilter pathFilter = SERIALIZER.readFrom(buffer, PathFilter.class);
+
+        assertEquals(PathFilterEndsWith.class, pathFilter.getClass());
+        assertEquals(directoryFiltersOrigin, pathFilter.getDirectoryFilter());
+        assertEquals(fileFiltersOrigin, pathFilter.getFileFilter());
+
+    }
+
+    /**
+     *
+     */
+    @Test
+    void testString()
+    {
+        ByteBuffer buffer = BUFFER;
+
+        SERIALIZER.writeTo(buffer, "A");
+        SERIALIZER.writeTo(buffer, "BB");
+        SERIALIZER.writeTo(buffer, "CCC");
 
         buffer.flip();
         byte[] bytes = new byte[buffer.remaining()];
@@ -119,13 +138,9 @@ class TestJsyncSerializers
 
         buffer = ByteBuffer.wrap(bytes);
 
-        user1 = SERIALIZER.readFrom(buffer, User.class);
-        assertEquals("TestUserA", user1.getName());
-        assertEquals(41, user1.getUid());
-
-        user2 = SERIALIZER.readFrom(buffer, User.class);
-        assertEquals("TestUserB", user2.getName());
-        assertEquals(42, user2.getUid());
+        assertEquals("A", SERIALIZER.readFrom(buffer, String.class));
+        assertEquals("BB", SERIALIZER.readFrom(buffer, String.class));
+        assertEquals("CCC", SERIALIZER.readFrom(buffer, String.class));
     }
 
     /**
@@ -194,43 +209,28 @@ class TestJsyncSerializers
      *
      */
     @Test
-    void testException()
+    void testUser()
     {
         ByteBuffer buffer = BUFFER;
 
-        Exception exception1 = new UnsupportedOperationException("Test Fail");
-        SERIALIZER.writeTo(buffer, exception1, Exception.class);
+        User user1 = new User("TestUserA", 41);
+        User user2 = new User("TestUserB", 42);
+
+        SERIALIZER.writeTo(buffer, user1);
+        SERIALIZER.writeTo(buffer, user2);
 
         buffer.flip();
-        Exception exception2 = SERIALIZER.readFrom(buffer, Exception.class);
+        byte[] bytes = new byte[buffer.remaining()];
+        buffer.get(bytes);
 
-        assertEquals(UnsupportedOperationException.class, exception2.getClass());
-        assertEquals("Test Fail", exception2.getMessage());
-        assertEquals(exception1.getStackTrace().length, exception2.getStackTrace().length);
+        buffer = ByteBuffer.wrap(bytes);
 
-        // LoggerFactory.getLogger(getClass()).error(null, exception1);
-        // LoggerFactory.getLogger(getClass()).error(null, exception2);
-    }
+        user1 = SERIALIZER.readFrom(buffer, User.class);
+        assertEquals("TestUserA", user1.getName());
+        assertEquals(41, user1.getUid());
 
-    /**
-     *
-     */
-    @Test
-    void testPathFilter()
-    {
-        ByteBuffer buffer = BUFFER;
-
-        Set<String> directoryFiltersOrigin = Set.of("a", "b");
-        Set<String> fileFiltersOrigin = Set.of("c", "d");
-
-        SERIALIZER.writeTo(buffer, new PathFilterEndsWith(directoryFiltersOrigin, fileFiltersOrigin), PathFilterEndsWith.class);
-
-        buffer.flip();
-        PathFilter pathFilter = SERIALIZER.readFrom(buffer, PathFilter.class);
-
-        assertEquals(PathFilterEndsWith.class, pathFilter.getClass());
-        assertEquals(directoryFiltersOrigin, pathFilter.getDirectoryFilter());
-        assertEquals(fileFiltersOrigin, pathFilter.getFileFilter());
-
+        user2 = SERIALIZER.readFrom(buffer, User.class);
+        assertEquals("TestUserB", user2.getName());
+        assertEquals(42, user2.getUid());
     }
 }
