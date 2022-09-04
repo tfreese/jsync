@@ -8,7 +8,7 @@ import java.util.Objects;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.swing.JsyncContext;
+import de.freese.jsync.swing.JSyncContext;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
@@ -33,7 +33,7 @@ public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPai
      */
     public SyncPairTableModelFileSystem(final EFileSystem fileSystem)
     {
-        super(List.of(JsyncContext.getMessages().getString("jsync.name"), JsyncContext.getMessages().getString("jsync.size")));
+        super(List.of(JSyncContext.getMessages().getString("jsync.name"), JSyncContext.getMessages().getString("jsync.size")));
 
         this.fileSystem = Objects.requireNonNull(fileSystem, "fileSystem required");
     }

@@ -19,9 +19,9 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
     /**
      * Erstellt ein neues {@link SynchronizeWorker} Object.
      *
-     * @param controller {@link JsyncController}
+     * @param controller {@link JSyncController}
      */
-    SynchronizeWorker(final JsyncController controller)
+    SynchronizeWorker(final JSyncController controller)
     {
         super(controller);
 

@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Thomas Freese
  */
-class TestJsyncClient extends AbstractJSyncIoTest
+class TestJSyncClient extends AbstractJSyncIoTest
 {
     /**
      * @author Thomas Freese
@@ -52,6 +52,22 @@ class TestJsyncClient extends AbstractJSyncIoTest
     static void beforeAll() throws Exception
     {
         options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
+    }
+
+    /**
+     * @throws Exception Falls was schiefgeht.
+     */
+    @Test
+    void testLocalToLocal() throws Exception
+    {
+        System.out.println();
+
+        URI senderUri = PATH_QUELLE.toUri();
+        URI receiverUri = PATH_ZIEL.toUri();
+
+        syncDirectories(options, senderUri, receiverUri);
+
+        assertTrue(true);
     }
 
     /**
@@ -97,21 +113,5 @@ class TestJsyncClient extends AbstractJSyncIoTest
         client.syncReceiver(syncPairs, new TestClientListener());
 
         client.disconnectFileSystems();
-    }
-
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
-    @Test
-    void testLocalToLocal() throws Exception
-    {
-        System.out.println();
-
-        URI senderUri = PATH_QUELLE.toUri();
-        URI receiverUri = PATH_ZIEL.toUri();
-
-        syncDirectories(options, senderUri, receiverUri);
-
-        assertTrue(true);
     }
 }

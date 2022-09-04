@@ -22,9 +22,9 @@ public class CompareWorker extends AbstractWorker<Void, Void>
     /**
      * Erstellt ein neues {@link CompareWorker} Object.
      *
-     * @param controller {@link JsyncController}
+     * @param controller {@link JSyncController}
      */
-    CompareWorker(final JsyncController controller)
+    CompareWorker(final JSyncController controller)
     {
         super(controller);
 

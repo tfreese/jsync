@@ -27,7 +27,7 @@ import org.junit.jupiter.api.TestMethodOrder;
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-class TestJsyncSerializers
+class TestJSyncSerializers
 {
     /**
      * 8 kb

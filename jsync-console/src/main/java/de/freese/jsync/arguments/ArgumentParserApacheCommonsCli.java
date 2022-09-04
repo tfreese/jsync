@@ -122,7 +122,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
         // formatter.setWidth(120);
-        // formatter.printHelp("Addressbook\n", getCommandOptions(), true);
+        // formatter.printHelp("JSync\n", getCommandOptions(), true);
 
         StringBuilder footer = new StringBuilder();
         footer.append("\n@Thomas Freese");

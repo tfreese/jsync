@@ -13,7 +13,7 @@ import javax.swing.SwingWorker;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.filesystem.EFileSystem;
-import de.freese.jsync.swing.JsyncContext;
+import de.freese.jsync.swing.JSyncContext;
 import de.freese.jsync.swing.view.SyncView;
 import de.freese.jsync.utils.JSyncUtils;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      */
     protected static ExecutorService getExecutorService()
     {
-        return JsyncContext.getExecutorService();
+        return JSyncContext.getExecutorService();
     }
 
     /**
@@ -42,7 +42,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      */
     protected static String getMessage(final String key)
     {
-        return JsyncContext.getMessages().getString(key);
+        return JSyncContext.getMessages().getString(key);
     }
 
     /**
@@ -52,7 +52,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     /**
      *
      */
-    private final JsyncController controller;
+    private final JSyncController controller;
     /**
      *
      */
@@ -65,9 +65,9 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     /**
      * Erstellt ein neues {@link AbstractWorker} Object.
      *
-     * @param controller {@link JsyncController}
+     * @param controller {@link JSyncController}
      */
-    protected AbstractWorker(final JsyncController controller)
+    protected AbstractWorker(final JSyncController controller)
     {
         super();
 
@@ -152,9 +152,9 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     }
 
     /**
-     * @return {@link JsyncController}
+     * @return {@link JSyncController}
      */
-    protected JsyncController getController()
+    protected JSyncController getController()
     {
         return this.controller;
     }

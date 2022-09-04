@@ -16,7 +16,7 @@ import io.rsocket.SocketAcceptor;
 /**
  * @author Thomas Freese
  */
-public final class JsyncContext
+public final class JSyncContext
 {
     /**
      *
@@ -82,7 +82,7 @@ public final class JsyncContext
     /**
      *
      */
-    public static void startLocalRsocketServer()
+    public static void startLocalRSocketServer()
     {
         if (rsocketServerLocal == null)
         {
@@ -103,7 +103,7 @@ public final class JsyncContext
      */
     static void setExecutorService(final ExecutorService executorService)
     {
-        JsyncContext.executorService = executorService;
+        JSyncContext.executorService = executorService;
     }
 
     /**
@@ -111,7 +111,7 @@ public final class JsyncContext
      */
     static void setMainFrame(final JFrame mainFrame)
     {
-        JsyncContext.mainFrame = mainFrame;
+        JSyncContext.mainFrame = mainFrame;
     }
 
     /**
@@ -119,13 +119,13 @@ public final class JsyncContext
      */
     static void setMessages(final Messages messages)
     {
-        JsyncContext.messages = messages;
+        JSyncContext.messages = messages;
     }
 
     /**
-     * Erstellt ein neues {@link JsyncContext} Object.
+     * Erstellt ein neues {@link JSyncContext} Object.
      */
-    private JsyncContext()
+    private JSyncContext()
     {
         super();
     }

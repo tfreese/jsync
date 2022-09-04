@@ -5,7 +5,7 @@ import java.io.Serial;
 import java.util.List;
 
 import de.freese.jsync.model.SyncPair;
-import de.freese.jsync.swing.JsyncContext;
+import de.freese.jsync.swing.JSyncContext;
 
 /**
  * @author Thomas Freese
@@ -23,7 +23,7 @@ public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair>
      */
     public SyncPairTableModelStatus()
     {
-        super(List.of(JsyncContext.getMessages().getString("jsync.status")));
+        super(List.of(JSyncContext.getMessages().getString("jsync.status")));
     }
 
     /**

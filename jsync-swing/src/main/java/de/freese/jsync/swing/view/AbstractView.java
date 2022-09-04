@@ -5,11 +5,10 @@ import java.awt.Component;
 
 import javax.swing.JFrame;
 
+import de.freese.jsync.swing.JSyncContext;
+import de.freese.jsync.swing.util.SwingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.freese.jsync.swing.JsyncContext;
-import de.freese.jsync.swing.util.SwingUtils;
 
 /**
  * @author Thomas Freese
@@ -39,7 +38,7 @@ public abstract class AbstractView
      */
     protected JFrame getMainFrame()
     {
-        return JsyncContext.getMainFrame();
+        return JSyncContext.getMainFrame();
     }
 
     /**
@@ -49,7 +48,7 @@ public abstract class AbstractView
      */
     protected String getMessage(final String key)
     {
-        return JsyncContext.getMessages().getString(key);
+        return JSyncContext.getMessages().getString(key);
     }
 
     /**

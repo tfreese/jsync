@@ -4,7 +4,6 @@ package de.freese.jsync.rsocket;
 import java.time.Duration;
 
 import io.rsocket.SocketAcceptor;
-import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
 import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.ServerTransport;
@@ -22,12 +21,12 @@ import reactor.util.retry.Retry;
 /**
  * @author Thomas Freese
  */
-public class RsocketServer
+public class RSocketServer
 {
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(RsocketServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RSocketServer.class);
 
     /**
      * @param args String[]
@@ -96,7 +95,7 @@ public class RsocketServer
         // ServerTransport<CloseableChannel> serverTransport = LocalServerTransport.create("alias");
 
         // @formatter:off
-        CloseableChannel rSocketServer = RSocketServer.create()
+        CloseableChannel rSocketServer = io.rsocket.core.RSocketServer.create()
                 .acceptor(socketAcceptor)
                 .resume(resume)
                 .payloadDecoder(PayloadDecoder.DEFAULT)

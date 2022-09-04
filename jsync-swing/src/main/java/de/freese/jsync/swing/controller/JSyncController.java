@@ -6,7 +6,7 @@ import java.net.URI;
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
-import de.freese.jsync.swing.JsyncContext;
+import de.freese.jsync.swing.JSyncContext;
 import de.freese.jsync.swing.util.SwingUtils;
 import de.freese.jsync.swing.view.SyncView;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Thomas Freese
  */
-public class JsyncController
+public class JSyncController
 {
     /**
      *
@@ -65,7 +65,7 @@ public class JsyncController
 
         if ("rsocketLocal".equals(senderUri.getScheme()) || "rsocketLocal".equals(receiverUri.getScheme()))
         {
-            JsyncContext.startLocalRsocketServer();
+            JSyncContext.startLocalRSocketServer();
         }
 
         this.client = new DefaultClient(options, senderUri, receiverUri);
@@ -87,7 +87,7 @@ public class JsyncController
      */
     String getMessage(final String key)
     {
-        return JsyncContext.getMessages().getString(key);
+        return JSyncContext.getMessages().getString(key);
     }
 
     /**

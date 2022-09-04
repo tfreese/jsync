@@ -267,7 +267,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
      */
     protected void startDaemonOnCloseThread(final CloseableChannel channel)
     {
-        String name = "startDaemon-rsocket-" + channel.address().getPort();
+        String name = "startDaemon-rSocket-" + channel.address().getPort();
 
         Thread thread = new Thread(() ->
         {

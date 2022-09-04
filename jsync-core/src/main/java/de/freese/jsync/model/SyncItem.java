@@ -57,7 +57,7 @@ public interface SyncItem
     String getRelativePath();
 
     /**
-     * Verzeichnis: Anzahl der 1st-Level Childs<br>
+     * Verzeichnis: Anzahl der 1st-Level Children<br>
      * Datei: Größe
      *
      * @return long
@@ -108,7 +108,7 @@ public interface SyncItem
     void setPermissions(final Set<PosixFilePermission> permissions);
 
     /**
-     * Verzeichnis: Anzahl der 1st-Level Childs<br>
+     * Verzeichnis: Anzahl der 1st-Level Children<br>
      * Datei: Größe
      *
      * @param size long

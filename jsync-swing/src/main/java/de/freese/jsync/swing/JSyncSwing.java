@@ -14,7 +14,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.FontUIResource;
 
-import de.freese.jsync.swing.controller.JsyncController;
+import de.freese.jsync.swing.controller.JSyncController;
 import de.freese.jsync.swing.view.DefaultSyncView;
 import de.freese.jsync.swing.view.SyncView;
 import org.slf4j.Logger;
@@ -25,6 +25,19 @@ import org.slf4j.LoggerFactory;
  */
 public final class JSyncSwing
 {
+    /**
+     *
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwing.class);
+
+    /**
+     * @return {@link Logger}
+     */
+    public static Logger getLogger()
+    {
+        return LOGGER;
+    }
+
     /**
      * WindowListener zum Beenden.
      *
@@ -40,29 +53,15 @@ public final class JSyncSwing
         {
             getLogger().info("stop");
             JSyncSwing.this.controller.shutdown();
-            JsyncContext.shutdown();
+            JSyncContext.shutdown();
 
             System.exit(0);
         }
     }
-
     /**
      *
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwing.class);
-
-    /**
-     * @return {@link Logger}
-     */
-    public static Logger getLogger()
-    {
-        return LOGGER;
-    }
-
-    /**
-     *
-     */
-    private JsyncController controller;
+    private JSyncController controller;
 
     /**
      * Erstellt ein neues {@link JSyncSwing} Object.
@@ -84,7 +83,7 @@ public final class JSyncSwing
         initUIDefaults();
 
         JFrame frame = new JFrame();
-        frame.setTitle(JsyncContext.getMessages().getString("jsync.title"));
+        frame.setTitle(JSyncContext.getMessages().getString("jsync.title"));
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new MainFrameListener());
         frame.setLayout(new BorderLayout());
@@ -92,7 +91,7 @@ public final class JSyncSwing
         SyncView syncView = new DefaultSyncView();
         syncView.initGUI();
 
-        this.controller = new JsyncController();
+        this.controller = new JSyncController();
         this.controller.init(syncView);
 
         // JLabel label = new JLabel("jSync Swing GUI", SwingConstants.CENTER);

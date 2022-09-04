@@ -28,9 +28,9 @@ import de.freese.jsync.model.serializer.objectserializer.impl.SyncItemSerializer
 import de.freese.jsync.model.serializer.objectserializer.impl.UserSerializer;
 
 /**
- * @author Thomas Freese
- *
  * @param <D> Type of Source/Sink
+ *
+ * @author Thomas Freese
  */
 public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegistry
 {
@@ -119,9 +119,7 @@ public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegi
     {
         ObjectSerializer<T> serializer = getSerializer(type);
 
-        T value = serializer.readFrom(this, this.adapter, source);
-
-        return value;
+        return serializer.readFrom(this, this.adapter, source);
     }
 
     /**

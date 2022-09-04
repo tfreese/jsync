@@ -309,7 +309,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // * @throws Exception Falls was schief geht.
     // */
     // @Test
-    // void testSpringWebflux() throws Exception
+    // void testSpringWebFlux() throws Exception
     // {
     // System.out.println();
     // TimeUnit.MILLISECONDS.sleep(500);
