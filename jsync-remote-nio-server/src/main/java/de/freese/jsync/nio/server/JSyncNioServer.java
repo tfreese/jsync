@@ -220,7 +220,7 @@ public final class JSyncNioServer implements Runnable
      */
     public void setIoHandler(final IoHandler<SelectionKey> ioHandler)
     {
-        this.ioHandler = Objects.requireNonNull(ioHandler, "ioHandler requried");
+        this.ioHandler = Objects.requireNonNull(ioHandler, "ioHandler required");
     }
 
     /**

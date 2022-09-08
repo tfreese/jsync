@@ -271,7 +271,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         // glue.setMinimumSize(new Dimension(230, 1));
         // glue.setPreferredSize(new Dimension(230, 1));
         // glue.setMaximumSize(new Dimension(230, 1));
-        // this.panel.add(glue, new GbcBuilder(1, row).fillHorizontal().weightx(0));
+        // this.panel.add(glue, new GbcBuilder(1, row).fillHorizontal().weightX(0));
         JPanel panelFilter = new JPanel();
         panelFilter.setLayout(new GridBagLayout());
         panelFilter.setBorder(BorderFactory.createTitledBorder(getMessage("jsync.filter")));
@@ -287,7 +287,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         panelFilter.setMinimumSize(new Dimension(230, 160));
         panelFilter.setPreferredSize(new Dimension(230, 160));
         panelFilter.setMaximumSize(new Dimension(230, 160));
-        this.panel.add(panelFilter, new GbcBuilder(1, row).fillBoth().gridheight(2).weightx(0).weighty(0));
+        this.panel.add(panelFilter, new GbcBuilder(1, row).fillBoth().gridHeight(2).weightX(0).weightY(0));
 
         // Show
         this.showView.initGUI(this.tableFacade);
@@ -328,7 +328,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         JScrollPane scrollPaneStatus = new JScrollPane(tableStatus);
         scrollPaneStatus.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        this.panel.add(scrollPaneStatus, new GbcBuilder(1, row).fillBoth().weightx(0D));
+        this.panel.add(scrollPaneStatus, new GbcBuilder(1, row).fillBoth().weightX(0D));
 
         // Tabelle Receiver
         JTable tableReceiver = this.tableFacade.getTableReceiver();
@@ -365,7 +365,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.progressBarReceiver.setStringPainted(true);
 
         this.panel.add(this.progressBarSender, new GbcBuilder(0, row).fillHorizontal());
-        this.panel.add(this.progressBarFiles, new GbcBuilder(1, row).fillHorizontal().weightx(0D));
+        this.panel.add(this.progressBarFiles, new GbcBuilder(1, row).fillHorizontal().weightX(0D));
         this.panel.add(this.progressBarReceiver, new GbcBuilder(2, row).fillHorizontal());
 
         configGui();
@@ -378,7 +378,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void restoreState()
     {
-        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jsyncGuiState");
+        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jSync", "jSyncGuiState");
         Properties properties = new Properties();
 
         try
@@ -421,7 +421,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void saveState()
     {
-        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jsyncGuiState");
+        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jSync", "jSyncGuiState");
 
         Properties properties = new Properties();
         properties.setProperty("sender.textfieldHostPort", getTextFieldHostPort(EFileSystem.SENDER).getText());

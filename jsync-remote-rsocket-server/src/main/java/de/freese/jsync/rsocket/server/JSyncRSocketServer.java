@@ -49,7 +49,7 @@ public final class JSyncRSocketServer
 
         // server.stop();
 
-        // Thread thread = new Thread(() -> server.start(8888), "rsocket-server");
+        // Thread thread = new Thread(() -> server.start(8888), "rSocket-server");
         // thread.setDaemon(false);
         // thread.start();
 
@@ -66,7 +66,7 @@ public final class JSyncRSocketServer
      */
     public void start(final int port)
     {
-        getLogger().info("starting jsync-rsocket server on port: {}", port);
+        getLogger().info("starting jSync-rSocket server on port: {}", port);
 
         // https://netty.io/wiki/reference-counted-objects.html
         // io.netty.util.ResourceLeakDetector
@@ -102,7 +102,7 @@ public final class JSyncRSocketServer
      */
     public void stop()
     {
-        getLogger().info("stopping jsync-rsocket server");
+        getLogger().info("stopping jSync-rSocket server");
 
         this.server.dispose();
 

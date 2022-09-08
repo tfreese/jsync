@@ -123,7 +123,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     {
         // @formatter:off
         return RSocketBuilders.clientLocal()
-                .name("jsync")
+                .name("jSync")
                 .logger(getLogger())
                 .build()
                 ;

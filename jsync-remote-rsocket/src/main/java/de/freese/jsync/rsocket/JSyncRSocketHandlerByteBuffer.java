@@ -441,6 +441,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
                 ;
         // @formatter:on
 
-        // return Flux.concat(response, Mono.just(JsyncPayload.create("TRANSFER COMPLETED"))).onErrorReturn(JsyncPayload.create("FAILED"));
+        // return Flux.concat(response, Mono.just(JSyncPayload.create("TRANSFER COMPLETED"))).onErrorReturn(JSyncPayload.create("FAILED"));
     }
 }

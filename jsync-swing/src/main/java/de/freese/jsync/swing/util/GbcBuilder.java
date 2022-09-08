@@ -23,20 +23,17 @@ public class GbcBuilder extends GridBagConstraints
      * Defaults:
      * <ul>
      * <li>fill = NONE</li>
-     * <li>weightx = 0.0D</li>
-     * <li>weighty = 0.0D</li>
+     * <li>weightX = 0.0D</li>
+     * <li>weightY = 0.0D</li>
      * <li>insets = new Insets(5, 5, 5, 5)</li>
      * </ul>
-     *
-     * @param gridx int
-     * @param gridy int
      */
-    public GbcBuilder(final int gridx, final int gridy)
+    public GbcBuilder(final int gridX, final int gridY)
     {
         super();
 
-        this.gridx = gridx;
-        this.gridy = gridy;
+        this.gridx = gridX;
+        this.gridy = gridY;
 
         fillNone();
         insets(2, 2, 2, 2);
@@ -115,8 +112,8 @@ public class GbcBuilder extends GridBagConstraints
     /**
      * Defaults:
      * <ul>
-     * <li>weightx = 1.0D</li>
-     * <li>weighty = 1.0D</li>
+     * <li>weightX = 1.0D</li>
+     * <li>weightY = 1.0D</li>
      * </ul>
      *
      * @return {@link GbcBuilder}
@@ -125,8 +122,8 @@ public class GbcBuilder extends GridBagConstraints
     {
         this.fill = BOTH;
 
-        weightx(1.0D);
-        weighty(1.0D);
+        weightX(1.0D);
+        weightY(1.0D);
 
         return this;
     }
@@ -134,8 +131,8 @@ public class GbcBuilder extends GridBagConstraints
     /**
      * Defaults:
      * <ul>
-     * <li>weightx = 1.0D</li>
-     * <li>weighty = 0.0D</li>
+     * <li>weightX = 1.0D</li>
+     * <li>weightY = 0.0D</li>
      * </ul>
      *
      * @return {@link GbcBuilder}
@@ -144,8 +141,8 @@ public class GbcBuilder extends GridBagConstraints
     {
         this.fill = HORIZONTAL;
 
-        weightx(1.0D);
-        weighty(0.0D);
+        weightX(1.0D);
+        weightY(0.0D);
 
         return this;
     }
@@ -153,8 +150,8 @@ public class GbcBuilder extends GridBagConstraints
     /**
      * Defaults:
      * <ul>
-     * <li>weightx = 0.0D</li>
-     * <li>weighty = 0.0D</li>
+     * <li>weightX = 0.0D</li>
+     * <li>weightY = 0.0D</li>
      * </ul>
      *
      * @return {@link GbcBuilder}
@@ -163,8 +160,8 @@ public class GbcBuilder extends GridBagConstraints
     {
         this.fill = NONE;
 
-        weightx(0.0D);
-        weighty(0.0D);
+        weightX(0.0D);
+        weightY(0.0D);
 
         return this;
     }
@@ -172,8 +169,8 @@ public class GbcBuilder extends GridBagConstraints
     /**
      * Defaults:
      * <ul>
-     * <li>weightx = 0.0D</li>
-     * <li>weighty = 1.0D</li>
+     * <li>weightX = 0.0D</li>
+     * <li>weightY = 1.0D</li>
      * </ul>
      *
      * @return {@link GbcBuilder}
@@ -182,39 +179,33 @@ public class GbcBuilder extends GridBagConstraints
     {
         this.fill = VERTICAL;
 
-        weightx(0.0D);
-        weighty(1.0D);
+        weightX(0.0D);
+        weightY(1.0D);
 
         return this;
     }
 
     /**
-     * @param gridheight int
-     *
      * @return {@link GbcBuilder}
      */
-    public GbcBuilder gridheight(final int gridheight)
+    public GbcBuilder gridHeight(final int gridHeight)
     {
-        this.gridheight = gridheight;
+        this.gridheight = gridHeight;
 
         return this;
     }
 
     /**
-     * @param gridwidth int
-     *
      * @return {@link GbcBuilder}
      */
-    public GbcBuilder gridwidth(final int gridwidth)
+    public GbcBuilder gridWidth(final int gridWidth)
     {
-        this.gridwidth = gridwidth;
+        this.gridwidth = gridWidth;
 
         return this;
     }
 
     /**
-     * @param insets {@link Insets}
-     *
      * @return {@link GbcBuilder}
      */
     public GbcBuilder insets(final Insets insets)
@@ -225,11 +216,6 @@ public class GbcBuilder extends GridBagConstraints
     }
 
     /**
-     * @param top int
-     * @param left int
-     * @param bottom int
-     * @param right int
-     *
      * @return {@link GbcBuilder}
      */
     public GbcBuilder insets(final int top, final int left, final int bottom, final int right)
@@ -240,25 +226,21 @@ public class GbcBuilder extends GridBagConstraints
     }
 
     /**
-     * @param weightx double
-     *
      * @return {@link GbcBuilder}
      */
-    public GbcBuilder weightx(final double weightx)
+    public GbcBuilder weightX(final double weightX)
     {
-        this.weightx = weightx;
+        this.weightx = weightX;
 
         return this;
     }
 
     /**
-     * @param weighty double
-     *
      * @return {@link GbcBuilder}
      */
-    public GbcBuilder weighty(final double weighty)
+    public GbcBuilder weightY(final double weightY)
     {
-        this.weighty = weighty;
+        this.weighty = weightY;
 
         return this;
     }

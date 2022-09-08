@@ -19,8 +19,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 /**
- * Konsolen-Anwendung für jsync.<br>
- *
  * @author Thomas Freese
  */
 public final class JSyncConsole

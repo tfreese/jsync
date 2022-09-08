@@ -145,7 +145,7 @@ public class ConfigView extends AbstractView
 
         this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallel"), false);
         this.checkBoxParallelism.setName(panelOptions.getName() + ".parallel");
-        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 2).gridwidth(2).anchorCenter());
+        panelOptions.add(this.checkBoxParallelism, new GbcBuilder(0, 2).gridWidth(2).anchorCenter());
 
         this.panel.add(panelOptions, new GbcBuilder(1, 0));
 

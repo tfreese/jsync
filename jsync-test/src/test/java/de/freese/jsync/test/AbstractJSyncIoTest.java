@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 public abstract class AbstractJSyncIoTest
 {
     /**
-     * Paths.get(System.getProperty("java.io.tmpdir"), "jsync")<br>
+     * Paths.get(System.getProperty("java.io.tmpdir"), "jSync")<br>
      * Paths.get(System.getProperty("user.dir"), "target")
      */
     private static final Path PATH_BASE = Paths.get(System.getProperty("java.io.tmpdir"), "java");

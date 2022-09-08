@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 
 /**
  * Abstraktion der NIO-Kommunikation mittels Frames.<br>
- * Siehe <a href="https://github.com/rsocket/rsocket/blob/master/Protocol.md">rsocket-Protocol</a>
+ * Siehe <a href="https://github.com/rsocket/rsocket/blob/master/Protocol.md">rSocket-Protocol</a>
  *
  * @author Thomas Freese
  */

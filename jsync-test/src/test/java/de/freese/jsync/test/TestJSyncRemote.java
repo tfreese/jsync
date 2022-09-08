@@ -175,7 +175,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // {
     // if (!CLOSEABLES.containsKey("netty"))
     // {
-    // JsyncNettyServer server = new JsyncNettyServer();
+    // JSyncNettyServer server = new JSyncNettyServer();
     // server.start(8002, 2, 4);
     // CLOSEABLES.put("netty", () -> server.stop());
     // }
@@ -188,11 +188,11 @@ class TestJSyncRemote extends AbstractJSyncIoTest
      */
     private void startServerRSocket(final int port) throws Exception
     {
-        if (!CLOSEABLES.containsKey("rsocket"))
+        if (!CLOSEABLES.containsKey("rSocket"))
         {
             JSyncRSocketServer server = new JSyncRSocketServer();
             server.start(port);
-            CLOSEABLES.put("rsocket", server::stop);
+            CLOSEABLES.put("rSocket", server::stop);
 
             // Fehlermeldungen beim Disconnect ausschalten.
             Hooks.resetOnErrorDropped();
@@ -216,7 +216,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     //
     // if (!CLOSEABLES.containsKey("springrest"))
     // {
-    // JsyncRestApplication server = new JsyncRestApplication();
+    // JSyncRestApplication server = new JSyncRestApplication();
     // server.start(new String[]
     // {
     // "--server.port=8003"
@@ -232,7 +232,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // {
     // if (!CLOSEABLES.containsKey("springwebflux"))
     // {
-    // JsyncWebfluxApplication server = new JsyncWebfluxApplication();
+    // JSyncWebfluxApplication server = new JSyncWebfluxApplication();
     // server.start(new String[]
     // {
     // "--server.port=8004"

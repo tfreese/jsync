@@ -33,7 +33,7 @@ public final class JSyncContext
     /**
      *
      */
-    private static Closeable rsocketServerLocal;
+    private static Closeable rSocketServerLocal;
 
     /**
      * @return {@link ExecutorService}
@@ -64,10 +64,10 @@ public final class JSyncContext
      */
     public static void shutdown()
     {
-        if (rsocketServerLocal != null)
+        if (rSocketServerLocal != null)
         {
-            rsocketServerLocal.dispose();
-            rsocketServerLocal = null;
+            rSocketServerLocal.dispose();
+            rSocketServerLocal = null;
         }
 
         JSyncUtils.shutdown(executorService, JSyncSwing.getLogger());
@@ -84,11 +84,11 @@ public final class JSyncContext
      */
     public static void startLocalRSocketServer()
     {
-        if (rsocketServerLocal == null)
+        if (rSocketServerLocal == null)
         {
             // @formatter:off
-            rsocketServerLocal = RSocketBuilders.serverLocal()
-              .name("jsync")
+            rSocketServerLocal = RSocketBuilders.serverLocal()
+              .name("jSync")
               .socketAcceptor(SocketAcceptor.with(new JSyncRSocketHandlerByteBuf()))
               .logger(JSyncSwing.getLogger())
               .build()
