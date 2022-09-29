@@ -15,7 +15,9 @@ import de.freese.jsync.model.User;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
 import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.BooleanSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.DoubleSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.ExceptionSerializer;
+import de.freese.jsync.model.serializer.objectserializer.impl.FloatSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.GroupSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.IntegerSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.JSyncCommandSerializer;
@@ -74,6 +76,12 @@ public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegi
 
         register(long.class, new LongSerializer());
         register(Long.class, getSerializer(long.class));
+
+        register(float.class, new FloatSerializer());
+        register(Float.class, getSerializer(float.class));
+
+        register(double.class, new DoubleSerializer());
+        register(Double.class, getSerializer(double.class));
 
         register(JSyncCommand.class, new JSyncCommandSerializer());
         register(User.class, new UserSerializer());

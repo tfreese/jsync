@@ -3,6 +3,7 @@ package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.ByteBuffer;
@@ -38,18 +39,46 @@ class TestJSyncSerializers
      */
     private static final Serializer<ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
-    /**
-     *
-     */
     @BeforeEach
     void beforeEach()
     {
         BUFFER.clear();
     }
 
-    /**
-     *
-     */
+    @Test
+    void testBoolean()
+    {
+        ByteBuffer buffer = BUFFER;
+
+        SERIALIZER.writeTo(buffer, null, Boolean.class);
+        SERIALIZER.writeTo(buffer, true);
+        SERIALIZER.writeTo(buffer, false);
+
+        buffer.flip();
+        //        byte[] bytes = new byte[buffer.remaining()];
+        //        buffer.get(bytes);
+        //
+        //        buffer = ByteBuffer.wrap(bytes);
+
+        assertNull(SERIALIZER.readFrom(buffer, Boolean.class));
+        assertEquals(true, SERIALIZER.readFrom(buffer, boolean.class));
+        assertEquals(false, SERIALIZER.readFrom(buffer, boolean.class));
+    }
+
+    @Test
+    void testDouble()
+    {
+        ByteBuffer buffer = BUFFER;
+
+        SERIALIZER.writeTo(buffer, null, Double.class);
+        SERIALIZER.writeTo(buffer, 123.123D);
+
+        buffer.flip();
+
+        assertNull(SERIALIZER.readFrom(buffer, Double.class));
+        assertEquals(123.123D, SERIALIZER.readFrom(buffer, double.class));
+    }
+
     @Test
     void testException()
     {
@@ -59,19 +88,28 @@ class TestJSyncSerializers
         SERIALIZER.writeTo(buffer, exception1, Exception.class);
 
         buffer.flip();
+
         Exception exception2 = SERIALIZER.readFrom(buffer, Exception.class);
 
         assertEquals(UnsupportedOperationException.class, exception2.getClass());
         assertEquals("Test Fail", exception2.getMessage());
         assertEquals(exception1.getStackTrace().length, exception2.getStackTrace().length);
-
-        // LoggerFactory.getLogger(getClass()).error(ex.getMessage(), exception1);
-        // LoggerFactory.getLogger(getClass()).error(ex.getMessage(), exception2);
     }
 
-    /**
-     *
-     */
+    @Test
+    void testFloat()
+    {
+        ByteBuffer buffer = BUFFER;
+
+        SERIALIZER.writeTo(buffer, null, Float.class);
+        SERIALIZER.writeTo(buffer, 123.123F);
+
+        buffer.flip();
+
+        assertNull(SERIALIZER.readFrom(buffer, Float.class));
+        assertEquals(123.123F, SERIALIZER.readFrom(buffer, float.class));
+    }
+
     @Test
     void testGroup()
     {
@@ -84,10 +122,6 @@ class TestJSyncSerializers
         SERIALIZER.writeTo(buffer, group2);
 
         buffer.flip();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
-
-        buffer = ByteBuffer.wrap(bytes);
 
         group1 = SERIALIZER.readFrom(buffer, Group.class);
         assertEquals("TestGroupA", group1.getName());
@@ -98,9 +132,34 @@ class TestJSyncSerializers
         assertEquals(42, group2.getGid());
     }
 
-    /**
-     *
-     */
+    @Test
+    void testInteger()
+    {
+        ByteBuffer buffer = BUFFER;
+
+        SERIALIZER.writeTo(buffer, null, Integer.class);
+        SERIALIZER.writeTo(buffer, 123);
+
+        buffer.flip();
+
+        assertNull(SERIALIZER.readFrom(buffer, Integer.class));
+        assertEquals(123, SERIALIZER.readFrom(buffer, int.class));
+    }
+
+    @Test
+    void testLong()
+    {
+        ByteBuffer buffer = BUFFER;
+
+        SERIALIZER.writeTo(buffer, null, Long.class);
+        SERIALIZER.writeTo(buffer, 123L);
+
+        buffer.flip();
+
+        assertNull(SERIALIZER.readFrom(buffer, Long.class));
+        assertEquals(123L, SERIALIZER.readFrom(buffer, long.class));
+    }
+
     @Test
     void testPathFilter()
     {
@@ -112,40 +171,30 @@ class TestJSyncSerializers
         SERIALIZER.writeTo(buffer, new PathFilterEndsWith(directoryFiltersOrigin, fileFiltersOrigin), PathFilterEndsWith.class);
 
         buffer.flip();
+
         PathFilter pathFilter = SERIALIZER.readFrom(buffer, PathFilter.class);
 
         assertEquals(PathFilterEndsWith.class, pathFilter.getClass());
         assertEquals(directoryFiltersOrigin, pathFilter.getDirectoryFilter());
         assertEquals(fileFiltersOrigin, pathFilter.getFileFilter());
-
     }
 
-    /**
-     *
-     */
     @Test
     void testString()
     {
         ByteBuffer buffer = BUFFER;
 
-        SERIALIZER.writeTo(buffer, "A");
-        SERIALIZER.writeTo(buffer, "BB");
-        SERIALIZER.writeTo(buffer, "CCC");
+        SERIALIZER.writeTo(buffer, null, String.class);
+        SERIALIZER.writeTo(buffer, "-");
+        SERIALIZER.writeTo(buffer, "###");
 
         buffer.flip();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
 
-        buffer = ByteBuffer.wrap(bytes);
-
-        assertEquals("A", SERIALIZER.readFrom(buffer, String.class));
-        assertEquals("BB", SERIALIZER.readFrom(buffer, String.class));
-        assertEquals("CCC", SERIALIZER.readFrom(buffer, String.class));
+        assertNull(SERIALIZER.readFrom(buffer, String.class));
+        assertEquals("-", SERIALIZER.readFrom(buffer, String.class));
+        assertEquals("###", SERIALIZER.readFrom(buffer, String.class));
     }
 
-    /**
-     *
-     */
     @Test
     void testSyncItem()
     {
@@ -173,10 +222,6 @@ class TestJSyncSerializers
         SERIALIZER.writeTo(buffer, syncItem2);
 
         buffer.flip();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
-
-        buffer = ByteBuffer.wrap(bytes);
 
         syncItem1 = SERIALIZER.readFrom(buffer, SyncItem.class);
         assertEquals("/", syncItem1.getRelativePath());
@@ -205,9 +250,6 @@ class TestJSyncSerializers
         assertEquals(42, syncItem2.getUser().getUid());
     }
 
-    /**
-     *
-     */
     @Test
     void testUser()
     {
@@ -220,10 +262,6 @@ class TestJSyncSerializers
         SERIALIZER.writeTo(buffer, user2);
 
         buffer.flip();
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes);
-
-        buffer = ByteBuffer.wrap(bytes);
 
         user1 = SERIALIZER.readFrom(buffer, User.class);
         assertEquals("TestUserA", user1.getName());

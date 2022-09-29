@@ -4,53 +4,53 @@ package de.freese.jsync.model.serializer.objectserializer.impl;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
-import de.freese.jsync.model.serializer.objectserializer.AbstractObjectSerializer;
+import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 
 /**
  * @author Thomas Freese
  */
-public final class GroupSerializer extends AbstractObjectSerializer<Group>
+public final class GroupSerializer implements ObjectSerializer<Group>
 {
     /**
      * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.SerializerRegistry,
-     *      de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
+     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
     public <D> Group readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
     {
-        if (adapter.readInt(source) == 0)
+        if (adapter.readByte(source) == 0)
         {
             return null;
         }
 
         // gid
-        int gid = adapter.readInt(source);
+        int gid = adapter.readInteger(source);
 
         // name
-        String name = readString(adapter, source, getCharset());
+        String name = adapter.readString(source, getCharset());
 
         return new Group(name, gid);
     }
 
     /**
      * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.SerializerRegistry,
-     *      de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
+     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
     public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Group value)
     {
         if (value == null)
         {
-            adapter.writeInt(sink, 0);
+            adapter.writeByte(sink, (byte) 0);
             return;
         }
 
-        adapter.writeInt(sink, 1);
+        adapter.writeByte(sink, (byte) 1);
 
         // gid
-        adapter.writeInt(sink, value.getGid());
+        adapter.writeInteger(sink, value.getGid());
 
         // name
-        writeString(adapter, sink, value.getName(), getCharset());
+        adapter.writeString(sink, value.getName(), getCharset());
     }
 }

@@ -9,22 +9,22 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
 import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
-import de.freese.jsync.model.serializer.objectserializer.AbstractObjectSerializer;
+import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 
 /**
  * @author Thomas Freese
  */
-public final class SyncItemSerializer extends AbstractObjectSerializer<SyncItem>
+public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
 {
     /**
      * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.SerializerRegistry,
-     *      de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
+     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
     public <D> SyncItem readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
     {
         // relativePath
-        String relativePath = readString(adapter, source, getCharset());
+        String relativePath = adapter.readString(source, getCharset());
 
         SyncItem syncItem = new DefaultSyncItem(relativePath);
 
@@ -38,7 +38,7 @@ public final class SyncItemSerializer extends AbstractObjectSerializer<SyncItem>
         syncItem.setLastModifiedTime(adapter.readLong(source));
 
         // permissions
-        String permissions = readString(adapter, source, getCharset());
+        String permissions = adapter.readString(source, getCharset());
 
         if (permissions != null)
         {
@@ -52,20 +52,20 @@ public final class SyncItemSerializer extends AbstractObjectSerializer<SyncItem>
         syncItem.setUser(registry.getSerializer(User.class).readFrom(registry, adapter, source));
 
         // checksum
-        syncItem.setChecksum(readString(adapter, source, getCharset()));
+        syncItem.setChecksum(adapter.readString(source, getCharset()));
 
         return syncItem;
     }
 
     /**
      * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.SerializerRegistry,
-     *      de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
+     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
     public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final SyncItem value)
     {
         // relativePath
-        writeString(adapter, sink, value.getRelativePath(), getCharset());
+        adapter.writeString(sink, value.getRelativePath(), getCharset());
 
         // is File / Directory
         adapter.writeBoolean(sink, value.isFile());
@@ -77,7 +77,7 @@ public final class SyncItemSerializer extends AbstractObjectSerializer<SyncItem>
         adapter.writeLong(sink, value.getLastModifiedTime());
 
         // permissions
-        writeString(adapter, sink, value.getPermissionsToString(), getCharset());
+        adapter.writeString(sink, value.getPermissionsToString(), getCharset());
 
         // group
         registry.getSerializer(Group.class).writeTo(registry, adapter, sink, value.getGroup());
@@ -86,6 +86,6 @@ public final class SyncItemSerializer extends AbstractObjectSerializer<SyncItem>
         registry.getSerializer(User.class).writeTo(registry, adapter, sink, value.getUser());
 
         // checksum
-        writeString(adapter, sink, value.getChecksum(), getCharset());
+        adapter.writeString(sink, value.getChecksum(), getCharset());
     }
 }

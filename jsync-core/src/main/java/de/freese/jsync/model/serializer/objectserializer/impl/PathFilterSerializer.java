@@ -9,12 +9,12 @@ import de.freese.jsync.filter.PathFilterEndsWith;
 import de.freese.jsync.filter.PathFilterNoOp;
 import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
-import de.freese.jsync.model.serializer.objectserializer.AbstractObjectSerializer;
+import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 
 /**
  * @author Thomas Freese
  */
-public class PathFilterSerializer extends AbstractObjectSerializer<PathFilter>
+public class PathFilterSerializer implements ObjectSerializer<PathFilter>
 {
     /**
      * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.SerializerRegistry,
@@ -23,22 +23,22 @@ public class PathFilterSerializer extends AbstractObjectSerializer<PathFilter>
     @Override
     public <D> PathFilter readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
     {
-        int count = adapter.readInt(source);
+        int count = adapter.readInteger(source);
 
         Set<String> directoryFilters = new HashSet<>();
 
         for (int i = 0; i < count; i++)
         {
-            directoryFilters.add(readString(adapter, source, getCharset()));
+            directoryFilters.add(adapter.readString(source, getCharset()));
         }
 
-        count = adapter.readInt(source);
+        count = adapter.readInteger(source);
 
         Set<String> fileFilters = new HashSet<>();
 
         for (int i = 0; i < count; i++)
         {
-            fileFilters.add(readString(adapter, source, getCharset()));
+            fileFilters.add(adapter.readString(source, getCharset()));
         }
 
         if (directoryFilters.isEmpty() && fileFilters.isEmpty())
@@ -57,11 +57,11 @@ public class PathFilterSerializer extends AbstractObjectSerializer<PathFilter>
     public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final PathFilter value)
     {
         Set<String> filters = value.getDirectoryFilter();
-        adapter.writeInt(sink, filters.size());
-        filters.forEach(filter -> writeString(adapter, sink, filter, getCharset()));
+        adapter.writeInteger(sink, filters.size());
+        filters.forEach(filter -> adapter.writeString(sink, filter, getCharset()));
 
         filters = value.getFileFilter();
-        adapter.writeInt(sink, filters.size());
-        filters.forEach(filter -> writeString(adapter, sink, filter, getCharset()));
+        adapter.writeInteger(sink, filters.size());
+        filters.forEach(filter -> adapter.writeString(sink, filter, getCharset()));
     }
 }

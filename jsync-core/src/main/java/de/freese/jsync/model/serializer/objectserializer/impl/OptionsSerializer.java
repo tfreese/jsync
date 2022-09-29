@@ -5,12 +5,12 @@ import de.freese.jsync.Options;
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
-import de.freese.jsync.model.serializer.objectserializer.AbstractObjectSerializer;
+import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 
 /**
  * @author Thomas Freese
  */
-public final class OptionsSerializer extends AbstractObjectSerializer<Options>
+public final class OptionsSerializer implements ObjectSerializer<Options>
 {
     /**
      * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.SerializerRegistry,
@@ -20,7 +20,7 @@ public final class OptionsSerializer extends AbstractObjectSerializer<Options>
     public <D> Options readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
     {
         // bufferSize
-        // int bufferSize = adapter.readInt(source);
+        // int bufferSize = adapter.readInteger(source);
 
         // checksum
         boolean checksum = adapter.readBoolean(source);
@@ -54,7 +54,7 @@ public final class OptionsSerializer extends AbstractObjectSerializer<Options>
     public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Options value)
     {
         // bufferSize
-        // adapter.writeInt(sink, value.getBufferSize());
+        // adapter.writeInteger(sink, value.getBufferSize());
 
         // checksum
         adapter.writeBoolean(sink, value.isChecksum());

@@ -50,10 +50,10 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readInt(java.lang.Object)
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readInteger(java.lang.Object)
      */
     @Override
-    public int readInt(final ByteBuffer source)
+    public int readInteger(final ByteBuffer source)
     {
         return source.getInt();
     }
@@ -104,10 +104,10 @@ public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
     }
 
     /**
-     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#writeInt(java.lang.Object, int)
+     * @see de.freese.jsync.model.serializer.adapter.DataAdapter#writeInteger(java.lang.Object, int)
      */
     @Override
-    public void writeInt(final ByteBuffer sink, final int value)
+    public void writeInteger(final ByteBuffer sink, final int value)
     {
         sink.putInt(value);
     }

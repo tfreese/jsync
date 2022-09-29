@@ -15,6 +15,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HexFormat;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -35,7 +36,6 @@ public final class JSyncUtils
      * @see Files#walk(Path, FileVisitOption...)
      */
     private static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = {};
-
     /**
      * @see Files#walk(Path, FileVisitOption...)
      */
@@ -43,7 +43,6 @@ public final class JSyncUtils
             {
                     FileVisitOption.FOLLOW_LINKS
             };
-
     /**
      *
      */
@@ -51,7 +50,10 @@ public final class JSyncUtils
             {
                     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
             };
-
+    /**
+     *
+     */
+    private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
     /**
      * @see Files#exists(Path, LinkOption...)
      * @see Files#notExists(Path, LinkOption...)
@@ -63,7 +65,6 @@ public final class JSyncUtils
             {
                     LinkOption.NOFOLLOW_LINKS
             };
-
     /**
      * @see Files#exists(Path, LinkOption...)
      * @see Files#notExists(Path, LinkOption...)
@@ -72,12 +73,10 @@ public final class JSyncUtils
      * @see Files#readAttributes(Path, String, LinkOption...)
      */
     private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = {};
-
     /**
      *
      */
     private static final Pattern PATTERN_FILTER = Pattern.compile("[;,]");
-
     /**
      *
      */
@@ -98,17 +97,17 @@ public final class JSyncUtils
      */
     public static String bytesToHex(final byte[] bytes)
     {
-        //        return HexFormat.of().withUpperCase().formatHex(bytes);
+        return HEX_FORMAT.formatHex(bytes);
 
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-
-        for (byte b : bytes)
-        {
-            sb.append(HEX_CHARS[(b & 0xF0) >>> 4]);
-            sb.append(HEX_CHARS[b & 0x0F]);
-        }
-
-        return sb.toString().toUpperCase();
+        //        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        //
+        //        for (byte b : bytes)
+        //        {
+        //            sb.append(HEX_CHARS[(b & 0xF0) >>> 4]);
+        //            sb.append(HEX_CHARS[b & 0x0F]);
+        //        }
+        //
+        //        return sb.toString().toUpperCase();
     }
 
     /**
@@ -255,27 +254,29 @@ public final class JSyncUtils
      */
     public static byte[] hexToBytes(final CharSequence hexString)
     {
-        if ((hexString.length() % 2) == 1)
-        {
-            throw new IllegalArgumentException("Invalid hexadecimal String supplied.");
-        }
+        return HEX_FORMAT.parseHex(hexString);
 
-        byte[] bytes = new byte[hexString.length() / 2];
-
-        for (int i = 0; i < hexString.length(); i += 2)
-        {
-            int firstDigit = Character.digit(hexString.charAt(i), 16);
-            int secondDigit = Character.digit(hexString.charAt(i + 1), 16);
-
-            if ((firstDigit < 0) || (secondDigit < 0))
-            {
-                throw new IllegalArgumentException("Invalid Hexadecimal Character in: " + hexString);
-            }
-
-            bytes[i / 2] = (byte) ((firstDigit << 4) + secondDigit);
-        }
-
-        return bytes;
+        //        if ((hexString.length() % 2) == 1)
+        //        {
+        //            throw new IllegalArgumentException("Invalid hexadecimal String supplied.");
+        //        }
+        //
+        //        byte[] bytes = new byte[hexString.length() / 2];
+        //
+        //        for (int i = 0; i < hexString.length(); i += 2)
+        //        {
+        //            int firstDigit = Character.digit(hexString.charAt(i), 16);
+        //            int secondDigit = Character.digit(hexString.charAt(i + 1), 16);
+        //
+        //            if ((firstDigit < 0) || (secondDigit < 0))
+        //            {
+        //                throw new IllegalArgumentException("Invalid Hexadecimal Character in: " + hexString);
+        //            }
+        //
+        //            bytes[i / 2] = (byte) ((firstDigit << 4) + secondDigit);
+        //        }
+        //
+        //        return bytes;
     }
 
     /**
