@@ -78,7 +78,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
      *
      */
-    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * @see de.freese.jsync.nio.server.handler.IoHandler#read(java.lang.Object)
@@ -388,7 +388,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
     /**
      * @return {@link Serializer}<ByteBuffer>
      */
-    protected Serializer<ByteBuffer> getSerializer()
+    protected Serializer<ByteBuffer, ByteBuffer> getSerializer()
     {
         return this.serializer;
     }

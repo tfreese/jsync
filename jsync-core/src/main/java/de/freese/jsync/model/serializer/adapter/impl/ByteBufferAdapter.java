@@ -8,7 +8,7 @@ import de.freese.jsync.model.serializer.adapter.DataAdapter;
 /**
  * @author Thomas Freese
  */
-public class ByteBufferAdapter implements DataAdapter<ByteBuffer>
+public class ByteBufferAdapter implements DataAdapter<ByteBuffer, ByteBuffer>
 {
     /**
      * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readByte(java.lang.Object)

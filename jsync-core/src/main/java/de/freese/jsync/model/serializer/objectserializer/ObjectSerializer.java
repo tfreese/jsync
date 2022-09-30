@@ -31,7 +31,7 @@ public interface ObjectSerializer<T>
      *
      * @return Object
      */
-    <D> T readFrom(SerializerRegistry registry, final DataAdapter<D> adapter, D source);
+    <W, R> T readFrom(SerializerRegistry registry, final DataAdapter<W, R> adapter, R source);
 
     /**
      * @param registry {@link SerializerRegistry}
@@ -39,5 +39,5 @@ public interface ObjectSerializer<T>
      * @param sink Object
      * @param value Object
      */
-    <D> void writeTo(SerializerRegistry registry, final DataAdapter<D> adapter, D sink, final T value);
+    <W, R> void writeTo(SerializerRegistry registry, final DataAdapter<W, R> adapter, W sink, final T value);
 }

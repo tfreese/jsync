@@ -21,7 +21,7 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> SyncItem readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> SyncItem readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         // relativePath
         String relativePath = adapter.readString(source, getCharset());
@@ -62,7 +62,7 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final SyncItem value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final SyncItem value)
     {
         // relativePath
         adapter.writeString(sink, value.getRelativePath(), getCharset());

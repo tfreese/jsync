@@ -15,7 +15,7 @@ public final class FloatSerializer implements ObjectSerializer<Float>
      * DataAdapter, Object)
      */
     @Override
-    public <D> Float readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> Float readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         return adapter.readFloatWrapper(source);
     }
@@ -25,7 +25,7 @@ public final class FloatSerializer implements ObjectSerializer<Float>
      * DataAdapter, Object, Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Float value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Float value)
     {
         adapter.writeFloatWrapper(sink, value);
     }

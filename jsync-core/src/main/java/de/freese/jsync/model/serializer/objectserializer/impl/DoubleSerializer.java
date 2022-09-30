@@ -15,7 +15,7 @@ public final class DoubleSerializer implements ObjectSerializer<Double>
      * DataAdapter, Object)
      */
     @Override
-    public <D> Double readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> Double readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         return adapter.readDoubleWrapper(source);
     }
@@ -25,7 +25,7 @@ public final class DoubleSerializer implements ObjectSerializer<Double>
      * DataAdapter, Object, Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Double value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Double value)
     {
         adapter.writeDoubleWrapper(sink, value);
     }

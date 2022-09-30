@@ -15,7 +15,7 @@ public final class StringSerializer implements ObjectSerializer<String>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> String readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> String readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         return adapter.readString(source, getCharset());
     }
@@ -25,7 +25,7 @@ public final class StringSerializer implements ObjectSerializer<String>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final String value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final String value)
     {
         adapter.writeString(sink, value, getCharset());
     }

@@ -16,7 +16,7 @@ public final class GroupSerializer implements ObjectSerializer<Group>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> Group readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> Group readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         if (adapter.readByte(source) == 0)
         {
@@ -37,7 +37,7 @@ public final class GroupSerializer implements ObjectSerializer<Group>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Group value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Group value)
     {
         if (value == null)
         {

@@ -17,7 +17,7 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> Exception readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> Exception readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         String clazzName = adapter.readString(source, getCharset());
         String message = adapter.readString(source, getCharset());
@@ -56,7 +56,7 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Exception value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Exception value)
     {
         adapter.writeString(sink, value.getClass().getName(), getCharset());
         adapter.writeString(sink, value.getMessage(), getCharset());

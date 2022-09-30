@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
 /**
  * @author Thomas Freese
  */
-public class ByteBufAdapter implements DataAdapter<ByteBuf>
+public class ByteBufAdapter implements DataAdapter<ByteBuf, ByteBuf>
 {
     /**
      * @see de.freese.jsync.model.serializer.adapter.DataAdapter#readByte(java.lang.Object)

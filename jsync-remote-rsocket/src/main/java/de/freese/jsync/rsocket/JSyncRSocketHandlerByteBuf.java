@@ -79,7 +79,7 @@ public class JSyncRSocketHandlerByteBuf implements RSocket
     /**
      *
      */
-    private final Serializer<ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
+    private final Serializer<ByteBuf, ByteBuf> serializer = DefaultSerializer.of(new ByteBufAdapter());
 
     /**
      * @see io.rsocket.RSocket#requestChannel(org.reactivestreams.Publisher)
@@ -208,7 +208,7 @@ public class JSyncRSocketHandlerByteBuf implements RSocket
     /**
      * @return {@link Serializer}<ByteBuf>
      */
-    protected Serializer<ByteBuf> getSerializer()
+    protected Serializer<ByteBuf, ByteBuf> getSerializer()
     {
         return this.serializer;
     }

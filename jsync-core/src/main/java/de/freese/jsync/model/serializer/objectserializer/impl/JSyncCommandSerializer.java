@@ -16,7 +16,7 @@ public final class JSyncCommandSerializer implements ObjectSerializer<JSyncComma
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> JSyncCommand readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> JSyncCommand readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         String name = adapter.readString(source, getCharset());
 
@@ -33,7 +33,7 @@ public final class JSyncCommandSerializer implements ObjectSerializer<JSyncComma
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final JSyncCommand value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final JSyncCommand value)
     {
         adapter.writeString(sink, value.name(), getCharset());
     }

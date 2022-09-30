@@ -15,7 +15,7 @@ public final class IntegerSerializer implements ObjectSerializer<Integer>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> Integer readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> Integer readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         return adapter.readIntegerWrapper(source);
     }
@@ -25,7 +25,7 @@ public final class IntegerSerializer implements ObjectSerializer<Integer>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Integer value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Integer value)
     {
         adapter.writeIntegerWrapper(sink, value);
     }

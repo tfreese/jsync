@@ -1,6 +1,9 @@
 // Created: 24.09.2020
 package de.freese.jsync.model.serializer;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -13,6 +16,8 @@ import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
+import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
+import de.freese.jsync.model.serializer.adapter.impl.InputOutputStreamAdapter;
 import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.BooleanSerializer;
 import de.freese.jsync.model.serializer.objectserializer.impl.DoubleSerializer;
@@ -30,26 +35,32 @@ import de.freese.jsync.model.serializer.objectserializer.impl.SyncItemSerializer
 import de.freese.jsync.model.serializer.objectserializer.impl.UserSerializer;
 
 /**
- * @param <D> Type of Source/Sink
+ * @param <W> Type of Sink
+ * @param <R> Type of Source
  *
  * @author Thomas Freese
  */
-public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegistry
+public final class DefaultSerializer<W, R> implements Serializer<W, R>, SerializerRegistry
 {
-    /**
-     * @param adapter {@link DataAdapter}
-     *
-     * @return {@link Serializer}
-     */
-    public static <D> Serializer<D> of(final DataAdapter<D> adapter)
+    public static <W, R> Serializer<W, R> of(final DataAdapter<W, R> adapter)
     {
         return new DefaultSerializer<>(adapter);
+    }
+
+    public static Serializer<ByteBuffer, ByteBuffer> ofByteBuffer()
+    {
+        return of(new ByteBufferAdapter());
+    }
+
+    public static Serializer<OutputStream, InputStream> ofInputOutputStream()
+    {
+        return of(new InputOutputStreamAdapter());
     }
 
     /**
      *
      */
-    private final DataAdapter<D> adapter;
+    private final DataAdapter<W, R> adapter;
     /**
      *
      */
@@ -60,7 +71,7 @@ public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegi
      *
      * @param adapter {@link DataAdapter}
      */
-    private DefaultSerializer(final DataAdapter<D> adapter)
+    private DefaultSerializer(final DataAdapter<W, R> adapter)
     {
         super();
 
@@ -123,7 +134,7 @@ public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegi
      * @see de.freese.jsync.model.serializer.Serializer#readFrom(java.lang.Object, java.lang.Class)
      */
     @Override
-    public <T> T readFrom(final D source, final Class<T> type)
+    public <T> T readFrom(final R source, final Class<T> type)
     {
         ObjectSerializer<T> serializer = getSerializer(type);
 
@@ -143,7 +154,7 @@ public final class DefaultSerializer<D> implements Serializer<D>, SerializerRegi
      * @see de.freese.jsync.model.serializer.Serializer#writeTo(java.lang.Object, java.lang.Object, java.lang.Class)
      */
     @Override
-    public <T> void writeTo(final D sink, final T value, final Class<T> type)
+    public <T> void writeTo(final W sink, final T value, final Class<T> type)
     {
         ObjectSerializer<T> serializer = getSerializer(type);
 

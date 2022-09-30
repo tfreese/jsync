@@ -43,7 +43,7 @@ class TestJSyncClient extends AbstractJSyncIoTest
     /**
      *
      */
-    private static Options options = null;
+    private static Options options;
 
     /**
      * @throws Exception Falls was schiefgeht.

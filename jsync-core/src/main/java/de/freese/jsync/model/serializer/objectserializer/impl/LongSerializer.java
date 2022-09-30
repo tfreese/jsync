@@ -15,7 +15,7 @@ public final class LongSerializer implements ObjectSerializer<Long>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> Long readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> Long readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         return adapter.readLongWrapper(source);
     }
@@ -25,7 +25,7 @@ public final class LongSerializer implements ObjectSerializer<Long>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Long value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Long value)
     {
         adapter.writeLongWrapper(sink, value);
     }

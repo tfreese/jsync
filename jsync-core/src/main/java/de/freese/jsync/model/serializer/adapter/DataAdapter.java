@@ -4,12 +4,12 @@ package de.freese.jsync.model.serializer.adapter;
 /**
  * Interface für eine Datenquelle/-senke.<br>
  *
+ * @param <W> Type of Sink
+ * @param <R> Type of Source
+ *
  * @author Thomas Freese
- *
- * @param <D> Type of Source/Sink
- *
  * @see "org.springframework.core.io.buffer.DataBuffer"
  */
-public interface DataAdapter<D> extends DataAdapterRead<D>, DataAdapterWrite<D>
+public interface DataAdapter<W, R> extends DataAdapterWrite<W>, DataAdapterRead<R>
 {
 }

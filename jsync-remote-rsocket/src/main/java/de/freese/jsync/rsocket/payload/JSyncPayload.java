@@ -29,7 +29,7 @@ class JSyncPayload implements Payload
     /**
      *
      */
-    private static final Serializer<ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
+    private static final Serializer<ByteBuffer, ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
      * @param data {@link ByteBuffer}

@@ -46,7 +46,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     /**
      *
      */
-    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
     /**
      *
      */
@@ -237,7 +237,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
     /**
      * @return {@link Serializer}
      */
-    protected Serializer<ByteBuffer> getSerializer()
+    protected Serializer<ByteBuffer, ByteBuffer> getSerializer()
     {
         return this.serializer;
     }

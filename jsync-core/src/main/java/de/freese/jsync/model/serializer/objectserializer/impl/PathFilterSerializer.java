@@ -21,7 +21,7 @@ public class PathFilterSerializer implements ObjectSerializer<PathFilter>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> PathFilter readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> PathFilter readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         int count = adapter.readInteger(source);
 
@@ -54,7 +54,7 @@ public class PathFilterSerializer implements ObjectSerializer<PathFilter>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final PathFilter value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final PathFilter value)
     {
         Set<String> filters = value.getDirectoryFilter();
         adapter.writeInteger(sink, filters.size());

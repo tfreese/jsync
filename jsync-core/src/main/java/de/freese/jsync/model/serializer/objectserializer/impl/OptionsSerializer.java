@@ -17,7 +17,7 @@ public final class OptionsSerializer implements ObjectSerializer<Options>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
      */
     @Override
-    public <D> Options readFrom(final SerializerRegistry registry, final DataAdapter<D> adapter, final D source)
+    public <W, R> Options readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         // bufferSize
         // int bufferSize = adapter.readInteger(source);
@@ -51,7 +51,7 @@ public final class OptionsSerializer implements ObjectSerializer<Options>
      * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
      */
     @Override
-    public <D> void writeTo(final SerializerRegistry registry, final DataAdapter<D> adapter, final D sink, final Options value)
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Options value)
     {
         // bufferSize
         // adapter.writeInteger(sink, value.getBufferSize());

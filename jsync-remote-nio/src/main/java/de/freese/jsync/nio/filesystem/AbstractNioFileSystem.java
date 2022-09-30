@@ -27,15 +27,15 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
     /**
      *
      */
-    private SocketChannelPool channelPool;
-    /**
-     *
-     */
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
     /**
      *
      */
-    private final Serializer<ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    /**
+     *
+     */
+    private SocketChannelPool channelPool;
 
     /**
      * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
@@ -244,7 +244,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
     /**
      * @return {@link Serializer}<ByteBuffer>
      */
-    protected Serializer<ByteBuffer> getSerializer()
+    protected Serializer<ByteBuffer, ByteBuffer> getSerializer()
     {
         return this.serializer;
     }
