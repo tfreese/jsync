@@ -31,10 +31,7 @@ public class InputOutputStreamAdapter implements DataAdapter<OutputStream, Input
     {
         try
         {
-            byte[] bytes = new byte[length];
-            source.read(bytes);
-
-            return bytes;
+            return source.readNBytes(length);
         }
         catch (IOException ex)
         {
@@ -83,9 +80,9 @@ public class InputOutputStreamAdapter implements DataAdapter<OutputStream, Input
                 + ((long) (bytes[2] & 0xFF) << 40)
                 + ((long) (bytes[3] & 0xFF) << 32)
                 + ((long) (bytes[4] & 0xFF) << 24)
-                + ((bytes[5] & 0xFF) << 16)
-                + ((bytes[6] & 0xFF) << 8)
-                + (bytes[7] & 0xFF)
+                + ((long) (bytes[5] & 0xFF) << 16)
+                + ((long) (bytes[6] & 0xFF) << 8)
+                + ((long) bytes[7] & 0xFF)
                 ;
         // @formatter:on
     }
