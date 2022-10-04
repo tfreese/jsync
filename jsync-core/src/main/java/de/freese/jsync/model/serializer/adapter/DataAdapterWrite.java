@@ -12,10 +12,6 @@ import java.nio.charset.Charset;
  */
 public interface DataAdapterWrite<W>
 {
-    /**
-     * @param sink Object
-     * @param value boolean
-     */
     default void writeBoolean(final W sink, final boolean value)
     {
         writeByte(sink, (byte) (value ? 1 : 0));
@@ -34,23 +30,16 @@ public interface DataAdapterWrite<W>
         }
     }
 
-    /**
-     * @param sink Object
-     * @param value byte
-     */
     void writeByte(W sink, byte value);
 
-    /**
-     * @param sink Object
-     * @param bytes byte[]
-     */
     void writeBytes(W sink, byte[] bytes);
 
-    /**
-     * @param sink Object
-     * @param value double
-     */
-    void writeDouble(W sink, double value);
+    default void writeDouble(W sink, double value)
+    {
+        long longValue = Double.doubleToRawLongBits(value);
+
+        writeLong(sink, longValue);
+    }
 
     default void writeDoubleWrapper(final W sink, final Double value)
     {
@@ -65,11 +54,12 @@ public interface DataAdapterWrite<W>
         }
     }
 
-    /**
-     * @param sink Object
-     * @param value float
-     */
-    void writeFloat(W sink, float value);
+    default void writeFloat(W sink, float value)
+    {
+        int intValue = Float.floatToRawIntBits(value);
+
+        writeInteger(sink, intValue);
+    }
 
     default void writeFloatWrapper(final W sink, final Float value)
     {
@@ -84,11 +74,17 @@ public interface DataAdapterWrite<W>
         }
     }
 
-    /**
-     * @param sink Object
-     * @param value int
-     */
-    void writeInteger(W sink, int value);
+    default void writeInteger(W sink, int value)
+    {
+        byte[] bytes = new byte[4];
+
+        bytes[0] = (byte) (0xFF & (value >> 24));
+        bytes[1] = (byte) (0xFF & (value >> 16));
+        bytes[2] = (byte) (0xFF & (value >> 8));
+        bytes[3] = (byte) (0xFF & value);
+
+        writeBytes(sink, bytes);
+    }
 
     default void writeIntegerWrapper(final W sink, final Integer value)
     {
@@ -103,11 +99,21 @@ public interface DataAdapterWrite<W>
         }
     }
 
-    /**
-     * @param sink Object
-     * @param value long
-     */
-    void writeLong(W sink, long value);
+    default void writeLong(W sink, long value)
+    {
+        byte[] bytes = new byte[8];
+
+        bytes[0] = (byte) (0xFF & (value >> 56));
+        bytes[1] = (byte) (0xFF & (value >> 48));
+        bytes[2] = (byte) (0xFF & (value >> 40));
+        bytes[3] = (byte) (0xFF & (value >> 32));
+        bytes[4] = (byte) (0xFF & (value >> 24));
+        bytes[5] = (byte) (0xFF & (value >> 16));
+        bytes[6] = (byte) (0xFF & (value >> 8));
+        bytes[7] = (byte) (0xFF & value);
+
+        writeBytes(sink, bytes);
+    }
 
     default void writeLongWrapper(final W sink, final Long value)
     {

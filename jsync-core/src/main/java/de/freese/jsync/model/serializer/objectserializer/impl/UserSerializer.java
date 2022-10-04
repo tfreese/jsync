@@ -11,10 +11,6 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
  */
 public final class UserSerializer implements ObjectSerializer<User>
 {
-    /**
-     * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.SerializerRegistry,
-     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
-     */
     @Override
     public <W, R> User readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
@@ -32,10 +28,6 @@ public final class UserSerializer implements ObjectSerializer<User>
         return new User(name, uid);
     }
 
-    /**
-     * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.SerializerRegistry,
-     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
-     */
     @Override
     public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final User value)
     {

@@ -66,11 +66,6 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
      */
     private final Map<Class<?>, ObjectSerializer<?>> serializerMap = new HashMap<>();
 
-    /**
-     * Erstellt ein neues {@link DefaultSerializer} Object.
-     *
-     * @param adapter {@link DataAdapter}
-     */
     private DefaultSerializer(final DataAdapter<W, R> adapter)
     {
         super();
@@ -105,10 +100,6 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
         register(PathFilter.class, new PathFilterSerializer());
     }
 
-    /**
-     * @see de.freese.jsync.model.serializer.SerializerRegistry#getSerializer(java.lang.Class)
-     */
-    @SuppressWarnings("unchecked")
     @Override
     public <T> ObjectSerializer<T> getSerializer(final Class<T> type)
     {
@@ -130,9 +121,6 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
         return serializer;
     }
 
-    /**
-     * @see de.freese.jsync.model.serializer.Serializer#readFrom(java.lang.Object, java.lang.Class)
-     */
     @Override
     public <T> T readFrom(final R source, final Class<T> type)
     {
@@ -141,18 +129,12 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
         return serializer.readFrom(this, this.adapter, source);
     }
 
-    /**
-     * @see de.freese.jsync.model.serializer.Serializer#register(java.lang.Class, de.freese.jsync.model.serializer.objectserializer.ObjectSerializer)
-     */
     @Override
     public <T> void register(final Class<T> type, final ObjectSerializer<? super T> serializer)
     {
         this.serializerMap.put(type, serializer);
     }
 
-    /**
-     * @see de.freese.jsync.model.serializer.Serializer#writeTo(java.lang.Object, java.lang.Object, java.lang.Class)
-     */
     @Override
     public <T> void writeTo(final W sink, final T value, final Class<T> type)
     {

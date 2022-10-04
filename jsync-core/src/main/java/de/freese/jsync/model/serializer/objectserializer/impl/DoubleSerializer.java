@@ -10,20 +10,12 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
  */
 public final class DoubleSerializer implements ObjectSerializer<Double>
 {
-    /**
-     * @see ObjectSerializer#readFrom(SerializerRegistry,
-     * DataAdapter, Object)
-     */
     @Override
     public <W, R> Double readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
         return adapter.readDoubleWrapper(source);
     }
 
-    /**
-     * @see ObjectSerializer#writeTo(SerializerRegistry,
-     * DataAdapter, Object, Object)
-     */
     @Override
     public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Double value)
     {

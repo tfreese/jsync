@@ -12,10 +12,6 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
  */
 public final class OptionsSerializer implements ObjectSerializer<Options>
 {
-    /**
-     * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#readFrom(de.freese.jsync.model.serializer.SerializerRegistry,
-     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object)
-     */
     @Override
     public <W, R> Options readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
     {
@@ -46,10 +42,6 @@ public final class OptionsSerializer implements ObjectSerializer<Options>
         // @formatter:on
     }
 
-    /**
-     * @see de.freese.jsync.model.serializer.objectserializer.ObjectSerializer#writeTo(de.freese.jsync.model.serializer.SerializerRegistry,
-     * de.freese.jsync.model.serializer.adapter.DataAdapter, java.lang.Object, java.lang.Object)
-     */
     @Override
     public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Options value)
     {
