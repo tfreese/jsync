@@ -16,6 +16,33 @@
 
     <name>${project.groupId} - ${project.artifactId}</name>
     <description>A Java rsync clone</description>
+    <url>https://github.com/tfreese/jsync</url>
+    <inceptionYear>2021</inceptionYear>
+    
+    <organization>
+        <name>Thomas Freese</name>
+        <url>https://github.com/tfreese/jsync</url>
+    </organization>
+
+    <scm>
+        <url>${project.url}</url>
+        <connection>scm:git:git://github.com/tfreese/jsync.git</connection>
+        <developerConnection>scm:git:https://github.com/tfreese/jsync.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>tfreese</id>
+            <name>Thomas Freese</name>
+            <url>${project.organization.url}</url>
+            <roles>
+                <role>developer</role>
+                <role>architect</role>
+            </roles>
+            <timezone>+2</timezone>
+        </developer>
+    </developers>
 
     <dependencies>
         <!-- compile scope -->
