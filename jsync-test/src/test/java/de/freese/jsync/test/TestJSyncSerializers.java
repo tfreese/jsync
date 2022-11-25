@@ -39,6 +39,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class TestJSyncSerializers
 {
     private static final int BUFFER_SIZE = 1024 * 16;
+    
     private static final DataHolder DATA_HOLDER_BYTE_BUF = new DataHolder()
     {
         private static final ByteBuf BYTE_BUF = UnpooledByteBufAllocator.DEFAULT.buffer(BUFFER_SIZE);

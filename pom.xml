@@ -18,7 +18,7 @@
     <description>A Java rsync clone</description>
     <url>https://github.com/tfreese/jsync</url>
     <inceptionYear>2021</inceptionYear>
-    
+
     <organization>
         <name>Thomas Freese</name>
         <url>https://github.com/tfreese/jsync</url>
@@ -57,7 +57,7 @@
         <module>jsync-remote-rsocket</module>
         <module>jsync-remote-rsocket-server</module>
         <module>jsync-remote-nio</module>
-        <module>jsync-remote-nio-server</module>        
+        <module>jsync-remote-nio-server</module>
         <module>jsync-swing</module>
         <module>jsync-test</module>
     </modules>

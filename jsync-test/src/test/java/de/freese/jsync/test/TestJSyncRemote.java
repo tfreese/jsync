@@ -40,13 +40,8 @@ import reactor.core.publisher.Hooks;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncRemote extends AbstractJSyncIoTest
 {
-    /**
-     *
-     */
     private static final Map<String, AutoCloseable> CLOSEABLES = new HashMap<>();
-    /**
-     *
-     */
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TestJSyncRemote.class);
 
     /**
@@ -64,14 +59,8 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         }
     }
 
-    /**
-     *
-     */
     private static Options options = null;
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @AfterAll
     static void afterAll() throws Exception
     {
@@ -88,18 +77,12 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         // }
     }
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @BeforeAll
     static void beforeAll() throws Exception
     {
         options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
     }
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     void testLocal() throws Exception
     {
@@ -113,9 +96,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         assertTrue(true);
     }
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     void testNio() throws Exception
     {
@@ -132,9 +112,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         assertTrue(true);
     }
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     void testRSocket() throws Exception
     {
@@ -151,11 +128,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         assertTrue(true);
     }
 
-    /**
-     * @param port int
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     private void startServerNio(final int port) throws Exception
     {
         if (!CLOSEABLES.containsKey("nio"))
@@ -168,9 +140,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         }
     }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
     // private void startServerNetty() throws Exception
     // {
     // if (!CLOSEABLES.containsKey("netty"))
@@ -181,11 +150,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // }
     // }
 
-    /**
-     * @param port int
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     private void startServerRSocket(final int port) throws Exception
     {
         if (!CLOSEABLES.containsKey("rSocket"))
@@ -202,9 +166,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         }
     }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
     // private void startServerSpringRest() throws Exception
     // {
     ////      // @formatter:off
@@ -225,9 +186,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // }
     // }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
     // private void startServerSpringWebflux() throws Exception
     // {
     // if (!CLOSEABLES.containsKey("springwebflux"))
@@ -241,15 +199,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // }
     // }
 
-    /**
-     * Sync directories.
-     *
-     * @param options {@link Options} options
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception
     {
         Client client = new DefaultClient(options, senderUri, receiverUri);
@@ -286,9 +235,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
         client.disconnectFileSystems();
     }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
     // @Test
     // void testSpringRest() throws Exception
     // {
@@ -305,9 +251,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // assertTrue(true);
     // }
 
-    // /**
-    // * @throws Exception Falls was schief geht.
-    // */
     // @Test
     // void testSpringWebFlux() throws Exception
     // {

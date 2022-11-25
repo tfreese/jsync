@@ -40,23 +40,14 @@ class TestJSyncClient extends AbstractJSyncIoTest
         }
     }
 
-    /**
-     *
-     */
     private static Options options;
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @BeforeAll
     static void beforeAll() throws Exception
     {
         options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
     }
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     void testLocalToLocal() throws Exception
     {
@@ -70,15 +61,6 @@ class TestJSyncClient extends AbstractJSyncIoTest
         assertTrue(true);
     }
 
-    /**
-     * Sync directories.
-     *
-     * @param options {@link Options} options
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception
     {
         Client client = new DefaultClient(options, senderUri, receiverUri);

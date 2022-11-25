@@ -27,9 +27,6 @@ import org.junit.jupiter.api.Test;
  */
 class TestJSyncGenerator extends AbstractJSyncIoTest
 {
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     @Order(40)
     void testFileAttributes() throws Exception
@@ -67,9 +64,6 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
         }
     }
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     @Order(30)
     void testFilter() throws Exception
@@ -96,9 +90,6 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
         assertTrue(map.keySet().stream().noneMatch(path -> path.contains(".settings")));
     }
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     @Order(10)
     void testGeneratorQuelle() throws Exception
@@ -119,9 +110,6 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
         syncItems.forEach(syncItem -> System.out.printf("%s%n", syncItem));
     }
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     @Order(20)
     void testGeneratorZiel() throws Exception

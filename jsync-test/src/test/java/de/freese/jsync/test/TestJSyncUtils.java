@@ -18,9 +18,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncUtils
 {
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     void testBytesToHex() throws Exception
     {
@@ -30,9 +27,6 @@ class TestJSyncUtils
         assertEquals(hex, JSyncUtils.bytesToHex(bytes));
     }
 
-    /**
-     * @throws Exception Falls was schiefgeht.
-     */
     @Test
     void testChecksum() throws Exception
     {

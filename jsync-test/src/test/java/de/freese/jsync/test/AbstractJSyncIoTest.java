@@ -18,36 +18,22 @@ import org.junit.jupiter.api.BeforeEach;
  */
 public abstract class AbstractJSyncIoTest
 {
-    /**
-     * Paths.get(System.getProperty("java.io.tmpdir"), "jSync")<br>
-     * Paths.get(System.getProperty("user.dir"), "target")
-     */
-    private static final Path PATH_BASE = Paths.get(System.getProperty("java.io.tmpdir"), "java");
-    /**
-     *
-     */
-    protected static final Path PATH_QUELLE = PATH_BASE.resolve("quelle");
-    /**
-     *
-     */
-    protected static final Path PATH_ZIEL = PATH_BASE.resolve("ziel");
+    protected static final Path PATH_QUELLE = Paths.get(System.getProperty("java.io.tmpdir"), "java", "quelle");
+
+    protected static final Path PATH_ZIEL = Paths.get(System.getProperty("java.io.tmpdir"), "java", "ziel");
 
     /**
      * Verzeichnis-Struktur zum Testen löschen.
-     *
-     * @throws Exception Falls was schiefgeht.
      */
     @AfterEach
     public void afterEach() throws Exception
     {
         System.out.println("Delete Source and Target Paths...\n");
-        JSyncUtils.delete(PATH_BASE, false);
+        JSyncUtils.delete(PATH_QUELLE.getParent(), false);
     }
 
     /**
      * Verzeichnis-Struktur zum Testen aufbauen.
-     *
-     * @throws Exception Falls was schiefgeht.
      */
     @BeforeEach
     public void beforeEach() throws Exception
