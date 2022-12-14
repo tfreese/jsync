@@ -22,41 +22,20 @@ import reactor.util.annotation.Nullable;
 @Deprecated
 class JSyncPayload implements Payload
 {
-    /**
-     *
-     */
     private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
-    /**
-     *
-     */
+
     private static final Serializer<ByteBuffer, ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
-    /**
-     * @param data {@link ByteBuffer}
-     *
-     * @return {@link Payload}
-     */
     public static Payload create(final ByteBuffer data)
     {
         return create(data, null);
     }
 
-    /**
-     * @param data {@link ByteBuffer}
-     * @param metadata {@link ByteBuffer}
-     *
-     * @return {@link Payload}
-     */
     public static Payload create(final ByteBuffer data, @Nullable final ByteBuffer metadata)
     {
         return new JSyncPayload(data, metadata);
     }
 
-    /**
-     * @param data {@link CharSequence}
-     *
-     * @return {@link Payload}
-     */
     public static Payload create(final CharSequence data)
     {
         ByteBuffer buffer = BYTE_BUFFER_POOL.get();
@@ -66,22 +45,10 @@ class JSyncPayload implements Payload
         return create(buffer);
     }
 
-    /**
-     *
-     */
     private final ByteBuffer data;
 
-    /**
-     *
-     */
     private final ByteBuffer metadata;
 
-    /**
-     * Erstellt ein neues {@link JSyncPayload} Object.
-     *
-     * @param data {@link ByteBuffer}
-     * @param metadata {@link ByteBuffer}
-     */
     private JSyncPayload(final ByteBuffer data, final ByteBuffer metadata)
     {
         super();

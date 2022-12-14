@@ -16,9 +16,6 @@ import de.freese.jsync.model.SyncStatus;
  */
 public class SyncPairTableCellRendererStatus extends DefaultTableCellRenderer
 {
-    /**
-     *
-     */
     @Serial
     private static final long serialVersionUID = -8974544290640941021L;
 

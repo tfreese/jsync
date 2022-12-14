@@ -13,14 +13,8 @@ import java.nio.charset.StandardCharsets;
  */
 public interface IoHandler<T>
 {
-    /**
-     *
-     */
     Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-    /**
-     * @return {@link Charset}
-     */
     default Charset getCharset()
     {
         return DEFAULT_CHARSET;
@@ -28,15 +22,11 @@ public interface IoHandler<T>
 
     /**
      * Verarbeitet den Request.
-     *
-     * @param input Object
      */
     void read(final T input);
 
     /**
      * Verarbeitet den Response.
-     *
-     * @param output Object
      */
     void write(final T output);
 }

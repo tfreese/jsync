@@ -34,16 +34,8 @@ import reactor.util.function.Tuples;
  */
 public class RSocketDemo
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketDemo.class);
 
-    /**
-     * @param args String[]
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     public static void main(final String[] args) throws Exception
     {
         System.setProperty("reactor.schedulers.defaultPoolSize", Integer.toString(8));
@@ -135,15 +127,6 @@ public class RSocketDemo
         Schedulers.shutdownNow();
     }
 
-    /**
-     * Remote
-     *
-     * @param socketAcceptor {@link Function}
-     *
-     * @return {@link Tuple2}
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     static Tuple2<RSocketClient, List<Disposable>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
     {
         InetSocketAddress serverAddress = new InetSocketAddress("localhost", 6000);
@@ -176,15 +159,6 @@ public class RSocketDemo
         return Tuples.of(client, List.of(server));
     }
 
-    /**
-     * Remote mit Client-LoadBalancer.
-     *
-     * @param socketAcceptor {@link Function}
-     *
-     * @return {@link Tuple2}
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
     {
         List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000).map(port -> new InetSocketAddress("localhost", port)).toList();
@@ -216,15 +190,6 @@ public class RSocketDemo
         return Tuples.of(client, servers);
     }
 
-    /**
-     * Remote mit Client-LoadBalancer und Service-Discovery.
-     *
-     * @param socketAcceptor {@link Function}
-     *
-     * @return {@link Tuple2}
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor)
             throws Exception
     {
@@ -266,15 +231,6 @@ public class RSocketDemo
         return Tuples.of(client, servers);
     }
 
-    /**
-     * Client und Server in der gleichen Runtime ohne Network-Stack.
-     *
-     * @param socketAcceptor {@link Function}
-     *
-     * @return {@link Tuple2}
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     static Tuple2<RSocketClient, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
     {
         // @formatter:off

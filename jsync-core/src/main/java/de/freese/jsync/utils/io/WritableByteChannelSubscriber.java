@@ -20,27 +20,14 @@ import reactor.core.publisher.FluxSink;
  */
 public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> // implements Subscriber<ByteBuffer>
 {
-    /**
-     *
-     */
     private final WritableByteChannel channel;
-    /**
-     *
-     */
+
     private final FluxSink<Long> sink;
 
-    // /**
-    // *
-    // */
     // private Subscription subscription;
 
     /**
-     * Erstellt ein neues {@link WritableByteChannelSubscriber} Object.
-     *
      * @param sink {@link FluxSink} Geschriebene Bytes pro ByteBuffer/Chunk
-     * @param path {@link Path}
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     public WritableByteChannelSubscriber(final FluxSink<Long> sink, final Path path) throws IOException
     {
@@ -48,10 +35,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     }
 
     /**
-     * Erstellt ein neues {@link WritableByteChannelSubscriber} Object.
-     *
      * @param sink {@link FluxSink} Geschriebene Bytes pro ByteBuffer/Chunk
-     * @param channel {@link WritableByteChannel}
      */
     public WritableByteChannelSubscriber(final FluxSink<Long> sink, final WritableByteChannel channel)
     {
@@ -131,9 +115,6 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
         this.sink.error(throwable);
     }
 
-    /**
-     * @param buffer {@link ByteBuffer}
-     */
     @Override
     protected void hookOnNext(final ByteBuffer buffer)
     {

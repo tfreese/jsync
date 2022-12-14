@@ -14,9 +14,6 @@ import reactor.core.publisher.Mono;
  */
 public class RSocketServerLocalBuilder extends AbstractRSocketServerBuilder<RSocketServerLocalBuilder>
 {
-    /**
-     *
-     */
     private String name;
 
     /**
@@ -32,11 +29,6 @@ public class RSocketServerLocalBuilder extends AbstractRSocketServerBuilder<RSoc
         return rSocketServer.bind(serverTransport);
     }
 
-    /**
-     * @param name String
-     *
-     * @return {@link RSocketServerLocalBuilder}
-     */
     public RSocketServerLocalBuilder name(final String name)
     {
         this.name = Objects.requireNonNull(name, "name required");

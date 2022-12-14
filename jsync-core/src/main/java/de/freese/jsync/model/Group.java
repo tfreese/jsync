@@ -10,33 +10,18 @@ import java.util.Objects;
  */
 public class Group
 {
-    /**
-     *
-     */
     public static final int ID_MAX = 65535;
-    /**
-     *
-     */
+
     public static final Group NOBODY = new Group("nobody", ID_MAX - 1);
-    /**
-     *
-     */
+
     public static final Group ROOT = new Group("root", 0);
     /**
      * unix:gid
      */
     private final int gid;
-    /**
-     *
-     */
+
     private final String name;
 
-    /**
-     * Erstellt ein neues {@link Group} Object.
-     *
-     * @param name String
-     * @param gid int
-     */
     public Group(final String name, final int gid)
     {
         super();
@@ -64,17 +49,11 @@ public class Group
         return (this.gid == other.gid) && Objects.equals(this.name, other.name);
     }
 
-    /**
-     * @return int
-     */
     public int getGid()
     {
         return this.gid;
     }
 
-    /**
-     * @return String
-     */
     public String getName()
     {
         return this.name;

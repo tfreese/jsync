@@ -14,21 +14,10 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractRSocketBuilder<T extends AbstractRSocketBuilder<?, ?>, B>
 {
-    /**
-     *
-     */
     private Logger logger;
 
-    /**
-     * @return Object
-     */
     public abstract B build();
 
-    /**
-     * @param logger {@link Logger}
-     *
-     * @return {@link AbstractRSocketBuilder}
-     */
     public T logger(final Logger logger)
     {
         this.logger = Objects.requireNonNull(logger, "logger required");
@@ -36,9 +25,6 @@ public abstract class AbstractRSocketBuilder<T extends AbstractRSocketBuilder<?,
         return (T) this;
     }
 
-    /**
-     * @return Logger
-     */
     protected Logger getLogger()
     {
         if (this.logger == null)

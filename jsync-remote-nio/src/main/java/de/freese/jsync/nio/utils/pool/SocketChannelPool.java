@@ -15,16 +15,8 @@ import de.freese.jsync.utils.pool.Pool;
  */
 public final class SocketChannelPool extends Pool<SocketChannel>
 {
-    /**
-     *
-     */
     private final URI uri;
 
-    /**
-     * Erzeugt eine neue Instanz von {@link SocketChannelPool}
-     *
-     * @param uri {@link URI}
-     */
     public SocketChannelPool(final URI uri)
     {
         super(true, false);

@@ -14,23 +14,11 @@ import java.util.function.LongConsumer;
  */
 public class MonitorOutputStream extends OutputStream
 {
-    /**
-    *
-    */
-    private long bytesWritten;
-    /**
-     *
-     */
     private final LongConsumer bytesWrittenConsumer;
-    /**
-    *
-    */
     private final OutputStream delegate;
+    private long bytesWritten;
 
     /**
-     * Erzeugt eine neue Instanz von {@link MonitorOutputStream}
-     *
-     * @param delegate {@link OutputStream}
      * @param bytesWrittenConsumer {@link BiConsumer}; Erster Parameter = Anzahl geschriebene Bytes, zweiter Parameter = Gesamtgröße
      * @param size long; Anzahl Bytes (Größe) des gesamten Channels
      */
@@ -39,12 +27,6 @@ public class MonitorOutputStream extends OutputStream
         this(delegate, bw -> bytesWrittenConsumer.accept(bw, size));
     }
 
-    /**
-     * Erzeugt eine neue Instanz von {@link MonitorOutputStream}
-     *
-     * @param delegate {@link OutputStream}
-     * @param bytesWrittenConsumer {@link LongConsumer}
-     */
     public MonitorOutputStream(final OutputStream delegate, final LongConsumer bytesWrittenConsumer)
     {
         super();

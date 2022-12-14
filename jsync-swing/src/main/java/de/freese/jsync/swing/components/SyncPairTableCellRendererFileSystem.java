@@ -13,9 +13,6 @@ import javax.swing.table.DefaultTableCellRenderer;
  */
 public class SyncPairTableCellRendererFileSystem extends DefaultTableCellRenderer
 {
-    /**
-     *
-     */
     @Serial
     private static final long serialVersionUID = -8974544290640941021L;
 
@@ -28,10 +25,13 @@ public class SyncPairTableCellRendererFileSystem extends DefaultTableCellRendere
     {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        switch (column)
+        if (column == 1)
         {
-            case 1 -> setHorizontalAlignment(SwingConstants.CENTER);
-            default -> setHorizontalAlignment(SwingConstants.LEFT);
+            setHorizontalAlignment(SwingConstants.CENTER);
+        }
+        else
+        {
+            setHorizontalAlignment(SwingConstants.LEFT);
         }
 
         return this;

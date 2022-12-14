@@ -78,11 +78,7 @@ public class DefaultGenerator extends AbstractGenerator
     }
 
     /**
-     * @param directory {@link Path}
-     * @param relativeDir String
      * @param linkOptions {@link LinkOption}; wenn LinkOption#NOFOLLOW_LINKS null dann Follow
-     *
-     * @return {@link SyncItem}
      */
     protected SyncItem toDirectoryItem(final Path directory, final String relativeDir, final LinkOption[] linkOptions)
     {
@@ -146,11 +142,7 @@ public class DefaultGenerator extends AbstractGenerator
     }
 
     /**
-     * @param file {@link Path}
-     * @param relativeFile String
      * @param linkOptions {@link LinkOption}; wenn LinkOption#NOFOLLOW_LINKS null dann Follow
-     *
-     * @return {@link SyncItem}
      */
     protected SyncItem toFileItem(final Path file, final String relativeFile, final LinkOption[] linkOptions)
     {

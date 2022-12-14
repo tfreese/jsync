@@ -17,20 +17,10 @@ import org.slf4j.LoggerFactory;
  */
 public class Messages
 {
-    /**
-     *
-     */
     public static final Logger LOGGER = LoggerFactory.getLogger(Messages.class);
-    /**
-     *
-     */
+
     private Map<String, String> messageMap = Collections.emptyMap();
 
-    /**
-     * Erstellt ein neues {@link Messages} Object.
-     *
-     * @param locale {@link Locale}
-     */
     public Messages(final Locale locale)
     {
         super();
@@ -38,11 +28,6 @@ public class Messages
         setLocale(locale);
     }
 
-    /**
-     * @param key String
-     *
-     * @return String
-     */
     public String getString(final String key)
     {
         String value = this.messageMap.get(key);
@@ -57,9 +42,6 @@ public class Messages
         return value;
     }
 
-    /**
-     * @param locale {@link Locale}
-     */
     private void setLocale(final Locale locale)
     {
         Objects.requireNonNull(locale, "locale required");

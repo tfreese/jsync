@@ -14,41 +14,15 @@ import de.freese.jsync.model.SyncItem;
  */
 public interface ClientListener extends EventListener
 {
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     * @param bytesRead long
-     */
     void checksumProgress(Options options, final SyncItem syncItem, long bytesRead);
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     * @param bytesTransferred long
-     */
     void copyProgress(Options options, final SyncItem syncItem, long bytesTransferred);
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     */
     void delete(Options options, SyncItem syncItem);
 
-    /**
-     * @param message String
-     * @param th {@link Throwable}
-     */
     void error(String message, Throwable th);
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     */
     void update(Options options, final SyncItem syncItem);
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     */
     void validate(Options options, final SyncItem syncItem);
 }

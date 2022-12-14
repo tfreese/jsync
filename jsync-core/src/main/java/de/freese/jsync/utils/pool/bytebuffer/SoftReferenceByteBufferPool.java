@@ -11,21 +11,9 @@ import de.freese.jsync.utils.pool.Pool;
  */
 class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBufferPool
 {
-    /**
-     * Erstellt ein neues {@link ByteBufferPool} Object.
-     */
     SoftReferenceByteBufferPool()
     {
         super(true, true);
-    }
-
-    /**
-     * @see de.freese.jsync.utils.pool.Pool#create()
-     */
-    @Override
-    protected ByteBuffer create()
-    {
-        return ByteBuffer.allocate(Options.BUFFER_SIZE);
     }
 
     /**
@@ -50,5 +38,14 @@ class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBuffer
         sb.append(", peak=").append(getPeak());
 
         return sb.toString();
+    }
+
+    /**
+     * @see de.freese.jsync.utils.pool.Pool#create()
+     */
+    @Override
+    protected ByteBuffer create()
+    {
+        return ByteBuffer.allocate(Options.BUFFER_SIZE);
     }
 }

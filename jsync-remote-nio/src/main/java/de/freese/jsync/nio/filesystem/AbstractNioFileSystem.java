@@ -24,17 +24,10 @@ import reactor.core.publisher.Flux;
  */
 public abstract class AbstractNioFileSystem extends AbstractFileSystem
 {
-    /**
-     *
-     */
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
-    /**
-     *
-     */
+
     private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
-    /**
-     *
-     */
+
     private SocketChannelPool channelPool;
 
     /**
@@ -112,14 +105,6 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         }
     }
 
-    /**
-     * @param baseDir String
-     * @param relativeFile String
-     * @param consumerChecksumBytesRead {@link LongConsumer}
-     * @param command {@link JSyncCommand}
-     *
-     * @return String
-     */
     protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead, final JSyncCommand command)
     {
         SocketChannel channel = getChannelPool().obtain();
@@ -172,14 +157,6 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         }
     }
 
-    /**
-     * @param baseDir String
-     * @param followSymLinks boolean
-     * @param pathFilter {@link PathFilter}
-     * @param command {@link JSyncCommand}
-     *
-     * @return {@link Flux}
-     */
     protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command)
     {
         return Flux.create(sink ->
@@ -225,25 +202,16 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
         });
     }
 
-    /**
-     * @return {@link SocketChannelPool}
-     */
     protected SocketChannelPool getChannelPool()
     {
         return this.channelPool;
     }
 
-    /**
-     * @return {@link NioFrameProtocol}
-     */
     protected NioFrameProtocol getFrameProtocol()
     {
         return this.frameProtocol;
     }
 
-    /**
-     * @return {@link Serializer}<ByteBuffer>
-     */
     protected Serializer<ByteBuffer, ByteBuffer> getSerializer()
     {
         return this.serializer;

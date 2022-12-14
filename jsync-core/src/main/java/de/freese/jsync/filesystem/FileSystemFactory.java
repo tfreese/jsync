@@ -24,46 +24,26 @@ public final class FileSystemFactory
      */
     private static final class FileSystemFactoryHolder
     {
-        /**
-         *
-         */
         private static final FileSystemFactory INSTANCE = new FileSystemFactory();
 
-        /**
-         * Erstellt ein neues {@link FileSystemFactoryHolder} Object.
-         */
         private FileSystemFactoryHolder()
         {
             super();
         }
     }
 
-    /**
-     * @return {@link FileSystemFactory}
-     */
     public static FileSystemFactory getInstance()
     {
         return FileSystemFactoryHolder.INSTANCE;
     }
 
-    /**
-     *
-     */
     private final ServiceLoader<FileSystemProvider> serviceLoader = ServiceLoader.load(FileSystemProvider.class);
 
-    /**
-     * Erstellt ein neues {@link FileSystemFactory} Object.
-     */
     private FileSystemFactory()
     {
         super();
     }
 
-    /**
-     * @param uri {@link URI}
-     *
-     * @return {@link FileSystem}
-     */
     public Receiver createReceiver(final URI uri)
     {
         Objects.requireNonNull(uri, "uri required");
@@ -81,11 +61,6 @@ public final class FileSystemFactory
         throw new IllegalArgumentException("unsupported protocol: " + uri.getScheme());
     }
 
-    /**
-     * @param uri {@link URI}
-     *
-     * @return {@link FileSystem}
-     */
     public Sender createSender(final URI uri)
     {
         Objects.requireNonNull(uri, "uri required");
@@ -103,9 +78,6 @@ public final class FileSystemFactory
         throw new IllegalArgumentException("unsupported protocol: " + uri.getScheme());
     }
 
-    /**
-     * @return {@link List}
-     */
     public List<JSyncProtocol> getAvailableProtocols()
     {
         List<JSyncProtocol> protocols = List.of(JSyncProtocol.values());

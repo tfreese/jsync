@@ -13,44 +13,16 @@ import java.util.Set;
  */
 public class DefaultSyncItem implements SyncItem
 {
-    /**
-     *
-     */
-    private String checksum;
-    /**
-     *
-     */
-    private Group group;
-    /**
-     *
-     */
-    private boolean isFile;
-    /**
-     *
-     */
-    private long lastModifiedTime;
-    /**
-     *
-     */
-    private Set<PosixFilePermission> permissions;
-    /**
-     *
-     */
     private final String relativePath;
-    /**
-     *
-     */
+    private String checksum;
+    private Group group;
+    private boolean isFile;
+    private long lastModifiedTime;
+    private Set<PosixFilePermission> permissions;
     private long size;
-    /**
-     *
-     */
+
     private User user;
 
-    /**
-     * Erstellt ein neues {@link DefaultSyncItem} Object.
-     *
-     * @param relativePath String
-     */
     public DefaultSyncItem(final String relativePath)
     {
         super();
@@ -137,7 +109,6 @@ public class DefaultSyncItem implements SyncItem
     public void setChecksum(final String checksum)
     {
         this.checksum = checksum;
-
     }
 
     /**

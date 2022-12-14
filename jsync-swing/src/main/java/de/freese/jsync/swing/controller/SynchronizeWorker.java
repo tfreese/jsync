@@ -16,11 +16,6 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  */
 class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientListener
 {
-    /**
-     * Erstellt ein neues {@link SynchronizeWorker} Object.
-     *
-     * @param controller {@link JSyncController}
-     */
     SynchronizeWorker(final JSyncController controller)
     {
         super(controller);

@@ -21,26 +21,12 @@ import de.freese.jsync.nio.server.handler.IoHandler;
  */
 class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
 {
-    /**
-     *
-     */
     private final Executor executor;
-    /**
-     *
-     */
+
     private final IoHandler<SelectionKey> ioHandler;
-    /**
-     *
-     */
+
     private final Queue<SocketChannel> newSessions = new ConcurrentLinkedQueue<>();
 
-    /**
-     * Erstellt ein neues {@link DefaultDispatcher} Object.
-     *
-     * @param selector {@link Selector}
-     * @param ioHandler {@link IoHandler}
-     * @param executor {@link Executor}
-     */
     DefaultDispatcher(final Selector selector, final IoHandler<SelectionKey> ioHandler, final Executor executor)
     {
         super(selector);
@@ -148,9 +134,6 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
         });
     }
 
-    /**
-     * @return {@link Queue}
-     */
     private Queue<SocketChannel> getNewSessions()
     {
         return this.newSessions;
@@ -158,8 +141,6 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
 
     /**
      * Die neuen Channels zum Selector hinzufügen.
-     *
-     * @see #register(SocketChannel)
      */
     private void processNewChannels()
     {

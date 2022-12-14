@@ -18,106 +18,41 @@ import de.freese.jsync.model.SyncPair;
  */
 public interface SyncView
 {
-    /**
-     * @param syncPair {@link SyncPair}
-     */
     void addSyncPair(SyncPair syncPair);
 
-    /**
-     *
-     */
     void clearTable();
 
-    /**
-     * @param consumer {@link Consumer}
-     */
     void doOnCompare(Consumer<JButton> consumer);
 
-    /**
-     * @param consumer {@link Consumer}
-     */
     void doOnSynchronize(Consumer<JButton> consumer);
 
-    /**
-     * @return {@link Component}
-     */
     Component getComponent();
 
-    /**
-     * @return {@link Options}
-     */
     Options getOptions();
 
-    /**
-     * @return {@link PathFilter}
-     */
     PathFilter getPathFilter();
 
-    /**
-     * @return {@link List}
-     */
     List<SyncPair> getSyncList();
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link URI}
-     */
     URI getUri(EFileSystem fileSystem);
 
-    /**
-     * @param value int
-     */
     void incrementProgressBarFilesValue(int value);
 
-    /**
-     * Aufbau der GUI.
-     */
     void initGUI();
 
-    /**
-     *
-     */
     void restoreState();
 
-    /**
-     *
-     */
     void saveState();
 
-    /**
-     * @param max int
-     */
     void setProgressBarFilesMax(int max);
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     * @param indeterminate boolean
-     */
     void setProgressBarIndeterminate(EFileSystem fileSystem, boolean indeterminate);
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     * @param min int
-     * @param max int
-     * @param text String
-     */
     void setProgressBarMinMaxText(EFileSystem fileSystem, int min, int max, String text);
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     * @param text String
-     */
     void setProgressBarText(EFileSystem fileSystem, String text);
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     * @param value int
-     */
     void setProgressBarValue(EFileSystem fileSystem, int value);
 
-    /**
-     *
-     */
     void updateLastEntry();
 }

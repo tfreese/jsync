@@ -16,16 +16,8 @@ import reactor.core.publisher.SynchronousSink;
  */
 public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<ByteBuffer>>
 {
-    /**
-     *
-     */
     private final ReadableByteChannel channel;
 
-    /**
-     * Erstellt ein neues {@link ReadableByteChannelGenerator} Object.
-     *
-     * @param channel {@link ReadableByteChannel}
-     */
     public ReadableByteChannelGenerator(final ReadableByteChannel channel)
     {
         this.channel = Objects.requireNonNull(channel, "channel required");

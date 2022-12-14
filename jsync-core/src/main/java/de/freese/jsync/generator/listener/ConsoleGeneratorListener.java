@@ -14,24 +14,12 @@ import de.freese.jsync.model.SyncItem;
  */
 public class ConsoleGeneratorListener extends AbstractGeneratorListener
 {
-    /**
-     *
-     */
     private final String prefix;
-    /**
-     *
-     */
+
     private final PrintStream printStream;
-    /**
-     *
-     */
+
     private final PrintStream printStreamError;
 
-    /**
-     * Erstellt ein neues {@link ConsoleGeneratorListener} Object.
-     *
-     * @param prefix String
-     */
     public ConsoleGeneratorListener(final String prefix)
     {
         super();
@@ -75,22 +63,6 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
-     * @return {@link PrintStream}
-     */
-    protected PrintStream getPrintStream()
-    {
-        return this.printStream;
-    }
-
-    /**
-     * @return {@link PrintStream}
-     */
-    protected PrintStream getPrintStreamError()
-    {
-        return this.printStreamError;
-    }
-
-    /**
      * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
      */
     @Override
@@ -99,5 +71,15 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener
         String message = itemCountMessage(path, itemCount, this.prefix);
 
         getPrintStream().println(message);
+    }
+
+    protected PrintStream getPrintStream()
+    {
+        return this.printStream;
+    }
+
+    protected PrintStream getPrintStreamError()
+    {
+        return this.printStreamError;
     }
 }

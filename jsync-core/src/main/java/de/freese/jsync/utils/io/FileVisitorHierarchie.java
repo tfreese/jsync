@@ -18,26 +18,11 @@ import org.slf4j.LoggerFactory;
  */
 public class FileVisitorHierarchie implements FileVisitor<Path>
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(FileVisitorHierarchie.class);
-    /**
-     *
-     */
-    private final Consumer<Path> consumer;
-    /**
-     *
-     */
-    private final PathFilter pathFilter;
-    /**
-     *
-     */
     private final Path basePath;
+    private final Consumer<Path> consumer;
+    private final PathFilter pathFilter;
 
-    /**
-     *
-     */
     public FileVisitorHierarchie(Path basePath, final PathFilter pathFilter, final Consumer<Path> consumer)
     {
         super();
@@ -45,14 +30,6 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
         this.basePath = Objects.requireNonNull(basePath, "basePath required");
         this.pathFilter = Objects.requireNonNull(pathFilter, "pathFilter required");
         this.consumer = Objects.requireNonNull(consumer, "consumer required");
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return LOGGER;
     }
 
     /**
@@ -129,5 +106,10 @@ public class FileVisitorHierarchie implements FileVisitor<Path>
         }
 
         return FileVisitResult.CONTINUE;
+    }
+
+    protected Logger getLogger()
+    {
+        return LOGGER;
     }
 }

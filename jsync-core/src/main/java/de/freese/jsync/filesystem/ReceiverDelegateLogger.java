@@ -6,11 +6,10 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.function.LongConsumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 /**
@@ -18,20 +17,10 @@ import reactor.core.publisher.Flux;
  */
 public class ReceiverDelegateLogger implements Receiver
 {
-    /**
-    *
-    */
     private final Receiver delegate;
-    /**
-    *
-    */
+
     private final Logger logger;
 
-    /**
-     * Erstellt ein neues {@link ReceiverDelegateLogger} Object.
-     *
-     * @param delegate {@link Receiver}
-     */
     public ReceiverDelegateLogger(final Receiver delegate)
     {
         super();
@@ -115,14 +104,6 @@ public class ReceiverDelegateLogger implements Receiver
     }
 
     /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
      * @see de.freese.jsync.filesystem.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
      */
     @Override
@@ -153,5 +134,10 @@ public class ReceiverDelegateLogger implements Receiver
         getLogger().info("write file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
         return this.delegate.writeFile(baseDir, relativeFile, sizeOfFile, fileFlux);
+    }
+
+    protected Logger getLogger()
+    {
+        return this.logger;
     }
 }

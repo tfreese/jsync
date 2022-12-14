@@ -15,18 +15,10 @@ import de.freese.jsync.model.SyncItem;
  */
 public class ConsoleClientListener extends AbstractClientListener
 {
-    /**
-     *
-     */
     private final PrintStream printStream;
-    /**
-     *
-     */
+
     private final PrintStream printStreamError;
 
-    /**
-     * Erstellt ein neues {@link ConsoleClientListener} Object.
-     */
     public ConsoleClientListener()
     {
         super();
@@ -123,22 +115,6 @@ public class ConsoleClientListener extends AbstractClientListener
     }
 
     /**
-     * @return {@link PrintStream}
-     */
-    protected PrintStream getPrintStream()
-    {
-        return this.printStream;
-    }
-
-    /**
-     * @return {@link PrintStream}
-     */
-    protected PrintStream getPrintStreamError()
-    {
-        return this.printStreamError;
-    }
-
-    /**
      * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
@@ -158,5 +134,15 @@ public class ConsoleClientListener extends AbstractClientListener
         String message = validateMessage(options, syncItem);
 
         getPrintStream().println(message);
+    }
+
+    protected PrintStream getPrintStream()
+    {
+        return this.printStream;
+    }
+
+    protected PrintStream getPrintStreamError()
+    {
+        return this.printStreamError;
     }
 }

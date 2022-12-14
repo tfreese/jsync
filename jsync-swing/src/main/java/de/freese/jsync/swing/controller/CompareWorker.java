@@ -19,11 +19,6 @@ import reactor.util.function.Tuple2;
  */
 public class CompareWorker extends AbstractWorker<Void, Void>
 {
-    /**
-     * Erstellt ein neues {@link CompareWorker} Object.
-     *
-     * @param controller {@link JSyncController}
-     */
     CompareWorker(final JSyncController controller)
     {
         super(controller);
@@ -42,12 +37,6 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         getSyncView().setProgressBarFilesMax(0);
     }
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     * @param pathFilter {@link PathFilter}
-     *
-     * @return {@link RunnableFuture}
-     */
     protected RunnableFuture<List<SyncItem>> createFutureSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter)
     {
         // @formatter:off
@@ -158,12 +147,6 @@ public class CompareWorker extends AbstractWorker<Void, Void>
         getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, "");
     }
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     * @param syncItem {@link SyncItem}
-     *
-     * @return {@link RunnableFuture}
-     */
     private RunnableFuture<Void> createFutureChecksum(final EFileSystem fileSystem, final SyncItem syncItem)
     {
         if (syncItem == null)

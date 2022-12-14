@@ -26,9 +26,6 @@ import io.rsocket.frame.decoder.PayloadDecoder;
 @Deprecated
 class JSyncPayloadDecoder implements PayloadDecoder
 {
-    /**
-     *
-     */
     private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
 
     /**

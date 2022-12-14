@@ -2,7 +2,6 @@
 package de.freese.jsync.swing.view;
 
 import java.awt.Rectangle;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -23,46 +22,16 @@ import de.freese.jsync.swing.components.SyncPairTableModelStatus;
  */
 public class TableFacade
 {
-    /**
-     *
-     */
-    private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterReceiver;
-    /**
-     *
-     */
-    private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterSender;
-    /**
-     *
-     */
-    private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterStatus;
-    /**
-     *
-     */
     private final AbstractListTableModel<SyncPair> tableModelReceiver;
-    /**
-     *
-     */
     private final AbstractListTableModel<SyncPair> tableModelSender;
-    /**
-     *
-     */
     private final AbstractListTableModel<SyncPair> tableModelStatus;
-    /**
-     *
-     */
     private final JTable tableReceiver;
-    /**
-     *
-     */
     private final JTable tableSender;
-    /**
-     *
-     */
     private final JTable tableStatus;
+    private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterReceiver;
+    private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterSender;
+    private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterStatus;
 
-    /**
-     * Erstellt ein neues {@link TableFacade} Object.
-     */
     public TableFacade()
     {
         super();
@@ -76,9 +45,6 @@ public class TableFacade
         this.tableModelReceiver = new SyncPairTableModelFileSystem(EFileSystem.RECEIVER);
     }
 
-    /**
-     * @param objects {@link Collection}
-     */
     void addAll(final List<SyncPair> objects)
     {
         this.tableModelSender.addAll(objects);
@@ -86,9 +52,6 @@ public class TableFacade
         this.tableModelReceiver.addAll(objects);
     }
 
-    /**
-    *
-    */
     void clear()
     {
         this.tableModelSender.clear();
@@ -96,10 +59,6 @@ public class TableFacade
         this.tableModelReceiver.clear();
     }
 
-    /**
-     * @param firstRow int
-     * @param lastRow int
-     */
     void fireTableRowsUpdated(final int firstRow, final int lastRow)
     {
         this.tableModelSender.fireTableRowsUpdated(firstRow, lastRow);
@@ -107,73 +66,46 @@ public class TableFacade
         this.tableModelReceiver.fireTableRowsUpdated(firstRow, lastRow);
     }
 
-    /**
-     * @return int
-     */
     int getRowCount()
     {
         return this.tableModelStatus.getRowCount();
     }
 
-    /**
-     * @return {@link List}
-     */
     Stream<SyncPair> getStream()
     {
         return this.tableModelStatus.getStream();
     }
 
-    /**
-     * @return {@link AbstractListTableModel}
-     */
     AbstractListTableModel<SyncPair> getTableModelReceiver()
     {
         return this.tableModelReceiver;
     }
 
-    /**
-     * @return {@link AbstractListTableModel}
-     */
     AbstractListTableModel<SyncPair> getTableModelSender()
     {
         return this.tableModelSender;
     }
 
-    /**
-     * @return {@link AbstractListTableModel}
-     */
     AbstractListTableModel<SyncPair> getTableModelStatus()
     {
         return this.tableModelStatus;
     }
 
-    /**
-     * @return {@link JTable}
-     */
     JTable getTableReceiver()
     {
         return this.tableReceiver;
     }
 
-    /**
-     * @return {@link JTable}
-     */
     JTable getTableSender()
     {
         return this.tableSender;
     }
 
-    /**
-     * @return {@link JTable}
-     */
     JTable getTableStatus()
     {
         return this.tableStatus;
     }
 
-    /**
-     * @param supplierPredicate {@link Supplier}
-     */
     void initRowSorter(final Supplier<Predicate<SyncPair>> supplierPredicate)
     {
         RowFilter<AbstractListTableModel<SyncPair>, Integer> rowFilter = new RowFilter<>()
@@ -199,9 +131,6 @@ public class TableFacade
         this.tableReceiver.setRowSorter(this.rowSorterReceiver);
     }
 
-    /**
-     *
-     */
     void scrollToLastRow()
     {
         int rowCount = getRowCount();
@@ -216,9 +145,6 @@ public class TableFacade
         this.tableReceiver.scrollRectToVisible(rectangle);
     }
 
-    /**
-     *
-     */
     void sort()
     {
         this.rowSorterSender.sort();

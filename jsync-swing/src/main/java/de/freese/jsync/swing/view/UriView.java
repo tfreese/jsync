@@ -22,38 +22,18 @@ import de.freese.jsync.swing.util.GbcBuilder;
  */
 class UriView extends AbstractView
 {
-    /**
-     *
-     */
-    private JButton buttonOpen;
-    /**
-     *
-     */
-    private JComboBox<JSyncProtocol> comboBoxProtocol;
-    /**
-     *
-     */
     private final JPanel panel = new JPanel();
-    /**
-     *
-     */
+    private JButton buttonOpen;
+    private JComboBox<JSyncProtocol> comboBoxProtocol;
     private JTextField textFieldHostPort;
-    /**
-     *
-     */
+
     private JTextField textFieldPath;
 
-    /**
-     * @return {@link JButton}
-     */
     JButton getButtonOpen()
     {
         return this.buttonOpen;
     }
 
-    /**
-     * @return {@link JComboBox}<String>
-     */
     JComboBox<JSyncProtocol> getComboBoxProtocol()
     {
         return this.comboBoxProtocol;
@@ -68,25 +48,16 @@ class UriView extends AbstractView
         return this.panel;
     }
 
-    /**
-     * @return {@link JTextField}
-     */
     JTextField getTextFieldHostPort()
     {
         return this.textFieldHostPort;
     }
 
-    /**
-     * @return {@link JTextField}
-     */
     JTextField getTextFieldPath()
     {
         return this.textFieldPath;
     }
 
-    /**
-     * @return {@link URI}
-     */
     URI getUri()
     {
         JSyncProtocol protocol = (JSyncProtocol) this.comboBoxProtocol.getSelectedItem();
@@ -101,11 +72,6 @@ class UriView extends AbstractView
         return protocol.toUri(hostPort, path);
     }
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link UriView}
-     */
     UriView initGUI(final EFileSystem fileSystem)
     {
         this.panel.setLayout(new GridBagLayout());

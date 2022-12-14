@@ -13,17 +13,10 @@ import de.freese.jsync.model.SyncItem;
  */
 public class GeneratorListenerAdapter implements GeneratorListener
 {
-    /**
-     *
-     */
     private LongConsumer checksumConsumer;
-    /**
-     *
-     */
+
     private Consumer<SyncItem> currentItemConsumer;
-    /**
-     *
-     */
+
     private BiConsumer<Path, Integer> itemCountConsumer;
 
     /**
@@ -50,25 +43,16 @@ public class GeneratorListenerAdapter implements GeneratorListener
         }
     }
 
-    /**
-     * @param consumer {@link LongConsumer}
-     */
     public void doOnChecksum(final LongConsumer consumer)
     {
         this.checksumConsumer = consumer;
     }
 
-    /**
-     * @param consumer {@link Consumer}
-     */
     public void doOnCurrentItem(final Consumer<SyncItem> consumer)
     {
         this.currentItemConsumer = consumer;
     }
 
-    /**
-     * @param consumer {@link BiConsumer}
-     */
     public void doOnItemCount(final BiConsumer<Path, Integer> consumer)
     {
         this.itemCountConsumer = consumer;

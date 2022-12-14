@@ -4,12 +4,11 @@ package de.freese.jsync.filesystem;
 import java.nio.charset.Charset;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Basis-Implementierung des {@link FileSystem}.
@@ -28,34 +27,21 @@ public abstract class AbstractFileSystem implements FileSystem
      * The question mark, in the end, signifies that this complete group is optional
      */
     protected static final Pattern PATTERN_NUMBER = Pattern.compile("-?\\d+(\\.\\d+)?");
-    /**
-    *
-    */
+
     private final Generator generator = new DefaultGenerator();
-    /**
-     *
-     */
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    /**
-     * @return {@link Charset}
-     */
     protected Charset getCharset()
     {
         return Options.CHARSET;
     }
 
-    /**
-     * @return {@link Generator}
-     */
     protected Generator getGenerator()
     {
         return this.generator;
     }
 
-    /**
-     * @return {@link Logger}
-     */
     protected Logger getLogger()
     {
         return this.logger;

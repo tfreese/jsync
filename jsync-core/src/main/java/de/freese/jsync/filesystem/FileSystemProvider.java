@@ -8,24 +8,9 @@ import java.net.URI;
  */
 public interface FileSystemProvider
 {
-    /**
-     * @param uri {@link URI}
-     *
-     * @return {@link FileSystem}
-     */
     Receiver createReceiver(final URI uri);
 
-    /**
-     * @param uri {@link URI}
-     *
-     * @return {@link FileSystem}
-     */
     Sender createSender(final URI uri);
 
-    /**
-     * @param scheme {@link String}
-     *
-     * @return boolean
-     */
     boolean supportsProtocol(String scheme);
 }

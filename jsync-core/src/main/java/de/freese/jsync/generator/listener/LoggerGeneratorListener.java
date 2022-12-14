@@ -4,10 +4,9 @@ package de.freese.jsync.generator.listener;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import de.freese.jsync.model.SyncItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.freese.jsync.model.SyncItem;
 
 /**
  * {@link Logger}-Implementierung des {@link GeneratorListener}.
@@ -16,20 +15,10 @@ import de.freese.jsync.model.SyncItem;
  */
 public class LoggerGeneratorListener extends AbstractGeneratorListener
 {
-    /**
-     *
-     */
     private final Logger logger = LoggerFactory.getLogger("Generator");
-    /**
-     *
-     */
+
     private final String prefix;
 
-    /**
-     * Erstellt ein neues {@link LoggerGeneratorListener} Object.
-     *
-     * @param prefix String
-     */
     public LoggerGeneratorListener(final String prefix)
     {
         super();
@@ -58,14 +47,6 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
     }
 
     /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
      * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
      */
     @Override
@@ -74,5 +55,10 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
         String message = itemCountMessage(path, itemCount, this.prefix);
 
         getLogger().info(message);
+    }
+
+    protected Logger getLogger()
+    {
+        return this.logger;
     }
 }

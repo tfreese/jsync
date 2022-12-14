@@ -33,11 +33,6 @@ public class RSocketClientRemoteBuilder extends AbstractRSocketClientRemoteBuild
         return RSocketClient.from(rSocket);
     }
 
-    /**
-     * @param remoteAddress {@link SocketAddress}
-     *
-     * @return {@link RSocketClientRemoteBuilder}
-     */
     public RSocketClientRemoteBuilder remoteAddress(final SocketAddress remoteAddress)
     {
         Objects.requireNonNull(remoteAddress, "remoteAddress required");

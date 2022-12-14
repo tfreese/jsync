@@ -27,46 +27,24 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
 {
-    /**
-     * @return {@link ExecutorService}
-     */
     protected static ExecutorService getExecutorService()
     {
         return JSyncContext.getExecutorService();
     }
 
-    /**
-     * @param key String
-     *
-     * @return String
-     */
     protected static String getMessage(final String key)
     {
         return JSyncContext.getMessages().getString(key);
     }
 
-    /**
-     *
-     */
     public final Logger logger = LoggerFactory.getLogger(getClass());
-    /**
-     *
-     */
+
     private final JSyncController controller;
-    /**
-     *
-     */
+
     private final Options options;
-    /**
-     *
-     */
+
     private final boolean parallel;
 
-    /**
-     * Erstellt ein neues {@link AbstractWorker} Object.
-     *
-     * @param controller {@link JSyncController}
-     */
     protected AbstractWorker(final JSyncController controller)
     {
         super();
@@ -87,11 +65,6 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      * Parallel-Verarbeitung aktivieren, wenn<br>
      * - Sender und Receiver nicht auf dem gleichen File-Device laufen<br>
      * - Sender und Receiver nicht auf dem gleichen Server laufen<br>
-     *
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     *
-     * @return boolean
      */
     boolean canRunParallel(final URI senderUri, final URI receiverUri)
     {
@@ -143,49 +116,31 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
         return canRunParallel;
     }
 
-    /**
-     * @return {@link Client}
-     */
     protected Client getClient()
     {
         return getController().getClient();
     }
 
-    /**
-     * @return {@link JSyncController}
-     */
     protected JSyncController getController()
     {
         return this.controller;
     }
 
-    /**
-     * @return {@link Logger}
-     */
     protected Logger getLogger()
     {
         return this.logger;
     }
 
-    /**
-     * @return {@link Options}
-     */
     protected Options getOptions()
     {
         return this.options;
     }
 
-    /**
-     * @return {@link SyncView}
-     */
     protected SyncView getSyncView()
     {
         return getController().getSyncView();
     }
 
-    /**
-     * @return boolean
-     */
     protected boolean isParallel()
     {
         return this.parallel;

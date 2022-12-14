@@ -23,16 +23,8 @@ import reactor.core.publisher.Flux;
  */
 public final class JSyncConsole
 {
-    /**
-     *
-     */
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncConsole.class);
 
-    /**
-     * @param args String[]
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     public static void main(final String[] args) throws Exception
     {
         String[] args2 = args;
@@ -78,9 +70,6 @@ public final class JSyncConsole
         jSync.run(argumentParser);
     }
 
-    // /**
-    // *
-    // */
     // private static void disableLogging()
     // {
     // // ch.qos.logback.classic.Logger Logger rootLogger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -91,11 +80,6 @@ public final class JSyncConsole
     // // rootLogger.setLevel(Level.INFO);
     // }
 
-    /**
-     * @param argumentParser {@link ArgumentParser}
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     public void run(final ArgumentParser argumentParser) throws Exception
     {
         // @formatter:off
@@ -116,12 +100,6 @@ public final class JSyncConsole
         System.out.println("Synchronisation finished");
     }
 
-    /**
-     * @param options {@link Options} options
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     * @param clientListener {@link ClientListener}
-     */
     public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener)
     {
         Client client = new DefaultClient(options, senderUri, receiverUri);

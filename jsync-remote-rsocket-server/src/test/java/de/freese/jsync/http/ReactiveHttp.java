@@ -21,16 +21,8 @@ import reactor.util.function.Tuple2;
  */
 public class ReactiveHttp
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveHttp.class);
 
-    /**
-     * @param args String[]
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     public static void main(final String[] args) throws Exception
     {
         HttpResources.set(LoopResources.create("reactive-http", 2, 4, true));

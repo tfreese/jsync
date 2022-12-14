@@ -23,12 +23,6 @@ public abstract class AbstractGenerator implements Generator
 {
     /**
      * Liefert ein Set mit allen Path-Objekten (Verzeichnisse, Dateien) das Basis-Verzeichnisses.
-     *
-     * @param base {@link Path}
-     * @param visitOptions {@link FileVisitOption}
-     * @param pathFilter {@link PathFilter}
-     *
-     * @return {@link Flux}
      */
     protected Flux<Path> getPathsAsFlux(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter)
     {
@@ -41,12 +35,6 @@ public abstract class AbstractGenerator implements Generator
 
     /**
      * Liefert ein Set mit allen Path-Objekten (Verzeichnisse, Dateien) das Basis-Verzeichnisses.
-     *
-     * @param base {@link Path}
-     * @param visitOptions {@link FileVisitOption}
-     * @param pathFilter {@link PathFilter}
-     *
-     * @return {@link Set}
      */
     protected Set<Path> getPathsAsSet(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter)
     {
@@ -57,12 +45,6 @@ public abstract class AbstractGenerator implements Generator
         return set;
     }
 
-    /**
-     * @param base {@link Path}
-     * @param visitOptions {@link FileVisitOption}
-     * @param pathFilter {@link PathFilter}
-     * @param consumer {@link Consumer}
-     */
     private void walkFileTree(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter, final Consumer<Path> consumer)
     {
         //  Wenn Dateien fehlerhaft sind, knallt es hier bereits, eigenen FileWalker implementieren !

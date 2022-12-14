@@ -18,29 +18,11 @@ import de.freese.jsync.swing.util.GbcBuilder;
  */
 class ShowView extends AbstractView
 {
-    /**
-     *
-     */
-    private JCheckBox checkBoxDifferent;
-    /**
-     *
-     */
-    private JCheckBox checkBoxOnlyInSource;
-    /**
-     *
-     */
-    private JCheckBox checkBoxOnlyInTarget;
-    /**
-     *
-     */
-    private JCheckBox checkBoxSynchronized;
-    /**
-     *
-     */
     private final JPanel panel = new JPanel();
-    /**
-     *
-     */
+    private JCheckBox checkBoxDifferent;
+    private JCheckBox checkBoxOnlyInSource;
+    private JCheckBox checkBoxOnlyInTarget;
+    private JCheckBox checkBoxSynchronized;
     private Predicate<SyncPair> predicate = syncPair -> true;
 
     /**
@@ -52,17 +34,11 @@ class ShowView extends AbstractView
         return this.panel;
     }
 
-    /**
-     * @return {@link Predicate}<SyncPair>
-     */
     Predicate<SyncPair> getPredicate()
     {
         return this.predicate;
     }
 
-    /**
-     * @param tableFacade {@link TableFacade}
-     */
     void initGUI(final TableFacade tableFacade)
     {
         this.panel.setLayout(new GridBagLayout());
@@ -73,7 +49,8 @@ class ShowView extends AbstractView
         this.checkBoxSynchronized = new JCheckBox(getMessage("jsync.show.synchronized"), true);
         this.checkBoxSynchronized.setForeground(Color.BLACK);
         this.panel.add(this.checkBoxSynchronized, new GbcBuilder(0, 0).anchorWest());
-        this.checkBoxSynchronized.addItemListener(event -> {
+        this.checkBoxSynchronized.addItemListener(event ->
+        {
             updatePredicate();
             tableFacade.sort();
         });
@@ -81,7 +58,8 @@ class ShowView extends AbstractView
         this.checkBoxOnlyInTarget = new JCheckBox(getMessage("jsync.show.onlyInTarget"), true);
         this.checkBoxOnlyInTarget.setForeground(Color.RED);
         this.panel.add(this.checkBoxOnlyInTarget, new GbcBuilder(0, 1).anchorWest());
-        this.checkBoxOnlyInTarget.addItemListener(event -> {
+        this.checkBoxOnlyInTarget.addItemListener(event ->
+        {
             updatePredicate();
             tableFacade.sort();
         });
@@ -89,7 +67,8 @@ class ShowView extends AbstractView
         this.checkBoxOnlyInSource = new JCheckBox(getMessage("jsync.show.onlyInSource"), true);
         this.checkBoxOnlyInSource.setForeground(Color.ORANGE.darker());
         this.panel.add(this.checkBoxOnlyInSource, new GbcBuilder(0, 2).anchorWest());
-        this.checkBoxOnlyInSource.addItemListener(event -> {
+        this.checkBoxOnlyInSource.addItemListener(event ->
+        {
             updatePredicate();
             tableFacade.sort();
         });
@@ -97,7 +76,8 @@ class ShowView extends AbstractView
         this.checkBoxDifferent = new JCheckBox(getMessage("jsync.show.different"), true);
         this.checkBoxDifferent.setForeground(Color.ORANGE.darker());
         this.panel.add(this.checkBoxDifferent, new GbcBuilder(0, 3).anchorWest());
-        this.checkBoxDifferent.addItemListener(event -> {
+        this.checkBoxDifferent.addItemListener(event ->
+        {
             updatePredicate();
             tableFacade.sort();
         });
@@ -105,9 +85,6 @@ class ShowView extends AbstractView
         updatePredicate();
     }
 
-    /**
-     *
-     */
     private void updatePredicate()
     {
         this.predicate = syncPair -> SyncStatus.UNKNOWN.equals(syncPair.getStatus());

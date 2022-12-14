@@ -23,17 +23,8 @@ import reactor.util.retry.Retry;
  */
 public class RSocketServer
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketServer.class);
 
-    /**
-     * @param args String[]
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
-    @SuppressWarnings("unused")
     public static void main(final String[] args) throws Exception
     {
         // Globale Default-Ressourcen.

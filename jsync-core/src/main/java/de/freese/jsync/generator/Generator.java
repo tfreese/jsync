@@ -8,7 +8,6 @@ import java.util.function.LongConsumer;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 /**
  * Der Generator sammelt alle relevanten Informationen des Dateisystems für den gewählten {@link Path}.
@@ -20,32 +19,17 @@ public interface Generator
     /**
      * Erzeugt die Prüfsumme einer Datei.<br>
      *
-     * @param baseDir String
-     * @param relativeFile String
      * @param consumerChecksumBytesRead {@link LongConsumer}; optional
-     *
-     * @return {@link Mono}
      */
     String generateChecksum(final String baseDir, String relativeFile, final LongConsumer consumerChecksumBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
-     *
-     * @param baseDir String
-     * @param followSymLinks boolean
-     * @param pathFilter {@link PathFilter}
-     *
-     * @return {@link Flux}
      */
     Flux<SyncItem> generateItems(final String baseDir, boolean followSymLinks, PathFilter pathFilter);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
-     *
-     * @param baseDir String
-     * @param followSymLinks boolean
-     * @param pathFilter {@link PathFilter}
-     * @param consumer {@link Consumer}
      */
     default void generateItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final Consumer<SyncItem> consumer)
     {

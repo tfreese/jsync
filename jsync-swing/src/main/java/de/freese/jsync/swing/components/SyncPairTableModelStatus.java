@@ -12,15 +12,9 @@ import de.freese.jsync.swing.JSyncContext;
  */
 public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair>
 {
-    /**
-     *
-     */
     @Serial
     private static final long serialVersionUID = 871089543329340184L;
 
-    /**
-     * Erstellt ein neues {@link SyncPairTableModelStatus} Object.
-     */
     public SyncPairTableModelStatus()
     {
         super(List.of(JSyncContext.getMessages().getString("jsync.status")));

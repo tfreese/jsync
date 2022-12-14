@@ -30,16 +30,8 @@ import reactor.core.scheduler.Schedulers;
  */
 public final class JSyncNioServer implements Runnable
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncNioServer.class);
 
-    /**
-     * @param args String[]
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     public static void main(final String[] args) throws Exception
     {
         int port = Integer.parseInt(args[0]);
@@ -59,67 +51,34 @@ public final class JSyncNioServer implements Runnable
         // System.in.read();
     }
 
-    /**
-     *
-     */
     private static Logger getLogger()
     {
         return LOGGER;
     }
 
-    /**
-     *
-     */
     private final DispatcherPool dispatcherPool;
-    /**
-     *
-     */
+
     private final int port;
-    /**
-     *
-     */
+
     private final SelectorProvider selectorProvider;
     /**
      * ReentrantLock nicht möglich, da dort die Locks auf Thread-Ebene verwaltet werden.
      */
     private final Semaphore startLock = new Semaphore(1, true);
-    /**
-     *
-     */
+
     private Acceptor acceptor;
-    /**
-     *
-     */
+
     private IoHandler<SelectionKey> ioHandler;
-    /**
-     *
-     */
+
     private String name = getClass().getSimpleName();
-    /**
-     *
-     */
+
     private ServerSocketChannel serverSocketChannel;
 
-    /**
-     * Erstellt ein neues {@link JSyncNioServer} Object.
-     *
-     * @param port int
-     * @param numOfDispatcher int
-     * @param numOfWorker int
-     */
     public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker)
     {
         this(port, numOfDispatcher, numOfWorker, SelectorProvider.provider());
     }
 
-    /**
-     * Erstellt ein neues {@link JSyncNioServer} Object.
-     *
-     * @param port int
-     * @param numOfDispatcher int
-     * @param numOfWorker int
-     * @param selectorProvider {@link SelectorProvider}
-     */
     public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker, final SelectorProvider selectorProvider)
     {
         super();
@@ -136,9 +95,6 @@ public final class JSyncNioServer implements Runnable
         this.startLock.acquireUninterruptibly();
     }
 
-    /**
-     * @return boolean
-     */
     public boolean isStarted()
     {
         return this.startLock.availablePermits() > 0;
@@ -215,17 +171,11 @@ public final class JSyncNioServer implements Runnable
         }
     }
 
-    /**
-     * @param ioHandler {@link IoHandler}
-     */
     public void setIoHandler(final IoHandler<SelectionKey> ioHandler)
     {
         this.ioHandler = Objects.requireNonNull(ioHandler, "ioHandler required");
     }
 
-    /**
-     * @param name String
-     */
     public void setName(final String name)
     {
         this.name = Objects.requireNonNull(name, "name required");

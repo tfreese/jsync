@@ -12,7 +12,6 @@ import java.util.function.UnaryOperator;
 
 import javax.net.ssl.TrustManagerFactory;
 
-import de.freese.jsync.rsocket.builder.server.RSocketServerRemoteBuilder;
 import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
@@ -31,14 +30,8 @@ import reactor.util.retry.Retry;
 public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSocketClientRemoteBuilder<?>>
         extends AbstractRSocketClientBuilder<AbstractRSocketClientRemoteBuilder<T>>
 {
-    /**
-     *
-     */
     private final List<UnaryOperator<TcpClient>> tcpClientCustomizers = new ArrayList<>();
 
-    /**
-     *
-     */
     public T addTcpClientCustomizer(final UnaryOperator<TcpClient> tcpClientCustomizer)
     {
         this.tcpClientCustomizers.add(Objects.requireNonNull(tcpClientCustomizer, "tcpClientCustomizer required"));
@@ -46,9 +39,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    /**
-     * @return {@link AbstractRSocketClientRemoteBuilder}
-     */
     public T logTcpClientBoundStatus()
     {
         // @formatter:off
@@ -62,11 +52,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    /**
-     * @param protocolSslContextSpec {@link ProtocolSslContextSpec}
-     *
-     * @return {@link RSocketServerRemoteBuilder}
-     */
     public T protocolSslContextSpec(final ProtocolSslContextSpec protocolSslContextSpec)
     {
         Objects.requireNonNull(protocolSslContextSpec, "protocolSslContextSpec required");
@@ -76,11 +61,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    /**
-     * @return {@link RSocketServerRemoteBuilder}
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     public T protocolSslContextSpecCertificate() throws Exception
     {
         // KeyStore keyStore = KeyStore.getInstance("PKCS12");
@@ -119,9 +99,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    /**
-     * @return {@link RSocketServerRemoteBuilder}
-     */
     public T protocolSslContextSpecTrusted()
     {
         // @formatter:off
@@ -139,11 +116,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    /**
-     * @param resume {@link Resume}
-     *
-     * @return {@link AbstractRSocketClientRemoteBuilder}
-     */
     public T resume(final Resume resume)
     {
         Objects.requireNonNull(resume, "resume required");
@@ -153,9 +125,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    /**
-     * @return {@link AbstractRSocketClientRemoteBuilder}
-     */
     public T resumeDefault()
     {
         // @formatter:off
@@ -170,11 +139,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return resume(resume);
     }
 
-    /**
-     * @param retry {@link Retry}
-     *
-     * @return {@link AbstractRSocketClientRemoteBuilder}
-     */
     public T retry(final Retry retry)
     {
         Objects.requireNonNull(retry, "retry required");
@@ -184,9 +148,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    /**
-     * @return {@link AbstractRSocketClientRemoteBuilder}
-     */
     public T retryDefault()
     {
         return retry(Retry.fixedDelay(5, Duration.ofMillis(100)));
@@ -195,10 +156,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
 
     /**
      * EpollEventLoopGroup geht nur auf Linux -> NioEventLoopGroup verwenden.
-     *
-     * @param eventLoopGroup {@link EventLoopGroup}
-     *
-     * @return {@link AbstractRSocketClientRemoteBuilder}
      */
     public T runOn(final EventLoopGroup eventLoopGroup)
     {
@@ -209,11 +166,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    /**
-     * @param loopResources {@link LoopResources}
-     *
-     * @return {@link AbstractRSocketClientRemoteBuilder}
-     */
     public T runOn(final LoopResources loopResources)
     {
         Objects.requireNonNull(loopResources, "loopResources required");
@@ -223,11 +175,6 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    /**
-     * @param tcpClient {@link TcpClient}
-     *
-     * @return {@link TcpClient}
-     */
     protected TcpClient configure(final TcpClient tcpClient)
     {
         TcpClient client = tcpClient;

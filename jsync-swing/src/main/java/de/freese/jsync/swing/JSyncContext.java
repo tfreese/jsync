@@ -18,50 +18,29 @@ import io.rsocket.SocketAcceptor;
  */
 public final class JSyncContext
 {
-    /**
-     *
-     */
     private static ExecutorService executorService;
-    /**
-     *
-     */
+
     private static JFrame mainFrame;
-    /**
-     *
-     */
+
     private static Messages messages;
-    /**
-     *
-     */
+
     private static Closeable rSocketServerLocal;
 
-    /**
-     * @return {@link ExecutorService}
-     */
     public static ExecutorService getExecutorService()
     {
         return executorService;
     }
 
-    /**
-     * @return {@link JFrame}
-     */
     public static JFrame getMainFrame()
     {
         return mainFrame;
     }
 
-    /**
-     * @return {@link Messages}
-     */
     public static Messages getMessages()
     {
         return messages;
     }
 
-    /**
-     *
-     */
     public static void shutdown()
     {
         if (rSocketServerLocal != null)
@@ -79,9 +58,6 @@ public final class JSyncContext
         mainFrame = null;
     }
 
-    /**
-     *
-     */
     public static void startLocalRSocketServer()
     {
         if (rSocketServerLocal == null)
@@ -98,33 +74,21 @@ public final class JSyncContext
         }
     }
 
-    /**
-     * @param executorService {@link ExecutorService}
-     */
     static void setExecutorService(final ExecutorService executorService)
     {
         JSyncContext.executorService = executorService;
     }
 
-    /**
-     * @param mainFrame {@link JFrame}
-     */
     static void setMainFrame(final JFrame mainFrame)
     {
         JSyncContext.mainFrame = mainFrame;
     }
 
-    /**
-     * @param messages {@link Messages}
-     */
     static void setMessages(final Messages messages)
     {
         JSyncContext.messages = messages;
     }
 
-    /**
-     * Erstellt ein neues {@link JSyncContext} Object.
-     */
     private JSyncContext()
     {
         super();

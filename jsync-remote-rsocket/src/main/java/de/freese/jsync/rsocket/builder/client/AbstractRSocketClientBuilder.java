@@ -18,14 +18,8 @@ import io.rsocket.frame.decoder.PayloadDecoder;
  */
 public abstract class AbstractRSocketClientBuilder<T extends AbstractRSocketClientBuilder<?>> extends AbstractRSocketBuilder<T, RSocketClient>
 {
-    /**
-     *
-     */
     private final List<UnaryOperator<RSocketConnector>> rSocketConnectorCustomizers = new ArrayList<>();
 
-    /**
-     *
-     */
     public T addRSocketConnectorCustomizer(final UnaryOperator<RSocketConnector> rSocketConnectorCustomizer)
     {
         this.rSocketConnectorCustomizers.add(Objects.requireNonNull(rSocketConnectorCustomizer, "rSocketConnectorCustomizer required"));
@@ -33,11 +27,6 @@ public abstract class AbstractRSocketClientBuilder<T extends AbstractRSocketClie
         return (T) this;
     }
 
-    /**
-     * @param payloadDecoder {@link PayloadDecoder}
-     *
-     * @return {@link AbstractRSocketBuilder}
-     */
     public T payloadDecoder(final PayloadDecoder payloadDecoder)
     {
         Objects.requireNonNull(payloadDecoder, "payloadDecoder required");
@@ -47,11 +36,6 @@ public abstract class AbstractRSocketClientBuilder<T extends AbstractRSocketClie
         return (T) this;
     }
 
-    /**
-     * @param rSocketConnector {@link RSocketConnector}
-     *
-     * @return {@link RSocketConnector}
-     */
     protected RSocketConnector configure(final RSocketConnector rSocketConnector)
     {
         RSocketConnector connector = rSocketConnector;

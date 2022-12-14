@@ -21,16 +21,8 @@ import reactor.netty.tcp.TcpResources;
  */
 public final class JSyncRSocketServer
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketServer.class);
 
-    /**
-     * @param args String[]
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     public static void main(final String[] args) throws Exception
     {
         System.setProperty("reactor.schedulers.defaultPoolSize", Integer.toString(8));
@@ -56,14 +48,8 @@ public final class JSyncRSocketServer
         // System.in.read();
     }
 
-    /**
-     *
-     */
     private CloseableChannel server;
 
-    /**
-     * @param port int
-     */
     public void start(final int port)
     {
         getLogger().info("starting jSync-rSocket server on port: {}", port);
@@ -97,9 +83,6 @@ public final class JSyncRSocketServer
         // @formatter:on
     }
 
-    /**
-     *
-     */
     public void stop()
     {
         getLogger().info("stopping jSync-rSocket server");
@@ -109,9 +92,6 @@ public final class JSyncRSocketServer
         ByteBufferPool.DEFAULT.clear();
     }
 
-    /**
-     * @return {@link Logger}
-     */
     Logger getLogger()
     {
         return LOGGER;

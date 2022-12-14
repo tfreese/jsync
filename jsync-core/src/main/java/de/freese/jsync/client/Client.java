@@ -33,31 +33,16 @@ public interface Client
 
     /**
      * Erzeugt die Prüfsumme einer Datei.<br>
-     *
-     * @param fileSystem {@link EFileSystem}
-     * @param syncItem {@link SyncItem}
-     * @param consumerChecksumBytesRead {@link LongConsumer}
-     *
-     * @return String
      */
     String generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerChecksumBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
-     *
-     * @param fileSystem {@link EFileSystem}
-     * @param pathFilter {@link PathFilter}
-     *
-     * @return {@link Flux}
      */
     Flux<SyncItem> generateSyncItems(EFileSystem fileSystem, PathFilter pathFilter);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
-     *
-     * @param fileSystem {@link EFileSystem}
-     * @param pathFilter {@link PathFilter}
-     * @param consumer {@link Consumer}
      */
     default void generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter, final Consumer<SyncItem> consumer)
     {
@@ -69,19 +54,11 @@ public interface Client
      * Die Einträge des Senders sind die Referenz.<br>
      * Ist ein Item nicht im Receiver enthalten, muss es dorthin kopiert werden.<br>
      * Ist ein Item nur Receiver enthalten, muss es dort gelöscht werden.<br>
-     *
-     * @param syncItemsSender {@link List}
-     * @param syncItemsReceiver {@link List}
-     *
-     * @return {@link List}
      */
     List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver);
 
     /**
      * Synchronisiert das Ziel-Verzeichnis mit der Quelle.
-     *
-     * @param syncPairs {@link List}
-     * @param clientListener {@link ClientListener}
      */
     void syncReceiver(List<SyncPair> syncPairs, ClientListener clientListener);
 }

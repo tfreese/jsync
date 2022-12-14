@@ -16,22 +16,10 @@ import de.freese.jsync.nio.server.dispatcher.Dispatcher;
  */
 class Acceptor extends AbstractNioProcessor
 {
-    /**
-     *
-     */
     private final Dispatcher dispatcher;
-    /**
-     *
-     */
+
     private final ServerSocketChannel serverSocketChannel;
 
-    /**
-     * Erstellt ein neues {@link Acceptor} Object.
-     *
-     * @param selector {@link Selector}
-     * @param serverSocketChannel {@link ServerSocketChannel}
-     * @param dispatcher {@link Dispatcher}
-     */
     public Acceptor(final Selector selector, final ServerSocketChannel serverSocketChannel, final Dispatcher dispatcher)
     {
         super(selector);

@@ -14,22 +14,12 @@ import de.freese.jsync.Options;
  */
 class SimpleByteBufferPool implements ByteBufferPool
 {
-    /**
-     *
-     */
     private final Queue<ByteBuffer> cache = new LinkedBlockingQueue<>(Integer.MAX_VALUE);
-    /**
-    *
-    */
+
     private int created;
-    /**
-    *
-    */
+
     private int free;
 
-    /**
-     * Erstellt ein neues {@link SimpleByteBufferPool} Object.
-     */
     SimpleByteBufferPool()
     {
         super();

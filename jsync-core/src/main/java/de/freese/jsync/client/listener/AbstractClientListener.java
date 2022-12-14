@@ -14,11 +14,6 @@ public abstract class AbstractClientListener implements ClientListener
 {
     /**
      * Hängt bei Bedarf den String "(dry-run)" an die Message.
-     *
-     * @param options {@link Options}
-     * @param message String
-     *
-     * @return String
      */
     protected String appendDryRun(final Options options, final String message)
     {
@@ -32,13 +27,6 @@ public abstract class AbstractClientListener implements ClientListener
         return msg;
     }
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     * @param bytesRead long
-     *
-     * @return String
-     */
     protected String checksumProgressMessage(final Options options, final SyncItem syncItem, final long bytesRead)
     {
         double percent = JSyncUtils.getPercent(bytesRead, syncItem.getSize());
@@ -52,12 +40,6 @@ public abstract class AbstractClientListener implements ClientListener
         return message;
     }
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     *
-     * @return String
-     */
     protected String copyMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("copy: %s", syncItem.getRelativePath());
@@ -67,13 +49,6 @@ public abstract class AbstractClientListener implements ClientListener
         return message;
     }
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     * @param bytesTransferred long
-     *
-     * @return String
-     */
     protected String copyProgressMessage(final Options options, final SyncItem syncItem, final long bytesTransferred)
     {
         double percent = JSyncUtils.getPercent(bytesTransferred, syncItem.getSize());
@@ -87,12 +62,6 @@ public abstract class AbstractClientListener implements ClientListener
         return message;
     }
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     *
-     * @return String
-     */
     protected String deleteMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("delete: %s", syncItem.getRelativePath());
@@ -102,12 +71,6 @@ public abstract class AbstractClientListener implements ClientListener
         return message;
     }
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     *
-     * @return String
-     */
     protected String updateMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("update attributes: %s", syncItem.getRelativePath());
@@ -117,12 +80,6 @@ public abstract class AbstractClientListener implements ClientListener
         return message;
     }
 
-    /**
-     * @param options {@link Options}
-     * @param syncItem {@link SyncItem}
-     *
-     * @return String
-     */
     protected String validateMessage(final Options options, final SyncItem syncItem)
     {
         String message = String.format("validate: %s", syncItem.getRelativePath());

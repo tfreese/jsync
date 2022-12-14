@@ -57,13 +57,8 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
         return of(new InputOutputStreamAdapter());
     }
 
-    /**
-     *
-     */
     private final DataAdapter<W, R> adapter;
-    /**
-     *
-     */
+
     private final Map<Class<?>, ObjectSerializer<?>> serializerMap = new HashMap<>();
 
     private DefaultSerializer(final DataAdapter<W, R> adapter)

@@ -38,13 +38,8 @@ import reactor.core.publisher.Mono;
 @Deprecated
 class JSyncRSocketHandlerByteBuffer implements RSocket
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketHandlerByteBuffer.class);
-    /**
-     *
-     */
+
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true)
     {
         /**
@@ -56,9 +51,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
             return new ReceiverDelegateLogger(new LocalhostReceiver());
         }
     };
-    /**
-     *
-     */
+
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true)
     {
         /**
@@ -70,13 +63,9 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
             return new SenderDelegateLogger(new LocalhostSender());
         }
     };
-    /**
-     *
-     */
+
     private static final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
-    /**
-     *
-     */
+
     private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
@@ -203,9 +192,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
         }
     }
 
-    /**
-     * @return {@link Serializer}
-     */
     protected Serializer<ByteBuffer, ByteBuffer> getSerializer()
     {
         return this.serializer;
@@ -213,11 +199,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
 
     /**
      * Create the checksum.
-     *
-     * @param payload {@link Payload}
-     * @param fileSystem {@link FileSystem}
-     *
-     * @return {@link Mono}
      */
     private Flux<Payload> checksum(final Payload payload, final FileSystem fileSystem)
     {
@@ -237,9 +218,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
         });
     }
 
-    /**
-     * @return {@link Mono}
-     */
     private Mono<Payload> connect()
     {
         Payload responsePayload = DefaultPayload.create("OK");
@@ -249,11 +227,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
 
     /**
      * Create the Directory.
-     *
-     * @param payload {@link Payload}
-     * @param receiver {@link Receiver}
-     *
-     * @return {@link Mono}
      */
     private Mono<Payload> createDirectory(final Payload payload, final Receiver receiver)
     {
@@ -271,11 +244,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
 
     /**
      * Delete Directory or File.
-     *
-     * @param payload {@link Payload}
-     * @param receiver {@link Receiver}
-     *
-     * @return {@link Mono}
      */
     private Mono<Payload> delete(final Payload payload, final Receiver receiver)
     {
@@ -292,9 +260,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
         return Mono.just(responsePayload);
     }
 
-    /**
-     * @return {@link Mono}
-     */
     private Mono<Payload> disconnect()
     {
         Payload responsePayload = DefaultPayload.create("OK");
@@ -304,11 +269,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
 
     /**
      * Create the Sync-Items.
-     *
-     * @param payload {@link Payload}
-     * @param fileSystem {@link FileSystem}
-     *
-     * @return {@link Mono}
      */
     private Flux<Payload> generateSyncItems(final Payload payload, final FileSystem fileSystem)
     {
@@ -337,9 +297,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
         // }).map(DefaultPayload::create);
     }
 
-    /**
-     * @return {@link Logger}
-     */
     private Logger getLogger()
     {
         return LOGGER;
@@ -347,11 +304,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
 
     /**
      * Die Daten werden zum Client gesendet.
-     *
-     * @param payload {@link Payload}
-     * @param sender {@link Sender}
-     *
-     * @return {@link Flux}
      */
     private Flux<Payload> readFile(final Payload payload, final Sender sender)
     {
@@ -370,11 +322,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
 
     /**
      * Update Directory or File.
-     *
-     * @param payload {@link Payload}
-     * @param receiver {@link Receiver}
-     *
-     * @return {@link Mono}
      */
     private Mono<Payload> update(final Payload payload, final Receiver receiver)
     {
@@ -392,11 +339,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
 
     /**
      * Validate Directory or File.
-     *
-     * @param payload {@link Payload}
-     * @param receiver {@link Receiver}
-     *
-     * @return {@link Mono}
      */
     private Mono<Payload> validate(final Payload payload, final Receiver receiver)
     {
@@ -415,12 +357,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket
 
     /**
      * Die Daten werden zum Server gesendet.
-     *
-     * @param payload {@link Payload}
-     * @param flux {@link Flux}
-     * @param receiver {@link Receiver}
-     *
-     * @return {@link Flux}
      */
     private Flux<Payload> writeFile(final Payload payload, final Flux<Payload> flux, final Receiver receiver)
     {

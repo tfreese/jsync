@@ -10,33 +10,18 @@ import java.util.Objects;
  */
 public class User
 {
-    /**
-     *
-     */
     public static final int ID_MAX = 65535;
-    /**
-     *
-     */
+
     public static final User NOBODY = new User("nobody", ID_MAX - 1);
-    /**
-     *
-     */
+
     public static final User ROOT = new User("root", 0);
-    /**
-     *
-     */
+
     private final String name;
     /**
      * unix:uid
      */
     private final int uid;
 
-    /**
-     * Erstellt ein neues {@link User} Object.
-     *
-     * @param name String
-     * @param uid int
-     */
     public User(final String name, final int uid)
     {
         super();
@@ -64,17 +49,11 @@ public class User
         return Objects.equals(this.name, other.name) && (this.uid == other.uid);
     }
 
-    /**
-     * @return String
-     */
     public String getName()
     {
         return this.name;
     }
 
-    /**
-     * @return int
-     */
     public int getUid()
     {
         return this.uid;

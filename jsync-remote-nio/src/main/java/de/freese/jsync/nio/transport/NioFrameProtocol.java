@@ -24,24 +24,14 @@ public class NioFrameProtocol
      * Default: 4 MB
      */
     protected static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 4;
-    /**
-     *
-     */
+
     private final ByteBufferPool bufferPool;
 
-    /**
-     * Erstellt ein neues {@link NioFrameProtocol} Object.
-     */
     public NioFrameProtocol()
     {
         this(ByteBufferPool.DEFAULT);
     }
 
-    /**
-     * Erstellt ein neues {@link NioFrameProtocol} Object.
-     *
-     * @param bufferPool {@link ByteBufferPool}
-     */
     public NioFrameProtocol(final ByteBufferPool bufferPool)
     {
         super();
@@ -49,9 +39,6 @@ public class NioFrameProtocol
         this.bufferPool = Objects.requireNonNull(bufferPool, "bufferPool required");
     }
 
-    /**
-     * @return {@link ByteBufferPool}
-     */
     public ByteBufferPool getBufferPool()
     {
         return this.bufferPool;
@@ -60,10 +47,6 @@ public class NioFrameProtocol
     /**
      * Lesen aller Frames bis zum FINISH-Frame.<br>
      * Diese können nach der Verarbeitung wieder in den {@link ByteBufferPool}.
-     *
-     * @param channel {@link ReadableByteChannel}
-     *
-     * @return {@link Flux}
      */
     public Flux<ByteBuffer> readAll(final ReadableByteChannel channel)
     {
@@ -87,11 +70,6 @@ public class NioFrameProtocol
     /**
      * Lesen aller Frames bis zum FINISH-Frame.<br>
      * Diese können nach der Verarbeitung wieder in den {@link ByteBufferPool}.
-     *
-     * @param channel {@link ReadableByteChannel}
-     * @param consumer {@link Consumer}
-     *
-     * @throws Exception Falls was schiefgeht
      */
     public void readAll(final ReadableByteChannel channel, final Consumer<ByteBuffer> consumer) throws Exception
     {
@@ -113,12 +91,6 @@ public class NioFrameProtocol
      * DATA-Frame liefert den {@link ByteBuffer} des Contents, dieser kann nach der Verarbeitung wieder in den {@link ByteBufferPool}.<br>
      * ERROR-Frame wirft eine Exception.<br>
      * FINISH-Frame liefert null.
-     *
-     * @param channel {@link ReadableByteChannel}
-     *
-     * @return {@link ByteBuffer}
-     *
-     * @throws Exception Falls was schiefgeht
      */
     public ByteBuffer readFrame(final ReadableByteChannel channel) throws Exception
     {
@@ -161,11 +133,6 @@ public class NioFrameProtocol
 
     /**
      * DATA-Frame schreiben.
-     *
-     * @param channel {@link WritableByteChannel}
-     * @param buffer {@link ByteBuffer}
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     public void writeData(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException
     {
@@ -186,11 +153,6 @@ public class NioFrameProtocol
 
     /**
      * DATA-Frame schreiben.
-     *
-     * @param channel {@link WritableByteChannel}
-     * @param consumer {@link Consumer}
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     public void writeData(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
     {
@@ -210,11 +172,6 @@ public class NioFrameProtocol
 
     /**
      * ERROR-Frame schreiben.
-     *
-     * @param channel {@link WritableByteChannel}
-     * @param consumer {@link Consumer}
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     public void writeError(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
     {
@@ -246,11 +203,6 @@ public class NioFrameProtocol
 
     /**
      * ERROR-Frame schreiben.
-     *
-     * @param channel {@link WritableByteChannel}
-     * @param th {@link Throwable}
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     public void writeError(final WritableByteChannel channel, final Throwable th) throws IOException
     {
@@ -264,10 +216,6 @@ public class NioFrameProtocol
 
     /**
      * FINISH-Frame schreiben.
-     *
-     * @param channel {@link WritableByteChannel}
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     public void writeFinish(final WritableByteChannel channel) throws IOException
     {
@@ -276,12 +224,6 @@ public class NioFrameProtocol
 
     /**
      * Garantiert das alle Daten aus dem Channel gelesen werden wie angefordert.
-     *
-     * @param channel {@link ReadableByteChannel}
-     * @param buffer {@link ByteBuffer}
-     * @param contentLength int
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     protected void read(final ReadableByteChannel channel, final ByteBuffer buffer, final int contentLength) throws IOException
     {
@@ -300,13 +242,6 @@ public class NioFrameProtocol
         buffer.limit(bb.limit());
     }
 
-    /**
-     * @param channel {@link ReadableByteChannel}
-     *
-     * @return {@link ByteBuffer}
-     *
-     * @throws IOException Falls was schiefgeht.
-     */
     protected ByteBuffer readFrameHeader(final ReadableByteChannel channel) throws IOException
     {
         ByteBuffer buffer = getBufferPool().get();
@@ -316,14 +251,6 @@ public class NioFrameProtocol
         return buffer.flip();
     }
 
-    /**
-     * @param channel {@link WritableByteChannel}
-     * @param buffer {@link ByteBuffer}
-     *
-     * @return long
-     *
-     * @throws IOException Falls was schiefgeht
-     */
     protected long write(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException
     {
         // for (ByteBuffer buffer : buffers)
@@ -355,13 +282,6 @@ public class NioFrameProtocol
         return totalWritten;
     }
 
-    /**
-     * @param channel {@link WritableByteChannel}
-     * @param frameType {@link FrameType}
-     * @param contentLength int
-     *
-     * @throws IOException Falls was schiefgeht.
-     */
     protected void writeFrameHeader(final WritableByteChannel channel, final FrameType frameType, final int contentLength) throws IOException
     {
         ByteBuffer buffer = getBufferPool().get();

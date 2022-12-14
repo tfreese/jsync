@@ -15,8 +15,6 @@ public interface FileSystem
 {
     /**
      * Stellt die Verbindung zum Dateisystem her.
-     *
-     * @param uri {@link URI}
      */
     void connect(final URI uri);
 
@@ -27,23 +25,11 @@ public interface FileSystem
 
     /**
      * Liefert die Prüfsumme einer Datei.<br>
-     *
-     * @param baseDir String
-     * @param relativeFile String
-     * @param consumerChecksumBytesRead {@link LongConsumer}
-     *
-     * @return String
      */
     String generateChecksum(String baseDir, String relativeFile, LongConsumer consumerChecksumBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses<br>
-     *
-     * @param baseDir String
-     * @param followSymLinks boolean
-     * @param pathFilter {@link PathFilter}
-     *
-     * @return {@link Flux}
      */
     Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks, PathFilter pathFilter);
 }

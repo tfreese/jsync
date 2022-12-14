@@ -15,41 +15,20 @@ import de.freese.jsync.nio.utils.RemoteUtils;
  */
 public final class JSyncServerResponse
 {
-    /**
-     * @param bufferBody {@link ByteBuffer}
-     *
-     * @return {@link JSyncServerResponse}
-     */
     public static JSyncServerResponse error(final ByteBuffer bufferBody)
     {
         return new JSyncServerResponse(RemoteUtils.STATUS_ERROR, bufferBody);
     }
 
-    /**
-     * @param bufferBody {@link ByteBuffer}
-     *
-     * @return {@link JSyncServerResponse}
-     */
     public static JSyncServerResponse ok(final ByteBuffer bufferBody)
     {
         return new JSyncServerResponse(RemoteUtils.STATUS_OK, bufferBody);
     }
 
-    /**
-     *
-     */
     private final ByteBuffer bufferBody;
-    /**
-     *
-     */
+
     private final int status;
 
-    /**
-     * Erstellt ein neues {@link JSyncServerResponse} Object.
-     *
-     * @param status int
-     * @param bufferBody {@link ByteBuffer}
-     */
     private JSyncServerResponse(final int status, final ByteBuffer bufferBody)
     {
         super();
@@ -58,11 +37,6 @@ public final class JSyncServerResponse
         this.bufferBody = Objects.requireNonNull(bufferBody, "bufferBody required");
     }
 
-    /**
-     * @param selectionKey {@link SelectionKey}
-     *
-     * @throws IOException Falls was schiefgeht.
-     */
     public void write(final SelectionKey selectionKey) throws IOException
     {
         this.bufferBody.clear();
@@ -75,12 +49,6 @@ public final class JSyncServerResponse
         write(selectionKey, this.bufferBody);
     }
 
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param consumer {@link Consumer}
-     *
-     * @throws IOException Falls was schiefgeht.
-     */
     public void write(final SelectionKey selectionKey, final Consumer<ByteBuffer> consumer) throws IOException
     {
         this.bufferBody.clear();
@@ -101,12 +69,6 @@ public final class JSyncServerResponse
                 });
     }
 
-    /**
-     * @param selectionKey {@link SelectionKey}
-     * @param buffer {@link ByteBuffer}
-     *
-     * @throws IOException @throws Exception Falls was schief geht
-     */
     void write(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException
     {
         SocketChannel channel = (SocketChannel) selectionKey.channel();
@@ -114,12 +76,6 @@ public final class JSyncServerResponse
         write(channel, buffer);
     }
 
-    /**
-     * @param channel {@link SocketChannel}
-     * @param buffer {@link ByteBuffer}
-     *
-     * @throws IOException Falls was schiefgeht
-     */
     void write(final SocketChannel channel, final ByteBuffer buffer) throws IOException
     {
         while (buffer.hasRemaining())

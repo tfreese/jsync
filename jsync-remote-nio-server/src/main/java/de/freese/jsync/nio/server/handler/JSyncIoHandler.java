@@ -36,14 +36,8 @@ import reactor.core.publisher.Flux;
  */
 public class JSyncIoHandler implements IoHandler<SelectionKey>
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncIoHandler.class);
 
-    /**
-     *
-     */
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true)
     {
         /**
@@ -56,9 +50,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
     };
 
-    /**
-     *
-     */
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true)
     {
         /**
@@ -71,13 +62,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
     };
 
-    /**
-     *
-     */
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
-    /**
-     *
-     */
+
     private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     /**
@@ -187,9 +173,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
     /**
      * Create the checksum.
-     *
-     * @param channel {@link SocketChannel}
-     * @param fileSystem {@link FileSystem}
      */
     protected void createChecksum(final SocketChannel channel, final FileSystem fileSystem)
     {
@@ -238,9 +221,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
     /**
      * Create the Directory.
-     *
-     * @param channel {@link SocketChannel}
-     * @param receiver {@link Receiver}
      */
     protected void createDirectory(final SocketChannel channel, final Receiver receiver)
     {
@@ -276,9 +256,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
     /**
      * Create the Sync-Items.
-     *
-     * @param channel {@link SocketChannel}
-     * @param fileSystem {@link FileSystem}
      */
     protected void createSyncItems(final SocketChannel channel, final FileSystem fileSystem)
     {
@@ -325,9 +302,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
     /**
      * Delete Directory or File.
-     *
-     * @param channel {@link SocketChannel}
-     * @param receiver {@link Receiver}
      */
     protected void delete(final SocketChannel channel, final Receiver receiver)
     {
@@ -360,19 +334,11 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
     }
 
-    /**
-     * @return {@link Logger}
-     */
     protected Logger getLogger()
     {
         return LOGGER;
     }
 
-    /**
-     * @param selectionKey SelectionKey
-     *
-     * @return String
-     */
     protected String getRemoteAddress(final SelectionKey selectionKey)
     {
         try
@@ -385,9 +351,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
     }
 
-    /**
-     * @return {@link Serializer}<ByteBuffer>
-     */
     protected Serializer<ByteBuffer, ByteBuffer> getSerializer()
     {
         return this.serializer;
@@ -395,11 +358,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
     /**
      * Die Daten werden zum Client gesendet.
-     *
-     * @param channel {@link SocketChannel}
-     * @param sender {@link Sender}
-     *
-     * @throws Exception Falls was schiefgeht.
      */
     protected void readFile(final SocketChannel channel, final Sender sender) throws Exception
     {
@@ -448,9 +406,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
     /**
      * Update Directory or File.
-     *
-     * @param channel {@link SocketChannel}
-     * @param receiver {@link Receiver}
      */
     protected void update(final SocketChannel channel, final Receiver receiver)
     {
@@ -486,9 +441,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
     /**
      * Validate Directory or File.
-     *
-     * @param channel {@link SocketChannel}
-     * @param receiver {@link Receiver}
      */
     protected void validate(final SocketChannel channel, final Receiver receiver)
     {
@@ -537,11 +489,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
 
     /**
      * Die Daten werden zum Server gesendet.
-     *
-     * @param channel {@link SocketChannel}
-     * @param receiver {@link Receiver}
-     *
-     * @throws Exception Falls was schiefgeht.
      */
     protected void writeFile(final SocketChannel channel, final Receiver receiver) throws Exception
     {

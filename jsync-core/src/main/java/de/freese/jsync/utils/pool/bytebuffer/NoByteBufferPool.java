@@ -10,18 +10,10 @@ import de.freese.jsync.Options;
  */
 class NoByteBufferPool implements ByteBufferPool
 {
-    /**
-    *
-    */
     private int created;
-    /**
-    *
-    */
+
     private int free;
 
-    /**
-     * Erstellt ein neues {@link NoByteBufferPool} Object.
-     */
     NoByteBufferPool()
     {
         super();

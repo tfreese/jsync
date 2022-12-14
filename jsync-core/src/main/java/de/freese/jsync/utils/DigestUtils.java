@@ -22,47 +22,10 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 public final class DigestUtils
 {
     /**
-     * Erzeugt den {@link MessageDigest} für die Generierung der Prüfsumme.<br>
-     * <br>
-     * Every implementation of the Java platform is required to support the following standard MessageDigest algorithms:<br>
-     * MD5<br>
-     * SHA-1<br>
-     * SHA-256<br>
-     *
-     * @param algorithm String
-     *
-     * @return {@link MessageDigest}
-     *
-     * @throws RuntimeException Falls was schiefgeht.
-     */
-    private static MessageDigest createMessageDigest(final String algorithm)
-    {
-        try
-        {
-            return MessageDigest.getInstance(algorithm);
-        }
-        catch (final NoSuchAlgorithmException ex)
-        {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * @return {@link MessageDigest}
-     */
-    private static MessageDigest createSha256Digest()
-    {
-        return createMessageDigest("SHA-256");
-    }
-
-    /**
      * Die Position des {@link ByteBuffer} wird wieder auf den Ursprungs-Wert gesetzt.<br>
      * {@link ByteBuffer#position()}<br>
      * {@link MessageDigest#update(ByteBuffer)}<br>
      * {@link ByteBuffer#position(int)}<br>
-     *
-     * @param messageDigest {@link MessageDigest}
-     * @param byteBuffer {@link ByteBuffer}
      */
     public static void digest(final MessageDigest messageDigest, final ByteBuffer byteBuffer)
     {
@@ -73,11 +36,6 @@ public final class DigestUtils
         byteBuffer.position(position);
     }
 
-    /**
-     * @param messageDigest {@link MessageDigest}
-     *
-     * @return String
-     */
     public static String digestAsHex(final MessageDigest messageDigest)
     {
         final byte[] digest = messageDigest.digest();
@@ -85,11 +43,6 @@ public final class DigestUtils
         return JSyncUtils.bytesToHex(digest);
     }
 
-    /**
-     * @param bytes byte[]
-     *
-     * @return byte[]
-     */
     public static byte[] sha256Digest(final byte[] bytes)
     {
         final MessageDigest messageDigest = createSha256Digest();
@@ -99,12 +52,6 @@ public final class DigestUtils
 
     /**
      * Der {@link InputStream} wird NICHT geschlossen !
-     *
-     * @param inputStream {@link InputStream}
-     *
-     * @return byte[]
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     public static byte[] sha256Digest(final InputStream inputStream) throws IOException
     {
@@ -124,13 +71,55 @@ public final class DigestUtils
         // });
     }
 
+    public static String sha256DigestAsHex(final Path path)
+    {
+        return sha256DigestAsHex(path, i ->
+        {
+            // Empty
+        });
+    }
+
+    public static String sha256DigestAsHex(final Path path, final LongConsumer consumerBytesRead)
+    {
+        try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
+        {
+            byte[] bytes = sha256Digest(channel, consumerBytesRead);
+
+            return JSyncUtils.bytesToHex(bytes);
+        }
+        catch (IOException iex)
+        {
+            throw new UncheckedIOException(iex);
+        }
+    }
+
     /**
-     * @param readableByteChannel {@link ReadableByteChannel}
+     * Erzeugt den {@link MessageDigest} für die Generierung der Prüfsumme.<br>
+     * <br>
+     * Every implementation of the Java platform is required to support the following standard MessageDigest algorithms:<br>
+     * MD5<br>
+     * SHA-1<br>
+     * SHA-256<br>
+     */
+    private static MessageDigest createMessageDigest(final String algorithm)
+    {
+        try
+        {
+            return MessageDigest.getInstance(algorithm);
+        }
+        catch (final NoSuchAlgorithmException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static MessageDigest createSha256Digest()
+    {
+        return createMessageDigest("SHA-256");
+    }
+
+    /**
      * @param consumerBytesRead {@link LongConsumer}; optional
-     *
-     * @return byte[]
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     private static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final LongConsumer consumerBytesRead) throws IOException
     {
@@ -172,42 +161,6 @@ public final class DigestUtils
         return bytes;
     }
 
-    /**
-     * @param path {@link Path}
-     *
-     * @return String
-     */
-    public static String sha256DigestAsHex(final Path path)
-    {
-        return sha256DigestAsHex(path, i ->
-        {
-            // Empty
-        });
-    }
-
-    /**
-     * @param path {@link Path}
-     * @param consumerBytesRead {@link LongConsumer}
-     *
-     * @return String
-     */
-    public static String sha256DigestAsHex(final Path path, final LongConsumer consumerBytesRead)
-    {
-        try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
-        {
-            byte[] bytes = sha256Digest(channel, consumerBytesRead);
-
-            return JSyncUtils.bytesToHex(bytes);
-        }
-        catch (IOException iex)
-        {
-            throw new UncheckedIOException(iex);
-        }
-    }
-
-    /**
-     * Erstellt ein neues {@link DigestUtils} Object.
-     */
     private DigestUtils()
     {
         super();

@@ -17,189 +17,16 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractNioProcessor implements Runnable
 {
-    /**
-     *
-     */
-    private boolean isShutdown;
-    /**
-     *
-     */
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    /**
-     *
-     */
     private final Selector selector;
-    /**
-     *
-     */
     private final Semaphore stopLock = new Semaphore(1, true);
+    private boolean isShutdown;
 
-    /**
-     * Erstellt ein neues {@link AbstractNioProcessor} Object.
-     *
-     * @param selector {@link Selector}
-     */
     protected AbstractNioProcessor(final Selector selector)
     {
         super();
 
         this.selector = Objects.requireNonNull(selector, "selector required");
-    }
-
-    /**
-     * Methode nach einem {@link Selector#select()} Durchlauf.
-     */
-    protected void afterSelectorLoop()
-    {
-        // Empty
-    }
-
-    /**
-     * Methode nach der while-Schleife.
-     */
-    protected void afterSelectorWhile()
-    {
-        cancelKeys();
-        closeSelector();
-    }
-
-    /**
-     * Methode vor der while-Schleife.
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
-    protected void beforeSelectorWhile() throws Exception
-    {
-        // Empty
-    }
-
-    /**
-     *
-     */
-    protected void cancelKeys()
-    {
-        Set<SelectionKey> selected = getSelector().selectedKeys();
-        Iterator<SelectionKey> iterator = selected.iterator();
-
-        while (iterator.hasNext())
-        {
-            SelectionKey selectionKey = iterator.next();
-            iterator.remove();
-
-            if (selectionKey == null)
-            {
-                continue;
-            }
-
-            try
-            {
-                selectionKey.cancel();
-            }
-            catch (Exception ex)
-            {
-                getLogger().error(ex.getMessage(), ex);
-            }
-        }
-    }
-
-    /**
-     *
-     */
-    protected void closeSelector()
-    {
-        if (getSelector().isOpen())
-        {
-            try
-            {
-                getSelector().close();
-            }
-            catch (Exception ex)
-            {
-                getLogger().error(ex.getMessage(), ex);
-            }
-        }
-    }
-
-    /**
-     * @param readyChannels int
-     *
-     * @return boolean
-     */
-    protected boolean isExitCondition(final int readyChannels)
-    {
-        return isShutdown() || !getSelector().isOpen();
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
-     * @return {@link Selector}
-     */
-    protected Selector getSelector()
-    {
-        return this.selector;
-    }
-
-    /**
-     * @return {@link Semaphore}
-     */
-    protected Semaphore getStopLock()
-    {
-        return this.stopLock;
-    }
-
-    /**
-     * @return boolean
-     */
-    protected boolean isShutdown()
-    {
-        return this.isShutdown;
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     */
-    protected void onAcceptable(final SelectionKey selectionKey)
-    {
-        // Empty
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     */
-    protected void onConnectable(final SelectionKey selectionKey)
-    {
-        // Empty
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     */
-    protected void onInValid(final SelectionKey selectionKey)
-    {
-        // Empty
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     */
-    protected void onReadable(final SelectionKey selectionKey)
-    {
-        // Empty
-    }
-
-    /**
-     * @param selectionKey {@link SelectionKey}
-     */
-    protected void onWritable(final SelectionKey selectionKey)
-    {
-        // Empty
     }
 
     /**
@@ -296,14 +123,6 @@ public abstract class AbstractNioProcessor implements Runnable
     }
 
     /**
-     *
-     */
-    protected void setShutdown()
-    {
-        this.isShutdown = true;
-    }
-
-    /**
      * Stoppen des Processors.
      */
     public void stop()
@@ -318,5 +137,126 @@ public abstract class AbstractNioProcessor implements Runnable
 
         getStopLock().acquireUninterruptibly();
         getStopLock().release();
+    }
+
+    /**
+     * Methode nach einem {@link Selector#select()} Durchlauf.
+     */
+    protected void afterSelectorLoop()
+    {
+        // Empty
+    }
+
+    /**
+     * Methode nach der while-Schleife.
+     */
+    protected void afterSelectorWhile()
+    {
+        cancelKeys();
+        closeSelector();
+    }
+
+    /**
+     * Methode vor der while-Schleife.
+     */
+    protected void beforeSelectorWhile() throws Exception
+    {
+        // Empty
+    }
+
+    protected void cancelKeys()
+    {
+        Set<SelectionKey> selected = getSelector().selectedKeys();
+        Iterator<SelectionKey> iterator = selected.iterator();
+
+        while (iterator.hasNext())
+        {
+            SelectionKey selectionKey = iterator.next();
+            iterator.remove();
+
+            if (selectionKey == null)
+            {
+                continue;
+            }
+
+            try
+            {
+                selectionKey.cancel();
+            }
+            catch (Exception ex)
+            {
+                getLogger().error(ex.getMessage(), ex);
+            }
+        }
+    }
+
+    protected void closeSelector()
+    {
+        if (getSelector().isOpen())
+        {
+            try
+            {
+                getSelector().close();
+            }
+            catch (Exception ex)
+            {
+                getLogger().error(ex.getMessage(), ex);
+            }
+        }
+    }
+
+    protected Logger getLogger()
+    {
+        return this.logger;
+    }
+
+    protected Selector getSelector()
+    {
+        return this.selector;
+    }
+
+    protected Semaphore getStopLock()
+    {
+        return this.stopLock;
+    }
+
+    protected boolean isExitCondition(final int readyChannels)
+    {
+        return isShutdown() || !getSelector().isOpen();
+    }
+
+    protected boolean isShutdown()
+    {
+        return this.isShutdown;
+    }
+
+    protected void onAcceptable(final SelectionKey selectionKey)
+    {
+        // Empty
+    }
+
+    protected void onConnectable(final SelectionKey selectionKey)
+    {
+        // Empty
+    }
+
+    protected void onInValid(final SelectionKey selectionKey)
+    {
+        // Empty
+    }
+
+    protected void onReadable(final SelectionKey selectionKey)
+    {
+        // Empty
+    }
+
+    protected void onWritable(final SelectionKey selectionKey)
+    {
+        // Empty
+    }
+
+    protected void setShutdown()
+    {
+        this.isShutdown = true;
     }
 }

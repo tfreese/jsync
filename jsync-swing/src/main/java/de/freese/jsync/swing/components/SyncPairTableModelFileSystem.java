@@ -16,21 +16,11 @@ import de.freese.jsync.utils.JSyncUtils;
  */
 public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPair>
 {
-    /**
-     *
-     */
     @Serial
     private static final long serialVersionUID = -5500863230405594620L;
-    /**
-     *
-     */
+
     private final EFileSystem fileSystem;
 
-    /**
-     * Erstellt ein neues {@link SyncPairTableModelFileSystem} Object.
-     *
-     * @param fileSystem {@link EFileSystem}
-     */
     public SyncPairTableModelFileSystem(final EFileSystem fileSystem)
     {
         super(List.of(JSyncContext.getMessages().getString("jsync.name"), JSyncContext.getMessages().getString("jsync.size")));

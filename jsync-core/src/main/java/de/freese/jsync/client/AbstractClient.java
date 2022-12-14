@@ -32,46 +32,22 @@ import reactor.core.publisher.Flux;
  */
 public abstract class AbstractClient implements Client
 {
-    /**
-     *
-     */
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    /**
-     *
-     */
+
     private final Options options;
-    /**
-     *
-     */
+
     private final Receiver receiver;
-    /**
-     *
-     */
+
     private final String receiverPath;
-    /**
-     *
-     */
+
     private final URI receiverUri;
-    /**
-     *
-     */
+
     private final Sender sender;
-    /**
-     *
-     */
+
     private final String senderPath;
-    /**
-     *
-     */
+
     private final URI senderUri;
 
-    /**
-     * Erzeugt eine neue Instanz von {@link AbstractClient}.
-     *
-     * @param options {@link Options}
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     */
     protected AbstractClient(final Options options, final URI senderUri, final URI receiverUri)
     {
         this.options = Objects.requireNonNull(options, "options required");
@@ -163,9 +139,6 @@ public abstract class AbstractClient implements Client
 
     /**
      * Kopieren der Dateien von der Quelle in die Senke<br>
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
      */
     protected void copyFile(final SyncItem syncItem, final ClientListener clientListener)
     {
@@ -219,9 +192,6 @@ public abstract class AbstractClient implements Client
      * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
      * {@link SyncStatus#DIFFERENT_SIZE}<br>
      * {@link SyncStatus#DIFFERENT_CHECKSUM}<br>
-     *
-     * @param syncPairs {@link List}
-     * @param clientListener {@link ClientListener}
      */
     protected void copyFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
@@ -252,9 +222,6 @@ public abstract class AbstractClient implements Client
     /**
      * Erstellen von leeren Verzeichnissen mit relativem Pfad zum Basis-Verzeichnis.<br>
      * {@link SyncStatus#ONLY_IN_SOURCE}<br>
-     *
-     * @param syncPairs {@link List}
-     * @param clientListener {@link ClientListener}
      */
     protected void createDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
@@ -279,9 +246,6 @@ public abstract class AbstractClient implements Client
 
     /**
      * Erstellt ein Verzeichnis auf dem {@link Receiver}.<br>
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
      */
     protected void createDirectory(final SyncItem syncItem, final ClientListener clientListener)
     {
@@ -302,9 +266,6 @@ public abstract class AbstractClient implements Client
 
     /**
      * Löscht ein {@link SyncItem} mit relativem Pfad zum Basis-Verzeichnis.
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
      */
     protected void delete(final SyncItem syncItem, final ClientListener clientListener)
     {
@@ -328,9 +289,6 @@ public abstract class AbstractClient implements Client
     /**
      * Löschen der Verzeichnisse und Dateien mit relativem Pfad zum Basis-Verzeichnis.<br>
      * {@link SyncStatus#ONLY_IN_TARGET}<br>
-     *
-     * @param syncPairs {@link List}
-     * @param clientListener {@link ClientListener}
      */
     protected void deleteDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
@@ -354,9 +312,6 @@ public abstract class AbstractClient implements Client
     /**
      * Löschen der Dateien mit relativem Pfad zum Basis-Verzeichnis.<br>
      * {@link SyncStatus#ONLY_IN_TARGET}<br>
-     *
-     * @param syncPairs {@link List}
-     * @param clientListener {@link ClientListener}
      */
     protected void deleteFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
@@ -377,65 +332,41 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    /**
-     * @return {@link Logger}
-     */
     protected Logger getLogger()
     {
         return this.logger;
     }
 
-    /**
-     * @return {@link Options}
-     */
     protected Options getOptions()
     {
         return this.options;
     }
 
-    /**
-     * @return {@link Receiver}
-     */
     protected Receiver getReceiver()
     {
         return this.receiver;
     }
 
-    /**
-     * @return String
-     */
     protected String getReceiverPath()
     {
         return this.receiverPath;
     }
 
-    /**
-     * @return {@link URI}
-     */
     protected URI getReceiverUri()
     {
         return this.receiverUri;
     }
 
-    /**
-     * @return {@link Sender}
-     */
     protected Sender getSender()
     {
         return this.sender;
     }
 
-    /**
-     * @return String
-     */
     protected String getSenderPath()
     {
         return this.senderPath;
     }
 
-    /**
-     * @return {@link URI}
-     */
     protected URI getSenderUri()
     {
         return this.senderUri;
@@ -443,9 +374,6 @@ public abstract class AbstractClient implements Client
 
     /**
      * Aktualisieren von Verzeichnis-Attributen auf dem {@link Receiver}.<br>
-     *
-     * @param syncItem {@link SyncItem}
-     * @param clientListener {@link ClientListener}
      */
     protected void update(final SyncItem syncItem, final ClientListener clientListener)
     {
@@ -473,9 +401,6 @@ public abstract class AbstractClient implements Client
      * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
      * {@link SyncStatus#DIFFERENT_USER}<br>
      * {@link SyncStatus#DIFFERENT_GROUP}<br>
-     *
-     * @param syncPairs {@link List}
-     * @param clientListener {@link ClientListener}
      */
     protected void updateDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
@@ -512,9 +437,6 @@ public abstract class AbstractClient implements Client
      * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
      * {@link SyncStatus#DIFFERENT_USER}<br>
      * {@link SyncStatus#DIFFERENT_GROUP}<br>
-     *
-     * @param syncPairs {@link List}
-     * @param clientListener {@link ClientListener}
      */
     protected void updateFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {

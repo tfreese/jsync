@@ -21,33 +21,16 @@ import org.slf4j.LoggerFactory;
  */
 public class DispatcherPool implements Dispatcher
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherPool.class);
-    /**
-     *
-     */
+
     private final LinkedList<DefaultDispatcher> dispatchers = new LinkedList<>();
-    /**
-     *
-     */
+
     private final int numOfDispatcher;
-    /**
-     *
-     */
+
     private final int numOfWorker;
-    /**
-     *
-     */
+
     private ExecutorService executorServiceWorker;
 
-    /**
-     * Erstellt ein neues {@link DispatcherPool} Object.
-     *
-     * @param numOfDispatcher int
-     * @param numOfWorker int
-     */
     public DispatcherPool(final int numOfDispatcher, final int numOfWorker)
     {
         super();
@@ -81,13 +64,6 @@ public class DispatcherPool implements Dispatcher
         nextDispatcher().register(socketChannel);
     }
 
-    /**
-     * @param ioHandler {@link IoHandler}
-     * @param selectorProvider {@link SelectorProvider}
-     * @param serverName String
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     public void start(final IoHandler<SelectionKey> ioHandler, final SelectorProvider selectorProvider, final String serverName) throws Exception
     {
         ThreadFactory threadFactoryDispatcher = new JSyncThreadFactory(serverName + "-dispatcher-");
@@ -108,18 +84,12 @@ public class DispatcherPool implements Dispatcher
         }
     }
 
-    /**
-     *
-     */
     public void stop()
     {
         this.dispatchers.forEach(DefaultDispatcher::stop);
         this.executorServiceWorker.shutdown();
     }
 
-    /**
-     * @return {@link Logger}
-     */
     protected Logger getLogger()
     {
         return LOGGER;
@@ -127,8 +97,6 @@ public class DispatcherPool implements Dispatcher
 
     /**
      * Liefert den nächsten {@link Dispatcher} im Round-Robin Verfahren.<br>
-     *
-     * @return {@link Dispatcher}
      */
     private synchronized Dispatcher nextDispatcher()
     {

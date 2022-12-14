@@ -11,17 +11,10 @@ import java.util.Objects;
  */
 public class SyncPair
 {
-    /**
-     *
-     */
     private final SyncItem receiverItem;
-    /**
-     *
-     */
+
     private final SyncItem senderItem;
-    /**
-     *
-     */
+
     private SyncStatus status = SyncStatus.UNKNOWN;
 
     /**
@@ -46,17 +39,12 @@ public class SyncPair
 
     /**
      * Wenn null = nur im Sender enthalten.
-     *
-     * @return {@link SyncItem}
      */
     public SyncItem getReceiverItem()
     {
         return this.receiverItem;
     }
 
-    /**
-     * @return String
-     */
     public String getRelativePath()
     {
         return getSenderItem() != null ? getSenderItem().getRelativePath() : getReceiverItem().getRelativePath();
@@ -64,8 +52,6 @@ public class SyncPair
 
     /**
      * Wenn null = nur im Receiver enthalten.
-     *
-     * @return {@link SyncItem}
      */
     public SyncItem getSenderItem()
     {
@@ -74,17 +60,12 @@ public class SyncPair
 
     /**
      * Liefert den Status der Datei.
-     *
-     * @return {@link SyncStatus}
      */
     public SyncStatus getStatus()
     {
         return this.status;
     }
 
-    /**
-     * @return boolean
-     */
     public boolean isFile()
     {
         return getSenderItem() != null ? getSenderItem().isFile() : getReceiverItem().isFile();
@@ -127,6 +108,14 @@ public class SyncPair
             {
                 this.status = SyncStatus.DIFFERENT_LAST_MODIFIEDTIME;
             }
+            else if (getSenderItem().getSize() != getReceiverItem().getSize())
+            {
+                this.status = SyncStatus.DIFFERENT_SIZE;
+            }
+            else if (!Objects.equals(getSenderItem().getChecksum(), getReceiverItem().getChecksum()))
+            {
+                this.status = SyncStatus.DIFFERENT_CHECKSUM;
+            }
             else if (!Objects.equals(getSenderItem().getPermissionsToString(), getReceiverItem().getPermissionsToString()))
             {
                 this.status = SyncStatus.DIFFERENT_PERMISSIONS;
@@ -138,14 +127,6 @@ public class SyncPair
             else if (!Objects.equals(getSenderItem().getGroup(), getReceiverItem().getGroup()))
             {
                 this.status = SyncStatus.DIFFERENT_GROUP;
-            }
-            else if (getSenderItem().getSize() != getReceiverItem().getSize())
-            {
-                this.status = SyncStatus.DIFFERENT_SIZE;
-            }
-            else if (!Objects.equals(getSenderItem().getChecksum(), getReceiverItem().getChecksum()))
-            {
-                this.status = SyncStatus.DIFFERENT_CHECKSUM;
             }
             else
             {

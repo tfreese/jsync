@@ -6,14 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.reactivestreams.Publisher;
-
 import io.rsocket.core.RSocketClient;
 import io.rsocket.core.RSocketConnector;
 import io.rsocket.loadbalance.LoadbalanceRSocketClient;
 import io.rsocket.loadbalance.LoadbalanceTarget;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.netty.tcp.TcpClient;
 
@@ -22,9 +21,6 @@ import reactor.netty.tcp.TcpClient;
  */
 public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteLoadBalancedBuilder>
 {
-    /**
-     *
-     */
     private final List<SocketAddress> remoteAddresses = new ArrayList<>();
 
     /**
@@ -74,11 +70,6 @@ public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClien
         // @formatter:on
     }
 
-    /**
-     * @param remoteAddresses {@link List}
-     *
-     * @return {@link RSocketClientRemoteLoadBalancedBuilder}
-     */
     public RSocketClientRemoteLoadBalancedBuilder remoteAddresses(final List<? extends SocketAddress> remoteAddresses)
     {
         Objects.requireNonNull(remoteAddresses, "remoteAddresses required");

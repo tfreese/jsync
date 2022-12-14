@@ -57,69 +57,36 @@ import reactor.util.function.Tuples;
  */
 public class DefaultSyncView extends AbstractView implements SyncView
 {
-    /**
-     *
-     */
     private final Map<EFileSystem, Sinks.Many<Tuple3<Integer, Integer, String>>> accumulatorProgressBarMinMaxText = new EnumMap<>(EFileSystem.class);
-    /**
-     *
-     */
+
     private final Map<EFileSystem, Sinks.Many<String>> accumulatorProgressBarText = new EnumMap<>(EFileSystem.class);
-    /**
-     *
-     */
+
     private final Map<EFileSystem, Sinks.Many<Integer>> accumulatorProgressBarValue = new EnumMap<>(EFileSystem.class);
-    /**
-     *
-     */
+
     private final ConfigView configView = new ConfigView();
-    /**
-     *
-     */
+
     private final JPanel panel = new JPanel();
-    /**
-     *
-     */
+
     private final ShowView showView = new ShowView();
-    /**
-     *
-     */
+
     private final TableFacade tableFacade = new TableFacade();
-    /**
-     *
-     */
+
     private Sinks.Many<Integer> accumulatorProgressFiles;
-    /**
-     *
-     */
+
     private Sinks.Many<SyncPair> accumulatorTableAdd;
-    /**
-     *
-     */
+
     private JProgressBar progressBarFiles;
-    /**
-     *
-     */
+
     private JProgressBar progressBarReceiver;
-    /**
-     *
-     */
+
     private JProgressBar progressBarSender;
-    /**
-     *
-     */
+
     private JTextArea textAreaFilterDirs;
-    /**
-     *
-     */
+
     private JTextArea textAreaFilterFiles;
-    /**
-     *
-     */
+
     private UriView uriViewReceiver;
-    /**
-     *
-     */
+
     private UriView uriViewSender;
 
     /**
@@ -555,11 +522,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
         });
     }
 
-    /**
-     * @param selectedFolder String
-     *
-     * @return {@link File}
-     */
     protected File selectFolder(final String selectedFolder)
     {
         JFileChooser fc = new JFileChooser();
@@ -601,9 +563,6 @@ public class DefaultSyncView extends AbstractView implements SyncView
         return selectedDirectory;
     }
 
-    /**
-     * Konfiguration der GUI.
-     */
     private void configGui()
     {
         JComboBox<JSyncProtocol> comboBoxProtocolSender = getComboBoxProtocol(EFileSystem.SENDER);
@@ -706,51 +665,26 @@ public class DefaultSyncView extends AbstractView implements SyncView
         });
     }
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JButton}
-     */
     private JButton getButtonOpen(final EFileSystem fileSystem)
     {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getButtonOpen() : this.uriViewReceiver.getButtonOpen();
     }
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JComboBox}
-     */
     private JComboBox<JSyncProtocol> getComboBoxProtocol(final EFileSystem fileSystem)
     {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getComboBoxProtocol() : this.uriViewReceiver.getComboBoxProtocol();
     }
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JProgressBar}
-     */
     private JProgressBar getProgressBar(final EFileSystem fileSystem)
     {
         return EFileSystem.SENDER.equals(fileSystem) ? this.progressBarSender : this.progressBarReceiver;
     }
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JTextField}
-     */
     private JTextField getTextFieldHostPort(final EFileSystem fileSystem)
     {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldHostPort() : this.uriViewReceiver.getTextFieldHostPort();
     }
 
-    /**
-     * @param fileSystem {@link EFileSystem}
-     *
-     * @return {@link JTextField}
-     */
     private JTextField getTextFieldPath(final EFileSystem fileSystem)
     {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldPath() : this.uriViewReceiver.getTextFieldPath();

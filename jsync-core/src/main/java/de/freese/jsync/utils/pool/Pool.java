@@ -42,23 +42,13 @@ public abstract class Pool<T>
     /**
      * Wraps queue values with {@link SoftReference} for {@link Pool}.
      *
-     * @param <T> Type
-     *
      * @author Martin Grotzke
      * @author Thomas Freese
      */
     static class SoftReferenceQueue<T> implements Queue<T>
     {
-        /**
-         *
-         */
         private final Queue<SoftReference<T>> delegate;
 
-        /**
-         * Erstellt ein neues {@link SoftReferenceQueue} Object.
-         *
-         * @param delegate {@link Queue}
-         */
         public SoftReferenceQueue(final Queue<SoftReference<T>> delegate)
         {
             this.delegate = delegate;
@@ -80,29 +70,6 @@ public abstract class Pool<T>
         public boolean addAll(final Collection<? extends T> c)
         {
             return false;
-        }
-
-        /**
-         *
-         */
-        void clean()
-        {
-            this.delegate.removeIf(o -> o.get() == null);
-        }
-
-        /**
-         *
-         */
-        void cleanOne()
-        {
-            for (Iterator<SoftReference<T>> iter = this.delegate.iterator(); iter.hasNext(); )
-            {
-                if (iter.next().get() == null)
-                {
-                    iter.remove();
-                    break;
-                }
-            }
         }
 
         /**
@@ -263,39 +230,39 @@ public abstract class Pool<T>
         {
             return null;
         }
+
+        void clean()
+        {
+            this.delegate.removeIf(o -> o.get() == null);
+        }
+
+        void cleanOne()
+        {
+            for (Iterator<SoftReference<T>> iter = this.delegate.iterator(); iter.hasNext(); )
+            {
+                if (iter.next().get() == null)
+                {
+                    iter.remove();
+                    break;
+                }
+            }
+        }
     }
 
-    /**
-     *
-     */
-    private int created;
-    /**
-     *
-     */
     private final Queue<T> freeObjects;
-    /**
-     *
-     */
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    /**
-     *
-     */
+
+    private int created;
+
     private int peak;
 
-    /**
-     * Creates a pool with no maximum.
-     *
-     * @param threadSafe boolean
-     * @param softReferences boolean
-     */
     protected Pool(final boolean threadSafe, final boolean softReferences)
     {
         this(threadSafe, softReferences, Integer.MAX_VALUE);
     }
 
     /**
-     * @param threadSafe boolean
-     * @param softReferences boolean
      * @param maximumCapacity int; The maximum number of free objects to store in this pool.<br>
      * Objects are not created until {@link #obtain()} is called and no free objects are available.
      */
@@ -308,9 +275,6 @@ public abstract class Pool<T>
         {
             queue = new LinkedBlockingQueue<>(maximumCapacity)
             {
-                /**
-                 *
-                 */
                 @Serial
                 private static final long serialVersionUID = 1L;
 
@@ -395,8 +359,6 @@ public abstract class Pool<T>
 
     /**
      * Removes all free objects from this pool.
-     *
-     * @param cleanup {@link Consumer}
      */
     public void clear(final Consumer<T> cleanup)
     {
@@ -414,18 +376,11 @@ public abstract class Pool<T>
     }
 
     /**
-     * @return Object
-     */
-    protected abstract T create();
-
-    /**
      * Puts the specified object in the pool, making it eligible to be returned by {@link #obtain()}. If the pool already contains the maximum number of free
      * objects, the specified object is reset but not added to the pool.
      * <p>
      * If using soft references and the pool contains the maximum number of free objects, the first soft reference whose object has been garbage collected is
      * discarded to make room.
-     *
-     * @param object Object
      */
     public final void free(final T object)
     {
@@ -445,8 +400,6 @@ public abstract class Pool<T>
 
     /**
      * The number of created objects.
-     *
-     * @return int
      */
     public int getCreated()
     {
@@ -458,8 +411,6 @@ public abstract class Pool<T>
      * <p>
      * If using soft references, this number may include objects that have been garbage collected. {@link #clean()} may be used first to remove empty soft
      * references.
-     *
-     * @return int
      */
     public int getFree()
     {
@@ -467,28 +418,10 @@ public abstract class Pool<T>
     }
 
     /**
-     * @return {@link Queue}<T>
-     */
-    protected Queue<T> getFreeObjects()
-    {
-        return this.freeObjects;
-    }
-
-    /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
      * The all-time highest number of free objects. This can help determine if a pool's maximum capacity is set appropriately. It can be reset any time with
      * {@link #resetPeak()}.
      * <p>
      * If using soft references, this number may include objects that have been garbage collected.
-     *
-     * @return int
      */
     public int getPeak()
     {
@@ -497,8 +430,6 @@ public abstract class Pool<T>
 
     /**
      * Returns an object from this pool. The object may be new (from {@link #create()}) or reused (previously {@link #free(Object) freed}).
-     *
-     * @return Object
      */
     public T obtain()
     {
@@ -514,11 +445,26 @@ public abstract class Pool<T>
         return object;
     }
 
+    public void resetPeak()
+    {
+        this.peak = 0;
+    }
+
+    protected abstract T create();
+
+    protected Queue<T> getFreeObjects()
+    {
+        return this.freeObjects;
+    }
+
+    protected Logger getLogger()
+    {
+        return this.logger;
+    }
+
     /**
      * Called when an object is freed to clear the state of the object for possible later reuse. The default implementation calls {@link Poolable#reset()} if
      * the object is {@link Poolable}.
-     *
-     * @param object Object
      */
     protected void reset(final T object)
     {
@@ -526,13 +472,5 @@ public abstract class Pool<T>
         {
             poolable.reset();
         }
-    }
-
-    /**
-     *
-     */
-    public void resetPeak()
-    {
-        this.peak = 0;
     }
 }

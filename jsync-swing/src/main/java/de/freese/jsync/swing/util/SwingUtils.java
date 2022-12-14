@@ -16,8 +16,6 @@ public final class SwingUtils
 {
     /**
      * Malt einen Rahmen um jede {@link JComponent}.
-     *
-     * @param component {@link Component}
      */
     public static void enableDebug(final Component component)
     {
@@ -38,8 +36,6 @@ public final class SwingUtils
 
     /**
      * Malt einen Rahmen um jede {@link JComponent}.
-     *
-     * @param container {@link Container}
      */
     public static void enableDebug(final Container container)
     {
@@ -58,9 +54,6 @@ public final class SwingUtils
         }
     }
 
-    /**
-     * @param runnable {@link Runnable}
-     */
     public static void runInEdt(final Runnable runnable)
     {
         if (SwingUtilities.isEventDispatchThread())
@@ -73,9 +66,6 @@ public final class SwingUtils
         }
     }
 
-    /**
-     * Erstellt ein neues {@link SwingUtils} Object.
-     */
     private SwingUtils()
     {
         super();

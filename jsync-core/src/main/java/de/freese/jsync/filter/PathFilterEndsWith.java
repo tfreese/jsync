@@ -12,21 +12,10 @@ import java.util.Set;
  */
 public class PathFilterEndsWith implements PathFilter
 {
-    /**
-     *
-     */
     private final Set<String> directoryFilter;
-    /**
-     *
-     */
+
     private final Set<String> fileFilter;
 
-    /**
-     * Erstellt ein neues {@link PathFilterEndsWith} Object.
-     *
-     * @param directoryFilter {@link Set}
-     * @param fileFilter {@link Set}
-     */
     public PathFilterEndsWith(final Set<String> directoryFilter, final Set<String> fileFilter)
     {
         super();

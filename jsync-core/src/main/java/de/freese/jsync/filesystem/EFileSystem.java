@@ -6,12 +6,7 @@ package de.freese.jsync.filesystem;
  */
 public enum EFileSystem
 {
-    /**
-     *
-     */
     RECEIVER,
-    /**
-     *
-     */
+
     SENDER
 }

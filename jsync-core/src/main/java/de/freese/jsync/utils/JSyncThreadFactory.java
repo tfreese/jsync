@@ -11,24 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class JSyncThreadFactory implements ThreadFactory
 {
-    /**
-     *
-     */
     private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
-    /**
-     *
-     */
+
     private final String namePrefix;
-    /**
-     *
-     */
+
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
-    /**
-     * Erstellt ein neues {@link JSyncThreadFactory} Object.
-     *
-     * @param namePrefix String
-     */
     public JSyncThreadFactory(final String namePrefix)
     {
         super();

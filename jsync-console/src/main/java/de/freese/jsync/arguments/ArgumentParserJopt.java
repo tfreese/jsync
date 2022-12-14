@@ -39,9 +39,6 @@
 // private final OptionSpec<String> optionSpecReceiver =
 // this.optionParser.acceptsAll(Arrays.asList("r", "receiver"), "Ziel-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
 //
-// /**
-// * Erstellt ein neues {@link ArgumentParserJopt} Object.
-// */
 // public ArgumentParserJopt(final String[] args)
 // {
 // super();

@@ -1,11 +1,10 @@
 // Created: 23.11.2018
 package de.freese.jsync.client.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.freese.jsync.Options;
 import de.freese.jsync.model.SyncItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link Logger}-Implementierung des {@link ClientListener}.
@@ -14,9 +13,6 @@ import de.freese.jsync.model.SyncItem;
  */
 public class LoggerClientListener extends AbstractClientListener
 {
-    /**
-     *
-     */
     private final Logger logger = LoggerFactory.getLogger("Client");
 
     /**
@@ -72,14 +68,6 @@ public class LoggerClientListener extends AbstractClientListener
     }
 
     /**
-     * @return {@link Logger}
-     */
-    protected Logger getLogger()
-    {
-        return this.logger;
-    }
-
-    /**
      * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
@@ -99,5 +87,10 @@ public class LoggerClientListener extends AbstractClientListener
         String message = validateMessage(options, syncItem);
 
         getLogger().info(message);
+    }
+
+    protected Logger getLogger()
+    {
+        return this.logger;
     }
 }

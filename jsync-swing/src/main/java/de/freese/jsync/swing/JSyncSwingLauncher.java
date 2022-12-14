@@ -15,9 +15,6 @@ import reactor.core.publisher.Hooks;
  */
 public final class JSyncSwingLauncher
 {
-    /**
-     * @param args String[]
-     */
     public static void main(final String[] args)
     {
         if (args == null)
@@ -72,9 +69,6 @@ public final class JSyncSwingLauncher
         });
     }
 
-    /**
-     * Erstellt ein neues {@link JSyncSwingLauncher} Object.
-     */
     private JSyncSwingLauncher()
     {
         super();

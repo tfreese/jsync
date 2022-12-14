@@ -20,66 +20,37 @@ import de.freese.jsync.swing.util.GbcBuilder;
  */
 public class ConfigView extends AbstractView
 {
-    /**
-     *
-     */
     private final JPanel panel = new JPanel();
-    /**
-     *
-     */
+
     private JButton buttonCompare;
-    /**
-     *
-     */
+
     private JButton buttonSynchronize;
-    /**
-     *
-     */
+
     private JCheckBox checkBoxChecksum;
-    /**
-     *
-     */
+
     private JCheckBox checkBoxDelete;
-    /**
-     *
-     */
+
     private JCheckBox checkBoxDryRun;
-    /**
-     *
-     */
+
     private JCheckBox checkBoxFollowSymLinks;
-    /**
-     *
-     */
+
     private JCheckBox checkBoxParallelism;
 
-    /**
-     * @param consumer {@link Consumer}
-     */
     void doOnCompare(final Consumer<JButton> consumer)
     {
         consumer.accept(this.buttonCompare);
     }
 
-    /**
-     * @param consumer {@link Consumer}
-     */
     void doOnSynchronize(final Consumer<JButton> consumer)
     {
         consumer.accept(this.buttonSynchronize);
     }
 
-    /**
-     * @return {@link JButton}
-     */
     JButton getButtonCompare()
     {
         return this.buttonCompare;
     }
 
-    /**
-     * @return {@link JButton}
-     */
     JButton getButtonSynchronize()
     {
         return this.buttonSynchronize;
@@ -94,9 +65,6 @@ public class ConfigView extends AbstractView
         return this.panel;
     }
 
-    /**
-     * @return {@link Options}
-     */
     Options getOptions()
     {
         // @formatter:off
@@ -111,9 +79,6 @@ public class ConfigView extends AbstractView
          // @formatter:on
     }
 
-    /**
-     *
-     */
     void initGUI()
     {
         this.panel.setLayout(new GridBagLayout());

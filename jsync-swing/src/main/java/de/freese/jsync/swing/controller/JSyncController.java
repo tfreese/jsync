@@ -17,22 +17,12 @@ import org.slf4j.LoggerFactory;
  */
 public class JSyncController
 {
-    /**
-     *
-     */
     public final Logger logger = LoggerFactory.getLogger(getClass());
-    /**
-     *
-     */
+
     private Client client;
-    /**
-     *
-     */
+
     private SyncView syncView;
 
-    /**
-     * @param syncView {@link SyncView}
-     */
     public void init(final SyncView syncView)
     {
         this.syncView = syncView;
@@ -42,9 +32,6 @@ public class JSyncController
         syncView.doOnSynchronize(button -> button.addActionListener(event -> synchronize()));
     }
 
-    /**
-     *
-     */
     public void shutdown()
     {
         getLogger().info("shutdown");
@@ -54,11 +41,6 @@ public class JSyncController
         shutdownClient();
     }
 
-    /**
-     * @param options {@link Options}
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     */
     void createNewClient(final Options options, final URI senderUri, final URI receiverUri)
     {
         shutdownClient();
@@ -72,43 +54,26 @@ public class JSyncController
         this.client.connectFileSystems();
     }
 
-    /**
-     * @return {@link Client}
-     */
     Client getClient()
     {
         return this.client;
     }
 
-    /**
-     * @param key String
-     *
-     * @return String
-     */
     String getMessage(final String key)
     {
         return JSyncContext.getMessages().getString(key);
     }
 
-    /**
-     * @return {@link SyncView}
-     */
     SyncView getSyncView()
     {
         return this.syncView;
     }
 
-    /**
-     * @param runnable {@link Runnable}
-     */
     void runInEdt(final Runnable runnable)
     {
         SwingUtils.runInEdt(runnable);
     }
 
-    /**
-     *
-     */
     void shutdownClient()
     {
         if (this.client != null)
@@ -118,17 +83,11 @@ public class JSyncController
         }
     }
 
-    /**
-     * @return {@link Logger}
-     */
     protected Logger getLogger()
     {
         return this.logger;
     }
 
-    /**
-     *
-     */
     private void compare()
     {
         CompareWorker worker = new CompareWorker(this);
@@ -136,9 +95,6 @@ public class JSyncController
         worker.execute();
     }
 
-    /**
-     *
-     */
     private void synchronize()
     {
         // JOptionPane.showMessageDialog(JSyncSwingApplication.getInstance().getMainFrame(), "Not implemented !", "Error", JOptionPane.ERROR_MESSAGE);

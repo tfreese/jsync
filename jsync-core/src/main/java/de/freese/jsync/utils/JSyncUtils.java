@@ -43,16 +43,12 @@ public final class JSyncUtils
             {
                     FileVisitOption.FOLLOW_LINKS
             };
-    /**
-     *
-     */
+
     private static final char[] HEX_CHARS =
             {
                     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
             };
-    /**
-     *
-     */
+
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
     /**
      * @see Files#exists(Path, LinkOption...)
@@ -73,13 +69,9 @@ public final class JSyncUtils
      * @see Files#readAttributes(Path, String, LinkOption...)
      */
     private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = {};
-    /**
-     *
-     */
+
     private static final Pattern PATTERN_FILTER = Pattern.compile("[;,]");
-    /**
-     *
-     */
+
     private static final String[] SIZE_UNITS =
             {
                     "B", "KB", "MB", "GB", "TB", "PB", "EB"
@@ -90,10 +82,6 @@ public final class JSyncUtils
      * String hex = org.apache.commons.codec.binary.Hex.encodeHexString(messageDigest);<br>
      * String hex = String.format("%02x", element);<br>
      * String hex = HexFormat.of().withUpperCase().formatHex(bytes)
-     *
-     * @param bytes byte[]
-     *
-     * @return String
      */
     public static String bytesToHex(final byte[] bytes)
     {
@@ -112,8 +100,6 @@ public final class JSyncUtils
 
     /**
      * SocketChannels werden NICHT geschlossen !
-     *
-     * @param channel {@link Channel}
      */
     public static void close(final Channel channel)
     {
@@ -137,8 +123,6 @@ public final class JSyncUtils
 
     /**
      * SocketChannels werden NICHT geschlossen !
-     *
-     * @param closeable {@link Closeable}
      */
     public static void closeSilently(final Closeable closeable)
     {
@@ -157,11 +141,6 @@ public final class JSyncUtils
 
     /**
      * Ein Verzeichnis wird rekursiv inklusive aller Dateien und Unterverzeichnisse gelöscht.
-     *
-     * @param path {@link Path}
-     * @param followSymLinks boolean
-     *
-     * @throws IOException Falls was schiefgeht.
      */
     public static void delete(final Path path, final boolean followSymLinks) throws IOException
     {
@@ -192,29 +171,16 @@ public final class JSyncUtils
         }
     }
 
-    /**
-     * @param followSymLinks boolean
-     *
-     * @return {@link FileVisitOption}
-     */
     public static FileVisitOption[] getFileVisitOptions(final boolean followSymLinks)
     {
         return followSymLinks ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
     }
 
-    /**
-     * @param followSymLinks boolean
-     *
-     * @return {@link LinkOption}
-     */
     public static LinkOption[] getLinkOptions(final boolean followSymLinks)
     {
         return followSymLinks ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
     }
 
-    /**
-     * @return String
-     */
     public static String getOsName()
     {
         return System.getProperty("os.name");
@@ -247,11 +213,6 @@ public final class JSyncUtils
         // return Math.round(((double) value / (double) max) * 100) / 100D;
     }
 
-    /**
-     * @param hexString {@link CharSequence}
-     *
-     * @return byte[]
-     */
     public static byte[] hexToBytes(final CharSequence hexString)
     {
         return HEX_FORMAT.parseHex(hexString);
@@ -279,9 +240,6 @@ public final class JSyncUtils
         //        return bytes;
     }
 
-    /**
-     * @return boolean
-     */
     public static boolean isLinux()
     {
         String os = getOsName().toLowerCase();
@@ -289,9 +247,6 @@ public final class JSyncUtils
         return os.contains("linux");
     }
 
-    /**
-     * @return boolean
-     */
     public static boolean isUnix()
     {
         String os = getOsName().toLowerCase();
@@ -299,9 +254,6 @@ public final class JSyncUtils
         return os.contains("nix") || os.contains("nux") || os.contains("aix");
     }
 
-    /**
-     * @return boolean
-     */
     public static boolean isWindows()
     {
         String os = getOsName().toLowerCase();
@@ -311,10 +263,6 @@ public final class JSyncUtils
 
     /**
      * Entfernt führende '//' und das abschließende '/'.
-     *
-     * @param uri {@link URI}
-     *
-     * @return String
      */
     public static String normalizePath(final URI uri)
     {
@@ -339,12 +287,6 @@ public final class JSyncUtils
         return path;
     }
 
-    /**
-     * Shutdown der {@link AsynchronousChannelGroup}.
-     *
-     * @param channelGroup {@link AsynchronousChannelGroup}
-     * @param logger {@link Logger}
-     */
     public static void shutdown(final AsynchronousChannelGroup channelGroup, final Logger logger)
     {
         logger.info("shutdown AsynchronousChannelGroup");
@@ -397,12 +339,6 @@ public final class JSyncUtils
         }
     }
 
-    /**
-     * Shutdown des {@link ExecutorService}.
-     *
-     * @param executorService {@link ExecutorService}
-     * @param logger {@link Logger}
-     */
     public static void shutdown(final ExecutorService executorService, final Logger logger)
     {
         logger.info("shutdown ExecutorService");
@@ -459,10 +395,6 @@ public final class JSyncUtils
         }
     }
 
-    /**
-     * @param timeUnit {@link TimeUnit}
-     * @param timeout long
-     */
     public static void sleep(final TimeUnit timeUnit, final long timeout)
     {
         try
@@ -477,10 +409,6 @@ public final class JSyncUtils
 
     /**
      * Aufsplitten nach ';' oder ',' um ein Set für den {@link PathFilter} zu erzeugen.
-     *
-     * @param value String
-     *
-     * @return {@link Set}
      */
     public static Set<String> toFilter(final String value)
     {
@@ -495,8 +423,6 @@ public final class JSyncUtils
     }
 
     /**
-     * @param size long
-     *
      * @return String, z.B. '___,___ MB'
      */
     public static String toHumanReadableSize(final long size)
@@ -570,9 +496,6 @@ public final class JSyncUtils
         // return String.format("%.1f %cB", value, ci.previous());
     }
 
-    /**
-     * Erstellt ein neues {@link JSyncUtils} Object.
-     */
     private JSyncUtils()
     {
         super();

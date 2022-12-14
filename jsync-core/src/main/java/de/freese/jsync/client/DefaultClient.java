@@ -26,24 +26,11 @@ import reactor.core.publisher.Flux;
  */
 public class DefaultClient extends AbstractClient
 {
-    /**
-     * Erzeugt eine neue Instanz von {@link DefaultClient}.
-     *
-     * @param options {@link Options}
-     * @param senderUri {@link URI}
-     * @param receiverUri {@link URI}
-     */
     public DefaultClient(final Options options, final URI senderUri, final URI receiverUri)
     {
         super(options, senderUri, receiverUri);
     }
 
-    /**
-     * @param syncItemsSender {@link Flux}
-     * @param syncItemsReceiver {@link Flux}
-     *
-     * @return {@link Flux}
-     */
     public Flux<SyncPair> mergeSyncItems(final Flux<SyncItem> syncItemsSender, final Flux<SyncItem> syncItemsReceiver)
     {
         return Flux.<SyncPair>create(sink ->
@@ -100,11 +87,6 @@ public class DefaultClient extends AbstractClient
         updateDirectories(sync, cl);
     }
 
-    /**
-     * @param syncItemsSender {@link List}
-     * @param syncItemsReceiver {@link List}
-     * @param consumer {@link Consumer}
-     */
     private void mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver, final Consumer<SyncPair> consumer)
     {
         // Map der ReceiverItems bauen.

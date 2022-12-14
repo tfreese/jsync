@@ -20,14 +20,8 @@ import reactor.core.publisher.Mono;
  */
 public abstract class AbstractRSocketServerBuilder<T extends AbstractRSocketServerBuilder<?>> extends AbstractRSocketBuilder<T, Mono<? extends Closeable>>
 {
-    /**
-     *
-     */
     private final List<UnaryOperator<RSocketServer>> rSocketServerCustomizers = new ArrayList<>();
 
-    /**
-     *
-     */
     public T addRSocketServerCustomizer(final UnaryOperator<RSocketServer> rSocketServerCustomizer)
     {
         this.rSocketServerCustomizers.add(Objects.requireNonNull(rSocketServerCustomizer, "rSocketServerCustomizer required"));
@@ -35,11 +29,6 @@ public abstract class AbstractRSocketServerBuilder<T extends AbstractRSocketServ
         return (T) this;
     }
 
-    /**
-     * @param payloadDecoder {@link PayloadDecoder}
-     *
-     * @return {@link AbstractRSocketBuilder}
-     */
     public T payloadDecoder(final PayloadDecoder payloadDecoder)
     {
         Objects.requireNonNull(payloadDecoder, "payloadDecoder required");
@@ -49,11 +38,6 @@ public abstract class AbstractRSocketServerBuilder<T extends AbstractRSocketServ
         return (T) this;
     }
 
-    /**
-     * @param socketAcceptor {@link SocketAcceptor}
-     *
-     * @return {@link AbstractRSocketServerBuilder}
-     */
     public T socketAcceptor(final SocketAcceptor socketAcceptor)
     {
         Objects.requireNonNull(socketAcceptor, "socketAcceptor required");
@@ -63,11 +47,6 @@ public abstract class AbstractRSocketServerBuilder<T extends AbstractRSocketServ
         return (T) this;
     }
 
-    /**
-     * @param rSocketServer {@link RSocketServer}
-     *
-     * @return {@link RSocketServer}
-     */
     protected RSocketServer configure(final RSocketServer rSocketServer)
     {
         RSocketServer server = rSocketServer;

@@ -25,24 +25,13 @@ import org.slf4j.LoggerFactory;
  */
 public final class JSyncSwing
 {
-    /**
-     *
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwing.class);
 
-    /**
-     * @return {@link Logger}
-     */
     public static Logger getLogger()
     {
         return LOGGER;
     }
 
-    /**
-     * WindowListener zum Beenden.
-     *
-     * @author Thomas Freese
-     */
     private class MainFrameListener extends WindowAdapter
     {
         /**
@@ -58,26 +47,14 @@ public final class JSyncSwing
             System.exit(0);
         }
     }
-    /**
-     *
-     */
+
     private JSyncController controller;
 
-    /**
-     * Erstellt ein neues {@link JSyncSwing} Object.
-     */
     JSyncSwing()
     {
         super();
     }
 
-    /**
-     * Initialisierung der GUI.
-     *
-     * @param consumer {@link Consumer}
-     *
-     * @throws Exception Falls was schiefgeht.
-     */
     void initGui(final Consumer<JFrame> consumer) throws Exception
     {
         initUIDefaults();
@@ -101,9 +78,6 @@ public final class JSyncSwing
         consumer.accept(frame);
     }
 
-    /**
-     *
-     */
     private void initUIDefaults()
     {
         getLogger().info("initUIDefaults");
