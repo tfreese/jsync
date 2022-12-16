@@ -35,7 +35,7 @@
                             <mainClass>de.freese.jsync.swing.JSyncSwingLauncher</mainClass>
                             <outputDirectory>app</outputDirectory>
                             <finalName>${project.artifactId}</finalName>
-                            <classifier>uberjar</classifier>
+                            <classifier>spring</classifier>
                             <includeSystemScope>runtime</includeSystemScope>
                             <layout>ZIP</layout>
                             <jvmArguments>
