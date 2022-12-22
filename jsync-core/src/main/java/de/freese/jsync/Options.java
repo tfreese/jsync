@@ -5,8 +5,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Enthält die Optionen für die Synchronisierung.
- *
  * @author Thomas Freese
  */
 public final class Options
@@ -72,6 +70,7 @@ public final class Options
             return this;
         }
     }
+
     private boolean checksum;
 
     private boolean delete;

@@ -2,7 +2,7 @@
 package de.freese.jsync.nio.transport;
 
 /**
- * Siehe io.rsocket.frame.FrameType
+ * See io.rsocket.frame.FrameType
  *
  * @author Thomas Freese
  */

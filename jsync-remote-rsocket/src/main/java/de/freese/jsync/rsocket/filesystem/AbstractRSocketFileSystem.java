@@ -78,7 +78,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
             this.client = createClientLocal(uri, tcpClientCustomizer);
         }
 
-        // Connect an den Server schicken.
         ByteBuffer bufferMeta = getByteBufferPool().get();
 
         getSerializer().writeTo(bufferMeta, JSyncCommand.CONNECT);
@@ -91,8 +90,8 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
             .map(Payload::getDataUtf8)
             .doOnNext(getLogger()::debug)
             .doOnError(th -> getLogger().error(th.getMessage(), th))
-            .block() // Wartet auf jeden Response.
-            //.subscribe() // Führt alles im Hintergrund aus.
+            .block()
+            //.subscribe()
             ;
         // @formatter:on
     }
@@ -172,7 +171,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
                         getByteBufferPool().free(bufferData);
                     })
             )
-            .publishOn(Schedulers.boundedElastic()) // Consumer ruft generateChecksum auf = in anderen Thread auslagern sonst knallt es !
+            .publishOn(Schedulers.boundedElastic()) // Consumer calls generateChecksum = swap to another Thread or an Exception is caused !
             .doOnError(th -> getLogger().error(th.getMessage(), th))
             .map(payload -> {
                 ByteBuffer buffer = payload.getData();

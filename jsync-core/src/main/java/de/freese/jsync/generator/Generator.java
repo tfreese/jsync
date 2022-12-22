@@ -10,7 +10,7 @@ import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
 
 /**
- * Der Generator sammelt alle relevanten Informationen des Dateisystems für den gewählten {@link Path}.
+ * The Generator collects all relevant Information of the FileSystem for the chosen {@link Path}.
  *
  * @author Thomas Freese
  */

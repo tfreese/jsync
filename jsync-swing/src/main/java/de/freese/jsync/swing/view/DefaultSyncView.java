@@ -273,7 +273,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         row++;
 
-        // Tabelle Sender
+        // Table Sender
         JTable tableSender = this.tableFacade.getTableSender();
         tableSender.setModel(this.tableFacade.getTableModelSender());
         tableSender.setAutoCreateRowSorter(false);
@@ -286,7 +286,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         scrollPaneSender.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPaneSender, new GbcBuilder(0, row).fillBoth());
 
-        // Tabelle Status
+        // Table Status
         JTable tableStatus = this.tableFacade.getTableStatus();
         tableStatus.setModel(this.tableFacade.getTableModelStatus());
         tableStatus.setAutoCreateRowSorter(false);
@@ -297,7 +297,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         scrollPaneStatus.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPaneStatus, new GbcBuilder(1, row).fillBoth().weightX(0D));
 
-        // Tabelle Receiver
+        // Table Receiver
         JTable tableReceiver = this.tableFacade.getTableReceiver();
         tableReceiver.setModel(this.tableFacade.getTableModelReceiver());
         tableReceiver.setAutoCreateRowSorter(false);
@@ -310,12 +310,12 @@ public class DefaultSyncView extends AbstractView implements SyncView
         scrollPaneReceiver.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPaneReceiver, new GbcBuilder(2, row).fillBoth());
 
-        // SelectionModel synchronisieren
+        // Synchronise SelectionModel
         tableReceiver.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableStatus.setSelectionModel(tableReceiver.getSelectionModel());
         tableSender.setSelectionModel(tableReceiver.getSelectionModel());
 
-        // Vertikale ScrollBars synchronisieren
+        // Synchronise Vertikale ScrollBars
         scrollPaneSender.getVerticalScrollBar().setModel(scrollPaneReceiver.getVerticalScrollBar().getModel());
         scrollPaneStatus.getVerticalScrollBar().setModel(scrollPaneReceiver.getVerticalScrollBar().getModel());
 
@@ -637,7 +637,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
             }
         });
 
-        // Compare-Button steuern
+        // Compare-Button
         textFieldPathSender.getDocument().addDocumentListener(new DocumentListenerAdapter()
         {
             /**

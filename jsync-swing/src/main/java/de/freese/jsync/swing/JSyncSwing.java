@@ -95,7 +95,6 @@ public final class JSyncSwing
 
         UIManager.put("FileChooser.useSystemIcons", Boolean.TRUE);
 
-        // Farben
         Color color = new Color(215, 215, 215);
         // UIManager.put("Table.alternatingBackground", color);
         UIManager.put("Table.alternateRowColor", color);
@@ -120,7 +119,6 @@ public final class JSyncSwing
             // }
         });
 
-        // Ausnahmen
         // Font fontBold = font.deriveFont(Font.BOLD);
         // UIManager.put("TitledBorder.font", fontBold);
 
@@ -128,11 +126,6 @@ public final class JSyncSwing
         //
         // SortedSet<Object> uiKeys = new TreeSet<>(new Comparator<Object>()
         // {
-        // /**
-        // * @param o1 Object
-        // * @param o2 Object
-        // * @return int
-        // */
         // @Override
         // public int compare(final Object o1, final Object o2)
         // {

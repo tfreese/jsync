@@ -5,23 +5,14 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
-import java.nio.file.attribute.GroupPrincipal;
-import java.nio.file.attribute.PosixFileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongConsumer;
 
-import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.Receiver;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.filter.PathFilterNoOp;
@@ -38,12 +29,6 @@ import reactor.core.publisher.Flux;
  */
 public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiver
 {
-    @Override
-    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
-    {
-        return super.generateSyncItems(baseDir, followSymLinks, PathFilterNoOp.INSTANCE);
-    }
-
     /**
      * @see de.freese.jsync.filesystem.Receiver#createDirectory(java.lang.String, java.lang.String)
      */
@@ -83,6 +68,12 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
         }
     }
 
+    @Override
+    public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
+    {
+        return super.generateSyncItems(baseDir, followSymLinks, PathFilterNoOp.INSTANCE);
+    }
+
     /**
      * @see de.freese.jsync.filesystem.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
      */
@@ -91,39 +82,39 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
     {
         Path path = Paths.get(baseDir, syncItem.getRelativePath());
 
-        // In der Form "rwxr-xr-x"; optional, kann unter Windows null sein.
-        String permissions = syncItem.getPermissionsToString();
-
         // TimeUnit = SECONDS
         long lastModifiedTime = syncItem.getLastModifiedTime();
 
-        // Optional, kann unter Windows null sein.
-        String groupName = syncItem.getGroup() == null ? null : syncItem.getGroup().getName();
+        // Format "rwxr-xr-x"; optional, can be NULL on Windows.
+        //        String permissions = syncItem.getPermissionsToString();
 
-        // Optional, kann unter Windows null sein.
-        String userName = syncItem.getUser() == null ? null : syncItem.getUser().getName();
+        // Optional, can be NULL on Windows.
+        //        String groupName = syncItem.getGroup() == null ? null : syncItem.getGroup().getName();
+
+        // Optional, can be NULL on Windows.
+        //        String userName = syncItem.getUser() == null ? null : syncItem.getUser().getName();
 
         try
         {
             Files.setLastModifiedTime(path, FileTime.from(lastModifiedTime, TimeUnit.SECONDS));
 
-            if (Options.IS_LINUX)
-            {
-                Set<PosixFilePermission> filePermissions = PosixFilePermissions.fromString(permissions);
-                // FileAttribute<Set<PosixFilePermission>> fileAttributePermissions = PosixFilePermissions.asFileAttribute(filePermissions);
-
-                Files.setPosixFilePermissions(path, filePermissions);
-
-                FileSystem fileSystem = path.getFileSystem();
-                UserPrincipalLookupService lookupService = fileSystem.getUserPrincipalLookupService();
-
-                PosixFileAttributeView fileAttributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class);
-                GroupPrincipal groupPrincipal = lookupService.lookupPrincipalByGroupName(groupName);
-                fileAttributeView.setGroup(groupPrincipal);
-
-                UserPrincipal userPrincipal = lookupService.lookupPrincipalByName(userName);
-                fileAttributeView.setOwner(userPrincipal);
-            }
+            //            if (Options.IS_LINUX)
+            //            {
+            //                Set<PosixFilePermission> filePermissions = PosixFilePermissions.fromString(permissions);
+            //                // FileAttribute<Set<PosixFilePermission>> fileAttributePermissions = PosixFilePermissions.asFileAttribute(filePermissions);
+            //
+            //                Files.setPosixFilePermissions(path, filePermissions);
+            //
+            //                FileSystem fileSystem = path.getFileSystem();
+            //                UserPrincipalLookupService lookupService = fileSystem.getUserPrincipalLookupService();
+            //
+            //                PosixFileAttributeView fileAttributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class);
+            //                GroupPrincipal groupPrincipal = lookupService.lookupPrincipalByGroupName(groupName);
+            //                fileAttributeView.setGroup(groupPrincipal);
+            //
+            //                UserPrincipal userPrincipal = lookupService.lookupPrincipalByName(userName);
+            //                fileAttributeView.setOwner(userPrincipal);
+            //            }
         }
         catch (IOException ex)
         {

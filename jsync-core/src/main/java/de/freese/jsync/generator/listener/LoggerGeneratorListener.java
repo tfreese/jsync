@@ -9,8 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link Logger}-Implementierung des {@link GeneratorListener}.
- *
  * @author Thomas Freese
  */
 public class LoggerGeneratorListener extends AbstractGeneratorListener

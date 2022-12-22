@@ -99,7 +99,7 @@ public final class JSyncUtils
     }
 
     /**
-     * SocketChannels werden NICHT geschlossen !
+     * A {@link SocketChannel} will <strong>NOT</strong> be closed !
      */
     public static void close(final Channel channel)
     {
@@ -122,7 +122,7 @@ public final class JSyncUtils
     }
 
     /**
-     * SocketChannels werden NICHT geschlossen !
+     * A {@link SocketChannel} will <strong>NOT</strong> be closed !
      */
     public static void closeSilently(final Closeable closeable)
     {
@@ -140,7 +140,7 @@ public final class JSyncUtils
     }
 
     /**
-     * Ein Verzeichnis wird rekursiv inklusive aller Dateien und Unterverzeichnisse gelöscht.
+     * A Directory will be deleted rekursive.
      */
     public static void delete(final Path path, final boolean followSymLinks) throws IOException
     {
@@ -262,7 +262,7 @@ public final class JSyncUtils
     }
 
     /**
-     * Entfernt führende '//' und das abschließende '/'.
+     * Removed leading '//' and the final '/'.
      */
     public static String normalizePath(final URI uri)
     {
@@ -408,7 +408,7 @@ public final class JSyncUtils
     }
 
     /**
-     * Aufsplitten nach ';' oder ',' um ein Set für den {@link PathFilter} zu erzeugen.
+     * Split by ';' or ',' to build a Set for the {@link PathFilter}.
      */
     public static Set<String> toFilter(final String value)
     {

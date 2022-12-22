@@ -21,7 +21,7 @@ import reactor.netty.resources.LoopResources;
 public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Sender
 {
     /**
-     * Dürfen nur einmal erzeugt werden.
+     * Create them only <strong>ONCE</strong>.
      */
     private static final LoopResources LOOP_RESOURCES = LoopResources.create("sender", 4, true);
 

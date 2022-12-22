@@ -12,8 +12,6 @@ import io.rsocket.core.RSocketConnector;
 import io.rsocket.frame.decoder.PayloadDecoder;
 
 /**
- * @param <T> Builder Type
- *
  * @author Thomas Freese
  */
 public abstract class AbstractRSocketClientBuilder<T extends AbstractRSocketClientBuilder<?>> extends AbstractRSocketBuilder<T, RSocketClient>

@@ -28,9 +28,6 @@ public interface ArgumentParser
      */
     boolean followSymlinks();
 
-    /**
-     * Sind Argumente vorhanden ?
-     */
     boolean hasArgs();
 
     void printHelp(PrintStream printStream);

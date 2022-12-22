@@ -10,8 +10,6 @@ import de.freese.jsync.model.serializer.adapter.DataAdapter;
 /**
  * Interface zur Serialisierung eines Objektes.
  *
- * @param <T> Type of Object
- *
  * @author Thomas Freese
  */
 public interface ObjectSerializer<T>

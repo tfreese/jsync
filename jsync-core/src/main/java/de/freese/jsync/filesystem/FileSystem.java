@@ -13,23 +13,11 @@ import reactor.core.publisher.Flux;
  */
 public interface FileSystem
 {
-    /**
-     * Stellt die Verbindung zum Dateisystem her.
-     */
     void connect(final URI uri);
 
-    /**
-     * Trennt die Verbindung zum Dateisystem.
-     */
     void disconnect();
 
-    /**
-     * Liefert die Prüfsumme einer Datei.<br>
-     */
     String generateChecksum(String baseDir, String relativeFile, LongConsumer consumerChecksumBytesRead);
 
-    /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses<br>
-     */
     Flux<SyncItem> generateSyncItems(String baseDir, boolean followSymLinks, PathFilter pathFilter);
 }

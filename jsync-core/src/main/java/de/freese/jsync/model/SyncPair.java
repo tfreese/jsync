@@ -4,8 +4,7 @@ package de.freese.jsync.model;
 import java.util.Objects;
 
 /**
- * Object für die Informationen der Source- und Destination.<br>
- * Der Pfad ist relativ zum Basis-Verzeichnis.
+ * Object for Informationen about Source- and Target-Destination.<br>
  *
  * @author Thomas Freese
  */
@@ -18,11 +17,10 @@ public class SyncPair
     private SyncStatus status = SyncStatus.UNKNOWN;
 
     /**
-     * Erstellt ein neues {@link SyncPair} Object.<br>
-     * Nur eines der beiden {@link SyncItem}s darf null sein.
+     * Only one of the {@link SyncItem}s can be null.
      *
-     * @param senderItem {@link SyncItem}; wenn null = nur im Receiver enthalten
-     * @param receiverItem {@link SyncItem}; wenn null = nur im Sender enthalten
+     * @param senderItem {@link SyncItem}; if null only existing in Receiver
+     * @param receiverItem {@link SyncItem}; if null only existing in Sender
      */
     public SyncPair(final SyncItem senderItem, final SyncItem receiverItem)
     {
@@ -37,9 +35,6 @@ public class SyncPair
         }
     }
 
-    /**
-     * Wenn null = nur im Sender enthalten.
-     */
     public SyncItem getReceiverItem()
     {
         return this.receiverItem;
@@ -50,17 +45,11 @@ public class SyncPair
         return getSenderItem() != null ? getSenderItem().getRelativePath() : getReceiverItem().getRelativePath();
     }
 
-    /**
-     * Wenn null = nur im Receiver enthalten.
-     */
     public SyncItem getSenderItem()
     {
         return this.senderItem;
     }
 
-    /**
-     * Liefert den Status der Datei.
-     */
     public SyncStatus getStatus()
     {
         return this.status;
@@ -87,23 +76,23 @@ public class SyncPair
     }
 
     /**
-     * Vergleicht die Datei in der Quelle (Source) mit dem Ziel (Target).
+     * Compares Source with Target.
      */
     public void validateStatus()
     {
         if ((getSenderItem() == null) && (getReceiverItem() != null))
         {
-            // Löschen: in der Quelle nicht vorhanden, aber im Ziel.
+            // Delete: only available in Target but not in Source.
             this.status = SyncStatus.ONLY_IN_TARGET;
         }
         else if ((getSenderItem() != null) && (getReceiverItem() == null))
         {
-            // Kopieren: in der Quelle vorhanden, aber nicht im Ziel.
+            // Copy: only available in Source but not in Target.
             this.status = SyncStatus.ONLY_IN_SOURCE;
         }
         else if ((getSenderItem() != null) && (getReceiverItem() != null))
         {
-            // Kopieren: Datei-Attribute unterschiedlich.
+            // Copy: Different Attributes
             if (getSenderItem().getLastModifiedTime() != getReceiverItem().getLastModifiedTime())
             {
                 this.status = SyncStatus.DIFFERENT_LAST_MODIFIEDTIME;
@@ -116,21 +105,20 @@ public class SyncPair
             {
                 this.status = SyncStatus.DIFFERENT_CHECKSUM;
             }
-            else if (!Objects.equals(getSenderItem().getPermissionsToString(), getReceiverItem().getPermissionsToString()))
-            {
-                this.status = SyncStatus.DIFFERENT_PERMISSIONS;
-            }
-            else if (!Objects.equals(getSenderItem().getUser(), getReceiverItem().getUser()))
-            {
-                this.status = SyncStatus.DIFFERENT_USER;
-            }
-            else if (!Objects.equals(getSenderItem().getGroup(), getReceiverItem().getGroup()))
-            {
-                this.status = SyncStatus.DIFFERENT_GROUP;
-            }
+            //            else if (!Objects.equals(getSenderItem().getPermissionsToString(), getReceiverItem().getPermissionsToString()))
+            //            {
+            //                this.status = SyncStatus.DIFFERENT_PERMISSIONS;
+            //            }
+            //            else if (!Objects.equals(getSenderItem().getUser(), getReceiverItem().getUser()))
+            //            {
+            //                this.status = SyncStatus.DIFFERENT_USER;
+            //            }
+            //            else if (!Objects.equals(getSenderItem().getGroup(), getReceiverItem().getGroup()))
+            //            {
+            //                this.status = SyncStatus.DIFFERENT_GROUP;
+            //            }
             else
             {
-                // Alle Prüfungen ohne Unterschied.
                 this.status = SyncStatus.SYNCHRONIZED;
             }
         }

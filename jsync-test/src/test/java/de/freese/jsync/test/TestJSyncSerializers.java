@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -39,7 +38,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class TestJSyncSerializers
 {
     private static final int BUFFER_SIZE = 1024 * 16;
-    
+
     private static final DataHolder DATA_HOLDER_BYTE_BUF = new DataHolder()
     {
         private static final ByteBuf BYTE_BUF = UnpooledByteBufAllocator.DEFAULT.buffer(BUFFER_SIZE);
@@ -279,20 +278,20 @@ class TestJSyncSerializers
         SyncItem syncItem1 = new DefaultSyncItem("/");
         syncItem1.setChecksum("ABC");
         syncItem1.setFile(false);
-        syncItem1.setGroup(new Group("TestGroupA", 41));
         syncItem1.setLastModifiedTime(123456789);
-        syncItem1.setPermissions(Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE));
         syncItem1.setSize(123456789);
-        syncItem1.setUser(new User("TestUserA", 41));
+        //        syncItem1.setGroup(new Group("TestGroupA", 41));
+        //        syncItem1.setPermissions(Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE));
+        //        syncItem1.setUser(new User("TestUserA", 41));
 
         SyncItem syncItem2 = new DefaultSyncItem("/script.sh");
         syncItem2.setChecksum("XYZ");
         syncItem2.setFile(true);
-        syncItem2.setGroup(new Group("TestGroupB", 42));
         syncItem2.setLastModifiedTime(987654321);
-        syncItem2.setPermissions(Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE));
         syncItem2.setSize(987654321);
-        syncItem2.setUser(new User("TestUserB", 42));
+        //        syncItem2.setGroup(new Group("TestGroupB", 42));
+        //        syncItem2.setPermissions(Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE));
+        //        syncItem2.setUser(new User("TestUserB", 42));
 
         serializer.writeTo(sink, syncItem1);
         serializer.writeTo(sink, syncItem2);
@@ -304,26 +303,26 @@ class TestJSyncSerializers
         assertEquals("ABC", syncItem1.getChecksum());
         assertFalse(syncItem1.isFile());
         assertTrue(syncItem1.isDirectory());
-        assertEquals("TestGroupA", syncItem1.getGroup().getName());
-        assertEquals(41, syncItem1.getGroup().getGid());
         assertEquals(123456789, syncItem1.getLastModifiedTime());
-        assertEquals("rw-------", syncItem1.getPermissionsToString());
         assertEquals(123456789, syncItem1.getSize());
-        assertEquals("TestUserA", syncItem1.getUser().getName());
-        assertEquals(41, syncItem1.getUser().getUid());
+        //        assertEquals("TestGroupA", syncItem1.getGroup().getName());
+        //        assertEquals(41, syncItem1.getGroup().getGid());
+        //        assertEquals("rw-------", syncItem1.getPermissionsToString());
+        //        assertEquals("TestUserA", syncItem1.getUser().getName());
+        //        assertEquals(41, syncItem1.getUser().getUid());
 
         syncItem2 = serializer.readFrom(source, SyncItem.class);
         assertEquals("/script.sh", syncItem2.getRelativePath());
         assertEquals("XYZ", syncItem2.getChecksum());
         assertTrue(syncItem2.isFile());
         assertFalse(syncItem2.isDirectory());
-        assertEquals("TestGroupB", syncItem2.getGroup().getName());
-        assertEquals(42, syncItem2.getGroup().getGid());
         assertEquals(987654321, syncItem2.getLastModifiedTime());
-        assertEquals("rwx------", syncItem2.getPermissionsToString());
         assertEquals(987654321, syncItem2.getSize());
-        assertEquals("TestUserB", syncItem2.getUser().getName());
-        assertEquals(42, syncItem2.getUser().getUid());
+        //        assertEquals("TestGroupB", syncItem2.getGroup().getName());
+        //        assertEquals(42, syncItem2.getGroup().getGid());
+        //        assertEquals("rwx------", syncItem2.getPermissionsToString());
+        //        assertEquals("TestUserB", syncItem2.getUser().getName());
+        //        assertEquals(42, syncItem2.getUser().getUid());
     }
 
     @ParameterizedTest(name = "{index} -> {0}")

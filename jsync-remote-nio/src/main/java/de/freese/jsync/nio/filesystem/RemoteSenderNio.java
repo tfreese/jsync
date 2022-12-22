@@ -50,7 +50,8 @@ public class RemoteSenderNio extends AbstractNioFileSystem implements Sender
             getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.SOURCE_READ_FILE));
 
             // Data-Frame
-            getFrameProtocol().writeData(channel, buffer -> {
+            getFrameProtocol().writeData(channel, buffer ->
+            {
                 getSerializer().writeTo(buffer, baseDir);
                 getSerializer().writeTo(buffer, relativeFile);
                 getSerializer().writeTo(buffer, sizeOfFile);
@@ -59,7 +60,7 @@ public class RemoteSenderNio extends AbstractNioFileSystem implements Sender
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
 
-            // Response lesen
+            // Response
             return getFrameProtocol().readAll(channel);
         }
         catch (RuntimeException ex)

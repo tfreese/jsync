@@ -15,50 +15,32 @@ import de.freese.jsync.model.SyncPair;
 import reactor.core.publisher.Flux;
 
 /**
- * Koordiniert den Abgleich zwischen {@link Sender} und {@link Receiver}.
+ * Coordinate {@link Sender} and {@link Receiver}.
  *
  * @author Thomas Freese
  */
 public interface Client
 {
-    /**
-     * Stellt die Verbindung zu den Dateisystemen her.
-     */
     void connectFileSystems();
 
-    /**
-     * Trennt die Verbindung zu den Dateisystemen.
-     */
     void disconnectFileSystems();
 
-    /**
-     * Erzeugt die Prüfsumme einer Datei.<br>
-     */
     String generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerChecksumBytesRead);
 
-    /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
-     */
     Flux<SyncItem> generateSyncItems(EFileSystem fileSystem, PathFilter pathFilter);
 
-    /**
-     * Erzeugt die SyncItems (Verzeichnisse, Dateien).<br>
-     */
     default void generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter, final Consumer<SyncItem> consumer)
     {
         generateSyncItems(fileSystem, pathFilter).subscribe(consumer);
     }
 
     /**
-     * Vereinigt die Ergebnisse vom {@link Sender} und vom {@link Receiver}.<br>
-     * Die Einträge des Senders sind die Referenz.<br>
-     * Ist ein Item nicht im Receiver enthalten, muss es dorthin kopiert werden.<br>
-     * Ist ein Item nur Receiver enthalten, muss es dort gelöscht werden.<br>
+     * Merges the {@link SyncItem} from {@link Sender} and {@link Receiver}.<br>
+     * The Entries of the Sender are the Reference.<br>
+     * Is an Item not existing in the Receiver, it must be copied.<br>
+     * Is an Item only in the Receiver, it must be deleted.<br>
      */
     List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver);
 
-    /**
-     * Synchronisiert das Ziel-Verzeichnis mit der Quelle.
-     */
     void syncReceiver(List<SyncPair> syncPairs, ClientListener clientListener);
 }

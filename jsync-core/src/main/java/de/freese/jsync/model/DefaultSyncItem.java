@@ -1,27 +1,28 @@
 // Created: 30.10.2016
 package de.freese.jsync.model;
 
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
-import java.util.Set;
 
 /**
- * Basis-Implementierung für ein Verzeichnis / Datei, welche es zu Synchronisieren gilt.<br>
- * Der Pfad ist relativ zum Basis-Verzeichnis.
- *
  * @author Thomas Freese
  */
 public class DefaultSyncItem implements SyncItem
 {
     private final String relativePath;
+
     private String checksum;
-    private Group group;
+
+    //    private Group group;
+
     private boolean isFile;
+
     private long lastModifiedTime;
-    private Set<PosixFilePermission> permissions;
+
+    //    private Set<PosixFilePermission> permissions;
+
     private long size;
 
-    private User user;
+    //    private User user;
 
     public DefaultSyncItem(final String relativePath)
     {
@@ -39,14 +40,14 @@ public class DefaultSyncItem implements SyncItem
         return this.checksum;
     }
 
-    /**
-     * @see de.freese.jsync.model.SyncItem#getGroup()
-     */
-    @Override
-    public Group getGroup()
-    {
-        return this.group;
-    }
+    //    /**
+    //     * @see de.freese.jsync.model.SyncItem#getGroup()
+    //     */
+    //    @Override
+    //    public Group getGroup()
+    //    {
+    //        return this.group;
+    //    }
 
     /**
      * @see de.freese.jsync.model.SyncItem#getLastModifiedTime()
@@ -57,14 +58,14 @@ public class DefaultSyncItem implements SyncItem
         return this.lastModifiedTime;
     }
 
-    /**
-     * @see de.freese.jsync.model.SyncItem#getPermissions()
-     */
-    @Override
-    public Set<PosixFilePermission> getPermissions()
-    {
-        return this.permissions;
-    }
+    //    /**
+    //     * @see de.freese.jsync.model.SyncItem#getPermissions()
+    //     */
+    //    @Override
+    //    public Set<PosixFilePermission> getPermissions()
+    //    {
+    //        return this.permissions;
+    //    }
 
     /**
      * @see de.freese.jsync.model.SyncItem#getRelativePath()
@@ -84,14 +85,14 @@ public class DefaultSyncItem implements SyncItem
         return this.size;
     }
 
-    /**
-     * @see de.freese.jsync.model.SyncItem#getUser()
-     */
-    @Override
-    public User getUser()
-    {
-        return this.user;
-    }
+    //    /**
+    //     * @see de.freese.jsync.model.SyncItem#getUser()
+    //     */
+    //    @Override
+    //    public User getUser()
+    //    {
+    //        return this.user;
+    //    }
 
     /**
      * @see de.freese.jsync.model.SyncItem#isFile()
@@ -120,14 +121,14 @@ public class DefaultSyncItem implements SyncItem
         this.isFile = isFile;
     }
 
-    /**
-     * @see de.freese.jsync.model.SyncItem#setGroup(de.freese.jsync.model.Group)
-     */
-    @Override
-    public void setGroup(final Group group)
-    {
-        this.group = group;
-    }
+    //    /**
+    //     * @see de.freese.jsync.model.SyncItem#setGroup(de.freese.jsync.model.Group)
+    //     */
+    //    @Override
+    //    public void setGroup(final Group group)
+    //    {
+    //        this.group = group;
+    //    }
 
     /**
      * @see de.freese.jsync.model.SyncItem#setLastModifiedTime(long)
@@ -138,14 +139,14 @@ public class DefaultSyncItem implements SyncItem
         this.lastModifiedTime = lastModifiedTime;
     }
 
-    /**
-     * @see de.freese.jsync.model.SyncItem#setPermissions(java.util.Set)
-     */
-    @Override
-    public void setPermissions(final Set<PosixFilePermission> permissions)
-    {
-        this.permissions = permissions;
-    }
+    //    /**
+    //     * @see de.freese.jsync.model.SyncItem#setPermissions(java.util.Set)
+    //     */
+    //    @Override
+    //    public void setPermissions(final Set<PosixFilePermission> permissions)
+    //    {
+    //        this.permissions = permissions;
+    //    }
 
     /**
      * @see de.freese.jsync.model.SyncItem#setSize(long)
@@ -156,14 +157,14 @@ public class DefaultSyncItem implements SyncItem
         this.size = size;
     }
 
-    /**
-     * @see de.freese.jsync.model.SyncItem#setUser(de.freese.jsync.model.User)
-     */
-    @Override
-    public void setUser(final User user)
-    {
-        this.user = user;
-    }
+    //    /**
+    //     * @see de.freese.jsync.model.SyncItem#setUser(de.freese.jsync.model.User)
+    //     */
+    //    @Override
+    //    public void setUser(final User user)
+    //    {
+    //        this.user = user;
+    //    }
 
     /**
      * @see java.lang.Object#toString()

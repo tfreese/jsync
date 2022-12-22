@@ -14,10 +14,10 @@ import io.rsocket.util.DefaultPayload;
 import reactor.util.annotation.Nullable;
 
 /**
- * {@link DefaultPayload} mit Verwendung des {@link ByteBufferPool}.
+ * {@link DefaultPayload} with a {@link ByteBufferPool}.
  *
  * @author Thomas Freese
- * @deprecated Funktioniert nicht
+ * @deprecated Does not work
  */
 @Deprecated
 class JSyncPayload implements Payload

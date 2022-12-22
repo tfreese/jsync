@@ -28,9 +28,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 /**
- * Verarbeitet den Request und Response.<br>
- * Sync-Implementierung des {@link IoHandler}.
- *
  * @author Thomas Freese
  * @see IoHandler
  */
@@ -100,7 +97,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             {
                 case DISCONNECT ->
                 {
-                    // FINISH-Frame lesen
+                    // FINISH-Frame
                     this.frameProtocol.readFrame(channel);
                     this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, "DISCONNECTED"));
                     this.frameProtocol.writeFinish(channel);
@@ -111,7 +108,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
                 }
                 case CONNECT ->
                 {
-                    // FINISH-Frame lesen
+                    // FINISH-Frame
                     this.frameProtocol.readFrame(channel);
                     this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, "CONNECTED"));
                     this.frameProtocol.writeFinish(channel);
@@ -219,9 +216,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
     }
 
-    /**
-     * Create the Directory.
-     */
     protected void createDirectory(final SocketChannel channel, final Receiver receiver)
     {
         ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
@@ -254,9 +248,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
     }
 
-    /**
-     * Create the Sync-Items.
-     */
     protected void createSyncItems(final SocketChannel channel, final FileSystem fileSystem)
     {
         ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
@@ -300,9 +291,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
     }
 
-    /**
-     * Delete Directory or File.
-     */
     protected void delete(final SocketChannel channel, final Receiver receiver)
     {
         ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
@@ -356,9 +344,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         return this.serializer;
     }
 
-    /**
-     * Die Daten werden zum Client gesendet.
-     */
     protected void readFile(final SocketChannel channel, final Sender sender) throws Exception
     {
         ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
@@ -404,9 +389,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
     }
 
-    /**
-     * Update Directory or File.
-     */
     protected void update(final SocketChannel channel, final Receiver receiver)
     {
         ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
@@ -439,9 +421,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
         }
     }
 
-    /**
-     * Validate Directory or File.
-     */
     protected void validate(final SocketChannel channel, final Receiver receiver)
     {
         ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
@@ -486,10 +465,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey>
             this.frameProtocol.getBufferPool().free(buffer);
         }
     }
-
-    /**
-     * Die Daten werden zum Server gesendet.
-     */
+    
     protected void writeFile(final SocketChannel channel, final Receiver receiver) throws Exception
     {
         ByteBuffer buffer = this.frameProtocol.readFrame(channel);

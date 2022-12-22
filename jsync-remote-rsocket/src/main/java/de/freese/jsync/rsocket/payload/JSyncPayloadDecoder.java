@@ -18,10 +18,10 @@ import io.rsocket.frame.RequestStreamFrameCodec;
 import io.rsocket.frame.decoder.PayloadDecoder;
 
 /**
- * DefaultPayloadDecoder mit Verwendung des {@link ByteBufferPool}.
+ * DefaultPayloadDecoder with a {@link ByteBufferPool}.
  *
  * @author Thomas Freese
- * @deprecated Funktioniert nicht
+ * @deprecated Does not work
  */
 @Deprecated
 class JSyncPayloadDecoder implements PayloadDecoder

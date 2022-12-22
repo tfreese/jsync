@@ -12,8 +12,5 @@ import reactor.core.publisher.Flux;
  */
 public interface Sender extends FileSystem
 {
-    /**
-     * Liefert den {@link Flux} zur Datei.
-     */
     Flux<ByteBuffer> readFile(String baseDir, final String relativeFile, long sizeOfFile);
 }

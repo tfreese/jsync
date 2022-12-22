@@ -15,7 +15,7 @@ import javax.swing.SwingUtilities;
 public final class SwingUtils
 {
     /**
-     * Malt einen Rahmen um jede {@link JComponent}.
+     * Paint a Frame around each {@link JComponent}.
      */
     public static void enableDebug(final Component component)
     {
@@ -35,7 +35,7 @@ public final class SwingUtils
     }
 
     /**
-     * Malt einen Rahmen um jede {@link JComponent}.
+     * Paint a Frame around each {@link JComponent}.
      */
     public static void enableDebug(final Container container)
     {

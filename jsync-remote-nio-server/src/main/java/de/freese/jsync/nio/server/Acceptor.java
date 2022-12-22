@@ -10,7 +10,7 @@ import java.util.Objects;
 import de.freese.jsync.nio.server.dispatcher.Dispatcher;
 
 /**
- * Der {@link Acceptor} nimmt die neuen Client-Verbindungen entgegen und übergibt sie einem {@link Dispatcher}.<br>
+ * The {@link Acceptor} handles new Client-Connections and delegate them to the {@link Dispatcher}.<br>
  *
  * @author Thomas Freese
  */
@@ -45,19 +45,19 @@ class Acceptor extends AbstractNioProcessor
     {
         try
         {
-            // Verbindung mit Client herstellen.
+            // Establish Client Connection.
             SocketChannel socketChannel = this.serverSocketChannel.accept();
 
             if (socketChannel == null)
             {
-                // Falls sich schon ein anderer Acceptor den Channel geschnappt hat.
-                // Deswegen ist es auch Blödsinn mehrere zu registrieren, da immer alle reagieren, aber nur einer den Channel hat.
+                // In case that another Acceptor has processed the Connection.
+                // It is nonsense to register multiple Acceptors, because all are triggered, but only one has the Channel.
                 return;
             }
 
             getLogger().debug("{}: connection accepted", socketChannel.getRemoteAddress());
 
-            // Socket dem Dispatcher übergeben.
+            // Delegate the Socket to the Dispatcher.
             this.dispatcher.register(socketChannel);
         }
         catch (Exception ex)

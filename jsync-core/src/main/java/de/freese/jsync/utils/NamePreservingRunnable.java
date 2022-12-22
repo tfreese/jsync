@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Ein {@link Runnable} Wrapper, welcher den Namen des aktuellen Threads durch den eigenen ersetzt.<br>
- * Nach der run-Methode wird der Original-Name wiederhergestellt.
+ * A {@link Runnable} Wrapper for changing the name of the current Thread.<br>
+ * After execution, the name is restored.
  *
  * @author Thomas Freese
  */
@@ -50,8 +50,8 @@ public class NamePreservingRunnable implements Runnable
     }
 
     /**
-     * Ändert den Namen des Threads.<br>
-     * Eine auftretende {@link SecurityException} wird als Warning geloggt.
+     * Change the Name of the Thread.<br>
+     * A {@link SecurityException} is logged as a Warning.
      */
     private void setName(final Thread thread, final String name)
     {

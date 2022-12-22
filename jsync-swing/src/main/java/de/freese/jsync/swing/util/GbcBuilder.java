@@ -6,7 +6,7 @@ import java.awt.Insets;
 import java.io.Serial;
 
 /**
- * Erweitert die {@link GridBagConstraints} um das Builder-Pattern.
+ * Expand the {@link GridBagConstraints} by a Builder-Pattern.
  *
  * @author Thomas Freese
  */
@@ -16,7 +16,6 @@ public class GbcBuilder extends GridBagConstraints
     private static final long serialVersionUID = -7701391832421914842L;
 
     /**
-     * Erstellt ein neues {@link GbcBuilder} Object.<br>
      * Defaults:
      * <ul>
      * <li>fill = NONE</li>

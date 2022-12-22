@@ -1,12 +1,8 @@
 // Created: 24.09.2020
 package de.freese.jsync.model.serializer.objectserializer.impl;
 
-import java.nio.file.attribute.PosixFilePermissions;
-
 import de.freese.jsync.model.DefaultSyncItem;
-import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.User;
 import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
 import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
@@ -33,22 +29,22 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
         // lastModifiedTime
         syncItem.setLastModifiedTime(adapter.readLong(source));
 
-        // permissions
-        String permissions = adapter.readString(source, getCharset());
-
-        if (permissions != null)
-        {
-            syncItem.setPermissions(PosixFilePermissions.fromString(permissions));
-        }
-
-        // group
-        syncItem.setGroup(registry.getSerializer(Group.class).readFrom(registry, adapter, source));
-
-        // user
-        syncItem.setUser(registry.getSerializer(User.class).readFrom(registry, adapter, source));
-
         // checksum
         syncItem.setChecksum(adapter.readString(source, getCharset()));
+
+        //        // permissions
+        //        String permissions = adapter.readString(source, getCharset());
+        //
+        //        if (permissions != null)
+        //        {
+        //            syncItem.setPermissions(PosixFilePermissions.fromString(permissions));
+        //        }
+        //
+        //        // group
+        //        syncItem.setGroup(registry.getSerializer(Group.class).readFrom(registry, adapter, source));
+        //
+        //        // user
+        //        syncItem.setUser(registry.getSerializer(User.class).readFrom(registry, adapter, source));
 
         return syncItem;
     }
@@ -68,16 +64,16 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem>
         // lastModifiedTime
         adapter.writeLong(sink, value.getLastModifiedTime());
 
-        // permissions
-        adapter.writeString(sink, value.getPermissionsToString(), getCharset());
-
-        // group
-        registry.getSerializer(Group.class).writeTo(registry, adapter, sink, value.getGroup());
-
-        // user
-        registry.getSerializer(User.class).writeTo(registry, adapter, sink, value.getUser());
-
         // checksum
         adapter.writeString(sink, value.getChecksum(), getCharset());
+
+        //        // permissions
+        //        adapter.writeString(sink, value.getPermissionsToString(), getCharset());
+        //
+        //        // group
+        //        registry.getSerializer(Group.class).writeTo(registry, adapter, sink, value.getGroup());
+        //
+        //        // user
+        //        registry.getSerializer(User.class).writeTo(registry, adapter, sink, value.getUser());
     }
 }

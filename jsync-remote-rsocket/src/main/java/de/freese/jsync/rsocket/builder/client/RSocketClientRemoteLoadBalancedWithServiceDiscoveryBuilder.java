@@ -63,7 +63,7 @@ public class RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder
     }
 
     /**
-     * Wechselnde Service-Discovery Anfrage simulieren.<br>
+     * Simulate Service-Discovery.<br>
      * org.springframework.cloud.client.discovery.DiscoveryClient - org.springframework.cloud:spring-cloud-commons
      */
     public RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder serviceDiscovery(final Supplier<List<SocketAddress>> serviceDiscovery)

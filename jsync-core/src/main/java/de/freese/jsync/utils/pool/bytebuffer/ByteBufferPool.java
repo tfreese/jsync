@@ -15,7 +15,7 @@ public interface ByteBufferPool
     void free(ByteBuffer buffer);
 
     /**
-     * {@link ByteBuffer} mit DEFAULT Größe.
+     * {@link ByteBuffer} with DEFAULT Size.
      */
     ByteBuffer get();
 }

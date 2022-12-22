@@ -7,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link Logger}-Implementierung des {@link ClientListener}.
- *
  * @author Thomas Freese
  */
 public class LoggerClientListener extends AbstractClientListener

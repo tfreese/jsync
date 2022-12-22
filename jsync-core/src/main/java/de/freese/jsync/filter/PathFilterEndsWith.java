@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Exclude-Filter, prüft mit {@link String#endsWith(String)} ob der Pfad den Filter enthält.
+ * Exclude-Filter, uses {@link String#endsWith(String)}.
  *
  * @author Thomas Freese
  */

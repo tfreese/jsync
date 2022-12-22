@@ -37,7 +37,7 @@ public final class JSyncSwingLauncher
         JSyncContext.setExecutorService(Executors.newFixedThreadPool(8));
         JSyncContext.setMessages(new Messages(Locale.getDefault()));
 
-        // Um Comparator Fehler zu vermeiden.
+        // To avoid Comparator Exceptions.
         // System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
         Hooks.onErrorDropped(th -> JSyncSwing.getLogger().warn(th.getMessage()));

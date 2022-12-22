@@ -4,8 +4,6 @@ package de.freese.jsync.model.serializer.adapter;
 import java.nio.charset.Charset;
 
 /**
- * Interface für eine Datenquelle.<br>
- *
  * @param <R> Type of Source
  *
  * @author Thomas Freese

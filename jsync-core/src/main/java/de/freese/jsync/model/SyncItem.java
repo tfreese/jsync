@@ -1,53 +1,44 @@
 // Created: 30.10.2016
 package de.freese.jsync.model;
 
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Set;
-
 /**
- * Interface für ein Verzeichnis oder Datei.<br>
- *
  * @author Thomas Freese
  */
 public interface SyncItem
 {
     String getChecksum();
 
-    Group getGroup();
+    //    Group getGroup();
 
     long getLastModifiedTime();
 
     /**
-     * Unter Windows oder Netzlaufwerken können diese Null sein.
+     * For Windows or Net-Drives these can be NULL.
      */
-    Set<PosixFilePermission> getPermissions();
+    //    Set<PosixFilePermission> getPermissions();
 
     /**
-     * Unter Windows oder Netzlaufwerken können diese Null sein.
+     * For Windows or Net-Drives these can be NULL.
      */
-    default String getPermissionsToString()
-    {
-        if ((getPermissions() == null) || getPermissions().isEmpty())
-        {
-            return null;
-        }
+    //    default String getPermissionsToString()
+    //    {
+    //        if ((getPermissions() == null) || getPermissions().isEmpty())
+    //        {
+    //            return null;
+    //        }
+    //
+    //        return PosixFilePermissions.toString(getPermissions());
+    //    }
 
-        return PosixFilePermissions.toString(getPermissions());
-    }
-
-    /**
-     * Verzeichnis/Datei relativ zum Basis-Verzeichnis.
-     */
     String getRelativePath();
 
     /**
-     * Verzeichnis: Anzahl der 1st-Level Children<br>
-     * Datei: Größe
+     * Directory: Number of 1st-Level Children<br>
+     * File: Size in Bytes
      */
     long getSize();
 
-    User getUser();
+    //    User getUser();
 
     default boolean isDirectory()
     {
@@ -60,17 +51,17 @@ public interface SyncItem
 
     void setFile(final boolean isFile);
 
-    void setGroup(final Group group);
+    //    void setGroup(final Group group);
 
     void setLastModifiedTime(final long lastModifiedTime);
 
-    void setPermissions(final Set<PosixFilePermission> permissions);
+    //    void setPermissions(final Set<PosixFilePermission> permissions);
 
     /**
-     * Verzeichnis: Anzahl der 1st-Level Children<br>
-     * Datei: Größe
+     * Directory: Number of 1st-Level Children<br>
+     * File: Size in Bytes
      */
     void setSize(final long size);
 
-    void setUser(final User user);
+    //    void setUser(final User user);
 }

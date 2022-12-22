@@ -13,8 +13,8 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.core.publisher.Flux;
 
 /**
- * Abstraktion der NIO-Kommunikation mittels Frames.<br>
- * Siehe <a href="https://github.com/rsocket/rsocket/blob/master/Protocol.md">rSocket-Protocol</a>
+ * NIO Transfer protocol by Frames.<br>
+ * See <a href="https://github.com/rsocket/rsocket/blob/master/Protocol.md">rSocket-Protocol</a>
  *
  * @author Thomas Freese
  */
@@ -45,8 +45,8 @@ public class NioFrameProtocol
     }
 
     /**
-     * Lesen aller Frames bis zum FINISH-Frame.<br>
-     * Diese können nach der Verarbeitung wieder in den {@link ByteBufferPool}.
+     * Read all Frames to the FINISH-Frame.<br>
+     * They can be reused by the {@link ByteBufferPool}.
      */
     public Flux<ByteBuffer> readAll(final ReadableByteChannel channel)
     {
@@ -68,8 +68,8 @@ public class NioFrameProtocol
     }
 
     /**
-     * Lesen aller Frames bis zum FINISH-Frame.<br>
-     * Diese können nach der Verarbeitung wieder in den {@link ByteBufferPool}.
+     * Read all Frames to the FINISH-Frame.<br>
+     * They can be reused by the {@link ByteBufferPool}.
      */
     public void readAll(final ReadableByteChannel channel, final Consumer<ByteBuffer> consumer) throws Exception
     {
@@ -88,13 +88,13 @@ public class NioFrameProtocol
     }
 
     /**
-     * DATA-Frame liefert den {@link ByteBuffer} des Contents, dieser kann nach der Verarbeitung wieder in den {@link ByteBufferPool}.<br>
-     * ERROR-Frame wirft eine Exception.<br>
-     * FINISH-Frame liefert null.
+     * The DATA-Frame returns the {@link ByteBuffer} of the Content.<br>
+     * ERROR-Frame throws an Exception.<br>
+     * FINISH-Frame returns null.
      */
     public ByteBuffer readFrame(final ReadableByteChannel channel) throws Exception
     {
-        // Header lesen
+        // Header
         ByteBuffer buffer = readFrameHeader(channel);
 
         FrameType frameType = FrameType.fromEncodedType(buffer.getInt());
@@ -102,7 +102,7 @@ public class NioFrameProtocol
 
         getBufferPool().free(buffer);
 
-        // Content lesen
+        // Content
         buffer = getBufferPool().get();
 
         if (FrameType.DATA.equals(frameType))
@@ -132,7 +132,7 @@ public class NioFrameProtocol
     }
 
     /**
-     * DATA-Frame schreiben.
+     * Write the DATA-Frame.
      */
     public void writeData(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException
     {
@@ -152,7 +152,7 @@ public class NioFrameProtocol
     }
 
     /**
-     * DATA-Frame schreiben.
+     * Write the DATA-Frame.
      */
     public void writeData(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
     {
@@ -171,7 +171,7 @@ public class NioFrameProtocol
     }
 
     /**
-     * ERROR-Frame schreiben.
+     * Write the ERROR-Frame.
      */
     public void writeError(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException
     {
@@ -202,7 +202,7 @@ public class NioFrameProtocol
     }
 
     /**
-     * ERROR-Frame schreiben.
+     * Write the ERROR-Frame.
      */
     public void writeError(final WritableByteChannel channel, final Throwable th) throws IOException
     {
@@ -215,7 +215,7 @@ public class NioFrameProtocol
     }
 
     /**
-     * FINISH-Frame schreiben.
+     * Write the FINISH-Frame.
      */
     public void writeFinish(final WritableByteChannel channel) throws IOException
     {
@@ -223,11 +223,11 @@ public class NioFrameProtocol
     }
 
     /**
-     * Garantiert das alle Daten aus dem Channel gelesen werden wie angefordert.
+     * Guarantees that all Data from the Channel are read as expected.
      */
     protected void read(final ReadableByteChannel channel, final ByteBuffer buffer, final int contentLength) throws IOException
     {
-        // Der übergebene Buffer kann größer sein als benötigt.
+        // The Buffer can be bigger than required.
         ByteBuffer bb = buffer.slice(0, contentLength);
 
         int totalRead = channel.read(bb);

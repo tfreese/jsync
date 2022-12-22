@@ -4,8 +4,6 @@ package de.freese.jsync.model;
 import java.util.Objects;
 
 /**
- * Enthält die Informationen der Gruppe der Datei.
- *
  * @author Thomas Freese
  */
 public class Group

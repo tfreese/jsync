@@ -2,46 +2,46 @@
 package de.freese.jsync.model;
 
 /**
- * Merkmale von Unterschieden zwischen Quelle und Ziel.
+ * Differences between Source and Target.
  *
  * @author Thomas Freese
  */
 public enum SyncStatus
 {
     /**
-     * Prüfsumme unterschiedlich.
+     *
      */
     DIFFERENT_CHECKSUM,
+    //    /**
+    //     *
+    //     */
+    //    DIFFERENT_GROUP,
     /**
-     * Gruppe unterschiedlich.
-     */
-    DIFFERENT_GROUP,
-    /**
-     * Timestamp unterschiedlich.
+     *
      */
     DIFFERENT_LAST_MODIFIEDTIME,
+    //    /**
+    //     *
+    //     */
+    //    DIFFERENT_PERMISSIONS,
     /**
-     * Berechtigungen unterschiedlich.
-     */
-    DIFFERENT_PERMISSIONS,
-    /**
-     * Größe unterschiedlich.
+     *
      */
     DIFFERENT_SIZE,
+    //    /**
+    //     *
+    //     */
+    //    DIFFERENT_USER,
     /**
-     * Eigentümer unterschiedlich.
-     */
-    DIFFERENT_USER,
-    /**
-     * Quelle muss kopiert werden.
+     * Source must be copied.
      */
     ONLY_IN_SOURCE,
     /**
-     * Ziel muss gelöscht werden.
+     * Source must be deleted.
      */
     ONLY_IN_TARGET,
     /**
-     * Quelle und Ziel identisch.
+     * Source and Target are identical.
      */
     SYNCHRONIZED,
     /**

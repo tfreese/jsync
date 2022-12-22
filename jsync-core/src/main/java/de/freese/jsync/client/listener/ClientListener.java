@@ -4,12 +4,9 @@ package de.freese.jsync.client.listener;
 import java.util.EventListener;
 
 import de.freese.jsync.Options;
-import de.freese.jsync.client.Client;
 import de.freese.jsync.model.SyncItem;
 
 /**
- * Listener für den {@link Client}.
- *
  * @author Thomas Freese
  */
 public interface ClientListener extends EventListener

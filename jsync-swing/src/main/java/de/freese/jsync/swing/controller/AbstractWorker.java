@@ -62,9 +62,9 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     }
 
     /**
-     * Parallel-Verarbeitung aktivieren, wenn<br>
-     * - Sender und Receiver nicht auf dem gleichen File-Device laufen<br>
-     * - Sender und Receiver nicht auf dem gleichen Server laufen<br>
+     * Enable Parallel-Execution if<br>
+     * - Sender and Receiver are not on the same File-Device<br>
+     * - Sender and Receiver are not on the same Server<br>
      */
     boolean canRunParallel(final URI senderUri, final URI receiverUri)
     {

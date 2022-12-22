@@ -27,19 +27,19 @@ public class RSocketServer
 
     public static void main(final String[] args) throws Exception
     {
-        // Globale Default-Ressourcen.
+        // Global Default-Resources.
         // TcpResources.set(LoopResources.create("rSocket"));
         // TcpResources.set(LoopResources.create("rSocket", 2, 8, true));
         // TcpResources.set(ConnectionProvider.create("connectionPool", 16));
 
-        // Fehlermeldung, wenn Client die Verbindung schliesst.
-        // Nur einmalig definieren, sonst gib es mehrere Logs-Meldungen !!!
+        // Exception, if Client closed the Connection.
+        // Create only once, unless multiple Logs are created !!!
         // Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
         Hooks.onErrorDropped(th ->
         {
         });
 
-        // Debug einschalten.
+        // Enable Debug.
         // Hooks.onOperatorDebug();
 
         // @formatter:off
@@ -58,7 +58,7 @@ public class RSocketServer
                 .port(8888)
                 //.bindAddress(() -> SocketAddress)
                 .runOn(LoopResources.create("server", 4, false))
-                //.runOn(EventLoopGroup) // EpollEventLoopGroup geht nur auf Linux -> NioEventLoopGroup verwenden.
+                //.runOn(EventLoopGroup) // EpollEventLoopGroup only available on Linux -> Use NioEventLoopGroup instead.
                 .doOnBound(server -> LOGGER.info("Bound: {}", server.channel()))
                 .doOnUnbound(server -> LOGGER.info("Unbound: {}", server.channel()))
                 .doOnConnection(connection -> LOGGER.info("Connected client: {}", connection.channel()))

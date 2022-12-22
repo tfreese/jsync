@@ -111,7 +111,8 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
 
         getClient().syncReceiver(syncPairs, this);
 
-        // Wir warten etwas bis alle GUI-Events verarbeitet wurden.
+        // Wait until all GUI-Events are processed.
+        // TODO BAD SOLUTION !!!
         TimeUnit.MILLISECONDS.sleep(200);
 
         return null;

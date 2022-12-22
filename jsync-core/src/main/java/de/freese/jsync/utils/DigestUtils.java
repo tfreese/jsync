@@ -22,7 +22,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 public final class DigestUtils
 {
     /**
-     * Die Position des {@link ByteBuffer} wird wieder auf den Ursprungs-Wert gesetzt.<br>
+     * The {@link ByteBuffer} Position is reset to old Position.<br>
      * {@link ByteBuffer#position()}<br>
      * {@link MessageDigest#update(ByteBuffer)}<br>
      * {@link ByteBuffer#position(int)}<br>
@@ -51,7 +51,7 @@ public final class DigestUtils
     }
 
     /**
-     * Der {@link InputStream} wird NICHT geschlossen !
+     * The {@link InputStream} will <strong>NOT</strong> be closed !
      */
     public static byte[] sha256Digest(final InputStream inputStream) throws IOException
     {
@@ -94,7 +94,7 @@ public final class DigestUtils
     }
 
     /**
-     * Erzeugt den {@link MessageDigest} für die Generierung der Prüfsumme.<br>
+     * Creates the {@link MessageDigest} for Checksum generation.<br>
      * <br>
      * Every implementation of the Java platform is required to support the following standard MessageDigest algorithms:<br>
      * MD5<br>

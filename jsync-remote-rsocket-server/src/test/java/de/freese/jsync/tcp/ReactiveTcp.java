@@ -54,7 +54,7 @@ public class ReactiveTcp
         // .collect(Collectors.joining())
         connection.outbound().sendString(Mono.just("Hello"), StandardCharsets.UTF_8).then().subscribe();
 
-        // Hier fehlt der vollständige Response, es wird nur der Request 'Hello' ausgegeben ?!
+        // Complete Response is missing, only the Request 'Hello' is displayed ?!
         connection.inbound().receive().asString(StandardCharsets.UTF_8).subscribe(response -> LOGGER.info("Client: Response = {}", response));
 
         TimeUnit.SECONDS.sleep(1);

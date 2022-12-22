@@ -5,7 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
 /**
- * ByteArrayOutputStream mit direktem Zugriff auf das ByteArray über einen {@link ByteBuffer} ohne es zu kopieren.
+ * ByteArrayOutputStream with direkt Access of the ByteArray over a {@link ByteBuffer} without the need to copy it.
  *
  * @author Thomas Freese
  */
@@ -21,9 +21,6 @@ public class SharedByteArrayOutputStream extends ByteArrayOutputStream
         super(size);
     }
 
-    /**
-     * Kapselt das ByteArray.
-     */
     public ByteBuffer toByteBuffer()
     {
         return ByteBuffer.wrap(this.buf, 0, this.count);

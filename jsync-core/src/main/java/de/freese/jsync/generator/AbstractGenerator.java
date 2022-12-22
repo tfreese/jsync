@@ -15,15 +15,10 @@ import de.freese.jsync.utils.io.FileVisitorHierarchie;
 import reactor.core.publisher.Flux;
 
 /**
- * Basis-Implementierung des {@link Generator}.
- *
  * @author Thomas Freese
  */
 public abstract class AbstractGenerator implements Generator
 {
-    /**
-     * Liefert ein Set mit allen Path-Objekten (Verzeichnisse, Dateien) das Basis-Verzeichnisses.
-     */
     protected Flux<Path> getPathsAsFlux(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter)
     {
         return Flux.<Path>create(sink ->
@@ -33,9 +28,6 @@ public abstract class AbstractGenerator implements Generator
         }).sort();
     }
 
-    /**
-     * Liefert ein Set mit allen Path-Objekten (Verzeichnisse, Dateien) das Basis-Verzeichnisses.
-     */
     protected Set<Path> getPathsAsSet(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter)
     {
         Set<Path> set = new TreeSet<>();
@@ -47,7 +39,7 @@ public abstract class AbstractGenerator implements Generator
 
     private void walkFileTree(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter, final Consumer<Path> consumer)
     {
-        //  Wenn Dateien fehlerhaft sind, knallt es hier bereits, eigenen FileWalker implementieren !
+        //  Exception here if Files are corrupt, use own FileWalker !
         // try (Stream<Path> stream = Files.walk(base, visitOptions)) {...}
 
         try

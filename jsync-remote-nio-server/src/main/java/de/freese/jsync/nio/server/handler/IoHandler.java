@@ -5,9 +5,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Verarbeitet den Request und Response.
- *
- * @param <T> <T> Type
+ * The {@link IoHandler} handles the Request and Response in a separate Thread.<br>
  *
  * @author Thomas Freese
  */
@@ -20,13 +18,7 @@ public interface IoHandler<T>
         return DEFAULT_CHARSET;
     }
 
-    /**
-     * Verarbeitet den Request.
-     */
     void read(final T input);
 
-    /**
-     * Verarbeitet den Response.
-     */
     void write(final T output);
 }

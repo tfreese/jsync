@@ -20,8 +20,6 @@ import de.freese.jsync.model.SyncStatus;
 import reactor.core.publisher.Flux;
 
 /**
- * Default-Implementierung des {@link Client}.
- *
  * @author Thomas Freese
  */
 public class DefaultClient extends AbstractClient
@@ -63,33 +61,33 @@ public class DefaultClient extends AbstractClient
     {
         ClientListener cl = clientListener != null ? clientListener : new EmptyClientListener();
 
-        // Alles raus filtern was bereits synchronized ist.
+        // Filter all items, which are synchronized.
         Predicate<SyncPair> isSynchronised = p -> SyncStatus.SYNCHRONIZED.equals(p.getStatus());
         List<SyncPair> sync = syncPairs.stream().filter(isSynchronised.negate()).toList();
 
-        // Löschen
+        // Delete
         if (getOptions().isDelete())
         {
             deleteFiles(sync, cl);
             deleteDirectories(sync, cl);
         }
 
-        // Neue oder geänderte Dateien kopieren.
+        // Copy new or changed Files.
         copyFiles(sync, cl);
 
-        // Aktualisieren von Datei-Attributen.
+        // Update File-Attributes.
         updateFiles(sync, cl);
 
-        // Neue leere Verzeichnisse.
+        // Create new and empty Directories.
         createDirectories(sync, clientListener);
 
-        // Aktualisieren von Verzeichnis-Attributen.
+        // Update Directory-Attributes.
         updateDirectories(sync, cl);
     }
 
     private void mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver, final Consumer<SyncPair> consumer)
     {
-        // Map der ReceiverItems bauen.
+        // Map of ReceiverItems.
         Map<String, SyncItem> mapReceiver = syncItemsReceiver.stream().collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
 
         // @formatter:off
@@ -99,7 +97,7 @@ public class DefaultClient extends AbstractClient
                 ;
         // @formatter:on
 
-        // Was jetzt noch in der Receiver-Map drin ist, muss gelöscht werden (source = null).
+        // What it is now in the Map must be deleted (source = null).
         mapReceiver.forEach((key, value) -> consumer.accept(new SyncPair(null, value)));
     }
 }

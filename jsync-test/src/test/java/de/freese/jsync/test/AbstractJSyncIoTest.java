@@ -22,9 +22,6 @@ public abstract class AbstractJSyncIoTest
 
     protected static final Path PATH_ZIEL = Paths.get(System.getProperty("java.io.tmpdir"), "java", "ziel");
 
-    /**
-     * Verzeichnis-Struktur zum Testen löschen.
-     */
     @AfterEach
     public void afterEach() throws Exception
     {
@@ -32,9 +29,6 @@ public abstract class AbstractJSyncIoTest
         JSyncUtils.delete(PATH_QUELLE.getParent(), false);
     }
 
-    /**
-     * Verzeichnis-Struktur zum Testen aufbauen.
-     */
     @BeforeEach
     public void beforeEach() throws Exception
     {
@@ -42,7 +36,7 @@ public abstract class AbstractJSyncIoTest
 
         long delay = 1000L;
 
-        // Quell-Dateien anlegen
+        // Create Source-Files.
         Path path = PATH_QUELLE;
         Path pathFile = path.resolve("file.txt");
 
@@ -79,14 +73,14 @@ public abstract class AbstractJSyncIoTest
         {
             try (RandomAccessFile raf = new RandomAccessFile(pathFile.toFile(), "rw"))
             {
-                // 32 MB und ein paar zerquetschte...
+                // 32 MB and some Bytes...
                 raf.setLength((1024 * 1024 * 32) + 1024);
             }
         }
 
         TimeUnit.MILLISECONDS.sleep(delay);
 
-        // Ziel-Dateien anlegen
+        // Create Target-Files.
         path = PATH_ZIEL.resolve("v2");
         pathFile = path.resolve("file.txt");
 

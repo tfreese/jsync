@@ -26,8 +26,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 /**
- * Basis-Implementierung des {@link Client}.
- *
  * @author Thomas Freese
  */
 public abstract class AbstractClient implements Client
@@ -137,9 +135,6 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    /**
-     * Kopieren der Dateien von der Quelle in die Senke<br>
-     */
     protected void copyFile(final SyncItem syncItem, final ClientListener clientListener)
     {
         clientListener.copyProgress(getOptions(), syncItem, 0);
@@ -186,13 +181,6 @@ public abstract class AbstractClient implements Client
         }
     }
 
-    /**
-     * Kopieren der Dateien auf den {@link Receiver}<br>
-     * {@link SyncStatus#ONLY_IN_SOURCE}<br>
-     * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
-     * {@link SyncStatus#DIFFERENT_SIZE}<br>
-     * {@link SyncStatus#DIFFERENT_CHECKSUM}<br>
-     */
     protected void copyFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
@@ -219,10 +207,6 @@ public abstract class AbstractClient implements Client
         //@formatter:on
     }
 
-    /**
-     * Erstellen von leeren Verzeichnissen mit relativem Pfad zum Basis-Verzeichnis.<br>
-     * {@link SyncStatus#ONLY_IN_SOURCE}<br>
-     */
     protected void createDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
@@ -244,9 +228,6 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    /**
-     * Erstellt ein Verzeichnis auf dem {@link Receiver}.<br>
-     */
     protected void createDirectory(final SyncItem syncItem, final ClientListener clientListener)
     {
         if (getOptions().isDryRun())
@@ -264,9 +245,6 @@ public abstract class AbstractClient implements Client
         }
     }
 
-    /**
-     * Löscht ein {@link SyncItem} mit relativem Pfad zum Basis-Verzeichnis.
-     */
     protected void delete(final SyncItem syncItem, final ClientListener clientListener)
     {
         clientListener.delete(getOptions(), syncItem);
@@ -286,10 +264,6 @@ public abstract class AbstractClient implements Client
         }
     }
 
-    /**
-     * Löschen der Verzeichnisse und Dateien mit relativem Pfad zum Basis-Verzeichnis.<br>
-     * {@link SyncStatus#ONLY_IN_TARGET}<br>
-     */
     protected void deleteDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getReceiverItem() != null;
@@ -309,10 +283,6 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    /**
-     * Löschen der Dateien mit relativem Pfad zum Basis-Verzeichnis.<br>
-     * {@link SyncStatus#ONLY_IN_TARGET}<br>
-     */
     protected void deleteFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getReceiverItem() != null;
@@ -372,9 +342,6 @@ public abstract class AbstractClient implements Client
         return this.senderUri;
     }
 
-    /**
-     * Aktualisieren von Verzeichnis-Attributen auf dem {@link Receiver}.<br>
-     */
     protected void update(final SyncItem syncItem, final ClientListener clientListener)
     {
         clientListener.update(getOptions(), syncItem);
@@ -394,32 +361,18 @@ public abstract class AbstractClient implements Client
         }
     }
 
-    /**
-     * Aktualisieren von Verzeichnis-Attributen auf dem {@link Receiver}.<br>
-     * {@link SyncStatus#ONLY_IN_SOURCE}<br>
-     * {@link SyncStatus#DIFFERENT_PERMISSIONS}<br>
-     * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
-     * {@link SyncStatus#DIFFERENT_USER}<br>
-     * {@link SyncStatus#DIFFERENT_GROUP}<br>
-     */
     protected void updateDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isDirectory = p -> p.getSenderItem().isDirectory();
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
-        Predicate<SyncPair> isDifferentPermission = p -> SyncStatus.DIFFERENT_PERMISSIONS.equals(p.getStatus());
         Predicate<SyncPair> isDifferentTimestamp = p -> SyncStatus.DIFFERENT_LAST_MODIFIEDTIME.equals(p.getStatus());
-        Predicate<SyncPair> isDifferentUser = p -> SyncStatus.DIFFERENT_USER.equals(p.getStatus());
-        Predicate<SyncPair> isDifferentGroup = p -> SyncStatus.DIFFERENT_GROUP.equals(p.getStatus());
 
         // @formatter:off
         Predicate<SyncPair> filter = isExisting
                 .and(isDirectory)
                 .and(isOnlyInSource
-                        .or(isDifferentPermission)
                         .or(isDifferentTimestamp)
-                        .or(isDifferentUser)
-                        .or(isDifferentGroup)
                 )
                 ;
 
@@ -430,32 +383,18 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    /**
-     * Aktualisieren von Datei-Attributen auf dem {@link Receiver}.<br>
-     * {@link SyncStatus#ONLY_IN_SOURCE}<br>
-     * {@link SyncStatus#DIFFERENT_PERMISSIONS}<br>
-     * {@link SyncStatus#DIFFERENT_LAST_MODIFIEDTIME}<br>
-     * {@link SyncStatus#DIFFERENT_USER}<br>
-     * {@link SyncStatus#DIFFERENT_GROUP}<br>
-     */
     protected void updateFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
     {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isFile = p -> p.getSenderItem().isFile();
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
-        Predicate<SyncPair> isDifferentPermission = p -> SyncStatus.DIFFERENT_PERMISSIONS.equals(p.getStatus());
         Predicate<SyncPair> isDifferentTimestamp = p -> SyncStatus.DIFFERENT_LAST_MODIFIEDTIME.equals(p.getStatus());
-        Predicate<SyncPair> isDifferentUser = p -> SyncStatus.DIFFERENT_USER.equals(p.getStatus());
-        Predicate<SyncPair> isDifferentGroup = p -> SyncStatus.DIFFERENT_GROUP.equals(p.getStatus());
 
         // @formatter:off
         Predicate<SyncPair> filter = isExisting
                 .and(isFile)
                 .and(isOnlyInSource
-                        .or(isDifferentPermission)
                         .or(isDifferentTimestamp)
-                        .or(isDifferentUser)
-                        .or(isDifferentGroup)
                 )
                 ;
 

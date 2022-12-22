@@ -9,8 +9,6 @@ import de.freese.jsync.Options;
 import de.freese.jsync.model.SyncItem;
 
 /**
- * Console-Implementierung des {@link ClientListener}.
- *
  * @author Thomas Freese
  */
 public class ConsoleClientListener extends AbstractClientListener

@@ -4,6 +4,7 @@ package de.freese.jsync.utils;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -16,7 +17,7 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
 /**
- * Geklaut von org.springframework.core.io.buffer.DataBufferUtils.
+ * Taken from org.springframework.core.io.buffer.DataBufferUtils.
  *
  * @author Thomas Freese
  */
@@ -25,7 +26,7 @@ public final class ReactiveUtils
     private static final Consumer<ByteBuffer> RELEASE_CONSUMER = ReactiveUtils::release;
 
     /**
-     * SocketChannels werden NICHT geschlossen !
+     * A {@link SocketChannel} will NOT be closed !
      */
     public static void close(final Channel channel)
     {
@@ -33,9 +34,9 @@ public final class ReactiveUtils
     }
 
     /**
-     * List den {@link Channel} als Flux von {@link ByteBuffer}.<br>
-     * Der {@link Channel} wird im Anschluss geschlossen.<br>
-     * Sollen die {@link ByteBuffer} freigegeben werden, muss der return-Flux mit {@link #releaseConsumer()} subscribed werden.
+     * Read the {@link Channel} as Flux from the {@link ByteBuffer}.<br>
+     * The {@link Channel} will close after reading.<br>
+     * To release the {@link ByteBuffer}, the return-Flux must be subscribed with {@link #releaseConsumer()}.
      */
     public static Flux<ByteBuffer> readByteChannel(final Callable<ReadableByteChannel> channelSupplier)
     {
@@ -50,7 +51,7 @@ public final class ReactiveUtils
     }
 
     /**
-     * Führt auf jedem {@link ByteBuffer} die Methode {@link #release(ByteBuffer)} aus.
+     * Execute for each {@link ByteBuffer} the Method {@link #release(ByteBuffer)}.
      */
     public static Consumer<ByteBuffer> releaseConsumer()
     {
@@ -58,9 +59,9 @@ public final class ReactiveUtils
     }
 
     /**
-     * Schreibt den source-Publisher in den Channel, dieser wird danach <strong>nicht</strong> geschlossen.<br>
-     * Geliefert wird ein Flux mit den geschriebenen Bytes pro ByteBuffer/Chunk.<br>
-     * Die {@link ByteBuffer} werden im {@link WritableByteChannelSubscriber} wieder freigegeben.
+     * Writes the source-Publisher in the Channel, the Channel will <strong>NOT</strong> closed.<br>
+     * Returns a Flux with the written Bytes for each ByteBuffer/Chunk.<br>
+     * The {@link ByteBuffer} will be released in the {@link WritableByteChannelSubscriber}.
      */
     public static Flux<Long> write(final Publisher<ByteBuffer> source, final WritableByteChannel channel)
     {

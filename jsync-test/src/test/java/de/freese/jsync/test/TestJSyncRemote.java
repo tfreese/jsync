@@ -170,7 +170,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest
     // {
     ////      // @formatter:off
 ////      new SpringApplicationBuilder(JsyncServerApplication.class)
-////              //.properties("server.port=8081") // Funktioniert nicht, wenn server.port in application.yml enthalten ist.
+////              //.properties("server.port=8081") // Does not work, if 'server.port' exist in application.yml.
 ////              //.run(args);
 ////              .run(new String[]{"--server.port=8001"});
 ////      // @formatter:on

@@ -58,7 +58,6 @@ public class CompareWorker extends AbstractWorker<Void, Void>
     @Override
     protected Void doInBackground() throws Exception
     {
-        // Dateien laden
         PathFilter pathFilter = getSyncView().getPathFilter();
 
         RunnableFuture<List<SyncItem>> futureSenderItems = createFutureSyncItems(EFileSystem.SENDER, pathFilter);
@@ -83,7 +82,7 @@ public class CompareWorker extends AbstractWorker<Void, Void>
 
         getSyncView().setProgressBarFilesMax(syncPairs.size());
 
-        // GUI befüllen.
+        // Fill GUI.
         for (SyncPair syncPair : syncPairs)
         {
             getSyncView().addSyncPair(syncPair);
@@ -114,7 +113,8 @@ public class CompareWorker extends AbstractWorker<Void, Void>
 
         getSyncView().updateLastEntry();
 
-        // Wir warten etwas bis alle GUI-Events verarbeitet wurden.
+        // Wait until all GUI-Events are processed.
+        // TODO BAD SOLUTION !!!
         TimeUnit.MILLISECONDS.sleep(200);
 
         return null;

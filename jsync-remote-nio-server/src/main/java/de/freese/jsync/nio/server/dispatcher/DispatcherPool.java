@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Der {@link Dispatcher} kümmert sich um das Connection-Handling der Clients nach dem 'accept'.<br>
+ * The {@link Dispatcher} handles the Client Connections after the 'accept'.<br>
  *
  * @author Thomas Freese
  */
@@ -96,7 +96,7 @@ public class DispatcherPool implements Dispatcher
     }
 
     /**
-     * Liefert den nächsten {@link Dispatcher} im Round-Robin Verfahren.<br>
+     * Returns the next {@link Dispatcher} in a Round-Robin procedure.<br>
      */
     private synchronized Dispatcher nextDispatcher()
     {

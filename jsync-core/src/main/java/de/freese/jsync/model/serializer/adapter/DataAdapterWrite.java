@@ -4,8 +4,6 @@ package de.freese.jsync.model.serializer.adapter;
 import java.nio.charset.Charset;
 
 /**
- * Interface für eine Datensenke.<br>
- *
  * @param <W> Type of Sink
  *
  * @author Thomas Freese

@@ -6,15 +6,10 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
- * Basis-Implementierung des {@link ClientListener}.
- *
  * @author Thomas Freese
  */
 public abstract class AbstractClientListener implements ClientListener
 {
-    /**
-     * Hängt bei Bedarf den String "(dry-run)" an die Message.
-     */
     protected String appendDryRun(final Options options, final String message)
     {
         String msg = message;

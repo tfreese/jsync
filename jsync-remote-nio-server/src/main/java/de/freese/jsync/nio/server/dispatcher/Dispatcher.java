@@ -4,7 +4,7 @@ package de.freese.jsync.nio.server.dispatcher;
 import java.nio.channels.SocketChannel;
 
 /**
- * Der {@link Dispatcher} kümmert sich um das Connection-Handling der Clients nach dem 'accept'.<br>
+ * The {@link Dispatcher} handles the Client Connections after the 'accept'.<br>
  *
  * @author Thomas Freese
  */

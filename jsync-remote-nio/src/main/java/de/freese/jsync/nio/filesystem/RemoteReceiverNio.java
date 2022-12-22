@@ -42,7 +42,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
 
-            // Response lesen
+            // Response
             getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
         }
         catch (RuntimeException ex)
@@ -87,7 +87,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
 
-            // Response lesen
+            // Response
             getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
         }
         catch (RuntimeException ex)
@@ -149,7 +149,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
 
-            // Response lesen
+            // Response
             getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
         }
         catch (RuntimeException ex)
@@ -194,7 +194,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
 
-            // Response lesen
+            // Response
             getFrameProtocol().readAll(channel).map(buffer ->
             {
                 long value = getSerializer().readFrom(buffer, Long.class);
@@ -257,7 +257,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
 
-            // Response lesen
+            // Response
             return getFrameProtocol().readAll(channel).map(buffer ->
             {
                 long bytesWritten = getSerializer().readFrom(buffer, Long.class);

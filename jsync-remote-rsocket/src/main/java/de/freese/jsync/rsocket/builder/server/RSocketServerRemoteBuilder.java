@@ -170,7 +170,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     }
 
     /**
-     * EpollEventLoopGroup geht nur auf Linux -> NioEventLoopGroup verwenden.
+     * EpollEventLoopGroup only available on Linux -> Use NioEventLoopGroup instead.
      */
     public RSocketServerRemoteBuilder runOn(final EventLoopGroup eventLoopGroup)
     {

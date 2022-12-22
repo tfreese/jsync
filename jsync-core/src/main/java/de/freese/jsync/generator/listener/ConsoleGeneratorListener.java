@@ -8,8 +8,6 @@ import java.util.Objects;
 import de.freese.jsync.model.SyncItem;
 
 /**
- * Console-Implementierung des {@link GeneratorListener}.
- *
  * @author Thomas Freese
  */
 public class ConsoleGeneratorListener extends AbstractGeneratorListener

@@ -14,8 +14,6 @@ import io.rsocket.frame.decoder.PayloadDecoder;
 import reactor.core.publisher.Mono;
 
 /**
- * @param <T> Builder Type
- *
  * @author Thomas Freese
  */
 public abstract class AbstractRSocketServerBuilder<T extends AbstractRSocketServerBuilder<?>> extends AbstractRSocketBuilder<T, Mono<? extends Closeable>>

@@ -6,8 +6,6 @@ import java.nio.file.Path;
 import de.freese.jsync.model.SyncItem;
 
 /**
- * Basis-Implementierung des {@link GeneratorListener}.
- *
  * @author Thomas Freese
  */
 public abstract class AbstractGeneratorListener implements GeneratorListener

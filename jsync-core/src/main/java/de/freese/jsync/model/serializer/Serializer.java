@@ -4,8 +4,6 @@ package de.freese.jsync.model.serializer;
 import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 
 /**
- * Interface für die API.
- *
  * @param <W> Type of Sink
  * @param <R> Type of Source
  *

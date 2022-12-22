@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Exclude-Filter, der nichts exkludiert.
- *
  * @author Thomas Freese
  */
 public class PathFilterNoOp implements PathFilter

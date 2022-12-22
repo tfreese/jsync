@@ -23,8 +23,6 @@ import reactor.netty.tcp.TcpSslContextSpec;
 import reactor.util.retry.Retry;
 
 /**
- * @param <T> Builder Type
- *
  * @author Thomas Freese
  */
 public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSocketClientRemoteBuilder<?>>
@@ -155,7 +153,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     }
 
     /**
-     * EpollEventLoopGroup geht nur auf Linux -> NioEventLoopGroup verwenden.
+     * EpollEventLoopGroup only available on Linux -> Use NioEventLoopGroup instead.
      */
     public T runOn(final EventLoopGroup eventLoopGroup)
     {

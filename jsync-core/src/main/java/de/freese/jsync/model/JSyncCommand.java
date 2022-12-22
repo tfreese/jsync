@@ -2,8 +2,6 @@
 package de.freese.jsync.model;
 
 /**
- * Remote-Commands für den Server.
- *
  * @author Thomas Freese
  */
 public enum JSyncCommand

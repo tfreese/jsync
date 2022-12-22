@@ -27,7 +27,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     // private Subscription subscription;
 
     /**
-     * @param sink {@link FluxSink} Geschriebene Bytes pro ByteBuffer/Chunk
+     * @param sink {@link FluxSink} Number of written Bytes for each ByteBuffer/Chunk
      */
     public WritableByteChannelSubscriber(final FluxSink<Long> sink, final Path path) throws IOException
     {
@@ -35,7 +35,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     }
 
     /**
-     * @param sink {@link FluxSink} Geschriebene Bytes pro ByteBuffer/Chunk
+     * @param sink {@link FluxSink} Number of written Bytes for each ByteBuffer/Chunk
      */
     public WritableByteChannelSubscriber(final FluxSink<Long> sink, final WritableByteChannel channel)
     {

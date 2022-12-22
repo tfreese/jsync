@@ -59,13 +59,13 @@ public final class JSyncRSocketServer
         // System.setProperty("io.netty.leakDetection.level", "PARANOID");
         ResourceLeakDetector.setLevel(Level.ADVANCED);
 
-        // Globale Default-Ressourcen.
+        // Global Default-Resources.
         TcpResources.set(LoopResources.create("server"));
         // TcpResources.set(LoopResources.create("server", selectCount, workerCount, true));
         // TcpResources.set(ConnectionProvider.create("connectionPool", 16));
 
-        // Fehlermeldung, wenn Client die Verbindung schliesst.
-        // Nur einmalig definieren, sonst gib es mehrere Logs-Meldungen !!!
+        // Exception, if Client closed the Connection.
+        // Create only once, unless multiple Logs are created !!!
         Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
         // Hooks.onErrorDropped(th -> {
         // });

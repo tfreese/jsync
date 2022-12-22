@@ -48,7 +48,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
 
-            // Response lesen
+            // Response
             getFrameProtocol().readAll(channel).doFinally(signal -> getLogger().info("client connected"))
                     .subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
         }
@@ -86,7 +86,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
 
-            // Response lesen
+            // Response
             getFrameProtocol().readAll(channel).doFinally(signal -> getLogger().info("client disconnected"))
                     .subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
         }
@@ -124,7 +124,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
 
-            // Response lesen
+            // Response
             return getFrameProtocol().readAll(channel).map(buffer ->
             {
                 String value = getSerializer().readFrom(buffer, String.class);
@@ -179,7 +179,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem
                 // Finish-Frame
                 getFrameProtocol().writeFinish(channel);
 
-                // Response lesen
+                // Response
                 getFrameProtocol().readAll(channel, buffer ->
                 {
                     SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);

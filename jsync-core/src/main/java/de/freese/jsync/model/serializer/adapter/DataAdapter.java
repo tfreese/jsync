@@ -2,7 +2,7 @@
 package de.freese.jsync.model.serializer.adapter;
 
 /**
- * Interface für eine Datenquelle/-senke.<br>
+ * Interface for a Datasource/-sink.<br>
  *
  * @param <W> Type of Sink
  * @param <R> Type of Source

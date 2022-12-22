@@ -14,8 +14,8 @@ import de.freese.jsync.nio.server.AbstractNioProcessor;
 import de.freese.jsync.nio.server.handler.IoHandler;
 
 /**
- * Der {@link Dispatcher} kümmert sich um das Connection-Handling der Clients nach dem 'accept'.<br>
- * Der {@link IoHandler} übernimmt das Lesen und Schreiben von Request und Response in einem separaten Thread.<br>
+ * The {@link Dispatcher} handles the Client Connections after the 'accept'.<br>
+ * The {@link IoHandler} handles the Request and Response in a separate Thread.<br>
  *
  * @author Thomas Freese
  */
@@ -68,7 +68,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
     @Override
     protected void afterSelectorLoop()
     {
-        // Die neuen Channels zum Selector hinzufügen.
+        // Add the new Channels to the Selector.
         processNewChannels();
     }
 
@@ -78,7 +78,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
     @Override
     protected void afterSelectorWhile()
     {
-        // Neue Channels gleich wieder schliessen.
+        // Close new Channels.
         for (Iterator<SocketChannel> iterator = getNewSessions().iterator(); iterator.hasNext(); )
         {
             SocketChannel socketChannel = iterator.next();
@@ -104,10 +104,10 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
     @Override
     protected void onReadable(final SelectionKey selectionKey)
     {
-        // Request lesen.
+        // Request.
         // this.ioHandler.read(selectionKey);
 
-        selectionKey.interestOps(0); // Selector-Selektion deaktivieren.
+        selectionKey.interestOps(0); // Deactivate Selector-Selektion.
 
         this.executor.execute(() ->
         {
@@ -122,10 +122,10 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
     @Override
     protected void onWritable(final SelectionKey selectionKey)
     {
-        // Response schreiben.
+        // Response.
         // this.ioHandler.write(selectionKey);
 
-        selectionKey.interestOps(0); // Selector-Selektion deaktivieren.
+        selectionKey.interestOps(0); // Deactivate Selector-Selektion.
 
         this.executor.execute(() ->
         {
@@ -140,7 +140,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher
     }
 
     /**
-     * Die neuen Channels zum Selector hinzufügen.
+     * Add the new Channels to the Selector.
      */
     private void processNewChannels()
     {

@@ -44,18 +44,18 @@ public class RSocketDemo
         System.setProperty("reactor.netty.ioSelectCount", Integer.toString(4));
         System.setProperty("reactor.netty.ioWorkerCount", Integer.toString(8));
 
-        // Globale Default-Ressourcen.
+        // Global Default-Resources.
         TcpResources.set(LoopResources.create("rSocket"));
         // TcpResources.set(LoopResources.create("rSocket", 2, 8, true));
         // TcpResources.set(ConnectionProvider.create("connectionPool", 16));
 
-        // Fehlermeldung, wenn Client die Verbindung schliesst.
-        // Nur einmalig definieren, sonst gib es mehrere Logs-Meldungen !!!
+        // Exception, if Client closed the Connection.
+        // Create only once, unless multiple Logs are created !!!
         Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
         // Hooks.onErrorDropped(th -> {
         // });
 
-        // Debug einschalten.
+        // Enable Debug.
         Hooks.onOperatorDebug();
 
         Function<Integer, SocketAcceptor> socketAcceptor = port -> SocketAcceptor.forRequestResponse(payload ->
@@ -73,8 +73,7 @@ public class RSocketDemo
         RSocketClient rSocketClient = tuple.getT1();
         List<Disposable> servers = tuple.getT2();
 
-        // Der IntStream blockiert, bis alle parallelen Operationen beendet sind.
-        // Der Flux macht dies nicht, sondern im Hintergrund.
+        // The Flux do not block.
         // @formatter:off
         Flux.range(0, 30).parallel().runOn(Schedulers.boundedElastic())
             .map(i ->
@@ -87,8 +86,7 @@ public class RSocketDemo
             ;
         // @formatter:on
 
-        // Der IntStream blockiert, bis alle parallelen Operationen beendet sind.
-        // Der Flux macht dies nicht, sondern im Hintergrund.
+        // The IntStream blocked, until all parallel Operations are finished.
         // @formatter:off
         IntStream.range(0, 30).parallel()
             .mapToObj(i ->
@@ -112,8 +110,8 @@ public class RSocketDemo
                 .requestResponse(Mono.just(DefaultPayload.create("for-" + i)))
                 .map(Payload::getDataUtf8)
                 .doOnNext(LOGGER::info)
-                //.block() // Wartet auf den Response, hier knallt es bei ungültigen Connections (ServiceDiscovery).
-                .subscribe() // Führt alles im Hintergrund aus.
+                //.block()
+                .subscribe()
                 ;
             // @formatter:on
         }
@@ -196,11 +194,11 @@ public class RSocketDemo
         List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000, 8000, 9000).map(port -> new InetSocketAddress("localhost", port)).toList();
 
         // @formatter:off
-        // Wechselnde Service-Discovery Anfrage simulieren.
+        // Simulate Service-Discovery.
         // org.springframework.cloud.client.discovery.DiscoveryClient - org.springframework.cloud:spring-cloud-commons
         Random random = new Random();
         Supplier<List<SocketAddress>> serviceDiscovery = () -> serverAddresses.stream()
-                .filter(server -> random.nextBoolean()) // Nicht jeden Server verwenden.
+                .filter(server -> random.nextBoolean()) // Do not use every Server.
                 .map(SocketAddress.class::cast)
                 .toList()
                 ;
