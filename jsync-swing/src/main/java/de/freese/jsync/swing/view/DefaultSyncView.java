@@ -218,10 +218,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
     }
 
     /**
-     * @see de.freese.jsync.swing.view.SyncView#initGUI()
+     * @see de.freese.jsync.swing.view.SyncView#initGui()
      */
     @Override
-    public void initGUI()
+    public void initGui()
     {
         this.panel.setLayout(new GridBagLayout());
         this.panel.setName("panel");

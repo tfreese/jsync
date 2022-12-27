@@ -66,7 +66,7 @@ public final class JSyncSwing
         frame.setLayout(new BorderLayout());
 
         SyncView syncView = new DefaultSyncView();
-        syncView.initGUI();
+        syncView.initGui();
 
         this.controller = new JSyncController();
         this.controller.init(syncView);

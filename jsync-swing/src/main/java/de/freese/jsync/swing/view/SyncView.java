@@ -38,7 +38,7 @@ public interface SyncView
 
     void incrementProgressBarFilesValue(int value);
 
-    void initGUI();
+    void initGui();
 
     void restoreState();
 
