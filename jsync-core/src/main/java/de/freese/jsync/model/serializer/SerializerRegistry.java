@@ -9,5 +9,5 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 @FunctionalInterface
 public interface SerializerRegistry
 {
-    <T> ObjectSerializer<T> getSerializer(final Class<T> clazz);
+    <T> ObjectSerializer<T> getSerializer(Class<T> clazz);
 }

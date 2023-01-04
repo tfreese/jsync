@@ -25,11 +25,11 @@ public interface Client
 
     void disconnectFileSystems();
 
-    String generateChecksum(EFileSystem fileSystem, SyncItem syncItem, final LongConsumer consumerChecksumBytesRead);
+    String generateChecksum(EFileSystem fileSystem, SyncItem syncItem, LongConsumer consumerChecksumBytesRead);
 
     Flux<SyncItem> generateSyncItems(EFileSystem fileSystem, PathFilter pathFilter);
 
-    default void generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter, final Consumer<SyncItem> consumer)
+    default void generateSyncItems(final EFileSystem fileSystem, PathFilter pathFilter, Consumer<SyncItem> consumer)
     {
         generateSyncItems(fileSystem, pathFilter).subscribe(consumer);
     }
@@ -40,7 +40,7 @@ public interface Client
      * Is an Item not existing in the Receiver, it must be copied.<br>
      * Is an Item only in the Receiver, it must be deleted.<br>
      */
-    List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver);
+    List<SyncPair> mergeSyncItems(List<SyncItem> syncItemsSender, List<SyncItem> syncItemsReceiver);
 
     void syncReceiver(List<SyncPair> syncPairs, ClientListener clientListener);
 }

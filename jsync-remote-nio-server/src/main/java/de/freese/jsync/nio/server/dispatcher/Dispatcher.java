@@ -11,5 +11,5 @@ import java.nio.channels.SocketChannel;
 @FunctionalInterface
 public interface Dispatcher
 {
-    void register(final SocketChannel socketChannel);
+    void register(SocketChannel socketChannel);
 }

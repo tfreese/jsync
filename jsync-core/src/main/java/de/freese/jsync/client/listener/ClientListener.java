@@ -11,15 +11,15 @@ import de.freese.jsync.model.SyncItem;
  */
 public interface ClientListener extends EventListener
 {
-    void checksumProgress(Options options, final SyncItem syncItem, long bytesRead);
+    void checksumProgress(Options options, SyncItem syncItem, long bytesRead);
 
-    void copyProgress(Options options, final SyncItem syncItem, long bytesTransferred);
+    void copyProgress(Options options, SyncItem syncItem, long bytesTransferred);
 
     void delete(Options options, SyncItem syncItem);
 
     void error(String message, Throwable th);
 
-    void update(Options options, final SyncItem syncItem);
+    void update(Options options, SyncItem syncItem);
 
-    void validate(Options options, final SyncItem syncItem);
+    void validate(Options options, SyncItem syncItem);
 }

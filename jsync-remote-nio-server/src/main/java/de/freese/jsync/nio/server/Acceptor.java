@@ -20,7 +20,7 @@ class Acceptor extends AbstractNioProcessor
 
     private final ServerSocketChannel serverSocketChannel;
 
-    public Acceptor(final Selector selector, final ServerSocketChannel serverSocketChannel, final Dispatcher dispatcher)
+    Acceptor(final Selector selector, final ServerSocketChannel serverSocketChannel, final Dispatcher dispatcher)
     {
         super(selector);
 

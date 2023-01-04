@@ -13,7 +13,7 @@ import reactor.core.publisher.Flux;
  */
 public interface FileSystem
 {
-    void connect(final URI uri);
+    void connect(URI uri);
 
     void disconnect();
 

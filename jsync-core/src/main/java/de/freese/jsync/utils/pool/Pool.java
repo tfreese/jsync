@@ -49,7 +49,7 @@ public abstract class Pool<T>
     {
         private final Queue<SoftReference<T>> delegate;
 
-        public SoftReferenceQueue(final Queue<SoftReference<T>> delegate)
+        SoftReferenceQueue(final Queue<SoftReference<T>> delegate)
         {
             this.delegate = delegate;
         }

@@ -20,11 +20,11 @@ public interface Receiver extends FileSystem
 
     void update(String baseDir, SyncItem syncItem);
 
-    void validateFile(String baseDir, final SyncItem syncItem, boolean withChecksum, final LongConsumer consumerChecksumBytesRead);
+    void validateFile(String baseDir, SyncItem syncItem, boolean withChecksum, LongConsumer consumerChecksumBytesRead);
 
     /**
      * Writes the {@link Flux} into the File.<br>
      * Returns a {@link Flux} with the written Bytes for each ByteBuffer/Chunk.
      */
-    Flux<Long> writeFile(String baseDir, final String relativeFile, long sizeOfFile, Flux<ByteBuffer> fileFlux);
+    Flux<Long> writeFile(String baseDir, String relativeFile, long sizeOfFile, Flux<ByteBuffer> fileFlux);
 }

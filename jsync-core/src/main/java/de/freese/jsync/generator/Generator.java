@@ -21,17 +21,17 @@ public interface Generator
      *
      * @param consumerChecksumBytesRead {@link LongConsumer}; optional
      */
-    String generateChecksum(final String baseDir, String relativeFile, final LongConsumer consumerChecksumBytesRead);
+    String generateChecksum(String baseDir, String relativeFile, LongConsumer consumerChecksumBytesRead);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      */
-    Flux<SyncItem> generateItems(final String baseDir, boolean followSymLinks, PathFilter pathFilter);
+    Flux<SyncItem> generateItems(String baseDir, boolean followSymLinks, PathFilter pathFilter);
 
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      */
-    default void generateItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final Consumer<SyncItem> consumer)
+    default void generateItems(String baseDir, boolean followSymLinks, PathFilter pathFilter, Consumer<SyncItem> consumer)
     {
         generateItems(baseDir, followSymLinks, pathFilter).subscribe(consumer);
     }

@@ -18,7 +18,7 @@ public interface IoHandler<T>
         return DEFAULT_CHARSET;
     }
 
-    void read(final T input);
+    void read(T input);
 
-    void write(final T output);
+    void write(T output);
 }

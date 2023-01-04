@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.channels.SocketChannel;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import de.freese.jsync.utils.pool.Pool;
 
@@ -59,7 +60,14 @@ public final class SocketChannelPool extends Pool<SocketChannel>
 
             while (!channel.finishConnect())
             {
-                // Empty
+                try
+                {
+                    TimeUnit.MILLISECONDS.sleep(10);
+                }
+                catch (InterruptedException ex)
+                {
+                    // Ignore
+                }
             }
 
             channel.configureBlocking(true);

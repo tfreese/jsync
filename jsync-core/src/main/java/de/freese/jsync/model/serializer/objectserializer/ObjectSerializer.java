@@ -19,7 +19,7 @@ public interface ObjectSerializer<T>
         return Options.CHARSET;
     }
 
-    <W, R> T readFrom(SerializerRegistry registry, final DataAdapter<W, R> adapter, R source);
+    <W, R> T readFrom(SerializerRegistry registry, DataAdapter<W, R> adapter, R source);
 
-    <W, R> void writeTo(SerializerRegistry registry, final DataAdapter<W, R> adapter, W sink, final T value);
+    <W, R> void writeTo(SerializerRegistry registry, DataAdapter<W, R> adapter, W sink, T value);
 }

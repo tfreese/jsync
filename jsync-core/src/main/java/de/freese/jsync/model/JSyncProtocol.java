@@ -149,5 +149,5 @@ public enum JSyncProtocol
 
     public abstract boolean isRemote();
 
-    public abstract URI toUri(final String hostPort, final String path);
+    public abstract URI toUri(String hostPort, String path);
 }

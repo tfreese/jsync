@@ -47,21 +47,21 @@ public interface SyncItem
 
     boolean isFile();
 
-    void setChecksum(final String checksum);
+    void setChecksum(String checksum);
 
-    void setFile(final boolean isFile);
+    void setFile(boolean isFile);
 
-    //    void setGroup(final Group group);
+    //    void setGroup(Group group);
 
-    void setLastModifiedTime(final long lastModifiedTime);
+    void setLastModifiedTime(long lastModifiedTime);
 
-    //    void setPermissions(final Set<PosixFilePermission> permissions);
+    //    void setPermissions(Set<PosixFilePermission> permissions);
 
     /**
      * Directory: Number of 1st-Level Children<br>
      * File: Size in Bytes
      */
-    void setSize(final long size);
+    void setSize(long size);
 
-    //    void setUser(final User user);
+    //    void setUser(User user);
 }

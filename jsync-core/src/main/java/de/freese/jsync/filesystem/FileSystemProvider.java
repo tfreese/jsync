@@ -8,9 +8,9 @@ import java.net.URI;
  */
 public interface FileSystemProvider
 {
-    Receiver createReceiver(final URI uri);
+    Receiver createReceiver(URI uri);
 
-    Sender createSender(final URI uri);
+    Sender createSender(URI uri);
 
     boolean supportsProtocol(String scheme);
 }
