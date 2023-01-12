@@ -24,15 +24,21 @@ public class GbcBuilder extends GridBagConstraints
      * <li>insets = new Insets(5, 5, 5, 5)</li>
      * </ul>
      */
-    public GbcBuilder(final int gridX, final int gridY)
+    public static GbcBuilder of(final int gridX, final int gridY)
+    {
+        GbcBuilder gbcBuilder = new GbcBuilder(gridX, gridY);
+        gbcBuilder.fillNone();
+        gbcBuilder.insets(2, 2, 2, 2);
+
+        return gbcBuilder;
+    }
+
+    private GbcBuilder(final int gridX, final int gridY)
     {
         super();
 
         this.gridx = gridX;
         this.gridy = gridY;
-
-        fillNone();
-        insets(2, 2, 2, 2);
     }
 
     public GbcBuilder anchorCenter()

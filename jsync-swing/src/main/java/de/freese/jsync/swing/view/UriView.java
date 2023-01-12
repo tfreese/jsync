@@ -89,7 +89,7 @@ class UriView extends AbstractView
             labelTitle = new JLabel(getMessage("jsync.target"));
         }
 
-        this.panel.add(labelTitle, new GbcBuilder(0, row).anchorWest());
+        this.panel.add(labelTitle, GbcBuilder.of(0, row).anchorWest());
 
         row++;
 
@@ -99,19 +99,19 @@ class UriView extends AbstractView
 
         this.comboBoxProtocol.setMinimumSize(new Dimension(140, 20));
         this.comboBoxProtocol.setPreferredSize(new Dimension(140, 20));
-        this.panel.add(this.comboBoxProtocol, new GbcBuilder(0, row));
+        this.panel.add(this.comboBoxProtocol, GbcBuilder.of(0, row));
 
         this.textFieldHostPort = new JTextField("localhost:8888");
         this.textFieldHostPort.setMinimumSize(new Dimension(100, 20));
         this.textFieldHostPort.setPreferredSize(new Dimension(100, 20));
         this.textFieldHostPort.setVisible(false);
-        this.panel.add(this.textFieldHostPort, new GbcBuilder(1, row));
+        this.panel.add(this.textFieldHostPort, GbcBuilder.of(1, row));
 
         this.textFieldPath = new JTextField();
-        this.panel.add(this.textFieldPath, new GbcBuilder(2, row).fillHorizontal());
+        this.panel.add(this.textFieldPath, GbcBuilder.of(2, row).fillHorizontal());
 
         this.buttonOpen = new JButton(getMessage("jsync.open"));
-        this.panel.add(this.buttonOpen, new GbcBuilder(3, row));
+        this.panel.add(this.buttonOpen, GbcBuilder.of(3, row));
 
         return this;
     }

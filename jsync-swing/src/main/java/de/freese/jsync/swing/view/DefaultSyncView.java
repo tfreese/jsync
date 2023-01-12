@@ -232,7 +232,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.configView.initGUI();
         this.configView.getComponent().setMinimumSize(new Dimension(750, 160));
         this.configView.getComponent().setPreferredSize(new Dimension(4000, 160));
-        this.panel.add(this.configView.getComponent(), new GbcBuilder(0, row).anchorCenter().fillHorizontal());
+        this.panel.add(this.configView.getComponent(), GbcBuilder.of(0, row).anchorCenter().fillHorizontal());
 
         // Component glue = Box.createGlue();
         // glue.setMinimumSize(new Dimension(230, 1));
@@ -243,33 +243,33 @@ public class DefaultSyncView extends AbstractView implements SyncView
         panelFilter.setLayout(new GridBagLayout());
         panelFilter.setBorder(BorderFactory.createTitledBorder(getMessage("jsync.filter")));
 
-        panelFilter.add(new JLabel(getMessage("jsync.directories")), new GbcBuilder(0, 0).anchorWest());
+        panelFilter.add(new JLabel(getMessage("jsync.directories")), GbcBuilder.of(0, 0).anchorWest());
         this.textAreaFilterDirs = new JTextArea();
-        panelFilter.add(this.textAreaFilterDirs, new GbcBuilder(0, 1).fillBoth());
+        panelFilter.add(this.textAreaFilterDirs, GbcBuilder.of(0, 1).fillBoth());
 
-        panelFilter.add(new JLabel(getMessage("jsync.files")), new GbcBuilder(0, 2).anchorWest());
+        panelFilter.add(new JLabel(getMessage("jsync.files")), GbcBuilder.of(0, 2).anchorWest());
         this.textAreaFilterFiles = new JTextArea();
-        panelFilter.add(this.textAreaFilterFiles, new GbcBuilder(0, 3).fillBoth());
+        panelFilter.add(this.textAreaFilterFiles, GbcBuilder.of(0, 3).fillBoth());
 
         panelFilter.setMinimumSize(new Dimension(230, 160));
         panelFilter.setPreferredSize(new Dimension(230, 160));
         panelFilter.setMaximumSize(new Dimension(230, 160));
-        this.panel.add(panelFilter, new GbcBuilder(1, row).fillBoth().gridHeight(2).weightX(0).weightY(0));
+        this.panel.add(panelFilter, GbcBuilder.of(1, row).fillBoth().gridHeight(2).weightX(0).weightY(0));
 
         // Show
         this.showView.initGUI(this.tableFacade);
         this.showView.getComponent().setMinimumSize(new Dimension(750, 160));
         this.showView.getComponent().setPreferredSize(new Dimension(4000, 160));
-        this.panel.add(this.showView.getComponent(), new GbcBuilder(2, row).anchorCenter().fillHorizontal());
+        this.panel.add(this.showView.getComponent(), GbcBuilder.of(2, row).anchorCenter().fillHorizontal());
 
         row++;
 
         // URI
         this.uriViewSender = new UriView().initGUI(EFileSystem.SENDER);
-        this.panel.add(this.uriViewSender.getComponent(), new GbcBuilder(0, row).fillHorizontal());
+        this.panel.add(this.uriViewSender.getComponent(), GbcBuilder.of(0, row).fillHorizontal());
 
         this.uriViewReceiver = new UriView().initGUI(EFileSystem.RECEIVER);
-        this.panel.add(this.uriViewReceiver.getComponent(), new GbcBuilder(2, row).fillHorizontal());
+        this.panel.add(this.uriViewReceiver.getComponent(), GbcBuilder.of(2, row).fillHorizontal());
 
         row++;
 
@@ -284,7 +284,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         JScrollPane scrollPaneSender = new JScrollPane(tableSender);
         scrollPaneSender.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        this.panel.add(scrollPaneSender, new GbcBuilder(0, row).fillBoth());
+        this.panel.add(scrollPaneSender, GbcBuilder.of(0, row).fillBoth());
 
         // Table Status
         JTable tableStatus = this.tableFacade.getTableStatus();
@@ -295,7 +295,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         JScrollPane scrollPaneStatus = new JScrollPane(tableStatus);
         scrollPaneStatus.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        this.panel.add(scrollPaneStatus, new GbcBuilder(1, row).fillBoth().weightX(0D));
+        this.panel.add(scrollPaneStatus, GbcBuilder.of(1, row).fillBoth().weightX(0D));
 
         // Table Receiver
         JTable tableReceiver = this.tableFacade.getTableReceiver();
@@ -308,7 +308,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         JScrollPane scrollPaneReceiver = new JScrollPane(tableReceiver);
         scrollPaneReceiver.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        this.panel.add(scrollPaneReceiver, new GbcBuilder(2, row).fillBoth());
+        this.panel.add(scrollPaneReceiver, GbcBuilder.of(2, row).fillBoth());
 
         // Synchronise SelectionModel
         tableReceiver.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -331,9 +331,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
         this.progressBarReceiver = new JProgressBar();
         this.progressBarReceiver.setStringPainted(true);
 
-        this.panel.add(this.progressBarSender, new GbcBuilder(0, row).fillHorizontal());
-        this.panel.add(this.progressBarFiles, new GbcBuilder(1, row).fillHorizontal().weightX(0D));
-        this.panel.add(this.progressBarReceiver, new GbcBuilder(2, row).fillHorizontal());
+        this.panel.add(this.progressBarSender, GbcBuilder.of(0, row).fillHorizontal());
+        this.panel.add(this.progressBarFiles, GbcBuilder.of(1, row).fillHorizontal().weightX(0D));
+        this.panel.add(this.progressBarReceiver, GbcBuilder.of(2, row).fillHorizontal());
 
         configGui();
         // enableDebug(this.panel);
@@ -345,13 +345,14 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void restoreState()
     {
-        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jSync", "jSyncGuiState");
+        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
         Properties properties = new Properties();
 
         try
         {
             if (!Files.exists(path))
             {
+                Files.createDirectories(path.getParent());
                 Files.createFile(path);
             }
         }
@@ -388,7 +389,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
     @Override
     public void saveState()
     {
-        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jSync", "jSyncGuiState");
+        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
 
         Properties properties = new Properties();
         properties.setProperty("sender.textfieldHostPort", getTextFieldHostPort(EFileSystem.SENDER).getText());

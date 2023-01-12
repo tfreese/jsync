@@ -48,7 +48,7 @@ class ShowView extends AbstractView
 
         this.checkBoxSynchronized = new JCheckBox(getMessage("jsync.show.synchronized"), true);
         this.checkBoxSynchronized.setForeground(Color.BLACK);
-        this.panel.add(this.checkBoxSynchronized, new GbcBuilder(0, 0).anchorWest());
+        this.panel.add(this.checkBoxSynchronized, GbcBuilder.of(0, 0).anchorWest());
         this.checkBoxSynchronized.addItemListener(event ->
         {
             updatePredicate();
@@ -57,7 +57,7 @@ class ShowView extends AbstractView
 
         this.checkBoxOnlyInTarget = new JCheckBox(getMessage("jsync.show.onlyInTarget"), true);
         this.checkBoxOnlyInTarget.setForeground(Color.RED);
-        this.panel.add(this.checkBoxOnlyInTarget, new GbcBuilder(0, 1).anchorWest());
+        this.panel.add(this.checkBoxOnlyInTarget, GbcBuilder.of(0, 1).anchorWest());
         this.checkBoxOnlyInTarget.addItemListener(event ->
         {
             updatePredicate();
@@ -66,7 +66,7 @@ class ShowView extends AbstractView
 
         this.checkBoxOnlyInSource = new JCheckBox(getMessage("jsync.show.onlyInSource"), true);
         this.checkBoxOnlyInSource.setForeground(Color.ORANGE.darker());
-        this.panel.add(this.checkBoxOnlyInSource, new GbcBuilder(0, 2).anchorWest());
+        this.panel.add(this.checkBoxOnlyInSource, GbcBuilder.of(0, 2).anchorWest());
         this.checkBoxOnlyInSource.addItemListener(event ->
         {
             updatePredicate();
@@ -75,7 +75,7 @@ class ShowView extends AbstractView
 
         this.checkBoxDifferent = new JCheckBox(getMessage("jsync.show.different"), true);
         this.checkBoxDifferent.setForeground(Color.ORANGE.darker());
-        this.panel.add(this.checkBoxDifferent, new GbcBuilder(0, 3).anchorWest());
+        this.panel.add(this.checkBoxDifferent, GbcBuilder.of(0, 3).anchorWest());
         this.checkBoxDifferent.addItemListener(event ->
         {
             updatePredicate();
