@@ -32,7 +32,7 @@ import reactor.util.function.Tuples;
 /**
  * @author Thomas Freese
  */
-public class RSocketDemo
+public final class RSocketDemo
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketDemo.class);
 
@@ -243,5 +243,10 @@ public class RSocketDemo
         RSocketClient client = RSocketBuilders.clientLocal().name("test1").build();
 
         return Tuples.of(client, List.of(server));
+    }
+
+    private RSocketDemo()
+    {
+        super();
     }
 }

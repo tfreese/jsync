@@ -36,11 +36,8 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
     {
         return JSyncContext.getMessages().getString(key);
     }
-
-    public final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final JSyncController controller;
-
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Options options;
 
     private final boolean parallel;

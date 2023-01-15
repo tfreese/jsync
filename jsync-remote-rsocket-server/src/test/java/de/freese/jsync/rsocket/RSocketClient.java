@@ -22,7 +22,7 @@ import reactor.util.retry.Retry;
 /**
  * @author Thomas Freese
  */
-public class RSocketClient
+public final class RSocketClient
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketClient.class);
 
@@ -102,5 +102,10 @@ public class RSocketClient
         // @formatter:on
 
         rSocketClient.dispose();
+    }
+
+    private RSocketClient()
+    {
+        super();
     }
 }

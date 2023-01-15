@@ -20,7 +20,7 @@ import reactor.util.annotation.Nullable;
  * @deprecated Does not work
  */
 @Deprecated
-class JSyncPayload implements Payload
+final class JSyncPayload implements Payload
 {
     private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
 

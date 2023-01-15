@@ -18,7 +18,7 @@ import reactor.netty.tcp.TcpServer;
 /**
  * @author Thomas Freese
  */
-public class ReactiveTcp
+public final class ReactiveTcp
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveTcp.class);
 
@@ -64,5 +64,10 @@ public class ReactiveTcp
 
         connection.dispose();
         tcpServer.dispose();
+    }
+
+    private ReactiveTcp()
+    {
+        super();
     }
 }

@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * @author Thomas Freese
  */
-public class PathFilterNoOp implements PathFilter
+public final class PathFilterNoOp implements PathFilter
 {
     public static final PathFilter INSTANCE = new PathFilterNoOp();
 

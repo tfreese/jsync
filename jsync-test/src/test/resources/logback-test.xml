@@ -3,7 +3,7 @@
 <configuration debug="false" scan="false" scanPeriod="60 seconds">
 
     <!--Levels are ordered: TRACE < DEBUG < INFO < WARN < ERROR -->
-    <property name="pattern" value="%date{HH:mm:ss.SSS} - %5level - [%30.-30thread] - %-20logger{0} - %message%n" />
+    <property name="pattern" value="%date{HH:mm:ss.SSS} - %5level - [%22.-22thread] - %-22logger{0} - %message%n" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.out</target>
@@ -32,7 +32,7 @@
     </appender>
 
     <logger name="de.freese.jsync" level="DEBUG" />
-    
+
     <!--logger name="io.rsocket.FrameLogger" level="INFO" />
     <logger name="reactor" level="INFO" />
     <logger name="reactor.netty.tcp.TcpServer" level="INFO" /-->

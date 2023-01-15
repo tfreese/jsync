@@ -19,9 +19,9 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel
 
     private final int columnCount;
 
-    private final List<String> columnNames;
+    private final transient List<String> columnNames;
 
-    private final List<T> list;
+    private final transient List<T> list;
 
     protected AbstractListTableModel(final int columnCount)
     {

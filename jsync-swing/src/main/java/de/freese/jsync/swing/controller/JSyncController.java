@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JSyncController
 {
-    public final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Client client;
 

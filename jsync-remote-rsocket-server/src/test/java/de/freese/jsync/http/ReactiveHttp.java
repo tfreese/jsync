@@ -19,7 +19,7 @@ import reactor.util.function.Tuple2;
 /**
  * @author Thomas Freese
  */
-public class ReactiveHttp
+public final class ReactiveHttp
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveHttp.class);
 
@@ -75,5 +75,10 @@ public class ReactiveHttp
 
         // httpServer.onDispose().block();
         httpServer.dispose();
+    }
+
+    private ReactiveHttp()
+    {
+        super();
     }
 }
