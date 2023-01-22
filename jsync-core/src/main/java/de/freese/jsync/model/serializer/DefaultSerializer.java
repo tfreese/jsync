@@ -95,6 +95,7 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
         register(PathFilter.class, new PathFilterSerializer());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> ObjectSerializer<T> getSerializer(final Class<T> type)
     {

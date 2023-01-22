@@ -14,6 +14,7 @@ import io.rsocket.frame.decoder.PayloadDecoder;
 /**
  * @author Thomas Freese
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractRSocketClientBuilder<T extends AbstractRSocketClientBuilder<?>> extends AbstractRSocketBuilder<T, RSocketClient>
 {
     private final List<UnaryOperator<RSocketConnector>> rSocketConnectorCustomizers = new ArrayList<>();

@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 /**
  * @author Thomas Freese
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractRSocketServerBuilder<T extends AbstractRSocketServerBuilder<?>> extends AbstractRSocketBuilder<T, Mono<? extends Closeable>>
 {
     private final List<UnaryOperator<RSocketServer>> rSocketServerCustomizers = new ArrayList<>();

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Thomas Freese
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractRSocketBuilder<T extends AbstractRSocketBuilder<?, ?>, B>
 {
     private Logger logger;

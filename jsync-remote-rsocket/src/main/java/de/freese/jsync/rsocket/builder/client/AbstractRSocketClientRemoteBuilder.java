@@ -25,6 +25,7 @@ import reactor.util.retry.Retry;
 /**
  * @author Thomas Freese
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSocketClientRemoteBuilder<?>>
         extends AbstractRSocketClientBuilder<AbstractRSocketClientRemoteBuilder<T>>
 {
