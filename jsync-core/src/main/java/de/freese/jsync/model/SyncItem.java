@@ -4,8 +4,7 @@ package de.freese.jsync.model;
 /**
  * @author Thomas Freese
  */
-public interface SyncItem
-{
+public interface SyncItem {
     String getChecksum();
 
     //    Group getGroup();
@@ -40,8 +39,7 @@ public interface SyncItem
 
     //    User getUser();
 
-    default boolean isDirectory()
-    {
+    default boolean isDirectory() {
         return !isFile();
     }
 

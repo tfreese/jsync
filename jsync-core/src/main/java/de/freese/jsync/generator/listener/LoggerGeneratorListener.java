@@ -4,21 +4,20 @@ package de.freese.jsync.generator.listener;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import de.freese.jsync.model.SyncItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
  */
-public class LoggerGeneratorListener extends AbstractGeneratorListener
-{
+public class LoggerGeneratorListener extends AbstractGeneratorListener {
     private final Logger logger = LoggerFactory.getLogger("Generator");
 
     private final String prefix;
 
-    public LoggerGeneratorListener(final String prefix)
-    {
+    public LoggerGeneratorListener(final String prefix) {
         super();
 
         this.prefix = Objects.requireNonNull(prefix, "prefix required");
@@ -28,8 +27,7 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
      * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long)
      */
     @Override
-    public void checksum(final long bytesRead)
-    {
+    public void checksum(final long bytesRead) {
         // Empty
     }
 
@@ -37,8 +35,7 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
      * @see de.freese.jsync.generator.listener.GeneratorListener#currentItem(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void currentItem(final SyncItem syncItem)
-    {
+    public void currentItem(final SyncItem syncItem) {
         String message = currentItemMessage(syncItem, this.prefix);
 
         getLogger().debug(message);
@@ -48,15 +45,13 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener
      * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
      */
     @Override
-    public void itemCount(final Path path, final int itemCount)
-    {
+    public void itemCount(final Path path, final int itemCount) {
         String message = itemCountMessage(path, itemCount, this.prefix);
 
         getLogger().info(message);
     }
 
-    protected Logger getLogger()
-    {
+    protected Logger getLogger() {
         return this.logger;
     }
 }

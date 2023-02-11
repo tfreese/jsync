@@ -4,15 +4,15 @@ package de.freese.jsync.filesystem;
 import java.net.URI;
 import java.util.function.LongConsumer;
 
+import reactor.core.publisher.Flux;
+
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
-import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
  */
-public interface FileSystem
-{
+public interface FileSystem {
     void connect(URI uri);
 
     void disconnect();

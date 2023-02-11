@@ -10,14 +10,12 @@ import java.util.Set;
  *
  * @author Thomas Freese
  */
-public class PathFilterEndsWith implements PathFilter
-{
+public class PathFilterEndsWith implements PathFilter {
     private final Set<String> directoryFilter;
 
     private final Set<String> fileFilter;
 
-    public PathFilterEndsWith(final Set<String> directoryFilter, final Set<String> fileFilter)
-    {
+    public PathFilterEndsWith(final Set<String> directoryFilter, final Set<String> fileFilter) {
         super();
 
         this.directoryFilter = Objects.requireNonNull(directoryFilter, "directoryFilter required");
@@ -28,8 +26,7 @@ public class PathFilterEndsWith implements PathFilter
      * @see de.freese.jsync.filter.PathFilter#getDirectoryFilter()
      */
     @Override
-    public Set<String> getDirectoryFilter()
-    {
+    public Set<String> getDirectoryFilter() {
         return this.directoryFilter;
     }
 
@@ -37,8 +34,7 @@ public class PathFilterEndsWith implements PathFilter
      * @see de.freese.jsync.filter.PathFilter#getFileFilter()
      */
     @Override
-    public Set<String> getFileFilter()
-    {
+    public Set<String> getFileFilter() {
         return this.fileFilter;
     }
 
@@ -46,8 +42,7 @@ public class PathFilterEndsWith implements PathFilter
      * @see de.freese.jsync.filter.PathFilter#isExcludedDirectory(java.nio.file.Path)
      */
     @Override
-    public boolean isExcludedDirectory(final Path dir)
-    {
+    public boolean isExcludedDirectory(final Path dir) {
         return this.directoryFilter.stream().anyMatch(filter -> dir.toString().endsWith(filter));
     }
 
@@ -55,8 +50,7 @@ public class PathFilterEndsWith implements PathFilter
      * @see de.freese.jsync.filter.PathFilter#isExcludedFile(java.nio.file.Path)
      */
     @Override
-    public boolean isExcludedFile(final Path file)
-    {
+    public boolean isExcludedFile(final Path file) {
         return this.fileFilter.stream().anyMatch(filter -> file.toString().endsWith(filter));
     }
 }

@@ -15,25 +15,21 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Thomas Freese
  */
-public class Messages
-{
+public class Messages {
     public static final Logger LOGGER = LoggerFactory.getLogger(Messages.class);
 
     private Map<String, String> messageMap = Collections.emptyMap();
 
-    public Messages(final Locale locale)
-    {
+    public Messages(final Locale locale) {
         super();
 
         setLocale(locale);
     }
 
-    public String getString(final String key)
-    {
+    public String getString(final String key) {
         String value = this.messageMap.get(key);
 
-        if (value == null)
-        {
+        if (value == null) {
             LOGGER.warn("no message for key: {}", key);
 
             value = "_" + key + "_";
@@ -42,8 +38,7 @@ public class Messages
         return value;
     }
 
-    private void setLocale(final Locale locale)
-    {
+    private void setLocale(final Locale locale) {
         Objects.requireNonNull(locale, "locale required");
 
         Map<String, String> map = new HashMap<>();
@@ -52,8 +47,7 @@ public class Messages
 
         Enumeration<String> keys = bundle.getKeys();
 
-        while (keys.hasMoreElements())
-        {
+        while (keys.hasMoreElements()) {
             String key = keys.nextElement();
             String value = bundle.getString(key);
 

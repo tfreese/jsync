@@ -6,8 +6,7 @@ package de.freese.jsync.model;
  *
  * @author Thomas Freese
  */
-public enum SyncStatus
-{
+public enum SyncStatus {
     /**
      *
      */

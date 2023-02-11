@@ -14,12 +14,10 @@ import de.freese.jsync.utils.pool.Pool;
 /**
  * @author Thomas Freese
  */
-public final class SocketChannelPool extends Pool<SocketChannel>
-{
+public final class SocketChannelPool extends Pool<SocketChannel> {
     private final URI uri;
 
-    public SocketChannelPool(final URI uri)
-    {
+    public SocketChannelPool(final URI uri) {
         super(true, false);
 
         this.uri = Objects.requireNonNull(uri, "uri required");
@@ -29,18 +27,14 @@ public final class SocketChannelPool extends Pool<SocketChannel>
      * @see de.freese.jsync.utils.pool.Pool#clear()
      */
     @Override
-    public void clear()
-    {
-        super.clear(channel ->
-        {
-            try
-            {
+    public void clear() {
+        super.clear(channel -> {
+            try {
                 channel.shutdownInput();
                 channel.shutdownOutput();
                 channel.close();
             }
-            catch (IOException ex)
-            {
+            catch (IOException ex) {
                 getLogger().warn(ex.getMessage());
             }
         });
@@ -50,22 +44,17 @@ public final class SocketChannelPool extends Pool<SocketChannel>
      * @see de.freese.jsync.utils.pool.Pool#create()
      */
     @Override
-    protected SocketChannel create()
-    {
-        try
-        {
+    protected SocketChannel create() {
+        try {
             InetSocketAddress serverAddress = new InetSocketAddress(this.uri.getHost(), this.uri.getPort());
 
             SocketChannel channel = SocketChannel.open(serverAddress);
 
-            while (!channel.finishConnect())
-            {
-                try
-                {
+            while (!channel.finishConnect()) {
+                try {
                     TimeUnit.MILLISECONDS.sleep(10);
                 }
-                catch (InterruptedException ex)
-                {
+                catch (InterruptedException ex) {
                     // Ignore
                 }
             }
@@ -74,8 +63,7 @@ public final class SocketChannelPool extends Pool<SocketChannel>
 
             return channel;
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }

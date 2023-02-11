@@ -11,8 +11,7 @@ import de.freese.jsync.model.SyncItem;
 /**
  * @author Thomas Freese
  */
-public class GeneratorListenerAdapter implements GeneratorListener
-{
+public class GeneratorListenerAdapter implements GeneratorListener {
     private LongConsumer checksumConsumer;
 
     private Consumer<SyncItem> currentItemConsumer;
@@ -23,10 +22,8 @@ public class GeneratorListenerAdapter implements GeneratorListener
      * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long)
      */
     @Override
-    public final void checksum(final long bytesRead)
-    {
-        if (this.checksumConsumer != null)
-        {
+    public final void checksum(final long bytesRead) {
+        if (this.checksumConsumer != null) {
             this.checksumConsumer.accept(bytesRead);
         }
     }
@@ -35,26 +32,21 @@ public class GeneratorListenerAdapter implements GeneratorListener
      * @see de.freese.jsync.generator.listener.GeneratorListener#currentItem(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void currentItem(final SyncItem syncItem)
-    {
-        if (this.currentItemConsumer != null)
-        {
+    public void currentItem(final SyncItem syncItem) {
+        if (this.currentItemConsumer != null) {
             this.currentItemConsumer.accept(syncItem);
         }
     }
 
-    public void doOnChecksum(final LongConsumer consumer)
-    {
+    public void doOnChecksum(final LongConsumer consumer) {
         this.checksumConsumer = consumer;
     }
 
-    public void doOnCurrentItem(final Consumer<SyncItem> consumer)
-    {
+    public void doOnCurrentItem(final Consumer<SyncItem> consumer) {
         this.currentItemConsumer = consumer;
     }
 
-    public void doOnItemCount(final BiConsumer<Path, Integer> consumer)
-    {
+    public void doOnItemCount(final BiConsumer<Path, Integer> consumer) {
         this.itemCountConsumer = consumer;
     }
 
@@ -62,10 +54,8 @@ public class GeneratorListenerAdapter implements GeneratorListener
      * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
      */
     @Override
-    public void itemCount(final Path path, final int itemCount)
-    {
-        if (this.itemCountConsumer != null)
-        {
+    public void itemCount(final Path path, final int itemCount) {
+        if (this.itemCountConsumer != null) {
             this.itemCountConsumer.accept(path, itemCount);
         }
     }

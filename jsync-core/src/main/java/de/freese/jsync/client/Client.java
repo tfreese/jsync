@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
+import reactor.core.publisher.Flux;
+
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filesystem.Receiver;
@@ -12,15 +14,13 @@ import de.freese.jsync.filesystem.Sender;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import reactor.core.publisher.Flux;
 
 /**
  * Coordinate {@link Sender} and {@link Receiver}.
  *
  * @author Thomas Freese
  */
-public interface Client
-{
+public interface Client {
     void connectFileSystems();
 
     void disconnectFileSystems();
@@ -29,8 +29,7 @@ public interface Client
 
     Flux<SyncItem> generateSyncItems(EFileSystem fileSystem, PathFilter pathFilter);
 
-    default void generateSyncItems(final EFileSystem fileSystem, PathFilter pathFilter, Consumer<SyncItem> consumer)
-    {
+    default void generateSyncItems(final EFileSystem fileSystem, PathFilter pathFilter, Consumer<SyncItem> consumer) {
         generateSyncItems(fileSystem, pathFilter).subscribe(consumer);
     }
 

@@ -16,8 +16,7 @@ import de.freese.jsync.swing.util.GbcBuilder;
 /**
  * @author Thomas Freese
  */
-class ShowView extends AbstractView
-{
+class ShowView extends AbstractView {
     private final JPanel panel = new JPanel();
     private JCheckBox checkBoxDifferent;
     private JCheckBox checkBoxOnlyInSource;
@@ -29,18 +28,15 @@ class ShowView extends AbstractView
      * @see de.freese.jsync.swing.view.AbstractView#getComponent()
      */
     @Override
-    JPanel getComponent()
-    {
+    JPanel getComponent() {
         return this.panel;
     }
 
-    Predicate<SyncPair> getPredicate()
-    {
+    Predicate<SyncPair> getPredicate() {
         return this.predicate;
     }
 
-    void initGUI(final TableFacade tableFacade)
-    {
+    void initGUI(final TableFacade tableFacade) {
         this.panel.setLayout(new GridBagLayout());
         this.panel.setBorder(new TitledBorder(getMessage("jsync.show")));
 
@@ -49,8 +45,7 @@ class ShowView extends AbstractView
         this.checkBoxSynchronized = new JCheckBox(getMessage("jsync.show.synchronized"), true);
         this.checkBoxSynchronized.setForeground(Color.BLACK);
         this.panel.add(this.checkBoxSynchronized, GbcBuilder.of(0, 0).anchorWest());
-        this.checkBoxSynchronized.addItemListener(event ->
-        {
+        this.checkBoxSynchronized.addItemListener(event -> {
             updatePredicate();
             tableFacade.sort();
         });
@@ -58,8 +53,7 @@ class ShowView extends AbstractView
         this.checkBoxOnlyInTarget = new JCheckBox(getMessage("jsync.show.onlyInTarget"), true);
         this.checkBoxOnlyInTarget.setForeground(Color.RED);
         this.panel.add(this.checkBoxOnlyInTarget, GbcBuilder.of(0, 1).anchorWest());
-        this.checkBoxOnlyInTarget.addItemListener(event ->
-        {
+        this.checkBoxOnlyInTarget.addItemListener(event -> {
             updatePredicate();
             tableFacade.sort();
         });
@@ -67,8 +61,7 @@ class ShowView extends AbstractView
         this.checkBoxOnlyInSource = new JCheckBox(getMessage("jsync.show.onlyInSource"), true);
         this.checkBoxOnlyInSource.setForeground(Color.ORANGE.darker());
         this.panel.add(this.checkBoxOnlyInSource, GbcBuilder.of(0, 2).anchorWest());
-        this.checkBoxOnlyInSource.addItemListener(event ->
-        {
+        this.checkBoxOnlyInSource.addItemListener(event -> {
             updatePredicate();
             tableFacade.sort();
         });
@@ -76,8 +69,7 @@ class ShowView extends AbstractView
         this.checkBoxDifferent = new JCheckBox(getMessage("jsync.show.different"), true);
         this.checkBoxDifferent.setForeground(Color.ORANGE.darker());
         this.panel.add(this.checkBoxDifferent, GbcBuilder.of(0, 3).anchorWest());
-        this.checkBoxDifferent.addItemListener(event ->
-        {
+        this.checkBoxDifferent.addItemListener(event -> {
             updatePredicate();
             tableFacade.sort();
         });
@@ -85,27 +77,22 @@ class ShowView extends AbstractView
         updatePredicate();
     }
 
-    private void updatePredicate()
-    {
+    private void updatePredicate() {
         this.predicate = syncPair -> SyncStatus.UNKNOWN.equals(syncPair.getStatus());
 
-        if (this.checkBoxSynchronized.isSelected())
-        {
+        if (this.checkBoxSynchronized.isSelected()) {
             this.predicate = this.predicate.or(syncPair -> SyncStatus.SYNCHRONIZED.equals(syncPair.getStatus()));
         }
 
-        if (this.checkBoxOnlyInTarget.isSelected())
-        {
+        if (this.checkBoxOnlyInTarget.isSelected()) {
             this.predicate = this.predicate.or(syncPair -> SyncStatus.ONLY_IN_TARGET.equals(syncPair.getStatus()));
         }
 
-        if (this.checkBoxOnlyInSource.isSelected())
-        {
+        if (this.checkBoxOnlyInSource.isSelected()) {
             this.predicate = this.predicate.or(syncPair -> SyncStatus.ONLY_IN_SOURCE.equals(syncPair.getStatus()));
         }
 
-        if (this.checkBoxDifferent.isSelected())
-        {
+        if (this.checkBoxDifferent.isSelected()) {
             this.predicate = this.predicate.or(syncPair -> syncPair.getStatus().name().startsWith("DIFFERENT"));
         }
     }

@@ -7,6 +7,14 @@ import java.nio.ByteBuffer;
 import java.util.function.LongConsumer;
 import java.util.function.UnaryOperator;
 
+import io.rsocket.Payload;
+import io.rsocket.core.RSocketClient;
+import io.rsocket.util.DefaultPayload;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.netty.tcp.TcpClient;
+
 import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.JSyncCommand;
@@ -16,23 +24,14 @@ import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
-import io.rsocket.Payload;
-import io.rsocket.core.RSocketClient;
-import io.rsocket.util.DefaultPayload;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import reactor.netty.tcp.TcpClient;
 
 /**
  * @author Thomas Freese
  */
-public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
-{
+public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
     private static final ByteBufferPool BYTEBUFFER_POOL = ByteBufferPool.DEFAULT;
 
-    protected static ByteBufferPool getByteBufferPool()
-    {
+    protected static ByteBufferPool getByteBufferPool() {
         return BYTEBUFFER_POOL;
     }
 
@@ -44,8 +43,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
      * @see de.freese.jsync.filesystem.FileSystem#disconnect()
      */
     @Override
-    public void disconnect()
-    {
+    public void disconnect() {
         ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, JSyncCommand.DISCONNECT);
 
@@ -67,14 +65,11 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         Schedulers.shutdownNow();
     }
 
-    protected void connect(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer)
-    {
-        if ("rsocket".equals(uri.getScheme()))
-        {
+    protected void connect(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
+        if ("rsocket".equals(uri.getScheme())) {
             this.client = createClientRemote(uri, tcpClientCustomizer);
         }
-        else
-        {
+        else {
             this.client = createClientLocal(uri, tcpClientCustomizer);
         }
 
@@ -96,8 +91,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         // @formatter:on
     }
 
-    protected RSocketClient createClientLocal(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer)
-    {
+    protected RSocketClient createClientLocal(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
         // @formatter:off
         return RSocketBuilders.clientLocal()
                 .name("jSync")
@@ -107,8 +101,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         // @formatter:on
     }
 
-    protected RSocketClient createClientRemote(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer)
-    {
+    protected RSocketClient createClientRemote(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
         // @formatter:off
         return RSocketBuilders.clientRemote()
                 .remoteAddress(new InetSocketAddress(uri.getHost(), uri.getPort()))
@@ -122,8 +115,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         // @formatter:on
     }
 
-    protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead, final JSyncCommand command)
-    {
+    protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead, final JSyncCommand command) {
         ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, command);
 
@@ -153,8 +145,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         // @formatter:on
     }
 
-    protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command)
-    {
+    protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command) {
         ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, command);
 
@@ -181,13 +172,11 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem
         // @formatter:on
     }
 
-    protected RSocketClient getClient()
-    {
+    protected RSocketClient getClient() {
         return this.client;
     }
 
-    protected Serializer<ByteBuffer, ByteBuffer> getSerializer()
-    {
+    protected Serializer<ByteBuffer, ByteBuffer> getSerializer() {
         return this.serializer;
     }
 }

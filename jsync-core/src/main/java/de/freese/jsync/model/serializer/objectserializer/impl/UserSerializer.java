@@ -9,13 +9,10 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 /**
  * @author Thomas Freese
  */
-public final class UserSerializer implements ObjectSerializer<User>
-{
+public final class UserSerializer implements ObjectSerializer<User> {
     @Override
-    public <W, R> User readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
-    {
-        if (adapter.readByte(source) == 0)
-        {
+    public <W, R> User readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
+        if (adapter.readByte(source) == 0) {
             return null;
         }
 
@@ -29,10 +26,8 @@ public final class UserSerializer implements ObjectSerializer<User>
     }
 
     @Override
-    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final User value)
-    {
-        if (value == null)
-        {
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final User value) {
+        if (value == null) {
             adapter.writeByte(sink, (byte) 0);
             return;
         }

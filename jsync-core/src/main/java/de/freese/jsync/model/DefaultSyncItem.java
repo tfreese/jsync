@@ -6,8 +6,7 @@ import java.util.Objects;
 /**
  * @author Thomas Freese
  */
-public class DefaultSyncItem implements SyncItem
-{
+public class DefaultSyncItem implements SyncItem {
     private final String relativePath;
 
     private String checksum;
@@ -24,8 +23,7 @@ public class DefaultSyncItem implements SyncItem
 
     //    private User user;
 
-    public DefaultSyncItem(final String relativePath)
-    {
+    public DefaultSyncItem(final String relativePath) {
         super();
 
         this.relativePath = Objects.requireNonNull(relativePath, "relativePath required");
@@ -35,8 +33,7 @@ public class DefaultSyncItem implements SyncItem
      * @see de.freese.jsync.model.SyncItem#getChecksum()
      */
     @Override
-    public String getChecksum()
-    {
+    public String getChecksum() {
         return this.checksum;
     }
 
@@ -53,8 +50,7 @@ public class DefaultSyncItem implements SyncItem
      * @see de.freese.jsync.model.SyncItem#getLastModifiedTime()
      */
     @Override
-    public long getLastModifiedTime()
-    {
+    public long getLastModifiedTime() {
         return this.lastModifiedTime;
     }
 
@@ -71,8 +67,7 @@ public class DefaultSyncItem implements SyncItem
      * @see de.freese.jsync.model.SyncItem#getRelativePath()
      */
     @Override
-    public String getRelativePath()
-    {
+    public String getRelativePath() {
         return this.relativePath;
     }
 
@@ -80,8 +75,7 @@ public class DefaultSyncItem implements SyncItem
      * @see de.freese.jsync.model.SyncItem#getSize()
      */
     @Override
-    public long getSize()
-    {
+    public long getSize() {
         return this.size;
     }
 
@@ -98,8 +92,7 @@ public class DefaultSyncItem implements SyncItem
      * @see de.freese.jsync.model.SyncItem#isFile()
      */
     @Override
-    public boolean isFile()
-    {
+    public boolean isFile() {
         return this.isFile;
     }
 
@@ -107,8 +100,7 @@ public class DefaultSyncItem implements SyncItem
      * @see de.freese.jsync.model.SyncItem#setChecksum(java.lang.String)
      */
     @Override
-    public void setChecksum(final String checksum)
-    {
+    public void setChecksum(final String checksum) {
         this.checksum = checksum;
     }
 
@@ -116,8 +108,7 @@ public class DefaultSyncItem implements SyncItem
      * @see de.freese.jsync.model.SyncItem#setFile(boolean)
      */
     @Override
-    public void setFile(final boolean isFile)
-    {
+    public void setFile(final boolean isFile) {
         this.isFile = isFile;
     }
 
@@ -134,8 +125,7 @@ public class DefaultSyncItem implements SyncItem
      * @see de.freese.jsync.model.SyncItem#setLastModifiedTime(long)
      */
     @Override
-    public void setLastModifiedTime(final long lastModifiedTime)
-    {
+    public void setLastModifiedTime(final long lastModifiedTime) {
         this.lastModifiedTime = lastModifiedTime;
     }
 
@@ -152,8 +142,7 @@ public class DefaultSyncItem implements SyncItem
      * @see de.freese.jsync.model.SyncItem#setSize(long)
      */
     @Override
-    public void setSize(final long size)
-    {
+    public void setSize(final long size) {
         this.size = size;
     }
 
@@ -170,14 +159,12 @@ public class DefaultSyncItem implements SyncItem
      * @see java.lang.Object#toString()
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("SyncItem [");
         sb.append("relativePath=").append(getRelativePath());
 
-        if (isFile())
-        {
+        if (isFile()) {
             sb.append(", size=").append(getSize());
         }
 

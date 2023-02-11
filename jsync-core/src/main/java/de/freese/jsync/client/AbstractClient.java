@@ -9,6 +9,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.client.listener.ClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
@@ -21,15 +25,11 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.model.SyncStatus;
 import de.freese.jsync.utils.JSyncUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
  */
-public abstract class AbstractClient implements Client
-{
+public abstract class AbstractClient implements Client {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Options options;
@@ -46,8 +46,7 @@ public abstract class AbstractClient implements Client
 
     private final URI senderUri;
 
-    protected AbstractClient(final Options options, final URI senderUri, final URI receiverUri)
-    {
+    protected AbstractClient(final Options options, final URI senderUri, final URI receiverUri) {
         this.options = Objects.requireNonNull(options, "options required");
         this.senderUri = Objects.requireNonNull(senderUri, "senderUri required");
         this.receiverUri = Objects.requireNonNull(receiverUri, "receiverUri required");
@@ -63,8 +62,7 @@ public abstract class AbstractClient implements Client
      * @see de.freese.jsync.client.Client#connectFileSystems()
      */
     @Override
-    public void connectFileSystems()
-    {
+    public void connectFileSystems() {
         getSender().connect(getSenderUri());
         getReceiver().connect(getReceiverUri());
     }
@@ -73,8 +71,7 @@ public abstract class AbstractClient implements Client
      * @see de.freese.jsync.client.Client#disconnectFileSystems()
      */
     @Override
-    public void disconnectFileSystems()
-    {
+    public void disconnectFileSystems() {
         getSender().disconnect();
         getReceiver().disconnect();
     }
@@ -84,23 +81,19 @@ public abstract class AbstractClient implements Client
      * java.util.function.LongConsumer)
      */
     @Override
-    public String generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer consumerChecksumBytesRead)
-    {
-        if (!getOptions().isChecksum() || !syncItem.isFile())
-        {
+    public String generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer consumerChecksumBytesRead) {
+        if (!getOptions().isChecksum() || !syncItem.isFile()) {
             return null;
         }
 
         FileSystem fs = null;
         String baseDir = null;
 
-        if (EFileSystem.SENDER.equals(fileSystem))
-        {
+        if (EFileSystem.SENDER.equals(fileSystem)) {
             fs = getSender();
             baseDir = getSenderPath();
         }
-        else
-        {
+        else {
             fs = getReceiver();
             baseDir = getReceiverPath();
         }
@@ -112,18 +105,15 @@ public abstract class AbstractClient implements Client
      * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.filter.PathFilter)
      */
     @Override
-    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter)
-    {
+    public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter) {
         FileSystem fs = null;
         String baseDir = null;
 
-        if (EFileSystem.SENDER.equals(fileSystem))
-        {
+        if (EFileSystem.SENDER.equals(fileSystem)) {
             fs = getSender();
             baseDir = getSenderPath();
         }
-        else
-        {
+        else {
             fs = getReceiver();
             baseDir = getReceiverPath();
         }
@@ -135,54 +125,45 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    protected void copyFile(final SyncItem syncItem, final ClientListener clientListener)
-    {
+    protected void copyFile(final SyncItem syncItem, final ClientListener clientListener) {
         clientListener.copyProgress(getOptions(), syncItem, 0);
 
-        if (getOptions().isDryRun())
-        {
+        if (getOptions().isDryRun()) {
             clientListener.copyProgress(getOptions(), syncItem, syncItem.getSize());
             return;
         }
 
         long sizeOfFile = syncItem.getSize();
 
-        try
-        {
+        try {
             Flux<ByteBuffer> fileList = getSender().readFile(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
 
             AtomicLong bytesTransferred = new AtomicLong(0);
 
-            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).doOnNext(bytesWritten ->
-            {
+            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).doOnNext(bytesWritten -> {
                 getLogger().debug("CHUNK_COMPLETED: bytesWritten = {}", bytesWritten);
 
                 long writtenBytesSum = bytesTransferred.addAndGet(bytesWritten);
                 clientListener.copyProgress(getOptions(), syncItem, writtenBytesSum);
             }).blockLast();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             clientListener.error(ex.getMessage(), ex);
 
             return;
         }
 
-        try
-        {
+        try {
             // Datei überprüfen.
             clientListener.validate(getOptions(), syncItem);
-            getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum(),
-                    bytesRead -> clientListener.checksumProgress(getOptions(), syncItem, bytesRead));
+            getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum(), bytesRead -> clientListener.checksumProgress(getOptions(), syncItem, bytesRead));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             clientListener.error(ex.getMessage(), ex);
         }
     }
 
-    protected void copyFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
-    {
+    protected void copyFiles(final List<SyncPair> syncPairs, final ClientListener clientListener) {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isFile = p -> p.getSenderItem().isFile();
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
@@ -207,8 +188,7 @@ public abstract class AbstractClient implements Client
         //@formatter:on
     }
 
-    protected void createDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
-    {
+    protected void createDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener) {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isDirectory = p -> p.getSenderItem().isDirectory();
         Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
@@ -228,44 +208,35 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    protected void createDirectory(final SyncItem syncItem, final ClientListener clientListener)
-    {
-        if (getOptions().isDryRun())
-        {
+    protected void createDirectory(final SyncItem syncItem, final ClientListener clientListener) {
+        if (getOptions().isDryRun()) {
             return;
         }
 
-        try
-        {
+        try {
             getReceiver().createDirectory(getReceiverPath(), syncItem.getRelativePath());
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             clientListener.error(ex.getMessage(), ex);
         }
     }
 
-    protected void delete(final SyncItem syncItem, final ClientListener clientListener)
-    {
+    protected void delete(final SyncItem syncItem, final ClientListener clientListener) {
         clientListener.delete(getOptions(), syncItem);
 
-        if (getOptions().isDryRun())
-        {
+        if (getOptions().isDryRun()) {
             return;
         }
 
-        try
-        {
+        try {
             getReceiver().delete(getReceiverPath(), syncItem.getRelativePath(), getOptions().isFollowSymLinks());
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             clientListener.error(ex.getMessage(), ex);
         }
     }
 
-    protected void deleteDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
-    {
+    protected void deleteDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener) {
         Predicate<SyncPair> isExisting = p -> p.getReceiverItem() != null;
         Predicate<SyncPair> isDirectory = p -> p.getReceiverItem().isDirectory();
         Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_TARGET.equals(p.getStatus());
@@ -283,8 +254,7 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    protected void deleteFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
-    {
+    protected void deleteFiles(final List<SyncPair> syncPairs, final ClientListener clientListener) {
         Predicate<SyncPair> isExisting = p -> p.getReceiverItem() != null;
         Predicate<SyncPair> isFile = p -> p.getReceiverItem().isFile();
         Predicate<SyncPair> isOnlyInTarget = p -> SyncStatus.ONLY_IN_TARGET.equals(p.getStatus());
@@ -302,67 +272,54 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    protected Logger getLogger()
-    {
+    protected Logger getLogger() {
         return this.logger;
     }
 
-    protected Options getOptions()
-    {
+    protected Options getOptions() {
         return this.options;
     }
 
-    protected Receiver getReceiver()
-    {
+    protected Receiver getReceiver() {
         return this.receiver;
     }
 
-    protected String getReceiverPath()
-    {
+    protected String getReceiverPath() {
         return this.receiverPath;
     }
 
-    protected URI getReceiverUri()
-    {
+    protected URI getReceiverUri() {
         return this.receiverUri;
     }
 
-    protected Sender getSender()
-    {
+    protected Sender getSender() {
         return this.sender;
     }
 
-    protected String getSenderPath()
-    {
+    protected String getSenderPath() {
         return this.senderPath;
     }
 
-    protected URI getSenderUri()
-    {
+    protected URI getSenderUri() {
         return this.senderUri;
     }
 
-    protected void update(final SyncItem syncItem, final ClientListener clientListener)
-    {
+    protected void update(final SyncItem syncItem, final ClientListener clientListener) {
         clientListener.update(getOptions(), syncItem);
 
-        if (getOptions().isDryRun())
-        {
+        if (getOptions().isDryRun()) {
             return;
         }
 
-        try
-        {
+        try {
             getReceiver().update(getReceiverPath(), syncItem);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             clientListener.error(ex.getMessage(), ex);
         }
     }
 
-    protected void updateDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener)
-    {
+    protected void updateDirectories(final List<SyncPair> syncPairs, final ClientListener clientListener) {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isDirectory = p -> p.getSenderItem().isDirectory();
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());
@@ -383,8 +340,7 @@ public abstract class AbstractClient implements Client
         // @formatter:on
     }
 
-    protected void updateFiles(final List<SyncPair> syncPairs, final ClientListener clientListener)
-    {
+    protected void updateFiles(final List<SyncPair> syncPairs, final ClientListener clientListener) {
         Predicate<SyncPair> isExisting = p -> p.getSenderItem() != null;
         Predicate<SyncPair> isFile = p -> p.getSenderItem().isFile();
         Predicate<SyncPair> isOnlyInSource = p -> SyncStatus.ONLY_IN_SOURCE.equals(p.getStatus());

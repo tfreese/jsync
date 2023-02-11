@@ -14,17 +14,14 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 /**
  * @author Thomas Freese
  */
-public class PathFilterSerializer implements ObjectSerializer<PathFilter>
-{
+public class PathFilterSerializer implements ObjectSerializer<PathFilter> {
     @Override
-    public <W, R> PathFilter readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
-    {
+    public <W, R> PathFilter readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
         int count = adapter.readInteger(source);
 
         Set<String> directoryFilters = new HashSet<>();
 
-        for (int i = 0; i < count; i++)
-        {
+        for (int i = 0; i < count; i++) {
             directoryFilters.add(adapter.readString(source, getCharset()));
         }
 
@@ -32,13 +29,11 @@ public class PathFilterSerializer implements ObjectSerializer<PathFilter>
 
         Set<String> fileFilters = new HashSet<>();
 
-        for (int i = 0; i < count; i++)
-        {
+        for (int i = 0; i < count; i++) {
             fileFilters.add(adapter.readString(source, getCharset()));
         }
 
-        if (directoryFilters.isEmpty() && fileFilters.isEmpty())
-        {
+        if (directoryFilters.isEmpty() && fileFilters.isEmpty()) {
             return PathFilterNoOp.INSTANCE;
         }
 
@@ -46,8 +41,7 @@ public class PathFilterSerializer implements ObjectSerializer<PathFilter>
     }
 
     @Override
-    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final PathFilter value)
-    {
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final PathFilter value) {
         Set<String> filters = value.getDirectoryFilter();
         adapter.writeInteger(sink, filters.size());
         filters.forEach(filter -> adapter.writeString(sink, filter, getCharset()));

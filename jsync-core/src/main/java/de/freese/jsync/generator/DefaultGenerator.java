@@ -13,24 +13,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.LongConsumer;
 import java.util.stream.Stream;
 
+import reactor.core.publisher.Flux;
+
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.utils.DigestUtils;
 import de.freese.jsync.utils.JSyncUtils;
-import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
  */
-public class DefaultGenerator extends AbstractGenerator
-{
+public class DefaultGenerator extends AbstractGenerator {
     /**
      * @see de.freese.jsync.generator.Generator#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
      */
     @Override
-    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead)
-    {
+    public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead) {
         Path path = Paths.get(baseDir, relativeFile);
 
         return DigestUtils.sha256DigestAsHex(path, consumerChecksumBytesRead);
@@ -40,12 +39,10 @@ public class DefaultGenerator extends AbstractGenerator
      * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean, de.freese.jsync.filter.PathFilter)
      */
     @Override
-    public Flux<SyncItem> generateItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter)
-    {
+    public Flux<SyncItem> generateItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter) {
         Path base = Paths.get(baseDir);
 
-        if (Files.notExists(base))
-        {
+        if (Files.notExists(base)) {
             return Flux.empty();
         }
 
@@ -69,20 +66,16 @@ public class DefaultGenerator extends AbstractGenerator
     /**
      * @param linkOptions {@link LinkOption}; if LinkOption#NOFOLLOW_LINKS null than Follow
      */
-    protected SyncItem toDirectoryItem(final Path directory, final String relativeDir, final LinkOption[] linkOptions)
-    {
-        if (relativeDir.isEmpty())
-        {
+    protected SyncItem toDirectoryItem(final Path directory, final String relativeDir, final LinkOption[] linkOptions) {
+        if (relativeDir.isEmpty()) {
             // relativeDir = directory
             return null;
         }
 
         SyncItem syncItem = new DefaultSyncItem(relativeDir);
 
-        try
-        {
-            try (Stream<Path> children = Files.list(directory))
-            {
+        try {
+            try (Stream<Path> children = Files.list(directory)) {
                 // @formatter:off
                 long count = children
                         .filter(child -> !child.equals(directory)) // We do not want the Base-Directory.
@@ -125,8 +118,7 @@ public class DefaultGenerator extends AbstractGenerator
             //                // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
             //            }
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
 
@@ -136,13 +128,11 @@ public class DefaultGenerator extends AbstractGenerator
     /**
      * @param linkOptions {@link LinkOption}; if LinkOption#NOFOLLOW_LINKS null than Follow
      */
-    protected SyncItem toFileItem(final Path file, final String relativeFile, final LinkOption[] linkOptions)
-    {
+    protected SyncItem toFileItem(final Path file, final String relativeFile, final LinkOption[] linkOptions) {
         SyncItem syncItem = new DefaultSyncItem(relativeFile);
         syncItem.setFile(true);
 
-        try
-        {
+        try {
             BasicFileAttributes basicFileAttributes = Files.readAttributes(file, BasicFileAttributes.class, linkOptions);
             syncItem.setLastModifiedTime(basicFileAttributes.lastModifiedTime().to(TimeUnit.SECONDS));
             syncItem.setSize(basicFileAttributes.size());
@@ -185,8 +175,7 @@ public class DefaultGenerator extends AbstractGenerator
             //                // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
             //            }
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
 

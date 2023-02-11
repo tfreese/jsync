@@ -19,16 +19,14 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 /**
  * @author Thomas Freese
  */
-public final class DigestUtils
-{
+public final class DigestUtils {
     /**
      * The {@link ByteBuffer} Position is reset to old Position.<br>
      * {@link ByteBuffer#position()}<br>
      * {@link MessageDigest#update(ByteBuffer)}<br>
      * {@link ByteBuffer#position(int)}<br>
      */
-    public static void digest(final MessageDigest messageDigest, final ByteBuffer byteBuffer)
-    {
+    public static void digest(final MessageDigest messageDigest, final ByteBuffer byteBuffer) {
         int position = byteBuffer.position();
 
         messageDigest.update(byteBuffer);
@@ -36,15 +34,13 @@ public final class DigestUtils
         byteBuffer.position(position);
     }
 
-    public static String digestAsHex(final MessageDigest messageDigest)
-    {
+    public static String digestAsHex(final MessageDigest messageDigest) {
         final byte[] digest = messageDigest.digest();
 
         return JSyncUtils.bytesToHex(digest);
     }
 
-    public static byte[] sha256Digest(final byte[] bytes)
-    {
+    public static byte[] sha256Digest(final byte[] bytes) {
         final MessageDigest messageDigest = createSha256Digest();
 
         return messageDigest.digest(bytes);
@@ -53,15 +49,13 @@ public final class DigestUtils
     /**
      * The {@link InputStream} will <strong>NOT</strong> be closed !
      */
-    public static byte[] sha256Digest(final InputStream inputStream) throws IOException
-    {
+    public static byte[] sha256Digest(final InputStream inputStream) throws IOException {
         final MessageDigest messageDigest = createSha256Digest();
         final byte[] buffer = new byte[Options.BUFFER_SIZE];
 
         int bytesRead = -1;
 
-        while ((bytesRead = inputStream.read(buffer)) != -1)
-        {
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
             messageDigest.update(buffer, 0, bytesRead);
         }
 
@@ -71,24 +65,19 @@ public final class DigestUtils
         // });
     }
 
-    public static String sha256DigestAsHex(final Path path)
-    {
-        return sha256DigestAsHex(path, i ->
-        {
+    public static String sha256DigestAsHex(final Path path) {
+        return sha256DigestAsHex(path, i -> {
             // Empty
         });
     }
 
-    public static String sha256DigestAsHex(final Path path, final LongConsumer consumerBytesRead)
-    {
-        try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ))
-        {
+    public static String sha256DigestAsHex(final Path path, final LongConsumer consumerBytesRead) {
+        try (ReadableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ)) {
             byte[] bytes = sha256Digest(channel, consumerBytesRead);
 
             return JSyncUtils.bytesToHex(bytes);
         }
-        catch (IOException iex)
-        {
+        catch (IOException iex) {
             throw new UncheckedIOException(iex);
         }
     }
@@ -101,48 +90,39 @@ public final class DigestUtils
      * SHA-1<br>
      * SHA-256<br>
      */
-    private static MessageDigest createMessageDigest(final String algorithm)
-    {
-        try
-        {
+    private static MessageDigest createMessageDigest(final String algorithm) {
+        try {
             return MessageDigest.getInstance(algorithm);
         }
-        catch (final NoSuchAlgorithmException ex)
-        {
+        catch (final NoSuchAlgorithmException ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private static MessageDigest createSha256Digest()
-    {
+    private static MessageDigest createSha256Digest() {
         return createMessageDigest("SHA-256");
     }
 
     /**
      * @param consumerBytesRead {@link LongConsumer}; optional
      */
-    private static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final LongConsumer consumerBytesRead) throws IOException
-    {
+    private static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final LongConsumer consumerBytesRead) throws IOException {
         MessageDigest messageDigest = createSha256Digest();
         byte[] bytes = null;
 
-        if (consumerBytesRead != null)
-        {
+        if (consumerBytesRead != null) {
             consumerBytesRead.accept(0);
         }
 
         ByteBuffer buffer = ByteBufferPool.DEFAULT.get();
 
-        try
-        {
+        try {
             long bytesRead = 0;
 
-            while (readableByteChannel.read(buffer) != -1)
-            {
+            while (readableByteChannel.read(buffer) != -1) {
                 bytesRead += buffer.position();
 
-                if (consumerBytesRead != null)
-                {
+                if (consumerBytesRead != null) {
                     consumerBytesRead.accept(bytesRead);
                 }
 
@@ -153,16 +133,14 @@ public final class DigestUtils
 
             bytes = messageDigest.digest();
         }
-        finally
-        {
+        finally {
             ByteBufferPool.DEFAULT.free(buffer);
         }
 
         return bytes;
     }
 
-    private DigestUtils()
-    {
+    private DigestUtils() {
         super();
     }
 }

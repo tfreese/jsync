@@ -3,7 +3,6 @@ package de.freese.jsync.rsocket.payload;
 
 import java.nio.ByteBuffer;
 
-import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
@@ -17,6 +16,8 @@ import io.rsocket.frame.RequestResponseFrameCodec;
 import io.rsocket.frame.RequestStreamFrameCodec;
 import io.rsocket.frame.decoder.PayloadDecoder;
 
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
+
 /**
  * DefaultPayloadDecoder with a {@link ByteBufferPool}.
  *
@@ -24,50 +25,41 @@ import io.rsocket.frame.decoder.PayloadDecoder;
  * @deprecated Does not work
  */
 @Deprecated
-class JSyncPayloadDecoder implements PayloadDecoder
-{
+class JSyncPayloadDecoder implements PayloadDecoder {
     private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
 
     /**
      * @see java.util.function.Function#apply(java.lang.Object)
      */
     @Override
-    public Payload apply(final ByteBuf byteBuf)
-    {
+    public Payload apply(final ByteBuf byteBuf) {
         ByteBuf m;
         ByteBuf d;
 
         FrameType type = FrameHeaderCodec.frameType(byteBuf);
 
-        switch (type)
-        {
-            case REQUEST_FNF ->
-            {
+        switch (type) {
+            case REQUEST_FNF -> {
                 d = RequestFireAndForgetFrameCodec.data(byteBuf);
                 m = RequestFireAndForgetFrameCodec.metadata(byteBuf);
             }
-            case REQUEST_RESPONSE ->
-            {
+            case REQUEST_RESPONSE -> {
                 d = RequestResponseFrameCodec.data(byteBuf);
                 m = RequestResponseFrameCodec.metadata(byteBuf);
             }
-            case REQUEST_STREAM ->
-            {
+            case REQUEST_STREAM -> {
                 d = RequestStreamFrameCodec.data(byteBuf);
                 m = RequestStreamFrameCodec.metadata(byteBuf);
             }
-            case REQUEST_CHANNEL ->
-            {
+            case REQUEST_CHANNEL -> {
                 d = RequestChannelFrameCodec.data(byteBuf);
                 m = RequestChannelFrameCodec.metadata(byteBuf);
             }
-            case NEXT, NEXT_COMPLETE ->
-            {
+            case NEXT, NEXT_COMPLETE -> {
                 d = PayloadFrameCodec.data(byteBuf);
                 m = PayloadFrameCodec.metadata(byteBuf);
             }
-            case METADATA_PUSH ->
-            {
+            case METADATA_PUSH -> {
                 d = Unpooled.EMPTY_BUFFER;
                 m = MetadataPushFrameCodec.metadata(byteBuf);
             }
@@ -78,8 +70,7 @@ class JSyncPayloadDecoder implements PayloadDecoder
         data.put(d.nioBuffer());
         data.flip();
 
-        if (m != null)
-        {
+        if (m != null) {
             ByteBuffer metadata = this.byteBufferPool.get();
             metadata.put(m.nioBuffer());
             metadata.flip();

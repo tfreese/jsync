@@ -10,16 +10,14 @@ import de.freese.jsync.model.SyncItem;
 /**
  * @author Thomas Freese
  */
-public class ConsoleGeneratorListener extends AbstractGeneratorListener
-{
+public class ConsoleGeneratorListener extends AbstractGeneratorListener {
     private final String prefix;
 
     private final PrintStream printStream;
 
     private final PrintStream printStreamError;
 
-    public ConsoleGeneratorListener(final String prefix)
-    {
+    public ConsoleGeneratorListener(final String prefix) {
         super();
 
         this.prefix = Objects.requireNonNull(prefix, "prefix required");
@@ -44,8 +42,7 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener
      * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long)
      */
     @Override
-    public void checksum(final long bytesRead)
-    {
+    public void checksum(final long bytesRead) {
         // Empty
     }
 
@@ -53,8 +50,7 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener
      * @see de.freese.jsync.generator.listener.GeneratorListener#currentItem(de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void currentItem(final SyncItem syncItem)
-    {
+    public void currentItem(final SyncItem syncItem) {
         // String message = currentMetaMessage(relativePath, this.prefix);
         //
         // getPrintStream().println(message);
@@ -64,20 +60,17 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener
      * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
      */
     @Override
-    public void itemCount(final Path path, final int itemCount)
-    {
+    public void itemCount(final Path path, final int itemCount) {
         String message = itemCountMessage(path, itemCount, this.prefix);
 
         getPrintStream().println(message);
     }
 
-    protected PrintStream getPrintStream()
-    {
+    protected PrintStream getPrintStream() {
         return this.printStream;
     }
 
-    protected PrintStream getPrintStreamError()
-    {
+    protected PrintStream getPrintStreamError() {
         return this.printStreamError;
     }
 }

@@ -11,56 +11,43 @@ import de.freese.jsync.model.serializer.adapter.DataAdapter;
 /**
  * @author Thomas Freese
  */
-public class InputOutputStreamAdapter implements DataAdapter<OutputStream, InputStream>
-{
+public class InputOutputStreamAdapter implements DataAdapter<OutputStream, InputStream> {
     @Override
-    public byte readByte(final InputStream source)
-    {
-        try
-        {
+    public byte readByte(final InputStream source) {
+        try {
             return (byte) source.read();
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
 
     @Override
-    public byte[] readBytes(final InputStream source, final int length)
-    {
-        try
-        {
+    public byte[] readBytes(final InputStream source, final int length) {
+        try {
             return source.readNBytes(length);
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
 
     @Override
-    public void writeByte(final OutputStream sink, final byte value)
-    {
-        try
-        {
+    public void writeByte(final OutputStream sink, final byte value) {
+        try {
             sink.write(value);
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
 
     @Override
-    public void writeBytes(final OutputStream sink, final byte[] bytes)
-    {
-        try
-        {
+    public void writeBytes(final OutputStream sink, final byte[] bytes) {
+        try {
             sink.write(bytes);
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }

@@ -11,12 +11,9 @@ import io.rsocket.Payload;
 /**
  * @author Thomas Freese
  */
-public final class RSocketUtils
-{
-    public static void release(final Payload payload)
-    {
-        if (payload == null)
-        {
+public final class RSocketUtils {
+    public static void release(final Payload payload) {
+        if (payload == null) {
             return;
         }
 
@@ -32,29 +29,24 @@ public final class RSocketUtils
         // }
     }
 
-    public static int write(final Payload payload, final WritableByteChannel channel)
-    {
+    public static int write(final Payload payload, final WritableByteChannel channel) {
         ByteBuffer buffer = payload.getData();
 
         int bytesWritten = 0;
 
-        try
-        {
-            while (buffer.hasRemaining())
-            {
+        try {
+            while (buffer.hasRemaining()) {
                 bytesWritten += channel.write(buffer);
             }
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
 
         return bytesWritten;
     }
 
-    private RSocketUtils()
-    {
+    private RSocketUtils() {
         super();
     }
 }

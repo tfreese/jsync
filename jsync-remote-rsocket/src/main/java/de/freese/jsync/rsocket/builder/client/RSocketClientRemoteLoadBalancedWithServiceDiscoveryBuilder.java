@@ -20,17 +20,14 @@ import reactor.netty.tcp.TcpClient;
 /**
  * @author Thomas Freese
  */
-public class RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder
-        extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder>
-{
+public class RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder> {
     private Supplier<List<SocketAddress>> serviceDiscovery;
 
     /**
      * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
      */
     @Override
-    public RSocketClient build()
-    {
+    public RSocketClient build() {
         // @formatter:off
         Publisher<List<LoadbalanceTarget>> serverProducer = Mono.fromSupplier(this.serviceDiscovery)
                 .map(servers -> {
@@ -66,8 +63,7 @@ public class RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder
      * Simulate Service-Discovery.<br>
      * org.springframework.cloud.client.discovery.DiscoveryClient - org.springframework.cloud:spring-cloud-commons
      */
-    public RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder serviceDiscovery(final Supplier<List<SocketAddress>> serviceDiscovery)
-    {
+    public RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder serviceDiscovery(final Supplier<List<SocketAddress>> serviceDiscovery) {
         this.serviceDiscovery = Objects.requireNonNull(serviceDiscovery, "serviceDiscovery required");
 
         return this;

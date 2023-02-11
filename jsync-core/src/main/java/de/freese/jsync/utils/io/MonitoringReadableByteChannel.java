@@ -11,8 +11,7 @@ import java.util.function.LongConsumer;
 /**
  * @author Thomas Freese
  */
-public class MonitoringReadableByteChannel implements ReadableByteChannel
-{
+public class MonitoringReadableByteChannel implements ReadableByteChannel {
     private final LongConsumer bytesReadConsumer;
     private final boolean closeDelegate;
     private final ReadableByteChannel delegate;
@@ -22,14 +21,11 @@ public class MonitoringReadableByteChannel implements ReadableByteChannel
      * @param bytesReadConsumer {@link BiConsumer}; First Parameter = Number of read Bytes, second Parameter = complete size in Bytes
      * @param size long; complete size in Bytes
      */
-    public MonitoringReadableByteChannel(final ReadableByteChannel delegate, final BiConsumer<Long, Long> bytesReadConsumer, final long size,
-                                         final boolean closeDelegate)
-    {
+    public MonitoringReadableByteChannel(final ReadableByteChannel delegate, final BiConsumer<Long, Long> bytesReadConsumer, final long size, final boolean closeDelegate) {
         this(delegate, br -> bytesReadConsumer.accept(br, size), closeDelegate);
     }
 
-    public MonitoringReadableByteChannel(final ReadableByteChannel delegate, final LongConsumer bytesReadConsumer, final boolean closeDelegate)
-    {
+    public MonitoringReadableByteChannel(final ReadableByteChannel delegate, final LongConsumer bytesReadConsumer, final boolean closeDelegate) {
         super();
 
         this.delegate = Objects.requireNonNull(delegate, "delegate required");
@@ -41,10 +37,8 @@ public class MonitoringReadableByteChannel implements ReadableByteChannel
      * @see java.nio.channels.Channel#close()
      */
     @Override
-    public void close() throws IOException
-    {
-        if (this.closeDelegate)
-        {
+    public void close() throws IOException {
+        if (this.closeDelegate) {
             this.delegate.close();
         }
     }
@@ -53,8 +47,7 @@ public class MonitoringReadableByteChannel implements ReadableByteChannel
      * @see java.nio.channels.Channel#isOpen()
      */
     @Override
-    public boolean isOpen()
-    {
+    public boolean isOpen() {
         return this.delegate.isOpen();
     }
 
@@ -62,12 +55,10 @@ public class MonitoringReadableByteChannel implements ReadableByteChannel
      * @see java.nio.channels.ReadableByteChannel#read(java.nio.ByteBuffer)
      */
     @Override
-    public int read(final ByteBuffer dst) throws IOException
-    {
+    public int read(final ByteBuffer dst) throws IOException {
         int readCount = this.delegate.read(dst);
 
-        if (readCount > 0)
-        {
+        if (readCount > 0) {
             this.bytesRead += readCount;
 
             this.bytesReadConsumer.accept(this.bytesRead);

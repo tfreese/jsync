@@ -8,17 +8,14 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 /**
  * @author Thomas Freese
  */
-public final class BooleanSerializer implements ObjectSerializer<Boolean>
-{
+public final class BooleanSerializer implements ObjectSerializer<Boolean> {
     @Override
-    public <W, R> Boolean readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
-    {
+    public <W, R> Boolean readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
         return adapter.readBooleanWrapper(source);
     }
 
     @Override
-    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Boolean value)
-    {
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Boolean value) {
         adapter.writeBooleanWrapper(sink, value);
     }
 }

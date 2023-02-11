@@ -21,12 +21,10 @@ import reactor.util.retry.Retry;
 /**
  * @author Thomas Freese
  */
-public final class RSocketServer
-{
+public final class RSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketServer.class);
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         // Global Default-Resources.
         // TcpResources.set(LoopResources.create("rSocket"));
         // TcpResources.set(LoopResources.create("rSocket", 2, 8, true));
@@ -35,8 +33,7 @@ public final class RSocketServer
         // Exception, if Client closed the Connection.
         // Create only once, unless multiple Logs are created !!!
         // Hooks.onErrorDropped(th -> LOGGER.warn(th.getMessage()));
-        Hooks.onErrorDropped(th ->
-        {
+        Hooks.onErrorDropped(th -> {
         });
 
         // Enable Debug.
@@ -66,8 +63,7 @@ public final class RSocketServer
                 ;
         // @formatter:on
 
-        SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload ->
-        {
+        SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
             String request = payload.getDataUtf8();
             LOGGER.info("Server got request: {}", request);
             return Mono.just(DefaultPayload.create("Client got response: " + request));
@@ -95,8 +91,7 @@ public final class RSocketServer
         // @formatter:on
     }
 
-    private RSocketServer()
-    {
+    private RSocketServer() {
         super();
     }
 }

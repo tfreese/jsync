@@ -9,12 +9,10 @@ import java.nio.charset.StandardCharsets;
  *
  * @author Thomas Freese
  */
-public interface IoHandler<T>
-{
+public interface IoHandler<T> {
     Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-    default Charset getCharset()
-    {
+    default Charset getCharset() {
         return DEFAULT_CHARSET;
     }
 

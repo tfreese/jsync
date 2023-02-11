@@ -14,8 +14,7 @@ import de.freese.jsync.model.SyncStatus;
 /**
  * @author Thomas Freese
  */
-public class SyncPairTableCellRendererStatus extends DefaultTableCellRenderer
-{
+public class SyncPairTableCellRendererStatus extends DefaultTableCellRenderer {
     @Serial
     private static final long serialVersionUID = -8974544290640941021L;
 
@@ -23,9 +22,7 @@ public class SyncPairTableCellRendererStatus extends DefaultTableCellRenderer
      * @see DefaultTableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
      */
     @Override
-    public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row,
-                                                   final int column)
-    {
+    public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column) {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
         // SyncListTableModel tableModel = (SyncListTableModel) table.getModel();
@@ -37,8 +34,7 @@ public class SyncPairTableCellRendererStatus extends DefaultTableCellRenderer
 
         setHorizontalAlignment(SwingConstants.CENTER);
 
-        switch (syncStatus)
-        {
+        switch (syncStatus) {
             case UNKNOWN -> setForeground(Color.GRAY);
             case SYNCHRONIZED -> setForeground(Color.BLACK);
             case ONLY_IN_TARGET -> setForeground(Color.RED);

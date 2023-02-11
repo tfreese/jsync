@@ -10,7 +10,6 @@ import reactor.core.publisher.Flux;
  *
  * @author Thomas Freese
  */
-public interface Sender extends FileSystem
-{
+public interface Sender extends FileSystem {
     Flux<ByteBuffer> readFile(String baseDir, String relativeFile, long sizeOfFile);
 }

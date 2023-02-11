@@ -11,14 +11,12 @@ import de.freese.jsync.model.JSyncProtocol;
 /**
  * @author Thomas Freese
  */
-public class RemoteNioFileSystemProvider implements FileSystemProvider
-{
+public class RemoteNioFileSystemProvider implements FileSystemProvider {
     /**
      * @see de.freese.jsync.filesystem.FileSystemProvider#createReceiver(java.net.URI)
      */
     @Override
-    public Receiver createReceiver(final URI uri)
-    {
+    public Receiver createReceiver(final URI uri) {
         return new RemoteReceiverNio();
     }
 
@@ -26,8 +24,7 @@ public class RemoteNioFileSystemProvider implements FileSystemProvider
      * @see de.freese.jsync.filesystem.FileSystemProvider#createSender(java.net.URI)
      */
     @Override
-    public Sender createSender(final URI uri)
-    {
+    public Sender createSender(final URI uri) {
         return new RemoteSenderNio();
     }
 
@@ -35,8 +32,7 @@ public class RemoteNioFileSystemProvider implements FileSystemProvider
      * @see de.freese.jsync.filesystem.FileSystemProvider#supportsProtocol(java.lang.String)
      */
     @Override
-    public boolean supportsProtocol(final String scheme)
-    {
+    public boolean supportsProtocol(final String scheme) {
         return JSyncProtocol.NIO.getScheme().equals(scheme);
     }
 }

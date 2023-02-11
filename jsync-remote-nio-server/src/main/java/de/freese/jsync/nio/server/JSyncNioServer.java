@@ -10,15 +10,16 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.scheduler.Schedulers;
+
 import de.freese.jsync.nio.server.dispatcher.Dispatcher;
 import de.freese.jsync.nio.server.dispatcher.DispatcherPool;
 import de.freese.jsync.nio.server.handler.IoHandler;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.utils.JSyncThreadFactory;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.scheduler.Schedulers;
 
 /**
  * These Server is working by the Acceptor-Reactor Pattern.<br>
@@ -28,12 +29,10 @@ import reactor.core.scheduler.Schedulers;
  *
  * @author Thomas Freese
  */
-public final class JSyncNioServer implements Runnable
-{
+public final class JSyncNioServer implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncNioServer.class);
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         int port = Integer.parseInt(args[0]);
 
         JSyncNioServer server = new JSyncNioServer(port, 2, 4);
@@ -51,8 +50,7 @@ public final class JSyncNioServer implements Runnable
         // System.in.read();
     }
 
-    private static Logger getLogger()
-    {
+    private static Logger getLogger() {
         return LOGGER;
     }
 
@@ -74,17 +72,14 @@ public final class JSyncNioServer implements Runnable
 
     private ServerSocketChannel serverSocketChannel;
 
-    public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker)
-    {
+    public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker) {
         this(port, numOfDispatcher, numOfWorker, SelectorProvider.provider());
     }
 
-    public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker, final SelectorProvider selectorProvider)
-    {
+    public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker, final SelectorProvider selectorProvider) {
         super();
 
-        if (port <= 0)
-        {
+        if (port <= 0) {
             throw new IllegalArgumentException("port <= 0: " + port);
         }
 
@@ -95,8 +90,7 @@ public final class JSyncNioServer implements Runnable
         this.startLock.acquireUninterruptibly();
     }
 
-    public boolean isStarted()
-    {
+    public boolean isStarted() {
         return this.startLock.availablePermits() > 0;
     }
 
@@ -104,44 +98,37 @@ public final class JSyncNioServer implements Runnable
      * @see java.lang.Runnable#run()
      */
     @Override
-    public void run()
-    {
+    public void run() {
         getLogger().info("starting '{}' on port: {}", this.name, this.port);
 
         Objects.requireNonNull(this.ioHandler, "ioHandler required");
 
-        try
-        {
+        try {
             // this.serverSocketChannel = ServerSocketChannel.open();
             this.serverSocketChannel = this.selectorProvider.openServerSocketChannel();
             this.serverSocketChannel.configureBlocking(false);
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.TCP_NODELAY))
-            {
+            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.TCP_NODELAY)) {
                 // this.serverSocketChannel.getOption(StandardSocketOptions.TCP_NODELAY);
                 this.serverSocketChannel.setOption(StandardSocketOptions.TCP_NODELAY, true);
             }
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEADDR))
-            {
+            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEADDR)) {
                 // this.serverSocketChannel.getOption(StandardSocketOptions.SO_REUSEADDR);
                 this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
             }
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEPORT))
-            {
+            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEPORT)) {
                 // this.serverSocketChannel.getOption(StandardSocketOptions.SO_REUSEPORT);
                 this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, true);
             }
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_RCVBUF))
-            {
+            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_RCVBUF)) {
                 // this.serverSocketChannel.getOption(StandardSocketOptions.SO_RCVBUF);
                 this.serverSocketChannel.setOption(StandardSocketOptions.SO_RCVBUF, 64 * 1024);
             }
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_SNDBUF))
-            {
+            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_SNDBUF)) {
                 // this.serverSocketChannel.getOption(StandardSocketOptions.SO_SNDBUF);
                 this.serverSocketChannel.setOption(StandardSocketOptions.SO_SNDBUF, 64 * 1024);
             }
@@ -165,24 +152,20 @@ public final class JSyncNioServer implements Runnable
             getLogger().info("'{}' listening on port: {}", this.name, this.port);
             this.startLock.release();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
     }
 
-    public void setIoHandler(final IoHandler<SelectionKey> ioHandler)
-    {
+    public void setIoHandler(final IoHandler<SelectionKey> ioHandler) {
         this.ioHandler = Objects.requireNonNull(ioHandler, "ioHandler required");
     }
 
-    public void setName(final String name)
-    {
+    public void setName(final String name) {
         this.name = Objects.requireNonNull(name, "name required");
     }
 
-    public void start()
-    {
+    public void start() {
         run();
 
         // Wait if ready.
@@ -190,15 +173,13 @@ public final class JSyncNioServer implements Runnable
         // this.startLock.release();
     }
 
-    public void stop()
-    {
+    public void stop() {
         getLogger().info("stopping '{}' on port: {}", this.name, this.port);
 
         this.acceptor.stop();
         this.dispatcherPool.stop();
 
-        try
-        {
+        try {
             // SelectionKey selectionKey = this.serverSocketChannel.keyFor(this.selector);
             //
             // if (selectionKey != null)
@@ -208,8 +189,7 @@ public final class JSyncNioServer implements Runnable
 
             this.serverSocketChannel.close();
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             getLogger().error(ex.getMessage(), ex);
         }
 

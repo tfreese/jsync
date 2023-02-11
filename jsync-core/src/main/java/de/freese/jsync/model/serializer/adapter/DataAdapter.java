@@ -10,6 +10,5 @@ package de.freese.jsync.model.serializer.adapter;
  * @author Thomas Freese
  * @see "org.springframework.core.io.buffer.DataBuffer"
  */
-public interface DataAdapter<W, R> extends DataAdapterWrite<W>, DataAdapterRead<R>
-{
+public interface DataAdapter<W, R> extends DataAdapterWrite<W>, DataAdapterRead<R> {
 }

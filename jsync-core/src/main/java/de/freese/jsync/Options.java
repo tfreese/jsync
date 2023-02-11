@@ -7,8 +7,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * @author Thomas Freese
  */
-public final class Options
-{
+public final class Options {
     /**
      * Default: 4 MB
      */
@@ -24,48 +23,40 @@ public final class Options
     /**
      * @author Thomas Freese
      */
-    public static class Builder
-    {
+    public static class Builder {
         private final Options options;
 
-        public Builder()
-        {
+        public Builder() {
             super();
 
             this.options = new Options();
         }
 
-        public Options build()
-        {
+        public Options build() {
             return this.options;
         }
 
-        public Builder checksum(final boolean checksum)
-        {
+        public Builder checksum(final boolean checksum) {
             this.options.checksum = checksum;
             return this;
         }
 
-        public Builder delete(final boolean delete)
-        {
+        public Builder delete(final boolean delete) {
             this.options.delete = delete;
             return this;
         }
 
-        public Builder dryRun(final boolean dryRun)
-        {
+        public Builder dryRun(final boolean dryRun) {
             this.options.dryRun = dryRun;
             return this;
         }
 
-        public Builder followSymLinks(final boolean followSymLinks)
-        {
+        public Builder followSymLinks(final boolean followSymLinks) {
             this.options.followSymLinks = followSymLinks;
             return this;
         }
 
-        public Builder parallel(final boolean parallel)
-        {
+        public Builder parallel(final boolean parallel) {
             this.options.parallel = parallel;
             return this;
         }
@@ -81,33 +72,27 @@ public final class Options
 
     private boolean parallel;
 
-    private Options()
-    {
+    private Options() {
         super();
     }
 
-    public boolean isChecksum()
-    {
+    public boolean isChecksum() {
         return this.checksum;
     }
 
-    public boolean isDelete()
-    {
+    public boolean isDelete() {
         return this.delete;
     }
 
-    public boolean isDryRun()
-    {
+    public boolean isDryRun() {
         return this.dryRun;
     }
 
-    public boolean isFollowSymLinks()
-    {
+    public boolean isFollowSymLinks() {
         return this.followSymLinks;
     }
 
-    public boolean isParallel()
-    {
+    public boolean isParallel() {
         return this.parallel;
     }
 }

@@ -9,8 +9,7 @@ import de.freese.jsync.model.SyncItem;
 /**
  * @author Thomas Freese
  */
-public interface GeneratorListener extends EventListener
-{
+public interface GeneratorListener extends EventListener {
     /**
      * Progress of the Checksum creation.
      */

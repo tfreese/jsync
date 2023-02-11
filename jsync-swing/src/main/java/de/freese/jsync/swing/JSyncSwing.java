@@ -14,32 +14,29 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.plaf.FontUIResource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.swing.controller.JSyncController;
 import de.freese.jsync.swing.view.DefaultSyncView;
 import de.freese.jsync.swing.view.SyncView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Thomas Freese
  */
-public final class JSyncSwing
-{
+public final class JSyncSwing {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncSwing.class);
 
-    public static Logger getLogger()
-    {
+    public static Logger getLogger() {
         return LOGGER;
     }
 
-    private class MainFrameListener extends WindowAdapter
-    {
+    private class MainFrameListener extends WindowAdapter {
         /**
          * @see java.awt.event.WindowAdapter#windowClosing(java.awt.event.WindowEvent)
          */
         @Override
-        public void windowClosing(final WindowEvent event)
-        {
+        public void windowClosing(final WindowEvent event) {
             getLogger().info("stop");
             JSyncSwing.this.controller.shutdown();
             JSyncContext.shutdown();
@@ -50,13 +47,11 @@ public final class JSyncSwing
 
     private JSyncController controller;
 
-    JSyncSwing()
-    {
+    JSyncSwing() {
         super();
     }
 
-    void initGui(final Consumer<JFrame> consumer) throws Exception
-    {
+    void initGui(final Consumer<JFrame> consumer) throws Exception {
         initUIDefaults();
 
         JFrame frame = new JFrame();
@@ -78,18 +73,15 @@ public final class JSyncSwing
         consumer.accept(frame);
     }
 
-    private void initUIDefaults()
-    {
+    private void initUIDefaults() {
         getLogger().info("initUIDefaults");
 
-        try
-        {
+        try {
             // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); // com.sun.java.swing.plaf.gtk.GTKLookAndFeel
             UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
             // UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
         }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex)
-        {
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             getLogger().error(ex.getMessage(), ex);
         }
 
@@ -104,10 +96,8 @@ public final class JSyncSwing
         // Fonts: Dialog, Monospaced, Arial, DejaVu Sans
         Font font = new Font("DejaVu Sans", Font.PLAIN, 16);
 
-        UIManager.getLookAndFeelDefaults().forEach((key, value) ->
-        {
-            if (value instanceof FontUIResource)
-            {
+        UIManager.getLookAndFeelDefaults().forEach((key, value) -> {
+            if (value instanceof FontUIResource) {
                 UIManager.put(key, new FontUIResource(font));
             }
 

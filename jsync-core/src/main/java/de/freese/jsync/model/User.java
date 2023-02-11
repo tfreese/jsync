@@ -6,8 +6,7 @@ import java.util.Objects;
 /**
  * @author Thomas Freese
  */
-public class User
-{
+public class User {
     public static final int ID_MAX = 65535;
 
     public static final User NOBODY = new User("nobody", ID_MAX - 1);
@@ -20,8 +19,7 @@ public class User
      */
     private final int uid;
 
-    public User(final String name, final int uid)
-    {
+    public User(final String name, final int uid) {
         super();
 
         this.name = Objects.requireNonNull(name, "name required");
@@ -32,28 +30,23 @@ public class User
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    public boolean equals(final Object obj)
-    {
-        if (this == obj)
-        {
+    public boolean equals(final Object obj) {
+        if (this == obj) {
             return true;
         }
 
-        if (!(obj instanceof User other))
-        {
+        if (!(obj instanceof User other)) {
             return false;
         }
 
         return Objects.equals(this.name, other.name) && (this.uid == other.uid);
     }
 
-    public String getName()
-    {
+    public String getName() {
         return this.name;
     }
 
-    public int getUid()
-    {
+    public int getUid() {
         return this.uid;
     }
 
@@ -61,8 +54,7 @@ public class User
      * @see java.lang.Object#hashCode()
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(this.name, this.uid);
     }
 
@@ -70,8 +62,7 @@ public class User
      * @see java.lang.Object#toString()
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("User [uid=");
         builder.append(this.uid);

@@ -15,14 +15,12 @@ import reactor.netty.tcp.TcpClient;
 /**
  * @author Thomas Freese
  */
-public class RSocketClientRemoteBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteBuilder>
-{
+public class RSocketClientRemoteBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteBuilder> {
     /**
      * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
      */
     @Override
-    public RSocketClient build()
-    {
+    public RSocketClient build() {
         TcpClient tcpClient = configure(TcpClient.create());
         RSocketConnector rSocketConnector = configure(RSocketConnector.create());
 
@@ -33,8 +31,7 @@ public class RSocketClientRemoteBuilder extends AbstractRSocketClientRemoteBuild
         return RSocketClient.from(rSocket);
     }
 
-    public RSocketClientRemoteBuilder remoteAddress(final SocketAddress remoteAddress)
-    {
+    public RSocketClientRemoteBuilder remoteAddress(final SocketAddress remoteAddress) {
         Objects.requireNonNull(remoteAddress, "remoteAddress required");
 
         addTcpClientCustomizer(tcpClient -> tcpClient.remoteAddress(() -> remoteAddress));

@@ -12,23 +12,18 @@ import javax.swing.SwingUtilities;
 /**
  * @author Thomas Freese
  */
-public final class SwingUtils
-{
+public final class SwingUtils {
     /**
      * Paint a Frame around each {@link JComponent}.
      */
-    public static void enableDebug(final Component component)
-    {
+    public static void enableDebug(final Component component) {
         // System.out.printf("%s%n", component.getClass().getSimpleName());
 
-        if (component instanceof JComponent c)
-        {
-            try
-            {
+        if (component instanceof JComponent c) {
+            try {
                 c.setBorder(BorderFactory.createLineBorder(Color.MAGENTA));
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 // Ignore
             }
         }
@@ -37,37 +32,29 @@ public final class SwingUtils
     /**
      * Paint a Frame around each {@link JComponent}.
      */
-    public static void enableDebug(final Container container)
-    {
+    public static void enableDebug(final Container container) {
         enableDebug((Component) container);
 
-        for (Component child : container.getComponents())
-        {
-            if (child instanceof Container c)
-            {
+        for (Component child : container.getComponents()) {
+            if (child instanceof Container c) {
                 enableDebug(c);
             }
-            else
-            {
+            else {
                 enableDebug(child);
             }
         }
     }
 
-    public static void runInEdt(final Runnable runnable)
-    {
-        if (SwingUtilities.isEventDispatchThread())
-        {
+    public static void runInEdt(final Runnable runnable) {
+        if (SwingUtilities.isEventDispatchThread()) {
             runnable.run();
         }
-        else
-        {
+        else {
             SwingUtilities.invokeLater(runnable);
         }
     }
 
-    private SwingUtils()
-    {
+    private SwingUtils() {
         super();
     }
 }

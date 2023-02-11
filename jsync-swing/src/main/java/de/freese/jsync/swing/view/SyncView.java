@@ -16,8 +16,7 @@ import de.freese.jsync.model.SyncPair;
 /**
  * @author Thomas Freese
  */
-public interface SyncView
-{
+public interface SyncView {
     void addSyncPair(SyncPair syncPair);
 
     void clearTable();

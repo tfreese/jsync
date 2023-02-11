@@ -18,8 +18,7 @@ import de.freese.jsync.swing.util.GbcBuilder;
 /**
  * @author Thomas Freese
  */
-public class ConfigView extends AbstractView
-{
+public class ConfigView extends AbstractView {
     private final JPanel panel = new JPanel();
 
     private JButton buttonCompare;
@@ -36,23 +35,19 @@ public class ConfigView extends AbstractView
 
     private JCheckBox checkBoxParallelism;
 
-    void doOnCompare(final Consumer<JButton> consumer)
-    {
+    void doOnCompare(final Consumer<JButton> consumer) {
         consumer.accept(this.buttonCompare);
     }
 
-    void doOnSynchronize(final Consumer<JButton> consumer)
-    {
+    void doOnSynchronize(final Consumer<JButton> consumer) {
         consumer.accept(this.buttonSynchronize);
     }
 
-    JButton getButtonCompare()
-    {
+    JButton getButtonCompare() {
         return this.buttonCompare;
     }
 
-    JButton getButtonSynchronize()
-    {
+    JButton getButtonSynchronize() {
         return this.buttonSynchronize;
     }
 
@@ -60,13 +55,11 @@ public class ConfigView extends AbstractView
      * @see de.freese.jsync.swing.view.AbstractView#getComponent()
      */
     @Override
-    Component getComponent()
-    {
+    Component getComponent() {
         return this.panel;
     }
 
-    Options getOptions()
-    {
+    Options getOptions() {
         // @formatter:off
          return new Builder()
                  .checksum(this.checkBoxChecksum.isSelected())
@@ -79,8 +72,7 @@ public class ConfigView extends AbstractView
          // @formatter:on
     }
 
-    void initGUI()
-    {
+    void initGUI() {
         this.panel.setLayout(new GridBagLayout());
 
         // Button Compare

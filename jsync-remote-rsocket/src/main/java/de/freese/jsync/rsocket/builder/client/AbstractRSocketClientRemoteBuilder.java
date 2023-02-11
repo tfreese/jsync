@@ -26,20 +26,16 @@ import reactor.util.retry.Retry;
  * @author Thomas Freese
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSocketClientRemoteBuilder<?>>
-        extends AbstractRSocketClientBuilder<AbstractRSocketClientRemoteBuilder<T>>
-{
+public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSocketClientRemoteBuilder<?>> extends AbstractRSocketClientBuilder<AbstractRSocketClientRemoteBuilder<T>> {
     private final List<UnaryOperator<TcpClient>> tcpClientCustomizers = new ArrayList<>();
 
-    public T addTcpClientCustomizer(final UnaryOperator<TcpClient> tcpClientCustomizer)
-    {
+    public T addTcpClientCustomizer(final UnaryOperator<TcpClient> tcpClientCustomizer) {
         this.tcpClientCustomizers.add(Objects.requireNonNull(tcpClientCustomizer, "tcpClientCustomizer required"));
 
         return (T) this;
     }
 
-    public T logTcpClientBoundStatus()
-    {
+    public T logTcpClientBoundStatus() {
         // @formatter:off
         addTcpClientCustomizer(tcpClient -> tcpClient
             .doOnConnected(connection -> getLogger().info("Connected: {}", connection.channel()))
@@ -51,8 +47,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    public T protocolSslContextSpec(final ProtocolSslContextSpec protocolSslContextSpec)
-    {
+    public T protocolSslContextSpec(final ProtocolSslContextSpec protocolSslContextSpec) {
         Objects.requireNonNull(protocolSslContextSpec, "protocolSslContextSpec required");
 
         addTcpClientCustomizer(tcpClient -> tcpClient.secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec)));
@@ -60,8 +55,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    public T protocolSslContextSpecCertificate() throws Exception
-    {
+    public T protocolSslContextSpecCertificate() throws Exception {
         // KeyStore keyStore = KeyStore.getInstance("PKCS12");
         //
         // try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_keystore.p12"))
@@ -74,8 +68,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
 
         KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
 
-        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_truststore.p12"))
-        {
+        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_truststore.p12")) {
             keyStoreTrust.load(is, "password".toCharArray());
         }
 
@@ -98,8 +91,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    public T protocolSslContextSpecTrusted()
-    {
+    public T protocolSslContextSpecTrusted() {
         // @formatter:off
         ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
                 .configure(builder -> builder
@@ -115,8 +107,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    public T resume(final Resume resume)
-    {
+    public T resume(final Resume resume) {
         Objects.requireNonNull(resume, "resume required");
 
         addRSocketConnectorCustomizer(rSocketConnector -> rSocketConnector.resume(resume));
@@ -124,8 +115,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    public T resumeDefault()
-    {
+    public T resumeDefault() {
         // @formatter:off
         Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
@@ -138,8 +128,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return resume(resume);
     }
 
-    public T retry(final Retry retry)
-    {
+    public T retry(final Retry retry) {
         Objects.requireNonNull(retry, "retry required");
 
         addRSocketConnectorCustomizer(rSocketConnector -> rSocketConnector.reconnect(retry));
@@ -147,8 +136,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    public T retryDefault()
-    {
+    public T retryDefault() {
         return retry(Retry.fixedDelay(5, Duration.ofMillis(100)));
         // return retry(Retry.backoff(50, Duration.ofMillis(100))));
     }
@@ -156,8 +144,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     /**
      * EpollEventLoopGroup only available on Linux -> Use NioEventLoopGroup instead.
      */
-    public T runOn(final EventLoopGroup eventLoopGroup)
-    {
+    public T runOn(final EventLoopGroup eventLoopGroup) {
         Objects.requireNonNull(eventLoopGroup, "eventLoopGroup required");
 
         addTcpClientCustomizer(tcpClient -> tcpClient.runOn(eventLoopGroup));
@@ -165,8 +152,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    public T runOn(final LoopResources loopResources)
-    {
+    public T runOn(final LoopResources loopResources) {
         Objects.requireNonNull(loopResources, "loopResources required");
 
         addTcpClientCustomizer(tcpClient -> tcpClient.runOn(loopResources));
@@ -174,12 +160,10 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         return (T) this;
     }
 
-    protected TcpClient configure(final TcpClient tcpClient)
-    {
+    protected TcpClient configure(final TcpClient tcpClient) {
         TcpClient client = tcpClient;
 
-        for (UnaryOperator<TcpClient> clientCustomizer : this.tcpClientCustomizers)
-        {
+        for (UnaryOperator<TcpClient> clientCustomizer : this.tcpClientCustomizers) {
             client = clientCustomizer.apply(client);
         }
 

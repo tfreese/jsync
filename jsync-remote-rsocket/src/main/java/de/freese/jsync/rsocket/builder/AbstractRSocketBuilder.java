@@ -13,23 +13,19 @@ import org.slf4j.LoggerFactory;
  * @author Thomas Freese
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractRSocketBuilder<T extends AbstractRSocketBuilder<?, ?>, B>
-{
+public abstract class AbstractRSocketBuilder<T extends AbstractRSocketBuilder<?, ?>, B> {
     private Logger logger;
 
     public abstract B build();
 
-    public T logger(final Logger logger)
-    {
+    public T logger(final Logger logger) {
         this.logger = Objects.requireNonNull(logger, "logger required");
 
         return (T) this;
     }
 
-    protected Logger getLogger()
-    {
-        if (this.logger == null)
-        {
+    protected Logger getLogger() {
+        if (this.logger == null) {
             this.logger = LoggerFactory.getLogger(getClass());
         }
 

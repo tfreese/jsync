@@ -11,8 +11,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 /**
  * @author Thomas Freese
  */
-public class SyncPairTableCellRendererFileSystem extends DefaultTableCellRenderer
-{
+public class SyncPairTableCellRendererFileSystem extends DefaultTableCellRenderer {
     @Serial
     private static final long serialVersionUID = -8974544290640941021L;
 
@@ -20,17 +19,13 @@ public class SyncPairTableCellRendererFileSystem extends DefaultTableCellRendere
      * @see DefaultTableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
      */
     @Override
-    public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row,
-                                                   final int column)
-    {
+    public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column) {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        if (column == 1)
-        {
+        if (column == 1) {
             setHorizontalAlignment(SwingConstants.CENTER);
         }
-        else
-        {
+        else {
             setHorizontalAlignment(SwingConstants.LEFT);
         }
 

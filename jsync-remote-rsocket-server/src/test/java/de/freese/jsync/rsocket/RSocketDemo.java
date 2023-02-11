@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import de.freese.jsync.rsocket.builder.RSocketBuilders;
 import io.rsocket.Payload;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketClient;
@@ -29,15 +28,15 @@ import reactor.netty.tcp.TcpResources;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import de.freese.jsync.rsocket.builder.RSocketBuilders;
+
 /**
  * @author Thomas Freese
  */
-public final class RSocketDemo
-{
+public final class RSocketDemo {
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketDemo.class);
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         System.setProperty("reactor.schedulers.defaultPoolSize", Integer.toString(8));
         System.setProperty("reactor.schedulers.defaultBoundedElasticSize", Integer.toString(8));
 
@@ -58,8 +57,7 @@ public final class RSocketDemo
         // Enable Debug.
         Hooks.onOperatorDebug();
 
-        Function<Integer, SocketAcceptor> socketAcceptor = port -> SocketAcceptor.forRequestResponse(payload ->
-        {
+        Function<Integer, SocketAcceptor> socketAcceptor = port -> SocketAcceptor.forRequestResponse(payload -> {
             String request = payload.getDataUtf8();
             LOGGER.info("Server {} got request {}", port, request);
             return Mono.just(DefaultPayload.create("Client of Server " + port + " got response " + request));
@@ -101,8 +99,7 @@ public final class RSocketDemo
 
         TimeUnit.SECONDS.sleep(1);
 
-        for (int i = 0; i < 30; i++)
-        {
+        for (int i = 0; i < 30; i++) {
             TimeUnit.MILLISECONDS.sleep(100);
 
             // @formatter:off
@@ -125,8 +122,7 @@ public final class RSocketDemo
         Schedulers.shutdownNow();
     }
 
-    static Tuple2<RSocketClient, List<Disposable>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
-    {
+    static Tuple2<RSocketClient, List<Disposable>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
         InetSocketAddress serverAddress = new InetSocketAddress("localhost", 6000);
 
         // @formatter:off
@@ -157,8 +153,7 @@ public final class RSocketDemo
         return Tuples.of(client, List.of(server));
     }
 
-    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
-    {
+    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
         List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000).map(port -> new InetSocketAddress("localhost", port)).toList();
 
         // @formatter:off
@@ -188,9 +183,7 @@ public final class RSocketDemo
         return Tuples.of(client, servers);
     }
 
-    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor)
-            throws Exception
-    {
+    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
         List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000, 8000, 9000).map(port -> new InetSocketAddress("localhost", port)).toList();
 
         // @formatter:off
@@ -229,8 +222,7 @@ public final class RSocketDemo
         return Tuples.of(client, servers);
     }
 
-    static Tuple2<RSocketClient, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception
-    {
+    static Tuple2<RSocketClient, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
         // @formatter:off
         Disposable server = RSocketBuilders.serverLocal()
                 .name("test1")
@@ -245,8 +237,7 @@ public final class RSocketDemo
         return Tuples.of(client, List.of(server));
     }
 
-    private RSocketDemo()
-    {
+    private RSocketDemo() {
         super();
     }
 }

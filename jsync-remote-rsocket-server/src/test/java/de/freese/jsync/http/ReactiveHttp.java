@@ -19,12 +19,10 @@ import reactor.util.function.Tuple2;
 /**
  * @author Thomas Freese
  */
-public final class ReactiveHttp
-{
+public final class ReactiveHttp {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveHttp.class);
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         HttpResources.set(LoopResources.create("reactive-http", 2, 4, true));
 
         // @formatter:off
@@ -55,30 +53,25 @@ public final class ReactiveHttp
         httpClient.get().uri("/hello").responseContent().aggregate().asString().subscribe(LOGGER::info);
         httpClient.post().uri("/echo").send(ByteBufFlux.fromString(Mono.just("Echo!"))).responseContent().aggregate().asString().subscribe(LOGGER::info);
 
-        Consumer<Tuple2<String, HttpHeaders>> responseSubscriber = response ->
-        {
+        Consumer<Tuple2<String, HttpHeaders>> responseSubscriber = response -> {
             LOGGER.info("Response: {}", response.getT1());
             LOGGER.info("Used stream ID: {}", response.getT2().get("x-http2-stream-id"));
         };
 
-        for (int i = 0; i < 3; i++)
-        {
-            Tuple2<String, HttpHeaders> response =
-                    httpClient.get().uri("/hello").responseSingle((res, bytes) -> bytes.asString().zipWith(Mono.just(res.responseHeaders()))).block();
+        for (int i = 0; i < 3; i++) {
+            Tuple2<String, HttpHeaders> response = httpClient.get().uri("/hello").responseSingle((res, bytes) -> bytes.asString().zipWith(Mono.just(res.responseHeaders()))).block();
 
             // Ausgabe im main-Thread.
             responseSubscriber.accept(response);
 
-            httpClient.get().uri("/hello").responseSingle((res, bytes) -> bytes.asString().zipWith(Mono.just(res.responseHeaders())))
-                    .subscribe(responseSubscriber);
+            httpClient.get().uri("/hello").responseSingle((res, bytes) -> bytes.asString().zipWith(Mono.just(res.responseHeaders()))).subscribe(responseSubscriber);
         }
 
         // httpServer.onDispose().block();
         httpServer.dispose();
     }
 
-    private ReactiveHttp()
-    {
+    private ReactiveHttp() {
         super();
     }
 }

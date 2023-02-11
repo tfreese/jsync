@@ -18,12 +18,10 @@ import reactor.netty.tcp.TcpServer;
 /**
  * @author Thomas Freese
  */
-public final class ReactiveTcp
-{
+public final class ReactiveTcp {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveTcp.class);
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         TcpResources.set(LoopResources.create("tcpServer", 2, 4, true));
 
         // @formatter:off
@@ -66,8 +64,7 @@ public final class ReactiveTcp
         tcpServer.dispose();
     }
 
-    private ReactiveTcp()
-    {
+    private ReactiveTcp() {
         super();
     }
 }

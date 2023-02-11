@@ -6,35 +6,30 @@ package de.freese.jsync.nio.transport;
  *
  * @author Thomas Freese
  */
-public enum FrameType
-{
+public enum FrameType {
     DATA(1),
 
     ERROR(2),
 
     FINISH(3);
 
-    public static FrameType fromEncodedType(final int encodedType)
-    {
-        return switch (encodedType)
-                {
-                    case 1 -> DATA;
-                    case 2 -> ERROR;
-                    case 3 -> FINISH;
+    public static FrameType fromEncodedType(final int encodedType) {
+        return switch (encodedType) {
+            case 1 -> DATA;
+            case 2 -> ERROR;
+            case 3 -> FINISH;
 
-                    default -> throw new IllegalArgumentException("Frame Type is unknown: " + encodedType);
-                };
+            default -> throw new IllegalArgumentException("Frame Type is unknown: " + encodedType);
+        };
     }
 
     private final int encodedType;
 
-    FrameType(final int encodedType)
-    {
+    FrameType(final int encodedType) {
         this.encodedType = encodedType;
     }
 
-    public int getEncodedType()
-    {
+    public int getEncodedType() {
         return this.encodedType;
     }
 }

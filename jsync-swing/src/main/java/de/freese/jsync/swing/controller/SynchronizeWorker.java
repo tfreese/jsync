@@ -14,10 +14,8 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 /**
  * @author Thomas Freese
  */
-class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientListener
-{
-    SynchronizeWorker(final JSyncController controller)
-    {
+class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientListener {
+    SynchronizeWorker(final JSyncController controller) {
         super(controller);
 
         getSyncView().doOnCompare(button -> button.setEnabled(false));
@@ -33,12 +31,9 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
      * @see de.freese.jsync.client.listener.ClientListener#checksumProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
      */
     @Override
-    public void checksumProgress(final Options options, final SyncItem syncItem, final long bytesRead)
-    {
-        if (bytesRead == 0)
-        {
-            getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, (int) syncItem.getSize(),
-                    getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
+    public void checksumProgress(final Options options, final SyncItem syncItem, final long bytesRead) {
+        if (bytesRead == 0) {
+            getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, (int) syncItem.getSize(), getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
         }
 
         getSyncView().setProgressBarValue(EFileSystem.RECEIVER, (int) bytesRead);
@@ -48,14 +43,11 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
      * @see de.freese.jsync.client.listener.ClientListener#copyProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
      */
     @Override
-    public void copyProgress(final Options options, final SyncItem syncItem, final long bytesTransferred)
-    {
-        if (bytesTransferred == 0)
-        {
+    public void copyProgress(final Options options, final SyncItem syncItem, final long bytesTransferred) {
+        if (bytesTransferred == 0) {
             getSyncView().incrementProgressBarFilesValue(1);
 
-            getSyncView().setProgressBarMinMaxText(EFileSystem.SENDER, 0, (int) syncItem.getSize(),
-                    getMessage("jsync.files.copy") + ": " + syncItem.getRelativePath());
+            getSyncView().setProgressBarMinMaxText(EFileSystem.SENDER, 0, (int) syncItem.getSize(), getMessage("jsync.files.copy") + ": " + syncItem.getRelativePath());
         }
 
         getSyncView().setProgressBarValue(EFileSystem.SENDER, (int) bytesTransferred);
@@ -65,8 +57,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
      * @see de.freese.jsync.client.listener.ClientListener#delete(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void delete(final Options options, final SyncItem syncItem)
-    {
+    public void delete(final Options options, final SyncItem syncItem) {
         getSyncView().incrementProgressBarFilesValue(1);
 
         getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.delete") + ": " + syncItem.getRelativePath());
@@ -76,8 +67,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
      * @see de.freese.jsync.client.listener.ClientListener#error(java.lang.String, java.lang.Throwable)
      */
     @Override
-    public void error(final String message, final Throwable th)
-    {
+    public void error(final String message, final Throwable th) {
         getLogger().error(message, th);
     }
 
@@ -85,8 +75,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
      * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void update(final Options options, final SyncItem syncItem)
-    {
+    public void update(final Options options, final SyncItem syncItem) {
         getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.update") + ": " + syncItem.getRelativePath());
     }
 
@@ -94,8 +83,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
      * @see de.freese.jsync.client.listener.ClientListener#validate(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void validate(final Options options, final SyncItem syncItem)
-    {
+    public void validate(final Options options, final SyncItem syncItem) {
         getSyncView().setProgressBarMinMaxText(EFileSystem.RECEIVER, 0, 0, getMessage("jsync.files.validate") + ": " + syncItem.getRelativePath());
     }
 
@@ -103,8 +91,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
      * @see javax.swing.SwingWorker#doInBackground()
      */
     @Override
-    protected Void doInBackground() throws Exception
-    {
+    protected Void doInBackground() throws Exception {
         List<SyncPair> syncPairs = getSyncView().getSyncList();
 
         getSyncView().setProgressBarFilesMax(syncPairs.size());
@@ -122,16 +109,13 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
      * @see javax.swing.SwingWorker#done()
      */
     @Override
-    protected void done()
-    {
+    protected void done() {
         getLogger().info("{}", ByteBufferPool.DEFAULT);
 
-        try
-        {
+        try {
             get();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
 

@@ -20,8 +20,7 @@ import de.freese.jsync.swing.components.SyncPairTableModelStatus;
 /**
  * @author Thomas Freese
  */
-public class TableFacade
-{
+public class TableFacade {
     private final AbstractListTableModel<SyncPair> tableModelReceiver;
     private final AbstractListTableModel<SyncPair> tableModelSender;
     private final AbstractListTableModel<SyncPair> tableModelStatus;
@@ -32,8 +31,7 @@ public class TableFacade
     private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterSender;
     private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterStatus;
 
-    public TableFacade()
-    {
+    public TableFacade() {
         super();
 
         this.tableSender = new JTable();
@@ -45,73 +43,59 @@ public class TableFacade
         this.tableModelReceiver = new SyncPairTableModelFileSystem(EFileSystem.RECEIVER);
     }
 
-    void addAll(final List<SyncPair> objects)
-    {
+    void addAll(final List<SyncPair> objects) {
         this.tableModelSender.addAll(objects);
         this.tableModelStatus.addAll(objects);
         this.tableModelReceiver.addAll(objects);
     }
 
-    void clear()
-    {
+    void clear() {
         this.tableModelSender.clear();
         this.tableModelStatus.clear();
         this.tableModelReceiver.clear();
     }
 
-    void fireTableRowsUpdated(final int firstRow, final int lastRow)
-    {
+    void fireTableRowsUpdated(final int firstRow, final int lastRow) {
         this.tableModelSender.fireTableRowsUpdated(firstRow, lastRow);
         this.tableModelStatus.fireTableRowsUpdated(firstRow, lastRow);
         this.tableModelReceiver.fireTableRowsUpdated(firstRow, lastRow);
     }
 
-    int getRowCount()
-    {
+    int getRowCount() {
         return this.tableModelStatus.getRowCount();
     }
 
-    Stream<SyncPair> getStream()
-    {
+    Stream<SyncPair> getStream() {
         return this.tableModelStatus.getStream();
     }
 
-    AbstractListTableModel<SyncPair> getTableModelReceiver()
-    {
+    AbstractListTableModel<SyncPair> getTableModelReceiver() {
         return this.tableModelReceiver;
     }
 
-    AbstractListTableModel<SyncPair> getTableModelSender()
-    {
+    AbstractListTableModel<SyncPair> getTableModelSender() {
         return this.tableModelSender;
     }
 
-    AbstractListTableModel<SyncPair> getTableModelStatus()
-    {
+    AbstractListTableModel<SyncPair> getTableModelStatus() {
         return this.tableModelStatus;
     }
 
-    JTable getTableReceiver()
-    {
+    JTable getTableReceiver() {
         return this.tableReceiver;
     }
 
-    JTable getTableSender()
-    {
+    JTable getTableSender() {
         return this.tableSender;
     }
 
-    JTable getTableStatus()
-    {
+    JTable getTableStatus() {
         return this.tableStatus;
     }
 
-    void initRowSorter(final Supplier<Predicate<SyncPair>> supplierPredicate)
-    {
-        RowFilter<AbstractListTableModel<SyncPair>, Integer> rowFilter = new RowFilter<>()
-        {
-            public boolean include(final Entry<? extends AbstractListTableModel<SyncPair>, ? extends Integer> entry)
-            {
+    void initRowSorter(final Supplier<Predicate<SyncPair>> supplierPredicate) {
+        RowFilter<AbstractListTableModel<SyncPair>, Integer> rowFilter = new RowFilter<>() {
+            public boolean include(final Entry<? extends AbstractListTableModel<SyncPair>, ? extends Integer> entry) {
                 SyncPair syncPair = entry.getModel().getObjectAt(entry.getIdentifier());
 
                 return supplierPredicate.get().test(syncPair);
@@ -131,8 +115,7 @@ public class TableFacade
         this.tableReceiver.setRowSorter(this.rowSorterReceiver);
     }
 
-    void scrollToLastRow()
-    {
+    void scrollToLastRow() {
         int rowCount = getRowCount();
 
         Rectangle rectangle = this.tableSender.getCellRect(rowCount - 1, 0, false);
@@ -145,8 +128,7 @@ public class TableFacade
         this.tableReceiver.scrollRectToVisible(rectangle);
     }
 
-    void sort()
-    {
+    void sort() {
         this.rowSorterSender.sort();
         this.rowSorterStatus.sort();
         this.rowSorterReceiver.sort();

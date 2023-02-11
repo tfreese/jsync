@@ -19,16 +19,14 @@ import reactor.netty.tcp.TcpClient;
 /**
  * @author Thomas Freese
  */
-public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteLoadBalancedBuilder>
-{
+public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteLoadBalancedBuilder> {
     private final List<SocketAddress> remoteAddresses = new ArrayList<>();
 
     /**
      * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
      */
     @Override
-    public RSocketClient build()
-    {
+    public RSocketClient build() {
         // @formatter:off
         Publisher<List<LoadbalanceTarget>> serverProducer = Flux.fromIterable(this.remoteAddresses)
             .map(serverAddress ->  {
@@ -70,8 +68,7 @@ public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClien
         // @formatter:on
     }
 
-    public RSocketClientRemoteLoadBalancedBuilder remoteAddresses(final List<? extends SocketAddress> remoteAddresses)
-    {
+    public RSocketClientRemoteLoadBalancedBuilder remoteAddresses(final List<? extends SocketAddress> remoteAddresses) {
         Objects.requireNonNull(remoteAddresses, "remoteAddresses required");
 
         this.remoteAddresses.addAll(remoteAddresses);

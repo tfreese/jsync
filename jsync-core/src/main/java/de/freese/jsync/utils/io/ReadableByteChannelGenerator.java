@@ -7,19 +7,18 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import reactor.core.publisher.SynchronousSink;
+
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * @author Thomas Freese
  * @see org.springframework.core.io.buffer.DataBufferUtils.ReadableByteChannelGenerator
  */
-public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<ByteBuffer>>
-{
+public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<ByteBuffer>> {
     private final ReadableByteChannel channel;
 
-    public ReadableByteChannelGenerator(final ReadableByteChannel channel)
-    {
+    public ReadableByteChannelGenerator(final ReadableByteChannel channel) {
         this.channel = Objects.requireNonNull(channel, "channel required");
     }
 
@@ -27,32 +26,25 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
      * @see java.util.function.Consumer#accept(java.lang.Object)
      */
     @Override
-    public void accept(final SynchronousSink<ByteBuffer> sink)
-    {
+    public void accept(final SynchronousSink<ByteBuffer> sink) {
         boolean release = true;
         ByteBuffer buffer = ByteBufferPool.DEFAULT.get();
 
-        try
-        {
-            if (this.channel.read(buffer) >= 0)
-            {
+        try {
+            if (this.channel.read(buffer) >= 0) {
                 release = false;
                 buffer.flip();
                 sink.next(buffer);
             }
-            else
-            {
+            else {
                 sink.complete();
             }
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             sink.error(ex);
         }
-        finally
-        {
-            if (release)
-            {
+        finally {
+            if (release) {
                 ByteBufferPool.DEFAULT.free(buffer);
             }
         }

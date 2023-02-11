@@ -8,14 +8,12 @@ import de.freese.jsync.Options;
 /**
  * @author Thomas Freese
  */
-class NoByteBufferPool implements ByteBufferPool
-{
+class NoByteBufferPool implements ByteBufferPool {
     private int created;
 
     private int free;
 
-    NoByteBufferPool()
-    {
+    NoByteBufferPool() {
         super();
     }
 
@@ -23,8 +21,7 @@ class NoByteBufferPool implements ByteBufferPool
      * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#clear()
      */
     @Override
-    public void clear()
-    {
+    public void clear() {
         // Empty
     }
 
@@ -32,8 +29,7 @@ class NoByteBufferPool implements ByteBufferPool
      * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#free(java.nio.ByteBuffer)
      */
     @Override
-    public void free(final ByteBuffer buffer)
-    {
+    public void free(final ByteBuffer buffer) {
         this.free++;
     }
 
@@ -41,8 +37,7 @@ class NoByteBufferPool implements ByteBufferPool
      * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get()
      */
     @Override
-    public ByteBuffer get()
-    {
+    public ByteBuffer get() {
         this.created++;
 
         return ByteBuffer.allocate(Options.BUFFER_SIZE);
@@ -52,8 +47,7 @@ class NoByteBufferPool implements ByteBufferPool
      * @see java.lang.Object#toString()
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(":");
         sb.append(" created=").append(this.created);

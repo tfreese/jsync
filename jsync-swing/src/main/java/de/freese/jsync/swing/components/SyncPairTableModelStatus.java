@@ -10,13 +10,11 @@ import de.freese.jsync.swing.JSyncContext;
 /**
  * @author Thomas Freese
  */
-public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair>
-{
+public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair> {
     @Serial
     private static final long serialVersionUID = 871089543329340184L;
 
-    public SyncPairTableModelStatus()
-    {
+    public SyncPairTableModelStatus() {
         super(List.of(JSyncContext.getMessages().getString("jsync.status")));
     }
 
@@ -24,27 +22,23 @@ public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair>
      * @see de.freese.jsync.swing.components.AbstractListTableModel#getColumnClass(int)
      */
     @Override
-    public Class<?> getColumnClass(final int columnIndex)
-    {
-        return switch (columnIndex)
-                {
-                    case 0 -> String.class;
-                    default -> Object.class;
-                };
+    public Class<?> getColumnClass(final int columnIndex) {
+        return switch (columnIndex) {
+            case 0 -> String.class;
+            default -> Object.class;
+        };
     }
 
     /**
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     @Override
-    public Object getValueAt(final int rowIndex, final int columnIndex)
-    {
+    public Object getValueAt(final int rowIndex, final int columnIndex) {
         SyncPair syncPair = getObjectAt(rowIndex);
 
-        return switch (columnIndex)
-                {
-                    case 0 -> syncPair.getStatus();
-                    default -> null;
-                };
+        return switch (columnIndex) {
+            case 0 -> syncPair.getStatus();
+            default -> null;
+        };
     }
 }

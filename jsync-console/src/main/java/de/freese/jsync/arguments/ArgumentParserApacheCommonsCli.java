@@ -17,14 +17,12 @@ import org.apache.commons.cli.ParseException;
 /**
  * @author Thomas Freese
  */
-public class ArgumentParserApacheCommonsCli implements ArgumentParser
-{
+public class ArgumentParserApacheCommonsCli implements ArgumentParser {
     private final CommandLine line;
 
     private final Options options;
 
-    public ArgumentParserApacheCommonsCli(final String[] args) throws Exception
-    {
+    public ArgumentParserApacheCommonsCli(final String[] args) throws Exception {
         super();
 
         this.options = new Options();
@@ -42,12 +40,10 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
 
         CommandLineParser parser = new DefaultParser();
 
-        try
-        {
+        try {
             this.line = parser.parse(this.options, args);
         }
-        catch (ParseException pex)
-        {
+        catch (ParseException pex) {
             printHelp(System.out);
 
             throw pex;
@@ -58,8 +54,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      * @see de.freese.jsync.arguments.ArgumentParser#checksum()
      */
     @Override
-    public boolean checksum()
-    {
+    public boolean checksum() {
         return this.line.hasOption("checksum");
     }
 
@@ -67,8 +62,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      * @see de.freese.jsync.arguments.ArgumentParser#delete()
      */
     @Override
-    public boolean delete()
-    {
+    public boolean delete() {
         return this.line.hasOption("delete");
     }
 
@@ -76,8 +70,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      * @see de.freese.jsync.arguments.ArgumentParser#dryRun()
      */
     @Override
-    public boolean dryRun()
-    {
+    public boolean dryRun() {
         return this.line.hasOption("dry-run");
     }
 
@@ -85,8 +78,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      * @see de.freese.jsync.arguments.ArgumentParser#followSymlinks()
      */
     @Override
-    public boolean followSymlinks()
-    {
+    public boolean followSymlinks() {
         return this.line.hasOption("follow-symlinks");
     }
 
@@ -94,8 +86,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      * @see de.freese.jsync.arguments.ArgumentParser#hasArgs()
      */
     @Override
-    public boolean hasArgs()
-    {
+    public boolean hasArgs() {
         Option[] opts = this.line.getOptions();
 
         return (opts != null) && (opts.length > 0);
@@ -105,8 +96,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      * @see de.freese.jsync.arguments.ArgumentParser#printHelp(java.io.PrintStream)
      */
     @Override
-    public void printHelp(final PrintStream printStream)
-    {
+    public void printHelp(final PrintStream printStream) {
         HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
         // formatter.setWidth(120);
@@ -115,8 +105,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
         StringBuilder footer = new StringBuilder();
         footer.append("\n@Thomas Freese");
 
-        try (PrintWriter pw = new PrintWriter(printStream, true, StandardCharsets.UTF_8))
-        {
+        try (PrintWriter pw = new PrintWriter(printStream, true, StandardCharsets.UTF_8)) {
             formatter.printHelp(pw, 120, "jsync [OPTIONS]\n", "\nParameter:", this.options, 3, 5, footer.toString(), true);
         }
     }
@@ -125,8 +114,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      * @see de.freese.jsync.arguments.ArgumentParser#receiver()
      */
     @Override
-    public String receiver()
-    {
+    public String receiver() {
         return this.line.getOptionValue("receiver");
     }
 
@@ -134,8 +122,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser
      * @see de.freese.jsync.arguments.ArgumentParser#sender()
      */
     @Override
-    public String sender()
-    {
+    public String sender() {
         return this.line.getOptionValue("sender");
     }
 }

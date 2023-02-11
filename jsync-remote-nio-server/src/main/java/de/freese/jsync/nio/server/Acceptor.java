@@ -14,14 +14,12 @@ import de.freese.jsync.nio.server.dispatcher.Dispatcher;
  *
  * @author Thomas Freese
  */
-class Acceptor extends AbstractNioProcessor
-{
+class Acceptor extends AbstractNioProcessor {
     private final Dispatcher dispatcher;
 
     private final ServerSocketChannel serverSocketChannel;
 
-    Acceptor(final Selector selector, final ServerSocketChannel serverSocketChannel, final Dispatcher dispatcher)
-    {
+    Acceptor(final Selector selector, final ServerSocketChannel serverSocketChannel, final Dispatcher dispatcher) {
         super(selector);
 
         this.serverSocketChannel = Objects.requireNonNull(serverSocketChannel, "serverSocketChannel required");
@@ -32,8 +30,7 @@ class Acceptor extends AbstractNioProcessor
      * @see de.freese.jsync.nio.server.AbstractNioProcessor#beforeSelectorWhile()
      */
     @Override
-    protected void beforeSelectorWhile() throws Exception
-    {
+    protected void beforeSelectorWhile() throws Exception {
         this.serverSocketChannel.register(getSelector(), SelectionKey.OP_ACCEPT);
     }
 
@@ -41,15 +38,12 @@ class Acceptor extends AbstractNioProcessor
      * @see de.freese.jsync.nio.server.AbstractNioProcessor#onAcceptable(java.nio.channels.SelectionKey)
      */
     @Override
-    protected void onAcceptable(final SelectionKey selectionKey)
-    {
-        try
-        {
+    protected void onAcceptable(final SelectionKey selectionKey) {
+        try {
             // Establish Client Connection.
             SocketChannel socketChannel = this.serverSocketChannel.accept();
 
-            if (socketChannel == null)
-            {
+            if (socketChannel == null) {
                 // In case that another Acceptor has processed the Connection.
                 // It is nonsense to register multiple Acceptors, because all are triggered, but only one has the Channel.
                 return;
@@ -60,8 +54,7 @@ class Acceptor extends AbstractNioProcessor
             // Delegate the Socket to the Dispatcher.
             this.dispatcher.register(socketChannel);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
     }

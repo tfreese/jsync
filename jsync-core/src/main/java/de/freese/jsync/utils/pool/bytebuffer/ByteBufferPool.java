@@ -6,8 +6,7 @@ import java.nio.ByteBuffer;
 /**
  * @author Thomas Freese
  */
-public interface ByteBufferPool
-{
+public interface ByteBufferPool {
     ByteBufferPool DEFAULT = new SimpleByteBufferPool();
 
     void clear();

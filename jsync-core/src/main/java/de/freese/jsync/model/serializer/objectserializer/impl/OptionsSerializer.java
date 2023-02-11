@@ -10,11 +10,9 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 /**
  * @author Thomas Freese
  */
-public final class OptionsSerializer implements ObjectSerializer<Options>
-{
+public final class OptionsSerializer implements ObjectSerializer<Options> {
     @Override
-    public <W, R> Options readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
-    {
+    public <W, R> Options readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
         // bufferSize
         // int bufferSize = adapter.readInteger(source);
 
@@ -43,8 +41,7 @@ public final class OptionsSerializer implements ObjectSerializer<Options>
     }
 
     @Override
-    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Options value)
-    {
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Options value) {
         // bufferSize
         // adapter.writeInteger(sink, value.getBufferSize());
 

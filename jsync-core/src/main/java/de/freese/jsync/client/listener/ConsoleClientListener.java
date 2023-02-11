@@ -11,14 +11,12 @@ import de.freese.jsync.model.SyncItem;
 /**
  * @author Thomas Freese
  */
-public class ConsoleClientListener extends AbstractClientListener
-{
+public class ConsoleClientListener extends AbstractClientListener {
     private final PrintStream printStream;
 
     private final PrintStream printStreamError;
 
-    public ConsoleClientListener()
-    {
+    public ConsoleClientListener() {
         super();
 
         // Console console = System.console();
@@ -41,17 +39,14 @@ public class ConsoleClientListener extends AbstractClientListener
      * @see de.freese.jsync.client.listener.ClientListener#checksumProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
      */
     @Override
-    public void checksumProgress(final Options options, final SyncItem syncItem, final long bytesRead)
-    {
-        if (bytesRead == 0)
-        {
+    public void checksumProgress(final Options options, final SyncItem syncItem, final long bytesRead) {
+        if (bytesRead == 0) {
             return;
         }
 
         String message = checksumProgressMessage(options, syncItem, bytesRead);
 
-        if (message == null)
-        {
+        if (message == null) {
             return;
         }
 
@@ -62,17 +57,14 @@ public class ConsoleClientListener extends AbstractClientListener
      * @see de.freese.jsync.client.listener.ClientListener#copyProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
      */
     @Override
-    public void copyProgress(final Options options, final SyncItem syncItem, final long bytesTransferred)
-    {
-        if (bytesTransferred == 0)
-        {
+    public void copyProgress(final Options options, final SyncItem syncItem, final long bytesTransferred) {
+        if (bytesTransferred == 0) {
             return;
         }
 
         String message = copyProgressMessage(options, syncItem, bytesTransferred);
 
-        if (message == null)
-        {
+        if (message == null) {
             return;
         }
 
@@ -89,8 +81,7 @@ public class ConsoleClientListener extends AbstractClientListener
      * @see de.freese.jsync.client.listener.ClientListener#delete(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void delete(final Options options, final SyncItem syncItem)
-    {
+    public void delete(final Options options, final SyncItem syncItem) {
         String message = deleteMessage(options, syncItem);
 
         getPrintStream().println(message);
@@ -100,8 +91,7 @@ public class ConsoleClientListener extends AbstractClientListener
      * @see de.freese.jsync.client.listener.ClientListener#error(java.lang.String, java.lang.Throwable)
      */
     @Override
-    public void error(final String message, final Throwable th)
-    {
+    public void error(final String message, final Throwable th) {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
         th.printStackTrace(printWriter);
@@ -116,8 +106,7 @@ public class ConsoleClientListener extends AbstractClientListener
      * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void update(final Options options, final SyncItem syncItem)
-    {
+    public void update(final Options options, final SyncItem syncItem) {
         String message = updateMessage(options, syncItem);
 
         getPrintStream().println(message);
@@ -127,20 +116,17 @@ public class ConsoleClientListener extends AbstractClientListener
      * @see de.freese.jsync.client.listener.ClientListener#validate(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
      */
     @Override
-    public void validate(final Options options, final SyncItem syncItem)
-    {
+    public void validate(final Options options, final SyncItem syncItem) {
         String message = validateMessage(options, syncItem);
 
         getPrintStream().println(message);
     }
 
-    protected PrintStream getPrintStream()
-    {
+    protected PrintStream getPrintStream() {
         return this.printStream;
     }
 
-    protected PrintStream getPrintStreamError()
-    {
+    protected PrintStream getPrintStreamError() {
         return this.printStreamError;
     }
 }

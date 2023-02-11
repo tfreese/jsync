@@ -8,8 +8,7 @@ import java.util.Objects;
  *
  * @author Thomas Freese
  */
-public class SyncPair
-{
+public class SyncPair {
     private final SyncItem receiverItem;
 
     private final SyncItem senderItem;
@@ -22,41 +21,34 @@ public class SyncPair
      * @param senderItem {@link SyncItem}; if null only existing in Receiver
      * @param receiverItem {@link SyncItem}; if null only existing in Sender
      */
-    public SyncPair(final SyncItem senderItem, final SyncItem receiverItem)
-    {
+    public SyncPair(final SyncItem senderItem, final SyncItem receiverItem) {
         super();
 
         this.senderItem = senderItem;
         this.receiverItem = receiverItem;
 
-        if ((senderItem == null) && (receiverItem == null))
-        {
+        if ((senderItem == null) && (receiverItem == null)) {
             throw new IllegalArgumentException("only one SyncItem can be null");
         }
     }
 
-    public SyncItem getReceiverItem()
-    {
+    public SyncItem getReceiverItem() {
         return this.receiverItem;
     }
 
-    public String getRelativePath()
-    {
+    public String getRelativePath() {
         return getSenderItem() != null ? getSenderItem().getRelativePath() : getReceiverItem().getRelativePath();
     }
 
-    public SyncItem getSenderItem()
-    {
+    public SyncItem getSenderItem() {
         return this.senderItem;
     }
 
-    public SyncStatus getStatus()
-    {
+    public SyncStatus getStatus() {
         return this.status;
     }
 
-    public boolean isFile()
-    {
+    public boolean isFile() {
         return getSenderItem() != null ? getSenderItem().isFile() : getReceiverItem().isFile();
     }
 
@@ -64,8 +56,7 @@ public class SyncPair
      * @see java.lang.Object#toString()
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("SyncPair [");
         builder.append("relativePath=").append(getRelativePath());
@@ -78,31 +69,24 @@ public class SyncPair
     /**
      * Compares Source with Target.
      */
-    public void validateStatus()
-    {
-        if ((getSenderItem() == null) && (getReceiverItem() != null))
-        {
+    public void validateStatus() {
+        if ((getSenderItem() == null) && (getReceiverItem() != null)) {
             // Delete: only available in Target but not in Source.
             this.status = SyncStatus.ONLY_IN_TARGET;
         }
-        else if ((getSenderItem() != null) && (getReceiverItem() == null))
-        {
+        else if ((getSenderItem() != null) && (getReceiverItem() == null)) {
             // Copy: only available in Source but not in Target.
             this.status = SyncStatus.ONLY_IN_SOURCE;
         }
-        else if ((getSenderItem() != null) && (getReceiverItem() != null))
-        {
+        else if ((getSenderItem() != null) && (getReceiverItem() != null)) {
             // Copy: Different Attributes
-            if (getSenderItem().getLastModifiedTime() != getReceiverItem().getLastModifiedTime())
-            {
+            if (getSenderItem().getLastModifiedTime() != getReceiverItem().getLastModifiedTime()) {
                 this.status = SyncStatus.DIFFERENT_LAST_MODIFIEDTIME;
             }
-            else if (getSenderItem().getSize() != getReceiverItem().getSize())
-            {
+            else if (getSenderItem().getSize() != getReceiverItem().getSize()) {
                 this.status = SyncStatus.DIFFERENT_SIZE;
             }
-            else if (!Objects.equals(getSenderItem().getChecksum(), getReceiverItem().getChecksum()))
-            {
+            else if (!Objects.equals(getSenderItem().getChecksum(), getReceiverItem().getChecksum())) {
                 this.status = SyncStatus.DIFFERENT_CHECKSUM;
             }
             //            else if (!Objects.equals(getSenderItem().getPermissionsToString(), getReceiverItem().getPermissionsToString()))
@@ -117,13 +101,11 @@ public class SyncPair
             //            {
             //                this.status = SyncStatus.DIFFERENT_GROUP;
             //            }
-            else
-            {
+            else {
                 this.status = SyncStatus.SYNCHRONIZED;
             }
         }
-        else
-        {
+        else {
             this.status = SyncStatus.UNKNOWN;
         }
     }

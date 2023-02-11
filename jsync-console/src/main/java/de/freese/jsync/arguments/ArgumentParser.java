@@ -6,8 +6,7 @@ import java.io.PrintStream;
 /**
  * @author Thomas Freese
  */
-public interface ArgumentParser
-{
+public interface ArgumentParser {
     /**
      * Option: -c; --checksum
      */

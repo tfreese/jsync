@@ -4,16 +4,16 @@ package de.freese.jsync.filesystem;
 import java.nio.ByteBuffer;
 import java.util.function.LongConsumer;
 
-import de.freese.jsync.model.SyncItem;
 import reactor.core.publisher.Flux;
+
+import de.freese.jsync.model.SyncItem;
 
 /**
  * Datensenke.
  *
  * @author Thomas Freese
  */
-public interface Receiver extends FileSystem
-{
+public interface Receiver extends FileSystem {
     void createDirectory(String baseDir, String relativePath);
 
     void delete(String baseDir, String relativePath, boolean followSymLinks);

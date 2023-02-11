@@ -7,24 +7,20 @@ import java.util.concurrent.Executors;
 
 import javax.swing.SwingUtilities;
 
-import de.freese.jsync.swing.messages.Messages;
 import reactor.core.publisher.Hooks;
+
+import de.freese.jsync.swing.messages.Messages;
 
 /**
  * @author Thomas Freese
  */
-public final class JSyncSwingLauncher
-{
-    public static void main(final String[] args)
-    {
-        if (args == null)
-        {
+public final class JSyncSwingLauncher {
+    public static void main(final String[] args) {
+        if (args == null) {
             JSyncSwing.getLogger().info("init");
         }
-        else
-        {
-            if (JSyncSwing.getLogger().isInfoEnabled())
-            {
+        else {
+            if (JSyncSwing.getLogger().isInfoEnabled()) {
                 JSyncSwing.getLogger().info("init: {}", Arrays.toString(args));
             }
         }
@@ -42,12 +38,9 @@ public final class JSyncSwingLauncher
 
         Hooks.onErrorDropped(th -> JSyncSwing.getLogger().warn(th.getMessage()));
 
-        SwingUtilities.invokeLater(() ->
-        {
-            try
-            {
-                new JSyncSwing().initGui(frame ->
-                {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                new JSyncSwing().initGui(frame -> {
                     // frame.setSize(800, 600);
                     // frame.setSize(1024, 768);
                     // frame.setSize(1280, 768);
@@ -62,15 +55,13 @@ public final class JSyncSwingLauncher
                     JSyncContext.setMainFrame(frame);
                 });
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
         });
     }
 
-    private JSyncSwingLauncher()
-    {
+    private JSyncSwingLauncher() {
         super();
     }
 }

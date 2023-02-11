@@ -10,11 +10,9 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 /**
  * @author Thomas Freese
  */
-public final class ExceptionSerializer implements ObjectSerializer<Exception>
-{
+public final class ExceptionSerializer implements ObjectSerializer<Exception> {
     @Override
-    public <W, R> Exception readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
-    {
+    public <W, R> Exception readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
         String clazzName = adapter.readString(source, getCharset());
         String message = adapter.readString(source, getCharset());
         int stackTraceLength = adapter.readInteger(source);
@@ -22,15 +20,13 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception>
         ObjectSerializer<StackTraceElement> stackTraceElementSerializer = registry.getSerializer(StackTraceElement.class);
         StackTraceElement[] stackTrace = new StackTraceElement[stackTraceLength];
 
-        for (int i = 0; i < stackTrace.length; i++)
-        {
+        for (int i = 0; i < stackTrace.length; i++) {
             stackTrace[i] = stackTraceElementSerializer.readFrom(registry, adapter, source);
         }
 
         Exception exception = null;
 
-        try
-        {
+        try {
             // ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             // Class<? extends Exception> clazz = (Class<? extends Exception>) classLoader.loadClass(clazzName);
             // Class<? extends Exception> clazz = (Class<? extends Exception>) Class.forName(clazzName, true, classLoader);
@@ -39,8 +35,7 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception>
 
             exception = constructor.newInstance(message);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             exception = new Exception(message);
         }
 
@@ -50,8 +45,7 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception>
     }
 
     @Override
-    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Exception value)
-    {
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Exception value) {
         adapter.writeString(sink, value.getClass().getName(), getCharset());
         adapter.writeString(sink, value.getMessage(), getCharset());
 
@@ -59,8 +53,7 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception>
         StackTraceElement[] stackTrace = value.getStackTrace();
         adapter.writeInteger(sink, stackTrace.length);
 
-        for (StackTraceElement stackTraceElement : stackTrace)
-        {
+        for (StackTraceElement stackTraceElement : stackTrace) {
             stackTraceElementSerializer.writeTo(registry, adapter, sink, stackTraceElement);
         }
     }

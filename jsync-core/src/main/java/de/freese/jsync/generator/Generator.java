@@ -5,17 +5,17 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
+import reactor.core.publisher.Flux;
+
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.SyncItem;
-import reactor.core.publisher.Flux;
 
 /**
  * The Generator collects all relevant Information of the FileSystem for the chosen {@link Path}.
  *
  * @author Thomas Freese
  */
-public interface Generator
-{
+public interface Generator {
     /**
      * Erzeugt die Prüfsumme einer Datei.<br>
      *
@@ -31,8 +31,7 @@ public interface Generator
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      */
-    default void generateItems(String baseDir, boolean followSymLinks, PathFilter pathFilter, Consumer<SyncItem> consumer)
-    {
+    default void generateItems(String baseDir, boolean followSymLinks, PathFilter pathFilter, Consumer<SyncItem> consumer) {
         generateItems(baseDir, followSymLinks, pathFilter).subscribe(consumer);
     }
 }

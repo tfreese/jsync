@@ -10,41 +10,37 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
+import reactor.core.publisher.Flux;
+
 import de.freese.jsync.filesystem.Sender;
 import de.freese.jsync.utils.ReactiveUtils;
-import reactor.core.publisher.Flux;
 
 /**
  * {@link Sender} für Localhost-Filesysteme.
  *
  * @author Thomas Freese
  */
-public class LocalhostSender extends AbstractLocalFileSystem implements Sender
-{
+public class LocalhostSender extends AbstractLocalFileSystem implements Sender {
     /**
      * @see de.freese.jsync.filesystem.Sender#readFile(java.lang.String, java.lang.String, long)
      */
     @Override
-    public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile)
-    {
+    public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile) {
         Path path = Paths.get(baseDir, relativeFile);
 
-        if (!Files.exists(path))
-        {
+        if (!Files.exists(path)) {
             String message = String.format("file doesn't exist anymore: %s", path);
             getLogger().warn(message);
-            
+
             return Flux.empty();
         }
 
-        try
-        {
+        try {
             FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.READ);
 
             return ReactiveUtils.readByteChannel(() -> fileChannel);
         }
-        catch (IOException ex)
-        {
+        catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }

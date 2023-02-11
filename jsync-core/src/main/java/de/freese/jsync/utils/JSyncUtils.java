@@ -23,15 +23,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.utils.io.FileVisitorDelete;
-import org.slf4j.Logger;
 
 /**
  * @author Thomas Freese
  */
-public final class JSyncUtils
-{
+public final class JSyncUtils {
     /**
      * @see Files#walk(Path, FileVisitOption...)
      */
@@ -39,15 +39,9 @@ public final class JSyncUtils
     /**
      * @see Files#walk(Path, FileVisitOption...)
      */
-    private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS =
-            {
-                    FileVisitOption.FOLLOW_LINKS
-            };
+    private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = {FileVisitOption.FOLLOW_LINKS};
 
-    private static final char[] HEX_CHARS =
-            {
-                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-            };
+    private static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
     /**
@@ -57,10 +51,7 @@ public final class JSyncUtils
      * @see Files#getLastModifiedTime(Path, LinkOption...)
      * @see Files#readAttributes(Path, String, LinkOption...)
      */
-    private static final LinkOption[] LINKOPTION_NO_SYMLINKS =
-            {
-                    LinkOption.NOFOLLOW_LINKS
-            };
+    private static final LinkOption[] LINKOPTION_NO_SYMLINKS = {LinkOption.NOFOLLOW_LINKS};
     /**
      * @see Files#exists(Path, LinkOption...)
      * @see Files#notExists(Path, LinkOption...)
@@ -72,10 +63,7 @@ public final class JSyncUtils
 
     private static final Pattern PATTERN_FILTER = Pattern.compile("[;,]");
 
-    private static final String[] SIZE_UNITS =
-            {
-                    "B", "KB", "MB", "GB", "TB", "PB", "EB"
-            };
+    private static final String[] SIZE_UNITS = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
 
     /**
      * String hex = javax.xml.bind.DatatypeConverter.printHexBinary(checksum);<br>
@@ -83,8 +71,7 @@ public final class JSyncUtils
      * String hex = String.format("%02x", element);<br>
      * String hex = HexFormat.of().withUpperCase().formatHex(bytes)
      */
-    public static String bytesToHex(final byte[] bytes)
-    {
+    public static String bytesToHex(final byte[] bytes) {
         return HEX_FORMAT.formatHex(bytes);
 
         //        StringBuilder sb = new StringBuilder(bytes.length * 2);
@@ -101,21 +88,16 @@ public final class JSyncUtils
     /**
      * A {@link SocketChannel} will <strong>NOT</strong> be closed !
      */
-    public static void close(final Channel channel)
-    {
-        if ((channel != null) && channel.isOpen())
-        {
-            try
-            {
-                if (channel instanceof FileChannel fc)
-                {
+    public static void close(final Channel channel) {
+        if ((channel != null) && channel.isOpen()) {
+            try {
+                if (channel instanceof FileChannel fc) {
                     fc.force(false);
                 }
 
                 channel.close();
             }
-            catch (IOException ex)
-            {
+            catch (IOException ex) {
                 throw new UncheckedIOException(ex);
             }
         }
@@ -124,17 +106,13 @@ public final class JSyncUtils
     /**
      * A {@link SocketChannel} will <strong>NOT</strong> be closed !
      */
-    public static void closeSilently(final Closeable closeable)
-    {
-        try
-        {
-            if ((closeable != null) && !(closeable instanceof SocketChannel))
-            {
+    public static void closeSilently(final Closeable closeable) {
+        try {
+            if ((closeable != null) && !(closeable instanceof SocketChannel)) {
                 closeable.close();
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             // Ignore
         }
     }
@@ -142,10 +120,8 @@ public final class JSyncUtils
     /**
      * A Directory will be deleted rekursive.
      */
-    public static void delete(final Path path, final boolean followSymLinks) throws IOException
-    {
-        if (path == null)
-        {
+    public static void delete(final Path path, final boolean followSymLinks) throws IOException {
+        if (path == null) {
             throw new IllegalArgumentException("path required");
         }
 
@@ -154,43 +130,36 @@ public final class JSyncUtils
 
         LinkOption[] linkOptions = getLinkOptions(followSymLinks);
 
-        if (!Files.exists(path, linkOptions))
-        {
+        if (!Files.exists(path, linkOptions)) {
             return;
         }
 
         FileVisitOption[] fileVisitOptions = getFileVisitOptions(followSymLinks);
 
-        if (Files.isDirectory(path, linkOptions))
-        {
+        if (Files.isDirectory(path, linkOptions)) {
             Files.walkFileTree(path, Set.of(fileVisitOptions), Integer.MAX_VALUE, new FileVisitorDelete());
         }
-        else
-        {
+        else {
             Files.delete(path);
         }
     }
 
-    public static FileVisitOption[] getFileVisitOptions(final boolean followSymLinks)
-    {
+    public static FileVisitOption[] getFileVisitOptions(final boolean followSymLinks) {
         return followSymLinks ? FILEVISITOPTION_WITH_SYMLINKS : FILEVISITOPTION_NO_SYNLINKS;
     }
 
-    public static LinkOption[] getLinkOptions(final boolean followSymLinks)
-    {
+    public static LinkOption[] getLinkOptions(final boolean followSymLinks) {
         return followSymLinks ? LINKOPTION_WITH_SYMLINKS : LINKOPTION_NO_SYMLINKS;
     }
 
-    public static String getOsName()
-    {
+    public static String getOsName() {
         return System.getProperty("os.name");
     }
 
     /**
      * @return double 0.0 - 100.0
      */
-    public static double getPercent(final long value, final long max)
-    {
+    public static double getPercent(final long value, final long max) {
         double progress = getProgress(value, max);
 
         return progress * 100D;
@@ -199,10 +168,8 @@ public final class JSyncUtils
     /**
      * @return double 0.0 - 1.0
      */
-    public static double getProgress(final long value, final long max)
-    {
-        if ((value <= 0) || (value > max))
-        {
+    public static double getProgress(final long value, final long max) {
+        if ((value <= 0) || (value > max)) {
             // throw new IllegalArgumentException("invalid value: " + value);
             return 0.0D;
         }
@@ -213,8 +180,7 @@ public final class JSyncUtils
         // return Math.round(((double) value / (double) max) * 100) / 100D;
     }
 
-    public static byte[] hexToBytes(final CharSequence hexString)
-    {
+    public static byte[] hexToBytes(final CharSequence hexString) {
         return HEX_FORMAT.parseHex(hexString);
 
         //        if ((hexString.length() % 2) == 1)
@@ -240,22 +206,19 @@ public final class JSyncUtils
         //        return bytes;
     }
 
-    public static boolean isLinux()
-    {
+    public static boolean isLinux() {
         String os = getOsName().toLowerCase();
 
         return os.contains("linux");
     }
 
-    public static boolean isUnix()
-    {
+    public static boolean isUnix() {
         String os = getOsName().toLowerCase();
 
         return os.contains("nix") || os.contains("nux") || os.contains("aix");
     }
 
-    public static boolean isWindows()
-    {
+    public static boolean isWindows() {
         String os = getOsName().toLowerCase();
 
         return os.startsWith("win");
@@ -264,73 +227,59 @@ public final class JSyncUtils
     /**
      * Removed leading '//' and the final '/'.
      */
-    public static String normalizePath(final URI uri)
-    {
+    public static String normalizePath(final URI uri) {
         // String path = Paths.get(uri).toString();
         String path = uri.getPath();
 
-        if (path.startsWith("//"))
-        {
+        if (path.startsWith("//")) {
             path = path.substring(1);
         }
 
-        if (isWindows() && path.startsWith("/"))
-        {
+        if (isWindows() && path.startsWith("/")) {
             path = path.substring(1);
         }
 
-        if (path.endsWith("/"))
-        {
+        if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }
 
         return path;
     }
 
-    public static void shutdown(final AsynchronousChannelGroup channelGroup, final Logger logger)
-    {
+    public static void shutdown(final AsynchronousChannelGroup channelGroup, final Logger logger) {
         logger.info("shutdown AsynchronousChannelGroup");
 
-        if (channelGroup == null)
-        {
+        if (channelGroup == null) {
             return;
         }
 
         channelGroup.shutdown();
 
-        try
-        {
+        try {
             // Wait a while for existing tasks to terminate.
-            if (!channelGroup.awaitTermination(10, TimeUnit.SECONDS))
-            {
-                if (logger.isWarnEnabled())
-                {
+            if (!channelGroup.awaitTermination(10, TimeUnit.SECONDS)) {
+                if (logger.isWarnEnabled()) {
                     logger.warn("Timed out while waiting for channelGroup");
                 }
 
                 channelGroup.shutdownNow(); // Cancel currently executing tasks
 
                 // Wait a while for tasks to respond to being cancelled
-                if (!channelGroup.awaitTermination(5, TimeUnit.SECONDS))
-                {
+                if (!channelGroup.awaitTermination(5, TimeUnit.SECONDS)) {
                     logger.error("ChannelGroup did not terminate");
                 }
             }
         }
-        catch (InterruptedException | IOException ex)
-        {
-            if (logger.isWarnEnabled())
-            {
+        catch (InterruptedException | IOException ex) {
+            if (logger.isWarnEnabled()) {
                 logger.warn("Interrupted while waiting for ChannelGroup");
             }
 
             // (Re-)Cancel if current thread also interrupted
-            try
-            {
+            try {
                 channelGroup.shutdownNow();
             }
-            catch (IOException ex2)
-            {
+            catch (IOException ex2) {
                 logger.error("ChannelGroup did not terminate");
             }
 
@@ -339,12 +288,10 @@ public final class JSyncUtils
         }
     }
 
-    public static void shutdown(final ExecutorService executorService, final Logger logger)
-    {
+    public static void shutdown(final ExecutorService executorService, final Logger logger) {
         logger.info("shutdown ExecutorService");
 
-        if (executorService == null)
-        {
+        if (executorService == null) {
             logger.warn("ExecutorService is null");
 
             return;
@@ -352,39 +299,31 @@ public final class JSyncUtils
 
         executorService.shutdown();
 
-        try
-        {
+        try {
             // Wait a while for existing tasks to terminate.
-            if (!executorService.awaitTermination(10, TimeUnit.SECONDS))
-            {
+            if (!executorService.awaitTermination(10, TimeUnit.SECONDS)) {
                 logger.warn("Timed out while waiting for ExecutorService");
 
                 // Cancel currently executing tasks.
-                for (Runnable remainingTask : executorService.shutdownNow())
-                {
-                    if (remainingTask instanceof Future<?> f)
-                    {
+                for (Runnable remainingTask : executorService.shutdownNow()) {
+                    if (remainingTask instanceof Future<?> f) {
                         f.cancel(true);
                     }
                 }
 
                 // Wait a while for tasks to respond to being cancelled.
-                if (!executorService.awaitTermination(5, TimeUnit.SECONDS))
-                {
+                if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
                     logger.error("ExecutorService did not terminate");
                 }
-                else
-                {
+                else {
                     logger.info("ExecutorService terminated");
                 }
             }
-            else
-            {
+            else {
                 logger.info("ExecutorService terminated");
             }
         }
-        catch (InterruptedException iex)
-        {
+        catch (InterruptedException iex) {
             logger.warn("Interrupted while waiting for ExecutorService");
 
             // (Re-)Cancel if current thread also interrupted
@@ -395,14 +334,11 @@ public final class JSyncUtils
         }
     }
 
-    public static void sleep(final TimeUnit timeUnit, final long timeout)
-    {
-        try
-        {
+    public static void sleep(final TimeUnit timeUnit, final long timeout) {
+        try {
             timeUnit.sleep(timeout);
         }
-        catch (InterruptedException ex)
-        {
+        catch (InterruptedException ex) {
             // Empty
         }
     }
@@ -410,10 +346,8 @@ public final class JSyncUtils
     /**
      * Split by ';' or ',' to build a Set for the {@link PathFilter}.
      */
-    public static Set<String> toFilter(final String value)
-    {
-        if ((value == null) || value.isBlank())
-        {
+    public static Set<String> toFilter(final String value) {
+        if ((value == null) || value.isBlank()) {
             return Collections.emptySet();
         }
 
@@ -425,12 +359,10 @@ public final class JSyncUtils
     /**
      * @return String, z.B. '___,___ MB'
      */
-    public static String toHumanReadableSize(final long size)
-    {
+    public static String toHumanReadableSize(final long size) {
         int unitIndex = 0;
 
-        if (size > 0)
-        {
+        if (size > 0) {
             unitIndex = (int) (Math.log10(size) / 3);
         }
 
@@ -496,8 +428,7 @@ public final class JSyncUtils
         // return String.format("%.1f %cB", value, ci.previous());
     }
 
-    private JSyncUtils()
-    {
+    private JSyncUtils() {
         super();
     }
 }

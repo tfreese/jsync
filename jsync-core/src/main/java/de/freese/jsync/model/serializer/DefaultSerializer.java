@@ -40,20 +40,16 @@ import de.freese.jsync.model.serializer.objectserializer.impl.UserSerializer;
  *
  * @author Thomas Freese
  */
-public final class DefaultSerializer<W, R> implements Serializer<W, R>, SerializerRegistry
-{
-    public static <W, R> Serializer<W, R> of(final DataAdapter<W, R> adapter)
-    {
+public final class DefaultSerializer<W, R> implements Serializer<W, R>, SerializerRegistry {
+    public static <W, R> Serializer<W, R> of(final DataAdapter<W, R> adapter) {
         return new DefaultSerializer<>(adapter);
     }
 
-    public static Serializer<ByteBuffer, ByteBuffer> ofByteBuffer()
-    {
+    public static Serializer<ByteBuffer, ByteBuffer> ofByteBuffer() {
         return of(new ByteBufferAdapter());
     }
 
-    public static Serializer<OutputStream, InputStream> ofInputOutputStream()
-    {
+    public static Serializer<OutputStream, InputStream> ofInputOutputStream() {
         return of(new InputOutputStreamAdapter());
     }
 
@@ -61,8 +57,7 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
 
     private final Map<Class<?>, ObjectSerializer<?>> serializerMap = new HashMap<>();
 
-    private DefaultSerializer(final DataAdapter<W, R> adapter)
-    {
+    private DefaultSerializer(final DataAdapter<W, R> adapter) {
         super();
 
         this.adapter = Objects.requireNonNull(adapter, "adapter required");
@@ -97,18 +92,14 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> ObjectSerializer<T> getSerializer(final Class<T> type)
-    {
+    public <T> ObjectSerializer<T> getSerializer(final Class<T> type) {
         ObjectSerializer<T> serializer = (ObjectSerializer<T>) this.serializerMap.get(type);
 
-        if (serializer == null)
-        {
-            for (Class<?> ifc : type.getInterfaces())
-            {
+        if (serializer == null) {
+            for (Class<?> ifc : type.getInterfaces()) {
                 serializer = (ObjectSerializer<T>) this.serializerMap.get(ifc);
 
-                if (serializer != null)
-                {
+                if (serializer != null) {
                     break;
                 }
             }
@@ -118,22 +109,19 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
     }
 
     @Override
-    public <T> T readFrom(final R source, final Class<T> type)
-    {
+    public <T> T readFrom(final R source, final Class<T> type) {
         ObjectSerializer<T> serializer = getSerializer(type);
 
         return serializer.readFrom(this, this.adapter, source);
     }
 
     @Override
-    public <T> void register(final Class<T> type, final ObjectSerializer<? super T> serializer)
-    {
+    public <T> void register(final Class<T> type, final ObjectSerializer<? super T> serializer) {
         this.serializerMap.put(type, serializer);
     }
 
     @Override
-    public <T> void writeTo(final W sink, final T value, final Class<T> type)
-    {
+    public <T> void writeTo(final W sink, final T value, final Class<T> type) {
         ObjectSerializer<T> serializer = getSerializer(type);
 
         serializer.writeTo(this, this.adapter, sink, value);

@@ -4,19 +4,19 @@ package de.freese.jsync.filesystem;
 import java.nio.charset.Charset;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.generator.Generator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Basis-Implementierung des {@link FileSystem}.
  *
  * @author Thomas Freese
  */
-public abstract class AbstractFileSystem implements FileSystem
-{
+public abstract class AbstractFileSystem implements FileSystem {
     /**
      * -? – this part identifies if the given number is negative<br>
      * the dash “–” searches for dash literally<br>
@@ -32,18 +32,15 @@ public abstract class AbstractFileSystem implements FileSystem
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected Charset getCharset()
-    {
+    protected Charset getCharset() {
         return Options.CHARSET;
     }
 
-    protected Generator getGenerator()
-    {
+    protected Generator getGenerator() {
         return this.generator;
     }
 
-    protected Logger getLogger()
-    {
+    protected Logger getLogger() {
         return this.logger;
     }
 }

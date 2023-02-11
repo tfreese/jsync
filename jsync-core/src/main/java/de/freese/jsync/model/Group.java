@@ -6,8 +6,7 @@ import java.util.Objects;
 /**
  * @author Thomas Freese
  */
-public class Group
-{
+public class Group {
     public static final int ID_MAX = 65535;
 
     public static final Group NOBODY = new Group("nobody", ID_MAX - 1);
@@ -20,8 +19,7 @@ public class Group
 
     private final String name;
 
-    public Group(final String name, final int gid)
-    {
+    public Group(final String name, final int gid) {
         super();
 
         this.name = Objects.requireNonNull(name, "name required");
@@ -32,28 +30,23 @@ public class Group
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    public boolean equals(final Object obj)
-    {
-        if (this == obj)
-        {
+    public boolean equals(final Object obj) {
+        if (this == obj) {
             return true;
         }
 
-        if (!(obj instanceof Group other))
-        {
+        if (!(obj instanceof Group other)) {
             return false;
         }
 
         return (this.gid == other.gid) && Objects.equals(this.name, other.name);
     }
 
-    public int getGid()
-    {
+    public int getGid() {
         return this.gid;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return this.name;
     }
 
@@ -61,8 +54,7 @@ public class Group
      * @see java.lang.Object#hashCode()
      */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(this.gid, this.name);
     }
 
@@ -70,8 +62,7 @@ public class Group
      * @see Object#toString()
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(" [");
         sb.append("gid=").append(this.gid);

@@ -9,10 +9,8 @@ import de.freese.jsync.utils.pool.Pool;
 /**
  * @author Thomas Freese
  */
-class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBufferPool
-{
-    SoftReferenceByteBufferPool()
-    {
+class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBufferPool {
+    SoftReferenceByteBufferPool() {
         super(true, true);
     }
 
@@ -20,8 +18,7 @@ class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBuffer
      * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get()
      */
     @Override
-    public ByteBuffer get()
-    {
+    public ByteBuffer get() {
         return obtain();
     }
 
@@ -29,8 +26,7 @@ class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBuffer
      * @see java.lang.Object#toString()
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(":");
         sb.append(" created=").append(getCreated());
@@ -44,8 +40,7 @@ class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBuffer
      * @see de.freese.jsync.utils.pool.Pool#create()
      */
     @Override
-    protected ByteBuffer create()
-    {
+    protected ByteBuffer create() {
         return ByteBuffer.allocate(Options.BUFFER_SIZE);
     }
 }

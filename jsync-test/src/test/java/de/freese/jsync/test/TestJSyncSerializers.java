@@ -12,6 +12,14 @@ import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.filter.PathFilterEndsWith;
 import de.freese.jsync.model.DefaultSyncItem;
@@ -23,88 +31,69 @@ import de.freese.jsync.model.serializer.Serializer;
 import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.model.serializer.adapter.impl.InputOutputStreamAdapter;
 import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.UnpooledByteBufAllocator;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * @author Thomas Freese
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
-class TestJSyncSerializers
-{
+class TestJSyncSerializers {
     private static final int BUFFER_SIZE = 1024 * 16;
 
-    private static final DataHolder DATA_HOLDER_BYTE_BUF = new DataHolder()
-    {
+    private static final DataHolder DATA_HOLDER_BYTE_BUF = new DataHolder() {
         private static final ByteBuf BYTE_BUF = UnpooledByteBufAllocator.DEFAULT.buffer(BUFFER_SIZE);
 
         @Override
-        public Object getSink()
-        {
+        public Object getSink() {
             BYTE_BUF.clear();
 
             return BYTE_BUF;
         }
 
         @Override
-        public Object getSource()
-        {
+        public Object getSource() {
             return BYTE_BUF;
         }
     };
-    private static final DataHolder DATA_HOLDER_BYTE_BUFFER = new DataHolder()
-    {
+    private static final DataHolder DATA_HOLDER_BYTE_BUFFER = new DataHolder() {
         private static final ByteBuffer BYTE_BUFFER = ByteBuffer.allocate(BUFFER_SIZE);
 
         @Override
-        public Object getSink()
-        {
+        public Object getSink() {
             BYTE_BUFFER.clear();
 
             return BYTE_BUFFER;
         }
 
         @Override
-        public Object getSource()
-        {
+        public Object getSource() {
             BYTE_BUFFER.flip();
 
             return BYTE_BUFFER;
         }
     };
-    private static final DataHolder DATA_HOLDER_OUTPUT_INPUT_STREAM = new DataHolder()
-    {
+    private static final DataHolder DATA_HOLDER_OUTPUT_INPUT_STREAM = new DataHolder() {
         private ByteArrayOutputStream baos;
 
         @Override
-        public Object getSink()
-        {
+        public Object getSink() {
             baos = new ByteArrayOutputStream(BUFFER_SIZE);
 
             return baos;
         }
 
         @Override
-        public Object getSource()
-        {
+        public Object getSource() {
             return new ByteArrayInputStream(baos.toByteArray());
         }
     };
 
-    private interface DataHolder
-    {
+    private interface DataHolder {
         Object getSink();
 
         Object getSource();
     }
 
-    static Stream<Arguments> createArguments()
-    {
+    static Stream<Arguments> createArguments() {
         // @formatter:off
         return Stream.of(
                 Arguments.of("ByteBufferAdapter", DefaultSerializer.of(new ByteBufferAdapter()), DATA_HOLDER_BYTE_BUFFER)
@@ -116,8 +105,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testBoolean(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testBoolean(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Boolean.class);
@@ -133,8 +121,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testDouble(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testDouble(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Double.class);
@@ -148,8 +135,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testException(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testException(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         Exception exception1 = new UnsupportedOperationException("Test Fail");
@@ -166,8 +152,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testFloat(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testFloat(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Float.class);
@@ -181,8 +166,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testGroup(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testGroup(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         Group group1 = new Group("TestGroupA", 41);
@@ -204,8 +188,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testInteger(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testInteger(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Integer.class);
@@ -219,8 +202,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testLong(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testLong(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Long.class);
@@ -234,8 +216,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testPathFilter(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testPathFilter(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         Set<String> directoryFiltersOrigin = Set.of("a", "b");
@@ -254,8 +235,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testString(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testString(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, String.class);
@@ -271,8 +251,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testSyncItem(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testSyncItem(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         SyncItem syncItem1 = new DefaultSyncItem("/");
@@ -327,8 +306,7 @@ class TestJSyncSerializers
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
-    void testUser(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder)
-    {
+    void testUser(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
         Object sink = dataHolder.getSink();
 
         User user1 = new User("TestUserA", 41);

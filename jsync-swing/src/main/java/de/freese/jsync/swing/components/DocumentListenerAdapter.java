@@ -7,14 +7,12 @@ import javax.swing.event.DocumentListener;
 /**
  * @author Thomas Freese
  */
-public class DocumentListenerAdapter implements DocumentListener
-{
+public class DocumentListenerAdapter implements DocumentListener {
     /**
      * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
      */
     @Override
-    public void changedUpdate(final DocumentEvent event)
-    {
+    public void changedUpdate(final DocumentEvent event) {
         // Empty
     }
 
@@ -22,8 +20,7 @@ public class DocumentListenerAdapter implements DocumentListener
      * @see javax.swing.event.DocumentListener#insertUpdate(javax.swing.event.DocumentEvent)
      */
     @Override
-    public void insertUpdate(final DocumentEvent event)
-    {
+    public void insertUpdate(final DocumentEvent event) {
         // Empty
     }
 
@@ -31,8 +28,7 @@ public class DocumentListenerAdapter implements DocumentListener
      * @see javax.swing.event.DocumentListener#removeUpdate(javax.swing.event.DocumentEvent)
      */
     @Override
-    public void removeUpdate(final DocumentEvent event)
-    {
+    public void removeUpdate(final DocumentEvent event) {
         // Empty
     }
 }

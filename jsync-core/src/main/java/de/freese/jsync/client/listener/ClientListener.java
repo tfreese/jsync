@@ -9,8 +9,7 @@ import de.freese.jsync.model.SyncItem;
 /**
  * @author Thomas Freese
  */
-public interface ClientListener extends EventListener
-{
+public interface ClientListener extends EventListener {
     void checksumProgress(Options options, SyncItem syncItem, long bytesRead);
 
     void copyProgress(Options options, SyncItem syncItem, long bytesTransferred);

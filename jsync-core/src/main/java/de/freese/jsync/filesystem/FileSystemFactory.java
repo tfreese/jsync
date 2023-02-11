@@ -15,45 +15,37 @@ import de.freese.jsync.model.JSyncProtocol;
 /**
  * @author Thomas Freese
  */
-public final class FileSystemFactory
-{
+public final class FileSystemFactory {
     /**
      * ThreadSafe Singleton-Pattern.
      *
      * @author Thomas Freese
      */
-    private static final class FileSystemFactoryHolder
-    {
+    private static final class FileSystemFactoryHolder {
         private static final FileSystemFactory INSTANCE = new FileSystemFactory();
 
-        private FileSystemFactoryHolder()
-        {
+        private FileSystemFactoryHolder() {
             super();
         }
     }
 
-    public static FileSystemFactory getInstance()
-    {
+    public static FileSystemFactory getInstance() {
         return FileSystemFactoryHolder.INSTANCE;
     }
 
     private final ServiceLoader<FileSystemProvider> serviceLoader = ServiceLoader.load(FileSystemProvider.class);
 
-    private FileSystemFactory()
-    {
+    private FileSystemFactory() {
         super();
     }
 
-    public Receiver createReceiver(final URI uri)
-    {
+    public Receiver createReceiver(final URI uri) {
         Objects.requireNonNull(uri, "uri required");
 
         String scheme = uri.getScheme();
 
-        for (FileSystemProvider provider : this.serviceLoader)
-        {
-            if (provider.supportsProtocol(scheme))
-            {
+        for (FileSystemProvider provider : this.serviceLoader) {
+            if (provider.supportsProtocol(scheme)) {
                 return new ReceiverDelegateLogger(provider.createReceiver(uri));
             }
         }
@@ -61,16 +53,13 @@ public final class FileSystemFactory
         throw new IllegalArgumentException("unsupported protocol: " + uri.getScheme());
     }
 
-    public Sender createSender(final URI uri)
-    {
+    public Sender createSender(final URI uri) {
         Objects.requireNonNull(uri, "uri required");
 
         String scheme = uri.getScheme();
 
-        for (FileSystemProvider provider : this.serviceLoader)
-        {
-            if (provider.supportsProtocol(scheme))
-            {
+        for (FileSystemProvider provider : this.serviceLoader) {
+            if (provider.supportsProtocol(scheme)) {
                 return new SenderDelegateLogger(provider.createSender(uri));
             }
         }
@@ -78,18 +67,14 @@ public final class FileSystemFactory
         throw new IllegalArgumentException("unsupported protocol: " + uri.getScheme());
     }
 
-    public List<JSyncProtocol> getAvailableProtocols()
-    {
+    public List<JSyncProtocol> getAvailableProtocols() {
         List<JSyncProtocol> protocols = List.of(JSyncProtocol.values());
 
         Set<JSyncProtocol> availableProtocols = new HashSet<>();
 
-        for (FileSystemProvider provider : this.serviceLoader)
-        {
-            for (JSyncProtocol protocol : protocols)
-            {
-                if (provider.supportsProtocol(protocol.getScheme()))
-                {
+        for (FileSystemProvider provider : this.serviceLoader) {
+            for (JSyncProtocol protocol : protocols) {
+                if (provider.supportsProtocol(protocol.getScheme())) {
                     availableProtocols.add(protocol);
                 }
             }

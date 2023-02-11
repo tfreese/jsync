@@ -11,23 +11,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.filter.PathFilterEndsWith;
 import de.freese.jsync.filter.PathFilterNoOp;
 import de.freese.jsync.generator.DefaultGenerator;
 import de.freese.jsync.model.SyncItem;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 
 /**
  * @author Thomas Freese
  */
-class TestJSyncGenerator extends AbstractJSyncIoTest
-{
+class TestJSyncGenerator extends AbstractJSyncIoTest {
     @Test
     @Order(40)
-    void testFileAttributes() throws Exception
-    {
+    void testFileAttributes() throws Exception {
         System.out.println();
 
         // @formatter:off
@@ -63,8 +62,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
 
     @Test
     @Order(30)
-    void testFilter() throws Exception
-    {
+    void testFilter() throws Exception {
         System.out.println();
 
         PathFilter filter = new PathFilterEndsWith(Set.of("src", "target", ".settings"), Set.of(".classpath", ".project"));
@@ -89,8 +87,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
 
     @Test
     @Order(10)
-    void testGeneratorQuelle() throws Exception
-    {
+    void testGeneratorQuelle() throws Exception {
         System.out.println();
 
         Path base = PATH_QUELLE;
@@ -109,8 +106,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest
 
     @Test
     @Order(20)
-    void testGeneratorZiel() throws Exception
-    {
+    void testGeneratorZiel() throws Exception {
         System.out.println();
 
         Path base = PATH_ZIEL;

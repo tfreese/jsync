@@ -4,8 +4,7 @@ package de.freese.jsync.filesystem;
 /**
  * @author Thomas Freese
  */
-public enum EFileSystem
-{
+public enum EFileSystem {
     RECEIVER,
 
     SENDER

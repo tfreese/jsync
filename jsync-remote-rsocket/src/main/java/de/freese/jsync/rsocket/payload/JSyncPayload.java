@@ -3,15 +3,16 @@ package de.freese.jsync.rsocket.payload;
 
 import java.nio.ByteBuffer;
 
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
-import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.Payload;
 import io.rsocket.util.DefaultPayload;
 import reactor.util.annotation.Nullable;
+
+import de.freese.jsync.model.serializer.DefaultSerializer;
+import de.freese.jsync.model.serializer.Serializer;
+import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * {@link DefaultPayload} with a {@link ByteBufferPool}.
@@ -20,24 +21,20 @@ import reactor.util.annotation.Nullable;
  * @deprecated Does not work
  */
 @Deprecated
-final class JSyncPayload implements Payload
-{
+final class JSyncPayload implements Payload {
     private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
 
     private static final Serializer<ByteBuffer, ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
-    public static Payload create(final ByteBuffer data)
-    {
+    public static Payload create(final ByteBuffer data) {
         return create(data, null);
     }
 
-    public static Payload create(final ByteBuffer data, @Nullable final ByteBuffer metadata)
-    {
+    public static Payload create(final ByteBuffer data, @Nullable final ByteBuffer metadata) {
         return new JSyncPayload(data, metadata);
     }
 
-    public static Payload create(final CharSequence data)
-    {
+    public static Payload create(final CharSequence data) {
         ByteBuffer buffer = BYTE_BUFFER_POOL.get();
         SERIALIZER.writeTo(buffer, data.toString());
         buffer.flip();
@@ -49,8 +46,7 @@ final class JSyncPayload implements Payload
 
     private final ByteBuffer metadata;
 
-    private JSyncPayload(final ByteBuffer data, final ByteBuffer metadata)
-    {
+    private JSyncPayload(final ByteBuffer data, final ByteBuffer metadata) {
         super();
 
         this.data = data;
@@ -61,8 +57,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#data()
      */
     @Override
-    public ByteBuf data()
-    {
+    public ByteBuf data() {
         return sliceData();
     }
 
@@ -70,8 +65,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#getData()
      */
     @Override
-    public ByteBuffer getData()
-    {
+    public ByteBuffer getData() {
         return this.data.duplicate();
     }
 
@@ -79,8 +73,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#getMetadata()
      */
     @Override
-    public ByteBuffer getMetadata()
-    {
+    public ByteBuffer getMetadata() {
         return this.metadata == null ? DefaultPayload.EMPTY_BUFFER : this.metadata.duplicate();
     }
 
@@ -88,8 +81,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#hasMetadata()
      */
     @Override
-    public boolean hasMetadata()
-    {
+    public boolean hasMetadata() {
         return this.metadata != null;
     }
 
@@ -97,8 +89,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#metadata()
      */
     @Override
-    public ByteBuf metadata()
-    {
+    public ByteBuf metadata() {
         return sliceMetadata();
     }
 
@@ -106,8 +97,7 @@ final class JSyncPayload implements Payload
      * @see io.netty.util.ReferenceCounted#refCnt()
      */
     @Override
-    public int refCnt()
-    {
+    public int refCnt() {
         return 1;
     }
 
@@ -115,15 +105,12 @@ final class JSyncPayload implements Payload
      * @see io.netty.util.ReferenceCounted#release()
      */
     @Override
-    public boolean release()
-    {
-        if (this.data != DefaultPayload.EMPTY_BUFFER)
-        {
+    public boolean release() {
+        if (this.data != DefaultPayload.EMPTY_BUFFER) {
             BYTE_BUFFER_POOL.free(this.data);
         }
 
-        if ((this.metadata != null) && (this.metadata != DefaultPayload.EMPTY_BUFFER))
-        {
+        if ((this.metadata != null) && (this.metadata != DefaultPayload.EMPTY_BUFFER)) {
             BYTE_BUFFER_POOL.free(this.metadata);
         }
 
@@ -134,8 +121,7 @@ final class JSyncPayload implements Payload
      * @see io.netty.util.ReferenceCounted#release(int)
      */
     @Override
-    public boolean release(final int decrement)
-    {
+    public boolean release(final int decrement) {
         return false;
     }
 
@@ -143,8 +129,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#retain()
      */
     @Override
-    public Payload retain()
-    {
+    public Payload retain() {
         return this;
     }
 
@@ -152,8 +137,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#retain(int)
      */
     @Override
-    public Payload retain(final int increment)
-    {
+    public Payload retain(final int increment) {
         return this;
     }
 
@@ -161,8 +145,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#sliceData()
      */
     @Override
-    public ByteBuf sliceData()
-    {
+    public ByteBuf sliceData() {
         return Unpooled.wrappedBuffer(this.data);
     }
 
@@ -170,8 +153,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#sliceMetadata()
      */
     @Override
-    public ByteBuf sliceMetadata()
-    {
+    public ByteBuf sliceMetadata() {
         return this.metadata == null ? Unpooled.EMPTY_BUFFER : Unpooled.wrappedBuffer(this.metadata);
     }
 
@@ -179,8 +161,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#touch()
      */
     @Override
-    public Payload touch()
-    {
+    public Payload touch() {
         return this;
     }
 
@@ -188,8 +169,7 @@ final class JSyncPayload implements Payload
      * @see io.rsocket.Payload#touch(java.lang.Object)
      */
     @Override
-    public Payload touch(final Object hint)
-    {
+    public Payload touch(final Object hint) {
         return this;
     }
 }

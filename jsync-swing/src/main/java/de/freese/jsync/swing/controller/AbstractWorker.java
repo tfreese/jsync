@@ -10,14 +10,15 @@ import java.util.concurrent.ExecutorService;
 
 import javax.swing.SwingWorker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.swing.JSyncContext;
 import de.freese.jsync.swing.view.SyncView;
 import de.freese.jsync.utils.JSyncUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @param <T> Result-Type
@@ -25,25 +26,22 @@ import org.slf4j.LoggerFactory;
  *
  * @author Thomas Freese
  */
-public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
-{
-    protected static ExecutorService getExecutorService()
-    {
+public abstract class AbstractWorker<T, V> extends SwingWorker<T, V> {
+    protected static ExecutorService getExecutorService() {
         return JSyncContext.getExecutorService();
     }
 
-    protected static String getMessage(final String key)
-    {
+    protected static String getMessage(final String key) {
         return JSyncContext.getMessages().getString(key);
     }
+
     private final JSyncController controller;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Options options;
 
     private final boolean parallel;
 
-    protected AbstractWorker(final JSyncController controller)
-    {
+    protected AbstractWorker(final JSyncController controller) {
         super();
 
         this.controller = controller;
@@ -63,46 +61,37 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
      * - Sender and Receiver are not on the same File-Device<br>
      * - Sender and Receiver are not on the same Server<br>
      */
-    boolean canRunParallel(final URI senderUri, final URI receiverUri)
-    {
+    boolean canRunParallel(final URI senderUri, final URI receiverUri) {
         boolean canRunParallel = false;
 
-        if ("file".equals(senderUri.getScheme()) && "file".equals(receiverUri.getScheme()))
-        {
+        if ("file".equals(senderUri.getScheme()) && "file".equals(receiverUri.getScheme())) {
             // Local
-            try
-            {
+            try {
                 FileStore fileStoreSender = Files.getFileStore(Paths.get(senderUri));
 
                 Path receiverPath = Paths.get(receiverUri);
 
-                if (Files.notExists(receiverPath, JSyncUtils.getLinkOptions(getOptions().isFollowSymLinks())))
-                {
+                if (Files.notExists(receiverPath, JSyncUtils.getLinkOptions(getOptions().isFollowSymLinks()))) {
                     receiverPath = receiverPath.getParent();
                 }
 
                 FileStore fileStoreReceiver = Files.getFileStore(receiverPath);
 
-                if (!fileStoreSender.name().equals(fileStoreReceiver.name()))
-                {
+                if (!fileStoreSender.name().equals(fileStoreReceiver.name())) {
                     canRunParallel = true;
                 }
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 // Empty
             }
         }
-        else if ("rsocket".equals(senderUri.getScheme()) && "rsocket".equals(receiverUri.getScheme()))
-        {
+        else if ("rsocket".equals(senderUri.getScheme()) && "rsocket".equals(receiverUri.getScheme())) {
             // Remote
-            if (!senderUri.getHost().equals(receiverUri.getHost()))
-            {
+            if (!senderUri.getHost().equals(receiverUri.getHost())) {
                 canRunParallel = true;
             }
         }
-        else if (!senderUri.getScheme().equals(receiverUri.getScheme()))
-        {
+        else if (!senderUri.getScheme().equals(receiverUri.getScheme())) {
             // Local -> Remote
             // Remote -> Lokal
             canRunParallel = true;
@@ -113,33 +102,27 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V>
         return canRunParallel;
     }
 
-    protected Client getClient()
-    {
+    protected Client getClient() {
         return getController().getClient();
     }
 
-    protected JSyncController getController()
-    {
+    protected JSyncController getController() {
         return this.controller;
     }
 
-    protected Logger getLogger()
-    {
+    protected Logger getLogger() {
         return this.logger;
     }
 
-    protected Options getOptions()
-    {
+    protected Options getOptions() {
         return this.options;
     }
 
-    protected SyncView getSyncView()
-    {
+    protected SyncView getSyncView() {
         return getController().getSyncView();
     }
 
-    protected boolean isParallel()
-    {
+    protected boolean isParallel() {
         return this.parallel;
     }
 }

@@ -14,40 +14,32 @@ import de.freese.jsync.rsocket.builder.server.RSocketServerRemoteBuilder;
  *
  * @author Thomas Freese
  */
-public final class RSocketBuilders
-{
-    public static RSocketClientLocalBuilder clientLocal()
-    {
+public final class RSocketBuilders {
+    public static RSocketClientLocalBuilder clientLocal() {
         return new RSocketClientLocalBuilder();
     }
 
-    public static RSocketClientRemoteBuilder clientRemote()
-    {
+    public static RSocketClientRemoteBuilder clientRemote() {
         return new RSocketClientRemoteBuilder();
     }
 
-    public static RSocketClientRemoteLoadBalancedBuilder clientRemoteLoadBalanced()
-    {
+    public static RSocketClientRemoteLoadBalancedBuilder clientRemoteLoadBalanced() {
         return new RSocketClientRemoteLoadBalancedBuilder();
     }
 
-    public static RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder clientRemoteLoadBalancedWithServiceDiscovery()
-    {
+    public static RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder clientRemoteLoadBalancedWithServiceDiscovery() {
         return new RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder();
     }
 
-    public static RSocketServerLocalBuilder serverLocal()
-    {
+    public static RSocketServerLocalBuilder serverLocal() {
         return new RSocketServerLocalBuilder();
     }
 
-    public static RSocketServerRemoteBuilder serverRemote()
-    {
+    public static RSocketServerRemoteBuilder serverRemote() {
         return new RSocketServerRemoteBuilder();
     }
 
-    private RSocketBuilders()
-    {
+    private RSocketBuilders() {
         super();
     }
 }

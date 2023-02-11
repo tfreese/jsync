@@ -13,16 +13,14 @@ import reactor.core.publisher.Mono;
 /**
  * @author Thomas Freese
  */
-public class RSocketClientLocalBuilder extends AbstractRSocketClientBuilder<RSocketClientLocalBuilder>
-{
+public class RSocketClientLocalBuilder extends AbstractRSocketClientBuilder<RSocketClientLocalBuilder> {
     private String name;
 
     /**
      * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
      */
     @Override
-    public RSocketClient build()
-    {
+    public RSocketClient build() {
         Objects.requireNonNull(this.name, "name required");
 
         RSocketConnector rSocketConnector = configure(RSocketConnector.create());
@@ -34,8 +32,7 @@ public class RSocketClientLocalBuilder extends AbstractRSocketClientBuilder<RSoc
         return RSocketClient.from(rSocket);
     }
 
-    public RSocketClientLocalBuilder name(final String name)
-    {
+    public RSocketClientLocalBuilder name(final String name) {
         this.name = Objects.requireNonNull(name, "name required");
 
         return this;

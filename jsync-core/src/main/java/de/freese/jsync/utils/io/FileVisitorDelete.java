@@ -14,22 +14,18 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Thomas Freese
  */
-public class FileVisitorDelete extends SimpleFileVisitor<Path>
-{
+public class FileVisitorDelete extends SimpleFileVisitor<Path> {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileVisitorDelete.class);
 
     /**
      * @see java.nio.file.SimpleFileVisitor#postVisitDirectory(java.lang.Object, java.io.IOException)
      */
     @Override
-    public FileVisitResult postVisitDirectory(final Path dir, final IOException ex) throws IOException
-    {
-        if (ex != null)
-        {
+    public FileVisitResult postVisitDirectory(final Path dir, final IOException ex) throws IOException {
+        if (ex != null) {
             LOGGER.error(dir.toString(), ex);
         }
-        else
-        {
+        else {
             Files.delete(dir);
         }
 
@@ -40,8 +36,7 @@ public class FileVisitorDelete extends SimpleFileVisitor<Path>
      * @see java.nio.file.SimpleFileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
      */
     @Override
-    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
-    {
+    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
         Files.delete(file);
 
         return FileVisitResult.CONTINUE;

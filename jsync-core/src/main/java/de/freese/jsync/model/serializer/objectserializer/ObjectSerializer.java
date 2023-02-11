@@ -12,10 +12,8 @@ import de.freese.jsync.model.serializer.adapter.DataAdapter;
  *
  * @author Thomas Freese
  */
-public interface ObjectSerializer<T>
-{
-    default Charset getCharset()
-    {
+public interface ObjectSerializer<T> {
+    default Charset getCharset() {
         return Options.CHARSET;
     }
 

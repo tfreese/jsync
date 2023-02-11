@@ -6,8 +6,7 @@ import java.net.URI;
 /**
  * @author Thomas Freese
  */
-public interface FileSystemProvider
-{
+public interface FileSystemProvider {
     Receiver createReceiver(URI uri);
 
     Sender createSender(URI uri);

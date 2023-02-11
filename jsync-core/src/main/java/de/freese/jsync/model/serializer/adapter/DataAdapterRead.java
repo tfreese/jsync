@@ -8,17 +8,13 @@ import java.nio.charset.Charset;
  *
  * @author Thomas Freese
  */
-public interface DataAdapterRead<R>
-{
-    default boolean readBoolean(final R source)
-    {
+public interface DataAdapterRead<R> {
+    default boolean readBoolean(final R source) {
         return readByte(source) == 1;
     }
 
-    default Boolean readBooleanWrapper(final R source)
-    {
-        if (readByte(source) == 0)
-        {
+    default Boolean readBooleanWrapper(final R source) {
+        if (readByte(source) == 0) {
             return null;
         }
 
@@ -29,42 +25,35 @@ public interface DataAdapterRead<R>
 
     byte[] readBytes(R source, int length);
 
-    default double readDouble(R source)
-    {
+    default double readDouble(R source) {
         long longValue = readLong(source);
 
         return Double.longBitsToDouble(longValue);
     }
 
-    default Double readDoubleWrapper(final R source)
-    {
-        if (readByte(source) == 0)
-        {
+    default Double readDoubleWrapper(final R source) {
+        if (readByte(source) == 0) {
             return null;
         }
 
         return readDouble(source);
     }
 
-    default float readFloat(R source)
-    {
+    default float readFloat(R source) {
         int intValue = readInteger(source);
 
         return Float.intBitsToFloat(intValue);
     }
 
-    default Float readFloatWrapper(final R source)
-    {
-        if (readByte(source) == 0)
-        {
+    default Float readFloatWrapper(final R source) {
+        if (readByte(source) == 0) {
             return null;
         }
 
         return readFloat(source);
     }
 
-    default int readInteger(R source)
-    {
+    default int readInteger(R source) {
         byte[] bytes = readBytes(source, 4);
 
         // @formatter:off
@@ -76,18 +65,15 @@ public interface DataAdapterRead<R>
        // @formatter:on
     }
 
-    default Integer readIntegerWrapper(final R source)
-    {
-        if (readByte(source) == 0)
-        {
+    default Integer readIntegerWrapper(final R source) {
+        if (readByte(source) == 0) {
             return null;
         }
 
         return readInteger(source);
     }
 
-    default long readLong(R source)
-    {
+    default long readLong(R source) {
         byte[] bytes = readBytes(source, 8);
 
         // @formatter:off
@@ -103,26 +89,21 @@ public interface DataAdapterRead<R>
         // @formatter:on
     }
 
-    default Long readLongWrapper(final R source)
-    {
-        if (readByte(source) == 0)
-        {
+    default Long readLongWrapper(final R source) {
+        if (readByte(source) == 0) {
             return null;
         }
 
         return readLong(source);
     }
 
-    default String readString(final R source, final Charset charset)
-    {
+    default String readString(final R source, final Charset charset) {
         int length = readInteger(source);
 
-        if (length == -1)
-        {
+        if (length == -1) {
             return null;
         }
-        else if (length == 0)
-        {
+        else if (length == 0) {
             return "";
         }
 

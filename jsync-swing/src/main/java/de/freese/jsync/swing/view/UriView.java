@@ -20,8 +20,7 @@ import de.freese.jsync.swing.util.GbcBuilder;
 /**
  * @author Thomas Freese
  */
-class UriView extends AbstractView
-{
+class UriView extends AbstractView {
     private final JPanel panel = new JPanel();
     private JButton buttonOpen;
     private JComboBox<JSyncProtocol> comboBoxProtocol;
@@ -29,13 +28,11 @@ class UriView extends AbstractView
 
     private JTextField textFieldPath;
 
-    JButton getButtonOpen()
-    {
+    JButton getButtonOpen() {
         return this.buttonOpen;
     }
 
-    JComboBox<JSyncProtocol> getComboBoxProtocol()
-    {
+    JComboBox<JSyncProtocol> getComboBoxProtocol() {
         return this.comboBoxProtocol;
     }
 
@@ -43,49 +40,41 @@ class UriView extends AbstractView
      * @see de.freese.jsync.swing.view.AbstractView#getComponent()
      */
     @Override
-    Component getComponent()
-    {
+    Component getComponent() {
         return this.panel;
     }
 
-    JTextField getTextFieldHostPort()
-    {
+    JTextField getTextFieldHostPort() {
         return this.textFieldHostPort;
     }
 
-    JTextField getTextFieldPath()
-    {
+    JTextField getTextFieldPath() {
         return this.textFieldPath;
     }
 
-    URI getUri()
-    {
+    URI getUri() {
         JSyncProtocol protocol = (JSyncProtocol) this.comboBoxProtocol.getSelectedItem();
         String hostPort = this.textFieldHostPort.getText();
         String path = this.textFieldPath.getText();
 
-        if ((path == null) || path.isBlank())
-        {
+        if ((path == null) || path.isBlank()) {
             return null;
         }
 
         return protocol.toUri(hostPort, path);
     }
 
-    UriView initGUI(final EFileSystem fileSystem)
-    {
+    UriView initGUI(final EFileSystem fileSystem) {
         this.panel.setLayout(new GridBagLayout());
 
         int row = 0;
 
         JLabel labelTitle;
 
-        if (EFileSystem.SENDER.equals(fileSystem))
-        {
+        if (EFileSystem.SENDER.equals(fileSystem)) {
             labelTitle = new JLabel(getMessage("jsync.source"));
         }
-        else
-        {
+        else {
             labelTitle = new JLabel(getMessage("jsync.target"));
         }
 

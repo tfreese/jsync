@@ -7,35 +7,29 @@ import java.util.Optional;
 /**
  * @author Thomas Freese
  */
-public class SyncPairComparator implements Comparator<SyncPair>
-{
+public class SyncPairComparator implements Comparator<SyncPair> {
     /**
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      */
     @Override
-    public int compare(final SyncPair o1, final SyncPair o2)
-    {
+    public int compare(final SyncPair o1, final SyncPair o2) {
         String value1 = Optional.ofNullable(o1.getSenderItem()).map(SyncItem::getRelativePath).orElse(null);
 
-        if (value1 == null)
-        {
+        if (value1 == null) {
             value1 = Optional.ofNullable(o1.getReceiverItem()).map(SyncItem::getRelativePath).orElse(null);
         }
 
-        if (value1 == null)
-        {
+        if (value1 == null) {
             value1 = "";
         }
 
         String value2 = Optional.ofNullable(o2.getSenderItem()).map(SyncItem::getRelativePath).orElse(null);
 
-        if (value2 == null)
-        {
+        if (value2 == null) {
             value2 = Optional.ofNullable(o2.getReceiverItem()).map(SyncItem::getRelativePath).orElse(null);
         }
 
-        if (value2 == null)
-        {
+        if (value2 == null) {
             value2 = "";
         }
 

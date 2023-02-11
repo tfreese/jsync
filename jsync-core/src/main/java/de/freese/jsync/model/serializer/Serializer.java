@@ -9,15 +9,13 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
  *
  * @author Thomas Freese
  */
-public interface Serializer<W, R>
-{
+public interface Serializer<W, R> {
     <T> T readFrom(R source, Class<T> type);
 
     <T> void register(Class<T> type, ObjectSerializer<? super T> serializer);
 
     @SuppressWarnings("unchecked")
-    default <T> void writeTo(W sink, T value)
-    {
+    default <T> void writeTo(W sink, T value) {
         writeTo(sink, value, (Class<T>) value.getClass());
     }
 

@@ -9,16 +9,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Thomas Freese
  */
-public class JSyncThreadFactory implements ThreadFactory
-{
+public class JSyncThreadFactory implements ThreadFactory {
     private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
 
     private final String namePrefix;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
-    public JSyncThreadFactory(final String namePrefix)
-    {
+    public JSyncThreadFactory(final String namePrefix) {
         super();
 
         this.namePrefix = Objects.requireNonNull(namePrefix, "namePrefix required");
@@ -28,8 +26,7 @@ public class JSyncThreadFactory implements ThreadFactory
      * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
      */
     @Override
-    public Thread newThread(final Runnable r)
-    {
+    public Thread newThread(final Runnable r) {
         Thread thread = this.defaultThreadFactory.newThread(r);
 
         thread.setName(this.namePrefix + this.threadNumber.getAndIncrement());

@@ -4,6 +4,10 @@ package de.freese.jsync;
 import java.net.URI;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+
 import de.freese.jsync.Options.Builder;
 import de.freese.jsync.arguments.ArgumentParser;
 import de.freese.jsync.arguments.ArgumentParserApacheCommonsCli;
@@ -14,27 +18,18 @@ import de.freese.jsync.client.listener.ConsoleClientListener;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 
 /**
  * @author Thomas Freese
  */
-public final class JSyncConsole
-{
+public final class JSyncConsole {
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncConsole.class);
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         String[] args2 = args;
 
-        if (args2.length == 0)
-        {
-            args2 = new String[]
-                    {
-                            "--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync-console"
-                    };
+        if (args2.length == 0) {
+            args2 = new String[]{"--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync-console"};
             // args2 = new String[]
             // {
             // "--delete",
@@ -49,18 +44,15 @@ public final class JSyncConsole
 
         ArgumentParser argumentParser = null;
 
-        try
-        {
+        try {
             argumentParser = new ArgumentParserApacheCommonsCli(args2);
             // argumentParser = new ArgumentParserJopt(args2);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
         }
 
-        if (!argumentParser.hasArgs())
-        {
+        if (!argumentParser.hasArgs()) {
             argumentParser.printHelp(System.out);
 
             System.exit(0);
@@ -80,8 +72,7 @@ public final class JSyncConsole
     // // rootLogger.setLevel(Level.INFO);
     // }
 
-    public void run(final ArgumentParser argumentParser) throws Exception
-    {
+    public void run(final ArgumentParser argumentParser) throws Exception {
         // @formatter:off
         Options options = new Builder()
                 .delete(argumentParser.delete())
@@ -100,8 +91,7 @@ public final class JSyncConsole
         System.out.println("Synchronisation finished");
     }
 
-    public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener)
-    {
+    public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener) {
         Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 

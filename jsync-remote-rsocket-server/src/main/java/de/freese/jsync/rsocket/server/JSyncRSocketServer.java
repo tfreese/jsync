@@ -3,9 +3,6 @@ package de.freese.jsync.rsocket.server;
 
 import java.net.InetSocketAddress;
 
-import de.freese.jsync.rsocket.JSyncRSocketHandlerByteBuf;
-import de.freese.jsync.rsocket.builder.RSocketBuilders;
-import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import io.rsocket.SocketAcceptor;
@@ -16,15 +13,17 @@ import reactor.core.publisher.Hooks;
 import reactor.netty.resources.LoopResources;
 import reactor.netty.tcp.TcpResources;
 
+import de.freese.jsync.rsocket.JSyncRSocketHandlerByteBuf;
+import de.freese.jsync.rsocket.builder.RSocketBuilders;
+import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
+
 /**
  * @author Thomas Freese
  */
-public final class JSyncRSocketServer
-{
+public final class JSyncRSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketServer.class);
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         System.setProperty("reactor.schedulers.defaultPoolSize", Integer.toString(8));
         System.setProperty("reactor.schedulers.defaultBoundedElasticSize", Integer.toString(8));
 
@@ -50,8 +49,7 @@ public final class JSyncRSocketServer
 
     private CloseableChannel server;
 
-    public void start(final int port)
-    {
+    public void start(final int port) {
         getLogger().info("starting jSync-rSocket server on port: {}", port);
 
         // https://netty.io/wiki/reference-counted-objects.html
@@ -83,8 +81,7 @@ public final class JSyncRSocketServer
         // @formatter:on
     }
 
-    public void stop()
-    {
+    public void stop() {
         getLogger().info("stopping jSync-rSocket server");
 
         this.server.dispose();
@@ -92,8 +89,7 @@ public final class JSyncRSocketServer
         ByteBufferPool.DEFAULT.clear();
     }
 
-    Logger getLogger()
-    {
+    Logger getLogger() {
         return LOGGER;
     }
 }

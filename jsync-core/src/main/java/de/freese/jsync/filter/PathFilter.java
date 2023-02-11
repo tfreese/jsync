@@ -9,8 +9,7 @@ import java.util.Set;
  *
  * @author Thomas Freese
  */
-public interface PathFilter
-{
+public interface PathFilter {
     Set<String> getDirectoryFilter();
 
     Set<String> getFileFilter();

@@ -9,7 +9,6 @@ import java.nio.channels.SocketChannel;
  * @author Thomas Freese
  */
 @FunctionalInterface
-public interface Dispatcher
-{
+public interface Dispatcher {
     void register(SocketChannel socketChannel);
 }

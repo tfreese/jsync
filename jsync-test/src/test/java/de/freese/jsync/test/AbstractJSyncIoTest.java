@@ -9,29 +9,27 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
-import de.freese.jsync.utils.JSyncUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
+import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
  */
-public abstract class AbstractJSyncIoTest
-{
+public abstract class AbstractJSyncIoTest {
     protected static final Path PATH_QUELLE = Paths.get(System.getProperty("java.io.tmpdir"), "java", "quelle");
 
     protected static final Path PATH_ZIEL = Paths.get(System.getProperty("java.io.tmpdir"), "java", "ziel");
 
     @AfterEach
-    public void afterEach() throws Exception
-    {
+    public void afterEach() throws Exception {
         System.out.println("Delete Source and Target Paths...\n");
         JSyncUtils.delete(PATH_QUELLE.getParent(), false);
     }
 
     @BeforeEach
-    public void beforeEach() throws Exception
-    {
+    public void beforeEach() throws Exception {
         System.out.println("Prepare Source and Target Paths...\n");
 
         long delay = 1000L;
@@ -40,12 +38,10 @@ public abstract class AbstractJSyncIoTest
         Path path = PATH_QUELLE;
         Path pathFile = path.resolve("file.txt");
 
-        if (Files.notExists(pathFile))
-        {
+        if (Files.notExists(pathFile)) {
             Files.createDirectories(path);
 
-            try (PrintWriter writer = new PrintWriter(new FileOutputStream(pathFile.toFile())))
-            {
+            try (PrintWriter writer = new PrintWriter(new FileOutputStream(pathFile.toFile()))) {
                 writer.print("file.txt");
             }
         }
@@ -55,12 +51,10 @@ public abstract class AbstractJSyncIoTest
         path = PATH_QUELLE.resolve("v1");
         pathFile = path.resolve("file.txt");
 
-        if (Files.notExists(pathFile))
-        {
+        if (Files.notExists(pathFile)) {
             Files.createDirectories(path);
 
-            try (PrintWriter writer = new PrintWriter(new FileOutputStream(pathFile.toFile())))
-            {
+            try (PrintWriter writer = new PrintWriter(new FileOutputStream(pathFile.toFile()))) {
                 writer.print("file1.txt");
             }
         }
@@ -69,10 +63,8 @@ public abstract class AbstractJSyncIoTest
 
         pathFile = PATH_QUELLE.resolve("largeFile.bin");
 
-        if (Files.notExists(pathFile))
-        {
-            try (RandomAccessFile raf = new RandomAccessFile(pathFile.toFile(), "rw"))
-            {
+        if (Files.notExists(pathFile)) {
+            try (RandomAccessFile raf = new RandomAccessFile(pathFile.toFile(), "rw")) {
                 // 32 MB and some Bytes...
                 raf.setLength((1024 * 1024 * 32) + 1024);
             }
@@ -84,12 +76,10 @@ public abstract class AbstractJSyncIoTest
         path = PATH_ZIEL.resolve("v2");
         pathFile = path.resolve("file.txt");
 
-        if (Files.notExists(pathFile))
-        {
+        if (Files.notExists(pathFile)) {
             Files.createDirectories(path);
 
-            try (PrintWriter writer = new PrintWriter(new FileOutputStream(pathFile.toFile())))
-            {
+            try (PrintWriter writer = new PrintWriter(new FileOutputStream(pathFile.toFile()))) {
                 writer.print("file.txt");
             }
         }
@@ -98,10 +88,8 @@ public abstract class AbstractJSyncIoTest
 
         pathFile = path.resolve("file2.txt");
 
-        if (Files.notExists(pathFile))
-        {
-            try (PrintWriter writer = new PrintWriter(new FileOutputStream(pathFile.toFile())))
-            {
+        if (Files.notExists(pathFile)) {
+            try (PrintWriter writer = new PrintWriter(new FileOutputStream(pathFile.toFile()))) {
                 writer.print("file2.txt");
             }
         }

@@ -7,7 +7,6 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
  * @author Thomas Freese
  */
 @FunctionalInterface
-public interface SerializerRegistry
-{
+public interface SerializerRegistry {
     <T> ObjectSerializer<T> getSerializer(Class<T> clazz);
 }

@@ -34,12 +34,10 @@ import reactor.util.retry.Retry;
 /**
  * @author Thomas Freese
  */
-public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSocketServerRemoteBuilder>
-{
+public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSocketServerRemoteBuilder> {
     private final List<UnaryOperator<TcpServer>> tcpServerCustomizers = new ArrayList<>();
 
-    public RSocketServerRemoteBuilder addTcpServerCustomizer(final UnaryOperator<TcpServer> tcpServerCustomizer)
-    {
+    public RSocketServerRemoteBuilder addTcpServerCustomizer(final UnaryOperator<TcpServer> tcpServerCustomizer) {
         this.tcpServerCustomizers.add(Objects.requireNonNull(tcpServerCustomizer, "tcpServerCustomizer required"));
 
         return this;
@@ -49,8 +47,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
      * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
      */
     @Override
-    public Mono<CloseableChannel> build()
-    {
+    public Mono<CloseableChannel> build() {
         RSocketServer rSocketServer = configure(RSocketServer.create());
         TcpServer tcpServer = configure(TcpServer.create());
 
@@ -63,8 +60,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         // @formatter:on
     }
 
-    public RSocketServerRemoteBuilder logTcpServerBoundStatus()
-    {
+    public RSocketServerRemoteBuilder logTcpServerBoundStatus() {
         // @formatter:off
         addTcpServerCustomizer(tcpServer -> tcpServer
             .doOnBound(server -> getLogger().info("Bound: {}", server.channel()))
@@ -76,8 +72,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         return this;
     }
 
-    public RSocketServerRemoteBuilder protocolSslContextSpec(final ProtocolSslContextSpec protocolSslContextSpec)
-    {
+    public RSocketServerRemoteBuilder protocolSslContextSpec(final ProtocolSslContextSpec protocolSslContextSpec) {
         Objects.requireNonNull(protocolSslContextSpec, "protocolSslContextSpec required");
 
         addTcpServerCustomizer(tcpServer -> tcpServer.secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec)));
@@ -85,12 +80,10 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         return this;
     }
 
-    public RSocketServerRemoteBuilder protocolSslContextSpecCertificate() throws Exception
-    {
+    public RSocketServerRemoteBuilder protocolSslContextSpecCertificate() throws Exception {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
 
-        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/server_keystore.p12"))
-        {
+        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/server_keystore.p12")) {
             keyStore.load(is, "password".toCharArray());
         }
 
@@ -99,8 +92,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
 
         KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
 
-        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/server_truststore.p12"))
-        {
+        try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/server_truststore.p12")) {
             keyStoreTrust.load(is, "password".toCharArray());
         }
 
@@ -128,8 +120,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         return this;
     }
 
-    public RSocketServerRemoteBuilder protocolSslContextSpecCertificateSelfSigned() throws Exception
-    {
+    public RSocketServerRemoteBuilder protocolSslContextSpecCertificateSelfSigned() throws Exception {
         SelfSignedCertificate cert = new SelfSignedCertificate();
 
         // @formatter:off
@@ -146,8 +137,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         return this;
     }
 
-    public RSocketServerRemoteBuilder resume(final Resume resume)
-    {
+    public RSocketServerRemoteBuilder resume(final Resume resume) {
         Objects.requireNonNull(resume, "resume required");
 
         addRSocketServerCustomizer(rSocketServer -> rSocketServer.resume(resume));
@@ -155,8 +145,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         return this;
     }
 
-    public RSocketServerRemoteBuilder resumeDefault()
-    {
+    public RSocketServerRemoteBuilder resumeDefault() {
         // @formatter:off
         Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
@@ -172,8 +161,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     /**
      * EpollEventLoopGroup only available on Linux -> Use NioEventLoopGroup instead.
      */
-    public RSocketServerRemoteBuilder runOn(final EventLoopGroup eventLoopGroup)
-    {
+    public RSocketServerRemoteBuilder runOn(final EventLoopGroup eventLoopGroup) {
         Objects.requireNonNull(eventLoopGroup, "eventLoopGroup required");
 
         addTcpServerCustomizer(tcpServer -> tcpServer.runOn(eventLoopGroup));
@@ -181,8 +169,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         return this;
     }
 
-    public RSocketServerRemoteBuilder runOn(final LoopResources loopResources)
-    {
+    public RSocketServerRemoteBuilder runOn(final LoopResources loopResources) {
         Objects.requireNonNull(loopResources, "loopResources required");
 
         addTcpServerCustomizer(tcpServer -> tcpServer.runOn(loopResources));
@@ -190,8 +177,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         return this;
     }
 
-    public RSocketServerRemoteBuilder socketAddress(final SocketAddress socketAddress)
-    {
+    public RSocketServerRemoteBuilder socketAddress(final SocketAddress socketAddress) {
         Objects.requireNonNull(socketAddress, "socketAddress required");
 
         addTcpServerCustomizer(tcpServer -> tcpServer.bindAddress(() -> socketAddress));
@@ -199,24 +185,20 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         return this;
     }
 
-    protected TcpServer configure(final TcpServer tcpServer)
-    {
+    protected TcpServer configure(final TcpServer tcpServer) {
         TcpServer server = tcpServer;
 
-        for (UnaryOperator<TcpServer> serverCustomizer : this.tcpServerCustomizers)
-        {
+        for (UnaryOperator<TcpServer> serverCustomizer : this.tcpServerCustomizers) {
             server = serverCustomizer.apply(server);
         }
 
         return server;
     }
 
-    protected void startDaemonOnCloseThread(final CloseableChannel channel)
-    {
+    protected void startDaemonOnCloseThread(final CloseableChannel channel) {
         String name = "daemon-rSocket-" + channel.address().getPort();
 
-        Thread thread = new Thread(() ->
-        {
+        Thread thread = new Thread(() -> {
             channel.onClose().block();
             getLogger().info("terminated: {}", name);
         }, name);

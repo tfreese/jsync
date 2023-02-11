@@ -3,28 +3,27 @@ package de.freese.jsync.swing.controller;
 
 import java.net.URI;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.client.Client;
 import de.freese.jsync.client.DefaultClient;
 import de.freese.jsync.swing.JSyncContext;
 import de.freese.jsync.swing.util.SwingUtils;
 import de.freese.jsync.swing.view.SyncView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Thomas Freese
  */
-public class JSyncController
-{
+public class JSyncController {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Client client;
 
     private SyncView syncView;
 
-    public void init(final SyncView syncView)
-    {
+    public void init(final SyncView syncView) {
         this.syncView = syncView;
         this.syncView.restoreState();
 
@@ -32,8 +31,7 @@ public class JSyncController
         syncView.doOnSynchronize(button -> button.addActionListener(event -> synchronize()));
     }
 
-    public void shutdown()
-    {
+    public void shutdown() {
         getLogger().info("shutdown");
 
         getSyncView().saveState();
@@ -41,12 +39,10 @@ public class JSyncController
         shutdownClient();
     }
 
-    void createNewClient(final Options options, final URI senderUri, final URI receiverUri)
-    {
+    void createNewClient(final Options options, final URI senderUri, final URI receiverUri) {
         shutdownClient();
 
-        if ("rsocketLocal".equals(senderUri.getScheme()) || "rsocketLocal".equals(receiverUri.getScheme()))
-        {
+        if ("rsocketLocal".equals(senderUri.getScheme()) || "rsocketLocal".equals(receiverUri.getScheme())) {
             JSyncContext.startLocalRSocketServer();
         }
 
@@ -54,49 +50,40 @@ public class JSyncController
         this.client.connectFileSystems();
     }
 
-    Client getClient()
-    {
+    Client getClient() {
         return this.client;
     }
 
-    String getMessage(final String key)
-    {
+    String getMessage(final String key) {
         return JSyncContext.getMessages().getString(key);
     }
 
-    SyncView getSyncView()
-    {
+    SyncView getSyncView() {
         return this.syncView;
     }
 
-    void runInEdt(final Runnable runnable)
-    {
+    void runInEdt(final Runnable runnable) {
         SwingUtils.runInEdt(runnable);
     }
 
-    void shutdownClient()
-    {
-        if (this.client != null)
-        {
+    void shutdownClient() {
+        if (this.client != null) {
             this.client.disconnectFileSystems();
             this.client = null;
         }
     }
 
-    protected Logger getLogger()
-    {
+    protected Logger getLogger() {
         return this.logger;
     }
 
-    private void compare()
-    {
+    private void compare() {
         CompareWorker worker = new CompareWorker(this);
 
         worker.execute();
     }
 
-    private void synchronize()
-    {
+    private void synchronize() {
         // JOptionPane.showMessageDialog(JSyncSwingApplication.getInstance().getMainFrame(), "Not implemented !", "Error", JOptionPane.ERROR_MESSAGE);
         SynchronizeWorker worker = new SynchronizeWorker(this);
 

@@ -12,16 +12,14 @@ import de.freese.jsync.Options;
  *
  * @author Thomas Freese
  */
-class SimpleByteBufferPool implements ByteBufferPool
-{
+class SimpleByteBufferPool implements ByteBufferPool {
     private final Queue<ByteBuffer> cache = new LinkedBlockingQueue<>(Integer.MAX_VALUE);
 
     private int created;
 
     private int free;
 
-    SimpleByteBufferPool()
-    {
+    SimpleByteBufferPool() {
         super();
     }
 
@@ -29,8 +27,7 @@ class SimpleByteBufferPool implements ByteBufferPool
      * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#clear()
      */
     @Override
-    public void clear()
-    {
+    public void clear() {
         this.cache.clear();
     }
 
@@ -38,10 +35,8 @@ class SimpleByteBufferPool implements ByteBufferPool
      * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#free(java.nio.ByteBuffer)
      */
     @Override
-    public void free(final ByteBuffer buffer)
-    {
-        if (buffer == null)
-        {
+    public void free(final ByteBuffer buffer) {
+        if (buffer == null) {
             return;
         }
 
@@ -54,18 +49,15 @@ class SimpleByteBufferPool implements ByteBufferPool
      * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get()
      */
     @Override
-    public ByteBuffer get()
-    {
+    public ByteBuffer get() {
         ByteBuffer buffer = this.cache.poll();
 
-        if (buffer == null)
-        {
+        if (buffer == null) {
             this.created++;
 
             buffer = ByteBuffer.allocate(Options.BUFFER_SIZE);
         }
-        else
-        {
+        else {
             buffer.clear();
         }
 
@@ -76,8 +68,7 @@ class SimpleByteBufferPool implements ByteBufferPool
      * @see java.lang.Object#toString()
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(":");
         sb.append(" created=").append(this.created);

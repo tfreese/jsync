@@ -9,15 +9,12 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 /**
  * @author Thomas Freese
  */
-public final class JSyncCommandSerializer implements ObjectSerializer<JSyncCommand>
-{
+public final class JSyncCommandSerializer implements ObjectSerializer<JSyncCommand> {
     @Override
-    public <W, R> JSyncCommand readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source)
-    {
+    public <W, R> JSyncCommand readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
         String name = adapter.readString(source, getCharset());
 
-        if ((name == null) || name.isBlank())
-        {
+        if ((name == null) || name.isBlank()) {
             return null;
         }
 
@@ -25,8 +22,7 @@ public final class JSyncCommandSerializer implements ObjectSerializer<JSyncComma
     }
 
     @Override
-    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final JSyncCommand value)
-    {
+    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final JSyncCommand value) {
         adapter.writeString(sink, value.name(), getCharset());
     }
 }

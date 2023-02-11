@@ -4,8 +4,7 @@ package de.freese.jsync.model;
 /**
  * @author Thomas Freese
  */
-public enum JSyncCommand
-{
+public enum JSyncCommand {
     CONNECT,
 
     DISCONNECT,

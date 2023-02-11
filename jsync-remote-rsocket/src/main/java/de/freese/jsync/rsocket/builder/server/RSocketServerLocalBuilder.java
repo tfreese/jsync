@@ -12,16 +12,14 @@ import reactor.core.publisher.Mono;
 /**
  * @author Thomas Freese
  */
-public class RSocketServerLocalBuilder extends AbstractRSocketServerBuilder<RSocketServerLocalBuilder>
-{
+public class RSocketServerLocalBuilder extends AbstractRSocketServerBuilder<RSocketServerLocalBuilder> {
     private String name;
 
     /**
      * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
      */
     @Override
-    public Mono<Closeable> build()
-    {
+    public Mono<Closeable> build() {
         RSocketServer rSocketServer = configure(RSocketServer.create());
 
         ServerTransport<Closeable> serverTransport = LocalServerTransport.create(Objects.requireNonNull(this.name, "name required"));
@@ -29,8 +27,7 @@ public class RSocketServerLocalBuilder extends AbstractRSocketServerBuilder<RSoc
         return rSocketServer.bind(serverTransport);
     }
 
-    public RSocketServerLocalBuilder name(final String name)
-    {
+    public RSocketServerLocalBuilder name(final String name) {
         this.name = Objects.requireNonNull(name, "name required");
 
         return this;

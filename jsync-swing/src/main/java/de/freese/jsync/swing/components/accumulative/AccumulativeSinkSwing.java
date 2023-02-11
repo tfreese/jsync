@@ -15,16 +15,14 @@ import reactor.core.scheduler.Schedulers;
  *
  * @author Thomas Freese
  */
-public class AccumulativeSinkSwing extends AbstractAccumulativeSink
-{
+public class AccumulativeSinkSwing extends AbstractAccumulativeSink {
     private static final Scheduler EDT_SCHEDULER = Schedulers.fromExecutor(SwingUtilities::invokeLater);
 
     /**
      * @see de.freese.jsync.swing.components.accumulative.AbstractAccumulativeSink#getScheduler()
      */
     @Override
-    protected Scheduler getScheduler()
-    {
+    protected Scheduler getScheduler() {
         return EDT_SCHEDULER;
     }
 }

@@ -36,6 +36,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.DocumentEvent;
 
+import reactor.core.publisher.Sinks;
+import reactor.util.function.Tuple3;
+import reactor.util.function.Tuples;
+
 import de.freese.jsync.Options;
 import de.freese.jsync.filesystem.EFileSystem;
 import de.freese.jsync.filter.PathFilter;
@@ -48,15 +52,11 @@ import de.freese.jsync.swing.components.SyncPairTableCellRendererStatus;
 import de.freese.jsync.swing.components.accumulative.AccumulativeSinkSwing;
 import de.freese.jsync.swing.util.GbcBuilder;
 import de.freese.jsync.utils.JSyncUtils;
-import reactor.core.publisher.Sinks;
-import reactor.util.function.Tuple3;
-import reactor.util.function.Tuples;
 
 /**
  * @author Thomas Freese
  */
-public class DefaultSyncView extends AbstractView implements SyncView
-{
+public class DefaultSyncView extends AbstractView implements SyncView {
     private final Map<EFileSystem, Sinks.Many<Tuple3<Integer, Integer, String>>> accumulatorProgressBarMinMaxText = new EnumMap<>(EFileSystem.class);
 
     private final Map<EFileSystem, Sinks.Many<String>> accumulatorProgressBarText = new EnumMap<>(EFileSystem.class);
@@ -93,12 +93,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#addSyncPair(de.freese.jsync.model.SyncPair)
      */
     @Override
-    public void addSyncPair(final SyncPair syncPair)
-    {
-        if (this.accumulatorTableAdd == null)
-        {
-            this.accumulatorTableAdd = new AccumulativeSinkSwing().createForList(list ->
-            {
+    public void addSyncPair(final SyncPair syncPair) {
+        if (this.accumulatorTableAdd == null) {
+            this.accumulatorTableAdd = new AccumulativeSinkSwing().createForList(list -> {
                 this.tableFacade.addAll(list);
 
                 this.tableFacade.scrollToLastRow();
@@ -109,8 +106,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
                 this.progressBarFiles.setValue(rowCount);
                 this.progressBarFiles.setString(getMessage("jsync.files") + ": " + rowCount + "/" + this.progressBarFiles.getMaximum());
 
-                if (getLogger().isDebugEnabled())
-                {
+                if (getLogger().isDebugEnabled()) {
                     getLogger().debug("addSyncPair - rowCount: {}", rowCount);
                 }
             });
@@ -123,8 +119,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#clearTable()
      */
     @Override
-    public void clearTable()
-    {
+    public void clearTable() {
         this.tableFacade.clear();
     }
 
@@ -132,8 +127,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#doOnCompare(java.util.function.Consumer)
      */
     @Override
-    public void doOnCompare(final Consumer<JButton> consumer)
-    {
+    public void doOnCompare(final Consumer<JButton> consumer) {
         this.configView.doOnCompare(consumer);
     }
 
@@ -141,8 +135,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#doOnSynchronize(java.util.function.Consumer)
      */
     @Override
-    public void doOnSynchronize(final Consumer<JButton> consumer)
-    {
+    public void doOnSynchronize(final Consumer<JButton> consumer) {
         this.configView.doOnSynchronize(consumer);
     }
 
@@ -150,8 +143,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#getComponent()
      */
     @Override
-    public Component getComponent()
-    {
+    public Component getComponent() {
         return this.panel;
     }
 
@@ -159,8 +151,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#getOptions()
      */
     @Override
-    public Options getOptions()
-    {
+    public Options getOptions() {
         return this.configView.getOptions();
     }
 
@@ -168,8 +159,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#getPathFilter()
      */
     @Override
-    public PathFilter getPathFilter()
-    {
+    public PathFilter getPathFilter() {
         Set<String> directoryFilters = JSyncUtils.toFilter(this.textAreaFilterDirs.getText());
         Set<String> fileFilters = JSyncUtils.toFilter(this.textAreaFilterFiles.getText());
 
@@ -180,8 +170,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#getSyncList()
      */
     @Override
-    public List<SyncPair> getSyncList()
-    {
+    public List<SyncPair> getSyncList() {
         Predicate<SyncPair> predicate = this.showView.getPredicate();
 
         return this.tableFacade.getStream().filter(predicate).toList();
@@ -191,8 +180,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#getUri(de.freese.jsync.filesystem.EFileSystem)
      */
     @Override
-    public URI getUri(final EFileSystem fileSystem)
-    {
+    public URI getUri(final EFileSystem fileSystem) {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getUri() : this.uriViewReceiver.getUri();
     }
 
@@ -200,12 +188,9 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#incrementProgressBarFilesValue(int)
      */
     @Override
-    public void incrementProgressBarFilesValue(final int value)
-    {
-        if (this.accumulatorProgressFiles == null)
-        {
-            this.accumulatorProgressFiles = new AccumulativeSinkSwing().createForList(list ->
-            {
+    public void incrementProgressBarFilesValue(final int value) {
+        if (this.accumulatorProgressFiles == null) {
+            this.accumulatorProgressFiles = new AccumulativeSinkSwing().createForList(list -> {
                 int v = list.stream().mapToInt(Integer::intValue).sum();
 
                 this.progressBarFiles.setValue(v + this.progressBarFiles.getValue());
@@ -221,8 +206,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#initGui()
      */
     @Override
-    public void initGui()
-    {
+    public void initGui() {
         this.panel.setLayout(new GridBagLayout());
         this.panel.setName("panel");
 
@@ -343,30 +327,24 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#restoreState()
      */
     @Override
-    public void restoreState()
-    {
+    public void restoreState() {
         Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
         Properties properties = new Properties();
 
-        try
-        {
-            if (!Files.exists(path))
-            {
+        try {
+            if (!Files.exists(path)) {
                 Files.createDirectories(path.getParent());
                 Files.createFile(path);
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
 
-        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ))
-        {
+        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
             properties.load(is);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
 
@@ -387,8 +365,7 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#saveState()
      */
     @Override
-    public void saveState()
-    {
+    public void saveState() {
         Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
 
         Properties properties = new Properties();
@@ -404,12 +381,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
         properties.setProperty("filter.directories", this.textAreaFilterDirs.getText());
         properties.setProperty("filter.files", this.textAreaFilterFiles.getText());
 
-        try (OutputStream os = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING))
-        {
+        try (OutputStream os = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
             properties.store(os, null);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
     }
@@ -418,10 +393,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#setProgressBarFilesMax(int)
      */
     @Override
-    public void setProgressBarFilesMax(final int max)
-    {
-        runInEdt(() ->
-        {
+    public void setProgressBarFilesMax(final int max) {
+        runInEdt(() -> {
             this.progressBarFiles.setMinimum(0);
             this.progressBarFiles.setMaximum(max);
             this.progressBarFiles.setValue(0);
@@ -433,10 +406,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#setProgressBarIndeterminate(de.freese.jsync.filesystem.EFileSystem, boolean)
      */
     @Override
-    public void setProgressBarIndeterminate(final EFileSystem fileSystem, final boolean indeterminate)
-    {
-        runInEdt(() ->
-        {
+    public void setProgressBarIndeterminate(final EFileSystem fileSystem, final boolean indeterminate) {
+        runInEdt(() -> {
             JProgressBar progressBar = getProgressBar(fileSystem);
             progressBar.setIndeterminate(indeterminate);
         });
@@ -446,20 +417,16 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#setProgressBarMinMaxText(de.freese.jsync.filesystem.EFileSystem, int, int, java.lang.String)
      */
     @Override
-    public void setProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text)
-    {
-        this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key ->
-        {
+    public void setProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text) {
+        this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = getProgressBar(fileSystem);
 
-            return new AccumulativeSinkSwing().createForSingle(value ->
-            {
+            return new AccumulativeSinkSwing().createForSingle(value -> {
                 progressBar.setMinimum(value.getT1());
                 progressBar.setMaximum(value.getT2());
                 progressBar.setString(value.getT3());
 
-                if (getLogger().isDebugEnabled())
-                {
+                if (getLogger().isDebugEnabled()) {
                     getLogger().debug("addProgressBarMinMaxText - {}: {}", fileSystem, value);
                 }
             });
@@ -470,18 +437,14 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#setProgressBarText(de.freese.jsync.filesystem.EFileSystem, java.lang.String)
      */
     @Override
-    public void setProgressBarText(final EFileSystem fileSystem, final String text)
-    {
-        this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key ->
-        {
+    public void setProgressBarText(final EFileSystem fileSystem, final String text) {
+        this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = getProgressBar(fileSystem);
 
-            return new AccumulativeSinkSwing().createForSingle(value ->
-            {
+            return new AccumulativeSinkSwing().createForSingle(value -> {
                 progressBar.setString(value);
 
-                if (getLogger().isDebugEnabled())
-                {
+                if (getLogger().isDebugEnabled()) {
                     getLogger().debug("addProgressBarText - {}: {}", fileSystem, value);
                 }
             });
@@ -492,18 +455,14 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#setProgressBarValue(de.freese.jsync.filesystem.EFileSystem, int)
      */
     @Override
-    public void setProgressBarValue(final EFileSystem fileSystem, final int value)
-    {
-        this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key ->
-        {
+    public void setProgressBarValue(final EFileSystem fileSystem, final int value) {
+        this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = getProgressBar(fileSystem);
 
-            return new AccumulativeSinkSwing().createForSingle(v ->
-            {
+            return new AccumulativeSinkSwing().createForSingle(v -> {
                 progressBar.setValue(v);
 
-                if (getLogger().isDebugEnabled())
-                {
+                if (getLogger().isDebugEnabled()) {
                     getLogger().debug("addProgressBarValue - {}: {}", fileSystem, v);
                 }
             });
@@ -514,17 +473,14 @@ public class DefaultSyncView extends AbstractView implements SyncView
      * @see de.freese.jsync.swing.view.SyncView#updateLastEntry()
      */
     @Override
-    public void updateLastEntry()
-    {
-        runInEdt(() ->
-        {
+    public void updateLastEntry() {
+        runInEdt(() -> {
             int rowCount = this.tableFacade.getRowCount();
             this.tableFacade.fireTableRowsUpdated(rowCount - 1, rowCount - 1);
         });
     }
 
-    protected File selectFolder(final String selectedFolder)
-    {
+    protected File selectFolder(final String selectedFolder) {
         JFileChooser fc = new JFileChooser();
         fc.setDialogType(JFileChooser.OPEN_DIALOG);
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -537,12 +493,10 @@ public class DefaultSyncView extends AbstractView implements SyncView
         File currentDirectory = null;
         File selectedDirectory = null;
 
-        if ((selectedFolder == null) || selectedFolder.isBlank())
-        {
+        if ((selectedFolder == null) || selectedFolder.isBlank()) {
             currentDirectory = Paths.get(System.getProperty("user.home")).toFile();
         }
-        else
-        {
+        else {
             selectedDirectory = Paths.get(selectedFolder).toFile();
             currentDirectory = selectedDirectory.getParentFile();
         }
@@ -556,16 +510,14 @@ public class DefaultSyncView extends AbstractView implements SyncView
 
         int choice = fc.showOpenDialog(getMainFrame());
 
-        if (choice == JFileChooser.APPROVE_OPTION)
-        {
+        if (choice == JFileChooser.APPROVE_OPTION) {
             return fc.getSelectedFile();
         }
 
         return selectedDirectory;
     }
 
-    private void configGui()
-    {
+    private void configGui() {
         JComboBox<JSyncProtocol> comboBoxProtocolSender = getComboBoxProtocol(EFileSystem.SENDER);
         JComboBox<JSyncProtocol> comboBoxProtocolReceiver = getComboBoxProtocol(EFileSystem.RECEIVER);
 
@@ -578,10 +530,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
         JButton buttonOpenSender = getButtonOpen(EFileSystem.SENDER);
         JButton buttonOpenReceiver = getButtonOpen(EFileSystem.RECEIVER);
 
-        comboBoxProtocolSender.addItemListener(event ->
-        {
-            if (event.getStateChange() != ItemEvent.SELECTED)
-            {
+        comboBoxProtocolSender.addItemListener(event -> {
+            if (event.getStateChange() != ItemEvent.SELECTED) {
                 return;
             }
 
@@ -594,10 +544,8 @@ public class DefaultSyncView extends AbstractView implements SyncView
             this.uriViewSender.getComponent().repaint();
         });
 
-        comboBoxProtocolReceiver.addItemListener(event ->
-        {
-            if (event.getStateChange() != ItemEvent.SELECTED)
-            {
+        comboBoxProtocolReceiver.addItemListener(event -> {
+            if (event.getStateChange() != ItemEvent.SELECTED) {
                 return;
             }
 
@@ -610,84 +558,67 @@ public class DefaultSyncView extends AbstractView implements SyncView
             this.uriViewReceiver.getComponent().repaint();
         });
 
-        buttonOpenSender.addActionListener(event ->
-        {
+        buttonOpenSender.addActionListener(event -> {
             File folder = selectFolder(textFieldPathSender.getText());
 
-            if (folder != null)
-            {
+            if (folder != null) {
                 textFieldPathSender.setText(folder.toString());
             }
-            else
-            {
+            else {
                 textFieldPathSender.setText(null);
             }
         });
 
-        buttonOpenReceiver.addActionListener(event ->
-        {
+        buttonOpenReceiver.addActionListener(event -> {
             File folder = selectFolder(textFieldPathReceiver.getText());
 
-            if (folder != null)
-            {
+            if (folder != null) {
                 textFieldPathReceiver.setText(folder.toString());
             }
-            else
-            {
+            else {
                 textFieldPathReceiver.setText(null);
             }
         });
 
         // Compare-Button
-        textFieldPathSender.getDocument().addDocumentListener(new DocumentListenerAdapter()
-        {
+        textFieldPathSender.getDocument().addDocumentListener(new DocumentListenerAdapter() {
             /**
              * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
              */
             @Override
-            public void insertUpdate(final DocumentEvent event)
-            {
-                DefaultSyncView.this.configView.getButtonCompare()
-                        .setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());
+            public void insertUpdate(final DocumentEvent event) {
+                DefaultSyncView.this.configView.getButtonCompare().setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());
             }
         });
 
-        textFieldPathReceiver.getDocument().addDocumentListener(new DocumentListenerAdapter()
-        {
+        textFieldPathReceiver.getDocument().addDocumentListener(new DocumentListenerAdapter() {
             /**
              * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
              */
             @Override
-            public void insertUpdate(final DocumentEvent event)
-            {
-                DefaultSyncView.this.configView.getButtonCompare()
-                        .setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());
+            public void insertUpdate(final DocumentEvent event) {
+                DefaultSyncView.this.configView.getButtonCompare().setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());
             }
         });
     }
 
-    private JButton getButtonOpen(final EFileSystem fileSystem)
-    {
+    private JButton getButtonOpen(final EFileSystem fileSystem) {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getButtonOpen() : this.uriViewReceiver.getButtonOpen();
     }
 
-    private JComboBox<JSyncProtocol> getComboBoxProtocol(final EFileSystem fileSystem)
-    {
+    private JComboBox<JSyncProtocol> getComboBoxProtocol(final EFileSystem fileSystem) {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getComboBoxProtocol() : this.uriViewReceiver.getComboBoxProtocol();
     }
 
-    private JProgressBar getProgressBar(final EFileSystem fileSystem)
-    {
+    private JProgressBar getProgressBar(final EFileSystem fileSystem) {
         return EFileSystem.SENDER.equals(fileSystem) ? this.progressBarSender : this.progressBarReceiver;
     }
 
-    private JTextField getTextFieldHostPort(final EFileSystem fileSystem)
-    {
+    private JTextField getTextFieldHostPort(final EFileSystem fileSystem) {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldHostPort() : this.uriViewReceiver.getTextFieldHostPort();
     }
 
-    private JTextField getTextFieldPath(final EFileSystem fileSystem)
-    {
+    private JTextField getTextFieldPath(final EFileSystem fileSystem) {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldPath() : this.uriViewReceiver.getTextFieldPath();
     }
 }
