@@ -33,7 +33,7 @@
                             <outputDirectory>app</outputDirectory>
                             <finalName>${project.artifactId}</finalName>
                             <classifier>spring</classifier>
-                            <includeSystemScope>runtime</includeSystemScope>
+                            <includeSystemScope>true</includeSystemScope>
                             <layout>ZIP</layout>
                             <jvmArguments>
                                 -Xms32m
