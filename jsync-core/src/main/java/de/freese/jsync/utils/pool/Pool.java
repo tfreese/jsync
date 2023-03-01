@@ -254,9 +254,6 @@ public abstract class Pool<T> {
         else if (softReferences) {
             // More efficient clean() than ArrayDeque.
             queue = new LinkedList<>() {
-                /**
-                 *
-                 */
                 @Serial
                 private static final long serialVersionUID = 1L;
 
@@ -274,9 +271,6 @@ public abstract class Pool<T> {
         }
         else {
             queue = new ArrayDeque<>() {
-                /**
-                 *
-                 */
                 @Serial
                 private static final long serialVersionUID = 1L;
 
