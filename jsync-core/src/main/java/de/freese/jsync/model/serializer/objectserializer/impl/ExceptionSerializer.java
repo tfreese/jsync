@@ -1,7 +1,9 @@
 // Created: 24.09.2020
 package de.freese.jsync.model.serializer.objectserializer.impl;
 
-import java.lang.reflect.Constructor;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 
 import de.freese.jsync.model.serializer.SerializerRegistry;
 import de.freese.jsync.model.serializer.adapter.DataAdapter;
@@ -27,15 +29,27 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception> {
         Exception exception = null;
 
         try {
-            // ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            // Class<? extends Exception> clazz = (Class<? extends Exception>) classLoader.loadClass(clazzName);
-            // Class<? extends Exception> clazz = (Class<? extends Exception>) Class.forName(clazzName, true, classLoader);
+            //            // ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            //            // Class<? extends Exception> clazz = (Class<? extends Exception>) classLoader.loadClass(clazzName);
+            //            // Class<? extends Exception> clazz = (Class<? extends Exception>) Class.forName(clazzName, true, classLoader);
             Class<? extends Exception> clazz = (Class<? extends Exception>) Class.forName(clazzName);
-            Constructor<? extends Exception> constructor = clazz.getDeclaredConstructor(String.class);
+            //            Constructor<? extends Exception> constructor = clazz.getDeclaredConstructor(String.class);
+            //
+            //            exception = constructor.newInstance(message);
 
-            exception = constructor.newInstance(message);
+            // A look-up that can find public methods.
+            MethodHandles.Lookup publicMethodHandlesLookup = MethodHandles.publicLookup();
+
+            // Search for method that: have return type of void (Constructor) and accept a String parameter.
+            MethodType methodType = MethodType.methodType(void.class, String.class);
+
+            // Find the constructor based on the MethodType defined above.
+            MethodHandle invokableClassConstructor = publicMethodHandlesLookup.findConstructor(clazz, methodType);
+
+            // Create an instance of the Invokable class by calling the exact handle, pass in the param value.
+            exception = (Exception) invokableClassConstructor.invokeWithArguments(message);
         }
-        catch (Exception ex) {
+        catch (Throwable ex) {
             exception = new Exception(message);
         }
 
