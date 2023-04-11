@@ -157,7 +157,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
                 Files.createFile(path);
             }
 
-            FileChannel fileChannelReceiver = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            FileChannel fileChannelReceiver = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC);
 
             return ReactiveUtils.write(fileFlux, fileChannelReceiver).doFinally(type -> JSyncUtils.close(fileChannelReceiver));
         }
