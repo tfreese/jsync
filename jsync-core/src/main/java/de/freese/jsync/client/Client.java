@@ -16,7 +16,7 @@ import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.SyncPair;
 
 /**
- * Coordinate {@link Sender} and {@link Receiver}.
+ * Coordinates {@link Sender} and {@link Receiver}.
  *
  * @author Thomas Freese
  */
@@ -29,7 +29,7 @@ public interface Client {
 
     Flux<SyncItem> generateSyncItems(EFileSystem fileSystem, PathFilter pathFilter);
 
-    default void generateSyncItems(final EFileSystem fileSystem, PathFilter pathFilter, Consumer<SyncItem> consumer) {
+    default void generateSyncItems(EFileSystem fileSystem, PathFilter pathFilter, Consumer<SyncItem> consumer) {
         generateSyncItems(fileSystem, pathFilter).subscribe(consumer);
     }
 

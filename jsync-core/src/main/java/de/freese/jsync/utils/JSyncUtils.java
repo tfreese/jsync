@@ -169,7 +169,7 @@ public final class JSyncUtils {
      * @return double 0.0 - 1.0
      */
     public static double getProgress(final long value, final long max) {
-        if ((value <= 0) || (value > max)) {
+        if ((value <= 0L) || (value > max)) {
             // throw new IllegalArgumentException("invalid value: " + value);
             return 0.0D;
         }
@@ -257,7 +257,7 @@ public final class JSyncUtils {
 
         try {
             // Wait a while for existing tasks to terminate.
-            if (!channelGroup.awaitTermination(10, TimeUnit.SECONDS)) {
+            if (!channelGroup.awaitTermination(10L, TimeUnit.SECONDS)) {
                 if (logger.isWarnEnabled()) {
                     logger.warn("Timed out while waiting for channelGroup");
                 }
@@ -265,7 +265,7 @@ public final class JSyncUtils {
                 channelGroup.shutdownNow(); // Cancel currently executing tasks
 
                 // Wait a while for tasks to respond to being cancelled
-                if (!channelGroup.awaitTermination(5, TimeUnit.SECONDS)) {
+                if (!channelGroup.awaitTermination(5L, TimeUnit.SECONDS)) {
                     logger.error("ChannelGroup did not terminate");
                 }
             }
@@ -301,7 +301,7 @@ public final class JSyncUtils {
 
         try {
             // Wait a while for existing tasks to terminate.
-            if (!executorService.awaitTermination(10, TimeUnit.SECONDS)) {
+            if (!executorService.awaitTermination(10L, TimeUnit.SECONDS)) {
                 logger.warn("Timed out while waiting for ExecutorService");
 
                 // Cancel currently executing tasks.
@@ -312,7 +312,7 @@ public final class JSyncUtils {
                 }
 
                 // Wait a while for tasks to respond to being cancelled.
-                if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                if (!executorService.awaitTermination(5L, TimeUnit.SECONDS)) {
                     logger.error("ExecutorService did not terminate");
                 }
                 else {
@@ -362,7 +362,7 @@ public final class JSyncUtils {
     public static String toHumanReadableSize(final long size) {
         int unitIndex = 0;
 
-        if (size > 0) {
+        if (size > 0L) {
             unitIndex = (int) (Math.log10(size) / 3);
         }
 
