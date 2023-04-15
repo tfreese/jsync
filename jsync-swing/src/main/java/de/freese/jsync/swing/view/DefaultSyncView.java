@@ -331,21 +331,13 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
         Properties properties = new Properties();
 
-        try {
-            if (!Files.exists(path)) {
-                Files.createDirectories(path.getParent());
-                Files.createFile(path);
+        if (Files.exists(path)) {
+            try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
+                properties.load(is);
             }
-        }
-        catch (Exception ex) {
-            getLogger().error(ex.getMessage(), ex);
-        }
-
-        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
-            properties.load(is);
-        }
-        catch (Exception ex) {
-            getLogger().error(ex.getMessage(), ex);
+            catch (Exception ex) {
+                getLogger().error(ex.getMessage(), ex);
+            }
         }
 
         getTextFieldHostPort(EFileSystem.SENDER).setText(properties.getProperty("sender.textfieldHostPort"));

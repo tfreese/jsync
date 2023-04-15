@@ -16,27 +16,9 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel {
     @Serial
     private static final long serialVersionUID = 8219964863357772409L;
 
-    private final int columnCount;
-
     private final transient List<String> columnNames;
 
     private final transient List<T> list;
-
-    protected AbstractListTableModel(final int columnCount) {
-        this(columnCount, new ArrayList<>());
-    }
-
-    protected AbstractListTableModel(final int columnCount, final List<T> list) {
-        super();
-
-        if (columnCount < 0) {
-            throw new IllegalArgumentException("column count < 0: " + columnCount);
-        }
-
-        this.columnNames = null;
-        this.columnCount = columnCount;
-        this.list = Objects.requireNonNull(list, "list required");
-    }
 
     protected AbstractListTableModel(final List<String> columnNames) {
         this(columnNames, new ArrayList<>());
@@ -46,8 +28,6 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel {
         super();
 
         this.columnNames = Objects.requireNonNull(columnNames, "columnNames required");
-        this.columnCount = this.columnNames.size();
-
         this.list = Objects.requireNonNull(list, "list required");
     }
 
@@ -94,7 +74,7 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel {
      */
     @Override
     public int getColumnCount() {
-        return this.columnCount;
+        return getColumnNames().size();
     }
 
     /**
@@ -102,10 +82,6 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel {
      */
     @Override
     public String getColumnName(final int column) {
-        if ((getColumnNames() == null) || getColumnNames().isEmpty()) {
-            return super.getColumnName(column);
-        }
-
         return getColumnNames().get(column);
     }
 
@@ -129,9 +105,6 @@ public abstract class AbstractListTableModel<T> extends AbstractTableModel {
         return getList().stream();
     }
 
-    /**
-     * FFires TableDataChanged Event.
-     */
     public void refresh() {
         fireTableDataChanged();
     }
