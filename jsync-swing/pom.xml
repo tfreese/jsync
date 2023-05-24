@@ -71,7 +71,6 @@
             <version>${project.version}</version>
         </dependency>
 
-
         <!-- runtime scope -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
