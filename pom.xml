@@ -44,9 +44,6 @@
         </developer>
     </developers>
 
-    <properties>
-    </properties>
-
     <dependencies>
         <!-- compile scope -->
         <!-- runtime scope -->
