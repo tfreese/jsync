@@ -31,12 +31,9 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <skip>false</skip>
                             <mainClass>de.freese.jsync.swing.JSyncSwingLauncher</mainClass>
                             <outputDirectory>app</outputDirectory>
                             <classifier>spring</classifier>
-                            <includeSystemScope>runtime</includeSystemScope>
-                            <layout>ZIP</layout>
                             <jvmArguments>
                                 -Xms32m
                                 -Xmx512m

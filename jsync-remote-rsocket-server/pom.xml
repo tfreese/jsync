@@ -28,12 +28,9 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <skip>false</skip>
                             <mainClass>de.freese.jsync.rsocket.server.JSyncRSocketServer</mainClass>
                             <outputDirectory>app</outputDirectory>
                             <classifier>spring</classifier>
-                            <includeSystemScope>true</includeSystemScope>
-                            <layout>ZIP</layout>
                             <jvmArguments>
                                 -Xms32m
                                 -Xmx512m
