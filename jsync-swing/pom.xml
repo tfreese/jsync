@@ -31,6 +31,7 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
+                            <skip>true</skip>
                             <mainClass>de.freese.jsync.swing.JSyncSwingLauncher</mainClass>
                             <outputDirectory>app</outputDirectory>
                             <classifier>spring</classifier>

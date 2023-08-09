@@ -31,10 +31,7 @@ public final class JSyncSwing {
         return LOGGER;
     }
 
-    private class MainFrameListener extends WindowAdapter {
-        /**
-         * @see java.awt.event.WindowAdapter#windowClosing(java.awt.event.WindowEvent)
-         */
+    private final class MainFrameListener extends WindowAdapter {
         @Override
         public void windowClosing(final WindowEvent event) {
             getLogger().info("stop");

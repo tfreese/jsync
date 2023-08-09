@@ -47,10 +47,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     /**
      * @author Thomas Freese
      */
-    private static class TestClientListener extends EmptyClientListener {
-        /**
-         * @see de.freese.jsync.client.listener.EmptyClientListener#error(java.lang.String, java.lang.Throwable)
-         */
+    private static final class TestClientListener extends EmptyClientListener {
         @Override
         public void error(final String message, final Throwable th) {
             assertNull(th);
