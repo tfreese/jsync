@@ -94,9 +94,6 @@ public final class JSyncNioServer implements Runnable {
         return this.startLock.availablePermits() > 0;
     }
 
-    /**
-     * @see java.lang.Runnable#run()
-     */
     @Override
     public void run() {
         getLogger().info("starting '{}' on port: {}", this.name, this.port);

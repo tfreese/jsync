@@ -17,25 +17,16 @@ class NoByteBufferPool implements ByteBufferPool {
         super();
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#clear()
-     */
     @Override
     public void clear() {
         // Empty
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#free(java.nio.ByteBuffer)
-     */
     @Override
     public void free(final ByteBuffer buffer) {
         this.free++;
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get()
-     */
     @Override
     public ByteBuffer get() {
         this.created++;
@@ -43,9 +34,6 @@ class NoByteBufferPool implements ByteBufferPool {
         return ByteBuffer.allocate(Options.BUFFER_SIZE);
     }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());

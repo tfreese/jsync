@@ -15,9 +15,6 @@ public class SyncPairTableCellRendererFileSystem extends DefaultTableCellRendere
     @Serial
     private static final long serialVersionUID = -8974544290640941021L;
 
-    /**
-     * @see DefaultTableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
-     */
     @Override
     public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column) {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

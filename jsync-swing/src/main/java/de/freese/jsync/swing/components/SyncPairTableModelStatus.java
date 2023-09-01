@@ -18,9 +18,6 @@ public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair> {
         super(List.of(JSyncContext.getMessages().getString("jsync.status")));
     }
 
-    /**
-     * @see de.freese.jsync.swing.components.AbstractListTableModel#getColumnClass(int)
-     */
     @Override
     public Class<?> getColumnClass(final int columnIndex) {
         return switch (columnIndex) {
@@ -29,9 +26,6 @@ public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair> {
         };
     }
 
-    /**
-     * @see javax.swing.table.TableModel#getValueAt(int, int)
-     */
     @Override
     public Object getValueAt(final int rowIndex, final int columnIndex) {
         SyncPair syncPair = getObjectAt(rowIndex);

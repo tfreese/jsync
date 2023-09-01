@@ -13,9 +13,6 @@ import de.freese.jsync.model.SyncItem;
 public class LoggerClientListener extends AbstractClientListener {
     private final Logger logger = LoggerFactory.getLogger("Client");
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#checksumProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
-     */
     @Override
     public void checksumProgress(final Options options, final SyncItem syncItem, final long bytesRead) {
         String message = checksumProgressMessage(options, syncItem, bytesRead);
@@ -27,9 +24,6 @@ public class LoggerClientListener extends AbstractClientListener {
         getLogger().info(message);
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#copyProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
-     */
     @Override
     public void copyProgress(final Options options, final SyncItem syncItem, final long bytesTransferred) {
         String message = copyProgressMessage(options, syncItem, bytesTransferred);
@@ -41,9 +35,6 @@ public class LoggerClientListener extends AbstractClientListener {
         getLogger().info(message);
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#delete(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void delete(final Options options, final SyncItem syncItem) {
         String message = deleteMessage(options, syncItem);
@@ -51,17 +42,11 @@ public class LoggerClientListener extends AbstractClientListener {
         getLogger().info(message);
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#error(java.lang.String, java.lang.Throwable)
-     */
     @Override
     public void error(final String message, final Throwable th) {
         getLogger().error(message, th);
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void update(final Options options, final SyncItem syncItem) {
         String message = updateMessage(options, syncItem);
@@ -69,9 +54,6 @@ public class LoggerClientListener extends AbstractClientListener {
         getLogger().info(message);
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#validate(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void validate(final Options options, final SyncItem syncItem) {
         String message = validateMessage(options, syncItem);

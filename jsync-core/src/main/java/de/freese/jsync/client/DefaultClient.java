@@ -35,9 +35,6 @@ public class DefaultClient extends AbstractClient {
         }).sort(new SyncPairComparator());
     }
 
-    /**
-     * @see de.freese.jsync.client.Client#mergeSyncItems(java.util.List, java.util.List)
-     */
     @Override
     public List<SyncPair> mergeSyncItems(final List<SyncItem> syncItemsSender, final List<SyncItem> syncItemsReceiver) {
         List<SyncPair> syncPairs = new ArrayList<>();
@@ -49,9 +46,6 @@ public class DefaultClient extends AbstractClient {
         return syncPairs;
     }
 
-    /**
-     * @see de.freese.jsync.client.Client#syncReceiver(java.util.List, de.freese.jsync.client.listener.ClientListener)
-     */
     @Override
     public void syncReceiver(final List<SyncPair> syncPairs, final ClientListener clientListener) {
         ClientListener cl = clientListener != null ? clientListener : new EmptyClientListener();

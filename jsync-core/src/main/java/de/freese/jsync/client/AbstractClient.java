@@ -58,28 +58,18 @@ public abstract class AbstractClient implements Client {
         this.receiver = FileSystemFactory.getInstance().createReceiver(receiverUri);
     }
 
-    /**
-     * @see de.freese.jsync.client.Client#connectFileSystems()
-     */
     @Override
     public void connectFileSystems() {
         getSender().connect(getSenderUri());
         getReceiver().connect(getReceiverUri());
     }
 
-    /**
-     * @see de.freese.jsync.client.Client#disconnectFileSystems()
-     */
     @Override
     public void disconnectFileSystems() {
         getSender().disconnect();
         getReceiver().disconnect();
     }
 
-    /**
-     * @see de.freese.jsync.client.Client#generateChecksum(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.model.SyncItem,
-     * java.util.function.LongConsumer)
-     */
     @Override
     public String generateChecksum(final EFileSystem fileSystem, final SyncItem syncItem, final LongConsumer consumerChecksumBytesRead) {
         if (!getOptions().isChecksum() || !syncItem.isFile()) {
@@ -101,9 +91,6 @@ public abstract class AbstractClient implements Client {
         return fs.generateChecksum(baseDir, syncItem.getRelativePath(), consumerChecksumBytesRead);
     }
 
-    /**
-     * @see de.freese.jsync.client.Client#generateSyncItems(de.freese.jsync.filesystem.EFileSystem, de.freese.jsync.filter.PathFilter)
-     */
     @Override
     public Flux<SyncItem> generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter) {
         FileSystem fs = null;

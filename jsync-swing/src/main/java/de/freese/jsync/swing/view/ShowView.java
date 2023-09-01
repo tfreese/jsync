@@ -24,9 +24,6 @@ class ShowView extends AbstractView {
     private JCheckBox checkBoxSynchronized;
     private Predicate<SyncPair> predicate = syncPair -> true;
 
-    /**
-     * @see de.freese.jsync.swing.view.AbstractView#getComponent()
-     */
     @Override
     JPanel getComponent() {
         return this.panel;

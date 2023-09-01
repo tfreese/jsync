@@ -53,57 +53,36 @@ final class JSyncPayload implements Payload {
         this.metadata = metadata;
     }
 
-    /**
-     * @see io.rsocket.Payload#data()
-     */
     @Override
     public ByteBuf data() {
         return sliceData();
     }
 
-    /**
-     * @see io.rsocket.Payload#getData()
-     */
     @Override
     public ByteBuffer getData() {
         return this.data.duplicate();
     }
 
-    /**
-     * @see io.rsocket.Payload#getMetadata()
-     */
     @Override
     public ByteBuffer getMetadata() {
         return this.metadata == null ? DefaultPayload.EMPTY_BUFFER : this.metadata.duplicate();
     }
 
-    /**
-     * @see io.rsocket.Payload#hasMetadata()
-     */
     @Override
     public boolean hasMetadata() {
         return this.metadata != null;
     }
 
-    /**
-     * @see io.rsocket.Payload#metadata()
-     */
     @Override
     public ByteBuf metadata() {
         return sliceMetadata();
     }
 
-    /**
-     * @see io.netty.util.ReferenceCounted#refCnt()
-     */
     @Override
     public int refCnt() {
         return 1;
     }
 
-    /**
-     * @see io.netty.util.ReferenceCounted#release()
-     */
     @Override
     public boolean release() {
         if (this.data != DefaultPayload.EMPTY_BUFFER) {
@@ -117,57 +96,36 @@ final class JSyncPayload implements Payload {
         return false;
     }
 
-    /**
-     * @see io.netty.util.ReferenceCounted#release(int)
-     */
     @Override
     public boolean release(final int decrement) {
         return false;
     }
 
-    /**
-     * @see io.rsocket.Payload#retain()
-     */
     @Override
     public Payload retain() {
         return this;
     }
 
-    /**
-     * @see io.rsocket.Payload#retain(int)
-     */
     @Override
     public Payload retain(final int increment) {
         return this;
     }
 
-    /**
-     * @see io.rsocket.Payload#sliceData()
-     */
     @Override
     public ByteBuf sliceData() {
         return Unpooled.wrappedBuffer(this.data);
     }
 
-    /**
-     * @see io.rsocket.Payload#sliceMetadata()
-     */
     @Override
     public ByteBuf sliceMetadata() {
         return this.metadata == null ? Unpooled.EMPTY_BUFFER : Unpooled.wrappedBuffer(this.metadata);
     }
 
-    /**
-     * @see io.rsocket.Payload#touch()
-     */
     @Override
     public Payload touch() {
         return this;
     }
 
-    /**
-     * @see io.rsocket.Payload#touch(java.lang.Object)
-     */
     @Override
     public Payload touch(final Object hint) {
         return this;

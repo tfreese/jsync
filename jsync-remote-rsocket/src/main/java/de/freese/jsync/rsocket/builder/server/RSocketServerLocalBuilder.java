@@ -15,9 +15,6 @@ import reactor.core.publisher.Mono;
 public class RSocketServerLocalBuilder extends AbstractRSocketServerBuilder<RSocketServerLocalBuilder> {
     private String name;
 
-    /**
-     * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
-     */
     @Override
     public Mono<Closeable> build() {
         RSocketServer rSocketServer = configure(RSocketServer.create());

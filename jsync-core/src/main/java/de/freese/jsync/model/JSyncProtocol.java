@@ -9,25 +9,16 @@ import java.nio.file.Paths;
  */
 public enum JSyncProtocol {
     FILE {
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#getScheme()
-         */
         @Override
         public String getScheme() {
             return "file";
         }
 
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#isRemote()
-         */
         @Override
         public boolean isRemote() {
             return false;
         }
 
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#toUri(java.lang.String, java.lang.String)
-         */
         @Override
         public URI toUri(final String hostPort, final String path) {
             return Paths.get(path).toUri();
@@ -35,25 +26,16 @@ public enum JSyncProtocol {
     },
 
     NIO {
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#getScheme()
-         */
         @Override
         public String getScheme() {
             return "nio";
         }
 
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#isRemote()
-         */
         @Override
         public boolean isRemote() {
             return true;
         }
 
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#toUri(java.lang.String, java.lang.String)
-         */
         @Override
         public URI toUri(final String hostPort, final String path) {
             URI uri = Paths.get(path).toUri();
@@ -63,25 +45,16 @@ public enum JSyncProtocol {
     },
 
     RSOCKET {
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#getScheme()
-         */
         @Override
         public String getScheme() {
             return "rsocket";
         }
 
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#isRemote()
-         */
         @Override
         public boolean isRemote() {
             return true;
         }
 
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#toUri(java.lang.String, java.lang.String)
-         */
         @Override
         public URI toUri(final String hostPort, final String path) {
             URI uri = Paths.get(path).toUri();
@@ -101,25 +74,16 @@ public enum JSyncProtocol {
     },
 
     RSOCKET_LOCAL {
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#getScheme()
-         */
         @Override
         public String getScheme() {
             return "rsocketLocal";
         }
 
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#isRemote()
-         */
         @Override
         public boolean isRemote() {
             return false;
         }
 
-        /**
-         * @see de.freese.jsync.model.JSyncProtocol#toUri(java.lang.String, java.lang.String)
-         */
         @Override
         public URI toUri(final String hostPort, final String path) {
             URI uri = Paths.get(path).toUri();

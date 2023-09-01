@@ -30,9 +30,6 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
     private SocketChannelPool channelPool;
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
-     */
     @Override
     public void connect(final URI uri) {
         this.channelPool = new SocketChannelPool(uri);
@@ -63,9 +60,6 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
         }
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
-     */
     @Override
     public void disconnect() {
         SocketChannel channel = getChannelPool().obtain();

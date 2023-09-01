@@ -51,9 +51,6 @@ public class ConfigView extends AbstractView {
         return this.buttonSynchronize;
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.AbstractView#getComponent()
-     */
     @Override
     Component getComponent() {
         return this.panel;

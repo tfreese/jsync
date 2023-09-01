@@ -51,9 +51,6 @@ public class DispatcherPool implements Dispatcher {
         this.numOfWorker = numOfWorker;
     }
 
-    /**
-     * @see de.freese.jsync.nio.server.dispatcher.Dispatcher#register(java.nio.channels.SocketChannel)
-     */
     @Override
     public synchronized void register(final SocketChannel socketChannel) {
         nextDispatcher().register(socketChannel);

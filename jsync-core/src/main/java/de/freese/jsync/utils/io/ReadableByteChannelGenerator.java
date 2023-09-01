@@ -22,9 +22,6 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
         this.channel = Objects.requireNonNull(channel, "channel required");
     }
 
-    /**
-     * @see java.util.function.Consumer#accept(java.lang.Object)
-     */
     @Override
     public void accept(final SynchronousSink<ByteBuffer> sink) {
         boolean release = true;

@@ -50,41 +50,26 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
         }
     }
 
-    /**
-     * @see de.freese.jsync.arguments.ArgumentParser#checksum()
-     */
     @Override
     public boolean checksum() {
         return this.line.hasOption("checksum");
     }
 
-    /**
-     * @see de.freese.jsync.arguments.ArgumentParser#delete()
-     */
     @Override
     public boolean delete() {
         return this.line.hasOption("delete");
     }
 
-    /**
-     * @see de.freese.jsync.arguments.ArgumentParser#dryRun()
-     */
     @Override
     public boolean dryRun() {
         return this.line.hasOption("dry-run");
     }
 
-    /**
-     * @see de.freese.jsync.arguments.ArgumentParser#followSymlinks()
-     */
     @Override
     public boolean followSymlinks() {
         return this.line.hasOption("follow-symlinks");
     }
 
-    /**
-     * @see de.freese.jsync.arguments.ArgumentParser#hasArgs()
-     */
     @Override
     public boolean hasArgs() {
         Option[] opts = this.line.getOptions();
@@ -92,9 +77,6 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
         return (opts != null) && (opts.length > 0);
     }
 
-    /**
-     * @see de.freese.jsync.arguments.ArgumentParser#printHelp(java.io.PrintStream)
-     */
     @Override
     public void printHelp(final PrintStream printStream) {
         HelpFormatter formatter = new HelpFormatter();
@@ -110,17 +92,11 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
         }
     }
 
-    /**
-     * @see de.freese.jsync.arguments.ArgumentParser#receiver()
-     */
     @Override
     public String receiver() {
         return this.line.getOptionValue("receiver");
     }
 
-    /**
-     * @see de.freese.jsync.arguments.ArgumentParser#sender()
-     */
     @Override
     public String sender() {
         return this.line.getOptionValue("sender");

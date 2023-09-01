@@ -8,11 +8,8 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.LongConsumer;
 
-import javax.swing.ProgressMonitorInputStream;
-
 /**
  * @author Thomas Freese
- * @see ProgressMonitorInputStream
  */
 public class MonitoringInputStream extends FilterInputStream {
     private final LongConsumer bytesReadConsumer;

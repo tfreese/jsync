@@ -22,9 +22,6 @@ import reactor.netty.tcp.TcpClient;
 public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteLoadBalancedBuilder> {
     private final List<SocketAddress> remoteAddresses = new ArrayList<>();
 
-    /**
-     * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
-     */
     @Override
     public RSocketClient build() {
         // @formatter:off

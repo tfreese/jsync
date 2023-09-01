@@ -27,9 +27,6 @@ public abstract class AbstractNioProcessor implements Runnable {
         this.selector = Objects.requireNonNull(selector, "selector required");
     }
 
-    /**
-     * @see java.lang.Runnable#run()
-     */
     @Override
     public void run() {
         getStopLock().acquireUninterruptibly();

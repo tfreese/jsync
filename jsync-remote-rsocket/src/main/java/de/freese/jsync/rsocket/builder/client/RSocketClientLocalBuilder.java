@@ -16,9 +16,6 @@ import reactor.core.publisher.Mono;
 public class RSocketClientLocalBuilder extends AbstractRSocketClientBuilder<RSocketClientLocalBuilder> {
     private String name;
 
-    /**
-     * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
-     */
     @Override
     public RSocketClient build() {
         Objects.requireNonNull(this.name, "name required");

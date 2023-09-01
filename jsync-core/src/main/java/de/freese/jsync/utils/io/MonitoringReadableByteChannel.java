@@ -33,9 +33,6 @@ public class MonitoringReadableByteChannel implements ReadableByteChannel {
         this.closeDelegate = closeDelegate;
     }
 
-    /**
-     * @see java.nio.channels.Channel#close()
-     */
     @Override
     public void close() throws IOException {
         if (this.closeDelegate) {
@@ -43,17 +40,11 @@ public class MonitoringReadableByteChannel implements ReadableByteChannel {
         }
     }
 
-    /**
-     * @see java.nio.channels.Channel#isOpen()
-     */
     @Override
     public boolean isOpen() {
         return this.delegate.isOpen();
     }
 
-    /**
-     * @see java.nio.channels.ReadableByteChannel#read(java.nio.ByteBuffer)
-     */
     @Override
     public int read(final ByteBuffer dst) throws IOException {
         int readCount = this.delegate.read(dst);

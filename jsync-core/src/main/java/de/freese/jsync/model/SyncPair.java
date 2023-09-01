@@ -52,9 +52,6 @@ public class SyncPair {
         return getSenderItem() != null ? getSenderItem().isFile() : getReceiverItem().isFile();
     }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

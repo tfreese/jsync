@@ -44,27 +44,18 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
         this.channel = channel;
     }
 
-    // /**
-    // * @see org.reactivestreams.Subscriber#onComplete()
-    // */
     // @Override
     // public void onComplete()
     // {
     // this.sink.complete();
     // }
     //
-    // /**
-    // * @see org.reactivestreams.Subscriber#onError(java.lang.Throwable)
-    // */
     // @Override
     // public void onError(final Throwable throwable)
     // {
     // this.sink.error(throwable);
     // }
     //
-    // /**
-    // * @see org.reactivestreams.Subscriber#onNext(java.lang.Object)
-    // */
     // @Override
     // public void onNext(final ByteBuffer byteBuffer)
     // {
@@ -85,9 +76,6 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     // }
     // }
     //
-    // /**
-    // * @see org.reactivestreams.Subscriber#onSubscribe(org.reactivestreams.Subscription)
-    // */
     // @Override
     // public void onSubscribe(final Subscription subscription)
     // {
@@ -96,17 +84,11 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     // this.subscription.request(1);
     // }
 
-    /**
-     * @see reactor.core.publisher.BaseSubscriber#hookOnComplete()
-     */
     @Override
     protected void hookOnComplete() {
         this.sink.complete();
     }
 
-    /**
-     * @see reactor.core.publisher.BaseSubscriber#hookOnError(java.lang.Throwable)
-     */
     @Override
     protected void hookOnError(final Throwable throwable) {
         this.sink.error(throwable);
@@ -132,9 +114,6 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
         }
     }
 
-    /**
-     * @see reactor.core.publisher.BaseSubscriber#hookOnSubscribe(org.reactivestreams.Subscription)
-     */
     @Override
     protected void hookOnSubscribe(final Subscription subscription) {
         request(1);

@@ -32,33 +32,16 @@ import de.freese.jsync.utils.io.FileVisitorDelete;
  * @author Thomas Freese
  */
 public final class JSyncUtils {
-    /**
-     * @see Files#walk(Path, FileVisitOption...)
-     */
     private static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = {};
-    /**
-     * @see Files#walk(Path, FileVisitOption...)
-     */
+
     private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = {FileVisitOption.FOLLOW_LINKS};
 
     private static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
-    /**
-     * @see Files#exists(Path, LinkOption...)
-     * @see Files#notExists(Path, LinkOption...)
-     * @see Files#isDirectory(Path, LinkOption...)
-     * @see Files#getLastModifiedTime(Path, LinkOption...)
-     * @see Files#readAttributes(Path, String, LinkOption...)
-     */
+
     private static final LinkOption[] LINKOPTION_NO_SYMLINKS = {LinkOption.NOFOLLOW_LINKS};
-    /**
-     * @see Files#exists(Path, LinkOption...)
-     * @see Files#notExists(Path, LinkOption...)
-     * @see Files#isDirectory(Path, LinkOption...)
-     * @see Files#getLastModifiedTime(Path, LinkOption...)
-     * @see Files#readAttributes(Path, String, LinkOption...)
-     */
+
     private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = {};
 
     private static final Pattern PATTERN_FILTER = Pattern.compile("[;,]");

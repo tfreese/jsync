@@ -28,9 +28,6 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 class JSyncPayloadDecoder implements PayloadDecoder {
     private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
 
-    /**
-     * @see java.util.function.Function#apply(java.lang.Object)
-     */
     @Override
     public Payload apply(final ByteBuf byteBuf) {
         ByteBuf m;

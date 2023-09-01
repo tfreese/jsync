@@ -46,54 +46,36 @@
 // this.optionSet = this.optionParser.parse(args);
 // }
 //
-// /**
-// * @see de.freese.jsync.arguments.ArgumentParser#checksum()
-// */
 // @Override
 // public boolean checksum()
 // {
 // return this.optionSet.has(this.optionSpecChecksum);
 // }
 //
-// /**
-// * @see de.freese.jsync.arguments.ArgumentParser#delete()
-// */
 // @Override
 // public boolean delete()
 // {
 // return this.optionSet.has(this.optionSpecDelete);
 // }
 //
-// /**
-// * @see de.freese.jsync.arguments.ArgumentParser#dryRun()
-// */
 // @Override
 // public boolean dryRun()
 // {
 // return this.optionSet.has(this.optionSpecDryRun);
 // }
 //
-// /**
-// * @see de.freese.jsync.arguments.ArgumentParser#followSymlinks()
-// */
 // @Override
 // public boolean followSymlinks()
 // {
 // return this.optionSet.has(this.optionSpecFollowSymlinks);
 // }
 //
-// /**
-// * @see de.freese.jsync.arguments.ArgumentParser#hasArgs()
-// */
 // @Override
 // public boolean hasArgs()
 // {
 // return this.optionSet.hasOptions();
 // }
 //
-// /**
-// * @see de.freese.jsync.arguments.ArgumentParser#printHelp()
-// */
 // @Override
 // public void printHelp(final PrintStream printStream)
 // {
@@ -110,18 +92,12 @@
 // }
 // }
 //
-// /**
-// * @see de.freese.jsync.arguments.ArgumentParser#sender()
-// */
 // @Override
 // public String sender()
 // {
 // return this.optionSet.valueOf(this.optionSpecSender);
 // }
 //
-// /**
-// * @see de.freese.jsync.arguments.ArgumentParser#receiver()
-// */
 // @Override
 // public String receiver()
 // {

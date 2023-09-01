@@ -43,9 +43,6 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         return this;
     }
 
-    /**
-     * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
-     */
     @Override
     public Mono<CloseableChannel> build() {
         RSocketServer rSocketServer = configure(RSocketServer.create());

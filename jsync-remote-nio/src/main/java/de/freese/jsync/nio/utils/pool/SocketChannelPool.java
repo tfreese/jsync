@@ -23,9 +23,6 @@ public final class SocketChannelPool extends Pool<SocketChannel> {
         this.uri = Objects.requireNonNull(uri, "uri required");
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.Pool#clear()
-     */
     @Override
     public void clear() {
         super.clear(channel -> {
@@ -40,9 +37,6 @@ public final class SocketChannelPool extends Pool<SocketChannel> {
         });
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.Pool#create()
-     */
     @Override
     protected SocketChannel create() {
         try {

@@ -36,9 +36,6 @@ class UriView extends AbstractView {
         return this.comboBoxProtocol;
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.AbstractView#getComponent()
-     */
     @Override
     Component getComponent() {
         return this.panel;

@@ -25,9 +25,6 @@ import de.freese.jsync.utils.JSyncUtils;
  * @author Thomas Freese
  */
 public class DefaultGenerator extends AbstractGenerator {
-    /**
-     * @see de.freese.jsync.generator.Generator#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
-     */
     @Override
     public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead) {
         Path path = Paths.get(baseDir, relativeFile);
@@ -35,9 +32,6 @@ public class DefaultGenerator extends AbstractGenerator {
         return DigestUtils.sha256DigestAsHex(path, consumerChecksumBytesRead);
     }
 
-    /**
-     * @see de.freese.jsync.generator.Generator#generateItems(java.lang.String, boolean, de.freese.jsync.filter.PathFilter)
-     */
     @Override
     public Flux<SyncItem> generateItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter) {
         Path base = Paths.get(baseDir);

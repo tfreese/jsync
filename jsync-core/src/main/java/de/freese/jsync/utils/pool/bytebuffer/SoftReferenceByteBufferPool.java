@@ -14,17 +14,11 @@ class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBuffer
         super(true, true);
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get()
-     */
     @Override
     public ByteBuffer get() {
         return obtain();
     }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
@@ -36,9 +30,6 @@ class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBuffer
         return sb.toString();
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.Pool#create()
-     */
     @Override
     protected ByteBuffer create() {
         return ByteBuffer.allocate(Options.BUFFER_SIZE);

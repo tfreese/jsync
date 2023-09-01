@@ -15,33 +15,21 @@ public final class PathFilterNoOp implements PathFilter {
         super();
     }
 
-    /**
-     * @see de.freese.jsync.filter.PathFilter#getDirectoryFilter()
-     */
     @Override
     public Set<String> getDirectoryFilter() {
         return Collections.emptySet();
     }
 
-    /**
-     * @see de.freese.jsync.filter.PathFilter#getFileFilter()
-     */
     @Override
     public Set<String> getFileFilter() {
         return Collections.emptySet();
     }
 
-    /**
-     * @see de.freese.jsync.filter.PathFilter#isExcludedDirectory(java.nio.file.Path)
-     */
     @Override
     public boolean isExcludedDirectory(final Path dir) {
         return false;
     }
 
-    /**
-     * @see de.freese.jsync.filter.PathFilter#isExcludedFile(java.nio.file.Path)
-     */
     @Override
     public boolean isExcludedFile(final Path file) {
         return false;

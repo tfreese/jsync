@@ -34,9 +34,6 @@ public class SenderDelegateLogger implements Sender {
         }
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
-     */
     @Override
     public void connect(final URI uri) {
         getLogger().info("connect to {}", uri);
@@ -44,9 +41,6 @@ public class SenderDelegateLogger implements Sender {
         this.delegate.connect(uri);
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
-     */
     @Override
     public void disconnect() {
         getLogger().info("disconnect");
@@ -54,9 +48,6 @@ public class SenderDelegateLogger implements Sender {
         this.delegate.disconnect();
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
-     */
     @Override
     public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead) {
         getLogger().info("create checksum: {}/{}", baseDir, relativeFile);
@@ -64,9 +55,6 @@ public class SenderDelegateLogger implements Sender {
         return this.delegate.generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead);
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, de.freese.jsync.filter.PathFilter)
-     */
     @Override
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter) {
         getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
@@ -74,9 +62,6 @@ public class SenderDelegateLogger implements Sender {
         return this.delegate.generateSyncItems(baseDir, followSymLinks, pathFilter);
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.Sender#readFile(java.lang.String, java.lang.String, long)
-     */
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile) {
         getLogger().info("read file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);

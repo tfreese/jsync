@@ -50,9 +50,6 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
         return new FutureTask<>(callable);
     }
 
-    /**
-     * @see javax.swing.SwingWorker#doInBackground()
-     */
     @Override
     protected Void doInBackground() throws Exception {
         PathFilter pathFilter = getSyncView().getPathFilter();
@@ -111,9 +108,6 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
         return null;
     }
 
-    /**
-     * @see javax.swing.SwingWorker#done()
-     */
     @Override
     protected void done() {
         getLogger().info("{}", ByteBufferPool.DEFAULT);

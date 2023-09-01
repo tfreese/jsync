@@ -41,9 +41,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketHandlerByteBuffer.class);
 
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true) {
-        /**
-         * @see de.freese.jsync.utils.pool.Pool#create()
-         */
         @Override
         protected Receiver create() {
             return new ReceiverDelegateLogger(new LocalhostReceiver());
@@ -51,9 +48,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     };
 
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true) {
-        /**
-         * @see de.freese.jsync.utils.pool.Pool#create()
-         */
         @Override
         protected Sender create() {
             return new SenderDelegateLogger(new LocalhostSender());
@@ -64,9 +58,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
 
     private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
-    /**
-     * @see io.rsocket.RSocket#requestChannel(org.reactivestreams.Publisher)
-     */
     @Override
     public Flux<Payload> requestChannel(final Publisher<Payload> payloads) {
         Receiver receiver = POOL_RECEIVER.obtain();
@@ -97,9 +88,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
         });
     }
 
-    /**
-     * @see io.rsocket.RSocket#requestResponse(io.rsocket.Payload)
-     */
     @Override
     public Mono<Payload> requestResponse(final Payload payload) {
         Sender sender = POOL_SENDER.obtain();
@@ -135,9 +123,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
         }
     }
 
-    /**
-     * @see io.rsocket.RSocket#requestStream(io.rsocket.Payload)
-     */
     @Override
     public Flux<Payload> requestStream(final Payload payload) {
         Sender sender = POOL_SENDER.obtain();

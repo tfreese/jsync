@@ -89,9 +89,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
     private UriView uriViewSender;
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#addSyncPair(de.freese.jsync.model.SyncPair)
-     */
     @Override
     public void addSyncPair(final SyncPair syncPair) {
         if (this.accumulatorTableAdd == null) {
@@ -115,49 +112,31 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         this.accumulatorTableAdd.tryEmitNext(syncPair);
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#clearTable()
-     */
     @Override
     public void clearTable() {
         this.tableFacade.clear();
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#doOnCompare(java.util.function.Consumer)
-     */
     @Override
     public void doOnCompare(final Consumer<JButton> consumer) {
         this.configView.doOnCompare(consumer);
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#doOnSynchronize(java.util.function.Consumer)
-     */
     @Override
     public void doOnSynchronize(final Consumer<JButton> consumer) {
         this.configView.doOnSynchronize(consumer);
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#getComponent()
-     */
     @Override
     public Component getComponent() {
         return this.panel;
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#getOptions()
-     */
     @Override
     public Options getOptions() {
         return this.configView.getOptions();
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#getPathFilter()
-     */
     @Override
     public PathFilter getPathFilter() {
         Set<String> directoryFilters = JSyncUtils.toFilter(this.textAreaFilterDirs.getText());
@@ -166,9 +145,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         return new PathFilterEndsWith(directoryFilters, fileFilters);
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#getSyncList()
-     */
     @Override
     public List<SyncPair> getSyncList() {
         Predicate<SyncPair> predicate = this.showView.getPredicate();
@@ -176,17 +152,11 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         return this.tableFacade.getStream().filter(predicate).toList();
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#getUri(de.freese.jsync.filesystem.EFileSystem)
-     */
     @Override
     public URI getUri(final EFileSystem fileSystem) {
         return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getUri() : this.uriViewReceiver.getUri();
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#incrementProgressBarFilesValue(int)
-     */
     @Override
     public void incrementProgressBarFilesValue(final int value) {
         if (this.accumulatorProgressFiles == null) {
@@ -202,9 +172,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         this.accumulatorProgressFiles.tryEmitNext(value);
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#initGui()
-     */
     @Override
     public void initGui() {
         this.panel.setLayout(new GridBagLayout());
@@ -323,9 +290,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         // enableDebug(this.panel);
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#restoreState()
-     */
     @Override
     public void restoreState() {
         Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
@@ -353,9 +317,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         this.textAreaFilterFiles.setText(properties.getProperty("filter.files", ".class; .log"));
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#saveState()
-     */
     @Override
     public void saveState() {
         Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
@@ -381,9 +342,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         }
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarFilesMax(int)
-     */
     @Override
     public void setProgressBarFilesMax(final int max) {
         runInEdt(() -> {
@@ -394,9 +352,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         });
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarIndeterminate(de.freese.jsync.filesystem.EFileSystem, boolean)
-     */
     @Override
     public void setProgressBarIndeterminate(final EFileSystem fileSystem, final boolean indeterminate) {
         runInEdt(() -> {
@@ -405,9 +360,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         });
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarMinMaxText(de.freese.jsync.filesystem.EFileSystem, int, int, java.lang.String)
-     */
     @Override
     public void setProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text) {
         this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
@@ -425,9 +377,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         }).tryEmitNext(Tuples.of(min, max, text));
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarText(de.freese.jsync.filesystem.EFileSystem, java.lang.String)
-     */
     @Override
     public void setProgressBarText(final EFileSystem fileSystem, final String text) {
         this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
@@ -443,9 +392,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         }).tryEmitNext(text);
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#setProgressBarValue(de.freese.jsync.filesystem.EFileSystem, int)
-     */
     @Override
     public void setProgressBarValue(final EFileSystem fileSystem, final int value) {
         this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
@@ -461,9 +407,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         }).tryEmitNext(value);
     }
 
-    /**
-     * @see de.freese.jsync.swing.view.SyncView#updateLastEntry()
-     */
     @Override
     public void updateLastEntry() {
         runInEdt(() -> {
@@ -574,9 +517,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
         // Compare-Button
         textFieldPathSender.getDocument().addDocumentListener(new DocumentListenerAdapter() {
-            /**
-             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
-             */
             @Override
             public void insertUpdate(final DocumentEvent event) {
                 DefaultSyncView.this.configView.getButtonCompare().setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());
@@ -584,9 +524,6 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         });
 
         textFieldPathReceiver.getDocument().addDocumentListener(new DocumentListenerAdapter() {
-            /**
-             * @see DocumentListenerAdapter#insertUpdate(DocumentEvent)
-             */
             @Override
             public void insertUpdate(final DocumentEvent event) {
                 DefaultSyncView.this.configView.getButtonCompare().setEnabled(!textFieldPathSender.getText().isBlank() && !textFieldPathReceiver.getText().isBlank());

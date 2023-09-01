@@ -35,9 +35,6 @@ public class ConsoleClientListener extends AbstractClientListener {
         this.printStreamError = System.err;
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#checksumProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
-     */
     @Override
     public void checksumProgress(final Options options, final SyncItem syncItem, final long bytesRead) {
         if (bytesRead == 0) {
@@ -53,9 +50,6 @@ public class ConsoleClientListener extends AbstractClientListener {
         getPrintStream().println(message);
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#copyProgress(de.freese.jsync.Options, de.freese.jsync.model.SyncItem, long)
-     */
     @Override
     public void copyProgress(final Options options, final SyncItem syncItem, final long bytesTransferred) {
         if (bytesTransferred == 0) {
@@ -77,9 +71,6 @@ public class ConsoleClientListener extends AbstractClientListener {
         // }
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#delete(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void delete(final Options options, final SyncItem syncItem) {
         String message = deleteMessage(options, syncItem);
@@ -87,9 +78,6 @@ public class ConsoleClientListener extends AbstractClientListener {
         getPrintStream().println(message);
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#error(java.lang.String, java.lang.Throwable)
-     */
     @Override
     public void error(final String message, final Throwable th) {
         StringWriter stringWriter = new StringWriter();
@@ -102,9 +90,6 @@ public class ConsoleClientListener extends AbstractClientListener {
         getPrintStreamError().println(stackTrace);
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#update(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void update(final Options options, final SyncItem syncItem) {
         String message = updateMessage(options, syncItem);
@@ -112,9 +97,6 @@ public class ConsoleClientListener extends AbstractClientListener {
         getPrintStream().println(message);
     }
 
-    /**
-     * @see de.freese.jsync.client.listener.ClientListener#validate(de.freese.jsync.Options, de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void validate(final Options options, final SyncItem syncItem) {
         String message = validateMessage(options, syncItem);

@@ -26,9 +26,6 @@ public class Group {
         this.gid = gid;
     }
 
-    /**
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -50,17 +47,11 @@ public class Group {
         return this.name;
     }
 
-    /**
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         return Objects.hash(this.gid, this.name);
     }
 
-    /**
-     * @see Object#toString()
-     */
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder(getClass().getSimpleName());

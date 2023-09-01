@@ -16,9 +16,6 @@ import reactor.netty.tcp.TcpClient;
  * @author Thomas Freese
  */
 public class RSocketClientRemoteBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteBuilder> {
-    /**
-     * @see de.freese.jsync.rsocket.builder.AbstractRSocketBuilder#build()
-     */
     @Override
     public RSocketClient build() {
         TcpClient tcpClient = configure(TcpClient.create());

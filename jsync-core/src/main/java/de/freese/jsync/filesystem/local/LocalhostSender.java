@@ -21,9 +21,6 @@ import de.freese.jsync.utils.ReactiveUtils;
  * @author Thomas Freese
  */
 public class LocalhostSender extends AbstractLocalFileSystem implements Sender {
-    /**
-     * @see de.freese.jsync.filesystem.Sender#readFile(java.lang.String, java.lang.String, long)
-     */
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile) {
         Path path = Paths.get(baseDir, relativeFile);

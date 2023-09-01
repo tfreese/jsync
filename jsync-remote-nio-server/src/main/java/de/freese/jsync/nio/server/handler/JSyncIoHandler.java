@@ -30,15 +30,11 @@ import de.freese.jsync.utils.pool.Pool;
 
 /**
  * @author Thomas Freese
- * @see IoHandler
  */
 public class JSyncIoHandler implements IoHandler<SelectionKey> {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncIoHandler.class);
 
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true) {
-        /**
-         * @see de.freese.jsync.utils.pool.Pool#create()
-         */
         @Override
         protected Receiver create() {
             return new ReceiverDelegateLogger(new LocalhostReceiver());
@@ -46,9 +42,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
     };
 
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true) {
-        /**
-         * @see de.freese.jsync.utils.pool.Pool#create()
-         */
         @Override
         protected Sender create() {
             return new SenderDelegateLogger(new LocalhostSender());
@@ -59,9 +52,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
     private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
-    /**
-     * @see de.freese.jsync.nio.server.handler.IoHandler#read(java.lang.Object)
-     */
     @Override
     public void read(final SelectionKey selectionKey) {
         Sender sender = POOL_SENDER.obtain();
@@ -131,9 +121,6 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         }
     }
 
-    /**
-     * @see de.freese.jsync.nio.server.handler.IoHandler#write(java.lang.Object)
-     */
     @Override
     public void write(final SelectionKey selectionKey) {
         try {

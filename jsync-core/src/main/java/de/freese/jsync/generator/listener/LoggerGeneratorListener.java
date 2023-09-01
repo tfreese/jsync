@@ -23,17 +23,11 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener {
         this.prefix = Objects.requireNonNull(prefix, "prefix required");
     }
 
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long)
-     */
     @Override
     public void checksum(final long bytesRead) {
         // Empty
     }
 
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#currentItem(de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void currentItem(final SyncItem syncItem) {
         String message = currentItemMessage(syncItem, this.prefix);
@@ -41,9 +35,6 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener {
         getLogger().debug(message);
     }
 
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
-     */
     @Override
     public void itemCount(final Path path, final int itemCount) {
         String message = itemCountMessage(path, itemCount, this.prefix);

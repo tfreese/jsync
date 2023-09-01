@@ -18,9 +18,6 @@ public class GeneratorListenerAdapter implements GeneratorListener {
 
     private BiConsumer<Path, Integer> itemCountConsumer;
 
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long)
-     */
     @Override
     public final void checksum(final long bytesRead) {
         if (this.checksumConsumer != null) {
@@ -28,9 +25,6 @@ public class GeneratorListenerAdapter implements GeneratorListener {
         }
     }
 
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#currentItem(de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void currentItem(final SyncItem syncItem) {
         if (this.currentItemConsumer != null) {
@@ -50,9 +44,6 @@ public class GeneratorListenerAdapter implements GeneratorListener {
         this.itemCountConsumer = consumer;
     }
 
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
-     */
     @Override
     public void itemCount(final Path path, final int itemCount) {
         if (this.itemCountConsumer != null) {

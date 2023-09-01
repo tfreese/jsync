@@ -39,9 +39,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
 
     private RSocketClient client;
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#disconnect()
-     */
     @Override
     public void disconnect() {
         ByteBuffer bufferMeta = getByteBufferPool().get();

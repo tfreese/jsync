@@ -23,17 +23,11 @@ class SimpleByteBufferPool implements ByteBufferPool {
         super();
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#clear()
-     */
     @Override
     public void clear() {
         this.cache.clear();
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#free(java.nio.ByteBuffer)
-     */
     @Override
     public void free(final ByteBuffer buffer) {
         if (buffer == null) {
@@ -45,9 +39,6 @@ class SimpleByteBufferPool implements ByteBufferPool {
         this.cache.offer(buffer);
     }
 
-    /**
-     * @see de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool#get()
-     */
     @Override
     public ByteBuffer get() {
         ByteBuffer buffer = this.cache.poll();
@@ -64,9 +55,6 @@ class SimpleByteBufferPool implements ByteBufferPool {
         return buffer;
     }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());

@@ -31,9 +31,6 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
         this.consumer = Objects.requireNonNull(consumer, "consumer required");
     }
 
-    /**
-     * @see java.nio.file.FileVisitor#postVisitDirectory(java.lang.Object, java.io.IOException)
-     */
     @Override
     public FileVisitResult postVisitDirectory(final Path dir, final IOException ex) throws IOException {
         Objects.requireNonNull(dir);
@@ -49,9 +46,6 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
-    /**
-     * @see java.nio.file.FileVisitor#preVisitDirectory(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
-     */
     @Override
     public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
         Objects.requireNonNull(dir);
@@ -66,9 +60,6 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
-    /**
-     * @see java.nio.file.FileVisitor#visitFile(java.lang.Object, java.nio.file.attribute.BasicFileAttributes)
-     */
     @Override
     public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
         Objects.requireNonNull(file);
@@ -84,9 +75,6 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
-    /**
-     * @see java.nio.file.FileVisitor#visitFileFailed(java.lang.Object, java.io.IOException)
-     */
     @Override
     public FileVisitResult visitFileFailed(final Path file, final IOException ex) throws IOException {
         Objects.requireNonNull(file);

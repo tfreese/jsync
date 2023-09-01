@@ -26,17 +26,11 @@ class Acceptor extends AbstractNioProcessor {
         this.dispatcher = Objects.requireNonNull(dispatcher, "dispatcher required");
     }
 
-    /**
-     * @see de.freese.jsync.nio.server.AbstractNioProcessor#beforeSelectorWhile()
-     */
     @Override
     protected void beforeSelectorWhile() throws Exception {
         this.serverSocketChannel.register(getSelector(), SelectionKey.OP_ACCEPT);
     }
 
-    /**
-     * @see de.freese.jsync.nio.server.AbstractNioProcessor#onAcceptable(java.nio.channels.SelectionKey)
-     */
     @Override
     protected void onAcceptable(final SelectionKey selectionKey) {
         try {

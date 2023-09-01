@@ -29,9 +29,6 @@ import de.freese.jsync.utils.ReactiveUtils;
  * @author Thomas Freese
  */
 public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiver {
-    /**
-     * @see de.freese.jsync.filesystem.Receiver#createDirectory(java.lang.String, java.lang.String)
-     */
     @Override
     public void createDirectory(final String baseDir, final String relativePath) {
         Path path = Paths.get(baseDir, relativePath);
@@ -46,9 +43,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
         }
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.Receiver#delete(java.lang.String, java.lang.String, boolean)
-     */
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks) {
         Path path = Paths.get(baseDir, relativePath);
@@ -66,9 +60,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
         return super.generateSyncItems(baseDir, followSymLinks, PathFilterNoOp.INSTANCE);
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.Receiver#update(java.lang.String, de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void update(final String baseDir, final SyncItem syncItem) {
         Path path = Paths.get(baseDir, syncItem.getRelativePath());
@@ -111,9 +102,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
         }
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.Receiver#validateFile(java.lang.String, de.freese.jsync.model.SyncItem, boolean, java.util.function.LongConsumer)
-     */
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer consumerChecksumBytesRead) {
         Path path = Paths.get(baseDir, syncItem.getRelativePath());
@@ -140,9 +128,6 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
         }
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.Receiver#writeFile(java.lang.String, java.lang.String, long, reactor.core.publisher.Flux)
-     */
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux) {
         Path path = Paths.get(baseDir, relativeFile);

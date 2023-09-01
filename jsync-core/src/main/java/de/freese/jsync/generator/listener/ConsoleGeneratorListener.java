@@ -38,17 +38,11 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener {
         this.printStreamError = System.err;
     }
 
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#checksum(long)
-     */
     @Override
     public void checksum(final long bytesRead) {
         // Empty
     }
 
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#currentItem(de.freese.jsync.model.SyncItem)
-     */
     @Override
     public void currentItem(final SyncItem syncItem) {
         // String message = currentMetaMessage(relativePath, this.prefix);
@@ -56,9 +50,6 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener {
         // getPrintStream().println(message);
     }
 
-    /**
-     * @see de.freese.jsync.generator.listener.GeneratorListener#itemCount(java.nio.file.Path, int)
-     */
     @Override
     public void itemCount(final Path path, final int itemCount) {
         String message = itemCountMessage(path, itemCount, this.prefix);

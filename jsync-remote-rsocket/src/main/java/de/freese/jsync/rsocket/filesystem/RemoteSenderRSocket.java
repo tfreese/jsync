@@ -25,33 +25,21 @@ public class RemoteSenderRSocket extends AbstractRSocketFileSystem implements Se
      */
     private static final LoopResources LOOP_RESOURCES = LoopResources.create("sender", 4, true);
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#connect(java.net.URI)
-     */
     @Override
     public void connect(final URI uri) {
         connect(uri, tcpClient -> tcpClient.runOn(LOOP_RESOURCES));
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateChecksum(java.lang.String, java.lang.String, java.util.function.LongConsumer)
-     */
     @Override
     public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead) {
         return generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead, JSyncCommand.SOURCE_CHECKSUM);
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.FileSystem#generateSyncItems(java.lang.String, boolean, de.freese.jsync.filter.PathFilter)
-     */
     @Override
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter) {
         return generateSyncItems(baseDir, followSymLinks, pathFilter, JSyncCommand.SOURCE_CREATE_SYNC_ITEMS);
     }
 
-    /**
-     * @see de.freese.jsync.filesystem.Sender#readFile(java.lang.String, java.lang.String, long)
-     */
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile) {
         ByteBuffer bufferMeta = getByteBufferPool().get();
