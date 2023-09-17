@@ -47,10 +47,11 @@ public final class JSyncRSocketServer {
         // System.in.read();
     }
 
+    private final String name = getClass().getSimpleName();
     private CloseableChannel server;
 
     public void start(final int port) {
-        getLogger().info("starting jSync-rSocket server on port: {}", port);
+        getLogger().info("starting '{}' on port: {}", this.name, port);
 
         // https://netty.io/wiki/reference-counted-objects.html
         // io.netty.util.ResourceLeakDetector
@@ -82,7 +83,7 @@ public final class JSyncRSocketServer {
     }
 
     public void stop() {
-        getLogger().info("stopping jSync-rSocket server");
+        getLogger().info("stopping '{}'", this.name);
 
         this.server.dispose();
 

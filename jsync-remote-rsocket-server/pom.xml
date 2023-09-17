@@ -17,7 +17,11 @@
 
     <build>
         <plugins>
-            <!-- spring-boot:run, clean package spring-boot:repackage für executable jar -->
+            <!-- spring-boot:run -->
+            <!-- spring-boot:repackage für executable jar -->
+            <!-- mvn package calls spring-boot:repackage-->
+            <!-- mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dmavenproxy.fileCache=/mnt/ssd850/maven-proxy/repository" -->
+            <!-- mvn spring-boot:run -Dspring-boot.run.arguments="9090" -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -35,7 +39,6 @@
                             <jvmArguments>
                                 -Xms32m
                                 -Xmx512m
-                                -noverify
                                 -XX:TieredStopAtLevel=1
                                 -Djava.security.egd=file:/dev/./urandom
                             </jvmArguments>

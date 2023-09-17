@@ -19,7 +19,7 @@
         <plugins>
             <!-- spring-boot:run -->
             <!-- spring-boot:repackage für executable jar -->
-            <!-- mvn package enthält hiermit schon spring-boot:repackage-->
+            <!-- mvn package calls spring-boot:repackage-->
             <!-- mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dmavenproxy.fileCache=/mnt/ssd850/maven-proxy/repository" -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -38,7 +38,6 @@
                             <jvmArguments>
                                 -Xms32m
                                 -Xmx512m
-                                -noverify
                                 -XX:TieredStopAtLevel=1
                                 -Djava.security.egd=file:/dev/./urandom
                             </jvmArguments>
@@ -52,11 +51,6 @@
 
     <dependencies>
         <!-- compile scope -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>jsync-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jsync-remote-rsocket</artifactId>

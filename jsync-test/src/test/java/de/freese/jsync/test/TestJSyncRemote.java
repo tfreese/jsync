@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +13,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -33,7 +36,6 @@ import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.rsocket.server.JSyncRSocketServer;
-import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /***
  * @author Thomas Freese
@@ -41,8 +43,9 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncRemote extends AbstractJSyncIoTest {
     private static final Map<String, AutoCloseable> CLOSEABLES = new HashMap<>();
-
     private static final Logger LOGGER = LoggerFactory.getLogger(TestJSyncRemote.class);
+    private static final Path PATH_DEST = createDestPath(TestJSyncRemote.class);
+    private static final Path PATH_SOURCE = createSourcePath(TestJSyncRemote.class);
 
     /**
      * @author Thomas Freese
@@ -54,15 +57,18 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
         }
     }
 
-    private static Options options = null;
+    private static Options options;
 
     @AfterAll
     static void afterAll() throws Exception {
         for (AutoCloseable closeable : CLOSEABLES.values()) {
-            closeable.close();
+            try {
+                closeable.close();
+            }
+            catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
         }
-
-        LOGGER.info("{}", ByteBufferPool.DEFAULT);
 
         // if (ByteBufAllocator.DEFAULT instanceof PooledByteBufAllocator)
         // {
@@ -75,12 +81,20 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
         options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
     }
 
+    @AfterEach
+    void afterEach() throws Exception {
+        deletePaths(PATH_SOURCE, PATH_DEST);
+    }
+
+    @BeforeEach
+    void beforeEach() throws Exception {
+        createSourceStructure(PATH_SOURCE);
+    }
+
     @Test
     void testLocal() throws Exception {
-        System.out.println();
-
-        URI senderUri = PATH_QUELLE.toUri();
-        URI receiverUri = PATH_ZIEL.toUri();
+        URI senderUri = PATH_SOURCE.toUri();
+        URI receiverUri = PATH_DEST.toUri();
 
         syncDirectories(options, senderUri, receiverUri);
 
@@ -89,13 +103,11 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
     @Test
     void testNio() throws Exception {
-        System.out.println();
-        TimeUnit.MILLISECONDS.sleep(500);
 
         startServerNio(8001);
 
-        URI senderUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_QUELLE.toString());
-        URI receiverUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_ZIEL.toString());
+        URI senderUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_SOURCE.toString());
+        URI receiverUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_DEST.toString());
 
         syncDirectories(options, senderUri, receiverUri);
 
@@ -104,13 +116,12 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
     @Test
     void testRSocket() throws Exception {
-        System.out.println();
         TimeUnit.MILLISECONDS.sleep(500);
 
         startServerRSocket(8002);
 
-        URI senderUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_QUELLE.toString());
-        URI receiverUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_ZIEL.toString());
+        URI senderUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_SOURCE.toString());
+        URI receiverUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_DEST.toString());
 
         syncDirectories(options, senderUri, receiverUri);
 
@@ -217,12 +228,11 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     // @Test
     // void testSpringRest() throws Exception
     // {
-    // System.out.println();
     // TimeUnit.MILLISECONDS.sleep(500);
     //
     // startServerSpringRest();
     //
-    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_SOURCE.toString());
     // URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
     //
     // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_REST_TEMPLATE);
@@ -233,12 +243,11 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     // @Test
     // void testSpringWebFlux() throws Exception
     // {
-    // System.out.println();
     // TimeUnit.MILLISECONDS.sleep(500);
     //
     // startServerSpringRest();
     //
-    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_QUELLE.toString());
+    // URI senderUri = new URI("jsync://localhost:8003/" + PATH_SOURCE.toString());
     // URI receiverUri = new URI("jsync://localhost:8003/" + PATH_ZIEL.toString());
     //
     // syncDirectories(options, senderUri, receiverUri, RemoteMode.SPRING_WEB_CLIENT);

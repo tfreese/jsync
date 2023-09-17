@@ -115,8 +115,8 @@ class TestJSyncSerializers {
         Object source = dataHolder.getSource();
 
         assertNull(serializer.readFrom(source, Boolean.class));
-        assertEquals(true, serializer.readFrom(source, boolean.class));
-        assertEquals(false, serializer.readFrom(source, boolean.class));
+        assertTrue(serializer.readFrom(source, boolean.class));
+        assertFalse(serializer.readFrom(source, boolean.class));
     }
 
     @ParameterizedTest(name = "{index} -> {0}")
