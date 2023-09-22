@@ -9,10 +9,3 @@ include "jsync-remote-nio"
 include "jsync-remote-nio-server"
 include "jsync-swing"
 include "jsync-test"
-
-buildCache {
-    local {
-        //directory = new File(rootDir, 'build-cache')
-        removeUnusedEntriesAfterDays = 7
-    }
-}
