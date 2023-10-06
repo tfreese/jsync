@@ -1,5 +1,14 @@
+// Can not be configured by Conventions-Plugin.
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        mavenLocal()
+    }
+}
+
 // Without rootProject.name the Name of the Projekt-Directory is used.
-rootProject.name = "jsync"
+//rootProject.name = "jsync"
 
 include "jsync-core"
 include "jsync-console"
