@@ -13,6 +13,7 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
  * @author Thomas Freese
  */
 public final class ExceptionSerializer implements ObjectSerializer<Exception> {
+    @SuppressWarnings("unchecked")
     @Override
     public <W, R> Exception readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
         String clazzName = adapter.readString(source, getCharset());
