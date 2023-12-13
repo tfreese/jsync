@@ -24,9 +24,7 @@ public class DispatcherPool implements Dispatcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherPool.class);
 
     private final LinkedList<DefaultDispatcher> dispatchers = new LinkedList<>();
-
     private final int numOfDispatcher;
-
     private final int numOfWorker;
 
     private ExecutorService executorServiceWorker;
@@ -43,7 +41,7 @@ public class DispatcherPool implements Dispatcher {
         }
 
         if (numOfDispatcher > numOfWorker) {
-            String message = String.format("numOfDispatcher > numOfWorker: %d < %d", numOfDispatcher, numOfWorker);
+            final String message = String.format("numOfDispatcher > numOfWorker: %d < %d", numOfDispatcher, numOfWorker);
             throw new IllegalArgumentException(message);
         }
 
@@ -57,17 +55,17 @@ public class DispatcherPool implements Dispatcher {
     }
 
     public void start(final IoHandler<SelectionKey> ioHandler, final SelectorProvider selectorProvider, final String serverName) throws Exception {
-        ThreadFactory threadFactoryDispatcher = new JSyncThreadFactory(serverName + "-dispatcher-");
-        ThreadFactory threadFactoryWorker = new JSyncThreadFactory(serverName + "-worker-");
+        final ThreadFactory threadFactoryDispatcher = new JSyncThreadFactory(serverName + "-dispatcher-");
+        final ThreadFactory threadFactoryWorker = new JSyncThreadFactory(serverName + "-worker-");
 
         // this.executorServiceWorker = new ThreadPoolExecutor(1, this.numOfWorker, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactoryWorker);
         this.executorServiceWorker = Executors.newFixedThreadPool(this.numOfWorker, threadFactoryWorker);
 
         while (this.dispatchers.size() < this.numOfDispatcher) {
-            DefaultDispatcher dispatcher = new DefaultDispatcher(selectorProvider.openSelector(), ioHandler, this.executorServiceWorker);
+            final DefaultDispatcher dispatcher = new DefaultDispatcher(selectorProvider.openSelector(), ioHandler, this.executorServiceWorker);
             this.dispatchers.add(dispatcher);
 
-            Thread thread = threadFactoryDispatcher.newThread(dispatcher);
+            final Thread thread = threadFactoryDispatcher.newThread(dispatcher);
 
             getLogger().debug("start dispatcher: {}", thread.getName());
             thread.start();
@@ -88,7 +86,7 @@ public class DispatcherPool implements Dispatcher {
      */
     private synchronized Dispatcher nextDispatcher() {
         // Ersten Dispatcher entnehmen.
-        DefaultDispatcher dispatcher = this.dispatchers.poll();
+        final DefaultDispatcher dispatcher = this.dispatchers.poll();
 
         // Dispatcher wieder hinten dran hängen.
         this.dispatchers.add(dispatcher);

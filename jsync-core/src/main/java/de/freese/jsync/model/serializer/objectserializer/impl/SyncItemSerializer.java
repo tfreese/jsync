@@ -14,9 +14,9 @@ public final class SyncItemSerializer implements ObjectSerializer<SyncItem> {
     @Override
     public <W, R> SyncItem readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
         // relativePath
-        String relativePath = adapter.readString(source, getCharset());
+        final String relativePath = adapter.readString(source, getCharset());
 
-        SyncItem syncItem = new DefaultSyncItem(relativePath);
+        final SyncItem syncItem = new DefaultSyncItem(relativePath);
 
         // is File / Directory
         syncItem.setFile(adapter.readBoolean(source));

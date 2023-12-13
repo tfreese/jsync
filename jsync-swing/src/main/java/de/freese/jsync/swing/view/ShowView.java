@@ -18,6 +18,7 @@ import de.freese.jsync.swing.util.GbcBuilder;
  */
 class ShowView extends AbstractView {
     private final JPanel panel = new JPanel();
+
     private JCheckBox checkBoxDifferent;
     private JCheckBox checkBoxOnlyInSource;
     private JCheckBox checkBoxOnlyInTarget;

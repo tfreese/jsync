@@ -38,7 +38,7 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
 
     protected RunnableFuture<List<SyncItem>> createFutureSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter) {
         // @formatter:off
-        Callable<List<SyncItem>> callable = () -> getClient().generateSyncItems(fileSystem, pathFilter)
+        final Callable<List<SyncItem>> callable = () -> getClient().generateSyncItems(fileSystem, pathFilter)
                 .index()
                 //.delayElements(Duration.ofMillis(10))
                 .doOnNext(tuple -> getSyncView().setProgressBarText(fileSystem, getMessage("jsync.files.load") + ": " + (tuple.getT1() + 1)))
@@ -52,10 +52,10 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
 
     @Override
     protected Void doInBackground() throws Exception {
-        PathFilter pathFilter = getSyncView().getPathFilter();
+        final PathFilter pathFilter = getSyncView().getPathFilter();
 
-        RunnableFuture<List<SyncItem>> futureSenderItems = createFutureSyncItems(EFileSystem.SENDER, pathFilter);
-        RunnableFuture<List<SyncItem>> futureReceiverItems = createFutureSyncItems(EFileSystem.RECEIVER, pathFilter);
+        final RunnableFuture<List<SyncItem>> futureSenderItems = createFutureSyncItems(EFileSystem.SENDER, pathFilter);
+        final RunnableFuture<List<SyncItem>> futureReceiverItems = createFutureSyncItems(EFileSystem.RECEIVER, pathFilter);
 
         if (isParallel()) {
             getExecutorService().execute(futureSenderItems);
@@ -66,11 +66,11 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
             futureReceiverItems.run();
         }
 
-        List<SyncItem> syncItemsSender = futureSenderItems.get();
-        List<SyncItem> syncItemsReceiver = futureReceiverItems.get();
+        final List<SyncItem> syncItemsSender = futureSenderItems.get();
+        final List<SyncItem> syncItemsReceiver = futureReceiverItems.get();
 
         // Merge
-        List<SyncPair> syncPairs = getClient().mergeSyncItems(syncItemsSender, syncItemsReceiver);
+        final List<SyncPair> syncPairs = getClient().mergeSyncItems(syncItemsSender, syncItemsReceiver);
 
         getSyncView().setProgressBarFilesMax(syncPairs.size());
 
@@ -80,8 +80,8 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
 
             // Checksum
             if (getOptions().isChecksum() && syncPair.isFile()) {
-                RunnableFuture<Void> futureSenderChecksum = createFutureChecksum(EFileSystem.SENDER, syncPair.getSenderItem());
-                RunnableFuture<Void> futureReceiverChecksum = createFutureChecksum(EFileSystem.RECEIVER, syncPair.getReceiverItem());
+                final RunnableFuture<Void> futureSenderChecksum = createFutureChecksum(EFileSystem.SENDER, syncPair.getSenderItem());
+                final RunnableFuture<Void> futureReceiverChecksum = createFutureChecksum(EFileSystem.RECEIVER, syncPair.getReceiverItem());
 
                 if (isParallel()) {
                     getExecutorService().execute(futureSenderChecksum);
@@ -134,10 +134,10 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
             return new FutureTask<>(() -> null);
         }
 
-        Runnable runnable = () -> {
+        final Runnable runnable = () -> {
             getSyncView().setProgressBarText(fileSystem, getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());
 
-            String checksum = getClient().generateChecksum(fileSystem, syncItem, bytesRead -> {
+            final String checksum = getClient().generateChecksum(fileSystem, syncItem, bytesRead -> {
                 if (bytesRead == 0) {
                     getSyncView().setProgressBarIndeterminate(fileSystem, false);
                     getSyncView().setProgressBarMinMaxText(fileSystem, 0, (int) syncItem.getSize(), getMessage("jsync.options.checksum") + ": " + syncItem.getRelativePath());

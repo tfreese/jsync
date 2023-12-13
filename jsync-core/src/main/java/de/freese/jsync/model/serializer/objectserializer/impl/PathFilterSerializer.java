@@ -19,7 +19,7 @@ public class PathFilterSerializer implements ObjectSerializer<PathFilter> {
     public <W, R> PathFilter readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
         int count = adapter.readInteger(source);
 
-        Set<String> directoryFilters = new HashSet<>();
+        final Set<String> directoryFilters = new HashSet<>();
 
         for (int i = 0; i < count; i++) {
             directoryFilters.add(adapter.readString(source, getCharset()));
@@ -27,7 +27,7 @@ public class PathFilterSerializer implements ObjectSerializer<PathFilter> {
 
         count = adapter.readInteger(source);
 
-        Set<String> fileFilters = new HashSet<>();
+        final Set<String> fileFilters = new HashSet<>();
 
         for (int i = 0; i < count; i++) {
             fileFilters.add(adapter.readString(source, getCharset()));

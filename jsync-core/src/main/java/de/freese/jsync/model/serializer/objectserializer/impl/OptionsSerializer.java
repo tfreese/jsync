@@ -17,16 +17,16 @@ public final class OptionsSerializer implements ObjectSerializer<Options> {
         // int bufferSize = adapter.readInteger(source);
 
         // checksum
-        boolean checksum = adapter.readBoolean(source);
+        final boolean checksum = adapter.readBoolean(source);
 
         // delete
-        boolean delete = adapter.readBoolean(source);
+        final boolean delete = adapter.readBoolean(source);
 
         // dryRun
-        boolean dryRun = adapter.readBoolean(source);
+        final boolean dryRun = adapter.readBoolean(source);
 
         // followSymLinks
-        boolean followSymLinks = adapter.readBoolean(source);
+        final boolean followSymLinks = adapter.readBoolean(source);
 
         // @formatter:off
         return new Builder()

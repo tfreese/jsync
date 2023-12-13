@@ -21,7 +21,7 @@ import de.freese.jsync.model.SyncItem;
 public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver {
     @Override
     public void createDirectory(final String baseDir, final String relativePath) {
-        SocketChannel channel = getChannelPool().obtain();
+        final SocketChannel channel = getChannelPool().obtain();
 
         try {
             // MetaData-Frame
@@ -55,7 +55,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks) {
-        SocketChannel channel = getChannelPool().obtain();
+        final SocketChannel channel = getChannelPool().obtain();
 
         try {
             // MetaData-Frame
@@ -100,7 +100,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
     @Override
     public void update(final String baseDir, final SyncItem syncItem) {
-        SocketChannel channel = getChannelPool().obtain();
+        final SocketChannel channel = getChannelPool().obtain();
 
         try {
             // MetaData-Frame
@@ -134,7 +134,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer consumerChecksumBytesRead) {
-        SocketChannel channel = getChannelPool().obtain();
+        final SocketChannel channel = getChannelPool().obtain();
 
         try {
             // MetaData-Frame
@@ -152,7 +152,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
             // Response
             getFrameProtocol().readAll(channel).map(buffer -> {
-                long value = getSerializer().readFrom(buffer, Long.class);
+                final long value = getSerializer().readFrom(buffer, Long.class);
                 getFrameProtocol().getBufferPool().free(buffer);
 
                 return value;
@@ -174,7 +174,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux) {
-        SocketChannel channel = getChannelPool().obtain();
+        final SocketChannel channel = getChannelPool().obtain();
 
         try {
             // MetaData-Frame
@@ -201,7 +201,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
             // Response
             return getFrameProtocol().readAll(channel).map(buffer -> {
-                long bytesWritten = getSerializer().readFrom(buffer, Long.class);
+                final long bytesWritten = getSerializer().readFrom(buffer, Long.class);
                 getFrameProtocol().getBufferPool().free(buffer);
 
                 return bytesWritten;

@@ -19,6 +19,7 @@ import de.freese.jsync.filter.PathFilter;
  */
 public class FileVisitorHierarchie implements FileVisitor<Path> {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileVisitorHierarchie.class);
+
     private final Path basePath;
     private final Consumer<Path> consumer;
     private final PathFilter pathFilter;

@@ -18,12 +18,12 @@ import reactor.netty.tcp.TcpClient;
 public class RSocketClientRemoteBuilder extends AbstractRSocketClientRemoteBuilder<RSocketClientRemoteBuilder> {
     @Override
     public RSocketClient build() {
-        TcpClient tcpClient = configure(TcpClient.create());
-        RSocketConnector rSocketConnector = configure(RSocketConnector.create());
+        final TcpClient tcpClient = configure(TcpClient.create());
+        final RSocketConnector rSocketConnector = configure(RSocketConnector.create());
 
-        ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
+        final ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
 
-        Mono<RSocket> rSocket = rSocketConnector.connect(clientTransport);
+        final Mono<RSocket> rSocket = rSocketConnector.connect(clientTransport);
 
         return RSocketClient.from(rSocket);
     }

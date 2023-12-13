@@ -31,7 +31,7 @@ import de.freese.jsync.utils.ReactiveUtils;
 public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiver {
     @Override
     public void createDirectory(final String baseDir, final String relativePath) {
-        Path path = Paths.get(baseDir, relativePath);
+        final Path path = Paths.get(baseDir, relativePath);
 
         try {
             if (Files.notExists(path)) {
@@ -45,7 +45,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
 
     @Override
     public void delete(final String baseDir, final String relativePath, final boolean followSymLinks) {
-        Path path = Paths.get(baseDir, relativePath);
+        final Path path = Paths.get(baseDir, relativePath);
 
         try {
             JSyncUtils.delete(path, followSymLinks);
@@ -62,10 +62,10 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
 
     @Override
     public void update(final String baseDir, final SyncItem syncItem) {
-        Path path = Paths.get(baseDir, syncItem.getRelativePath());
+        final Path path = Paths.get(baseDir, syncItem.getRelativePath());
 
         // TimeUnit = SECONDS
-        long lastModifiedTime = syncItem.getLastModifiedTime();
+        final long lastModifiedTime = syncItem.getLastModifiedTime();
 
         // Format "rwxr-xr-x"; optional, can be NULL on Windows.
         //        String permissions = syncItem.getPermissionsToString();
@@ -104,21 +104,21 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
 
     @Override
     public void validateFile(final String baseDir, final SyncItem syncItem, final boolean withChecksum, final LongConsumer consumerChecksumBytesRead) {
-        Path path = Paths.get(baseDir, syncItem.getRelativePath());
+        final Path path = Paths.get(baseDir, syncItem.getRelativePath());
 
         try {
             if (Files.size(path) != syncItem.getSize()) {
-                String message = String.format("fileSize does not match with source: %s/%s", baseDir, syncItem.getRelativePath());
+                final String message = String.format("fileSize does not match with source: %s/%s", baseDir, syncItem.getRelativePath());
                 throw new IllegalStateException(message);
             }
 
             if (withChecksum) {
                 getLogger().debug("building Checksum: {}/{}", baseDir, syncItem.getRelativePath());
 
-                String checksum = DigestUtils.sha256DigestAsHex(path, consumerChecksumBytesRead);
+                final String checksum = DigestUtils.sha256DigestAsHex(path, consumerChecksumBytesRead);
 
                 if (!checksum.equals(syncItem.getChecksum())) {
-                    String message = String.format("checksum does not match with source: %s/%s", baseDir, syncItem.getRelativePath());
+                    final String message = String.format("checksum does not match with source: %s/%s", baseDir, syncItem.getRelativePath());
                     throw new IllegalStateException(message);
                 }
             }
@@ -130,8 +130,8 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
 
     @Override
     public Flux<Long> writeFile(final String baseDir, final String relativeFile, final long sizeOfFile, final Flux<ByteBuffer> fileFlux) {
-        Path path = Paths.get(baseDir, relativeFile);
-        Path parentPath = path.getParent();
+        final Path path = Paths.get(baseDir, relativeFile);
+        final Path parentPath = path.getParent();
 
         try {
             if (Files.notExists(parentPath)) {
@@ -142,7 +142,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
                 Files.createFile(path);
             }
 
-            FileChannel fileChannelReceiver = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC);
+            final FileChannel fileChannelReceiver = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.SYNC);
 
             return ReactiveUtils.write(fileFlux, fileChannelReceiver).doFinally(type -> JSyncUtils.close(fileChannelReceiver));
         }

@@ -21,7 +21,7 @@ class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBuffer
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(":");
         sb.append(" created=").append(getCreated());
         sb.append(", free=").append(getFree());

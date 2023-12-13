@@ -57,19 +57,19 @@ public final class RSocketDemo {
         // Enable Debug.
         Hooks.onOperatorDebug();
 
-        Function<Integer, SocketAcceptor> socketAcceptor = port -> SocketAcceptor.forRequestResponse(payload -> {
-            String request = payload.getDataUtf8();
+        final Function<Integer, SocketAcceptor> socketAcceptor = port -> SocketAcceptor.forRequestResponse(payload -> {
+            final String request = payload.getDataUtf8();
             LOGGER.info("Server {} got request {}", port, request);
             return Mono.just(DefaultPayload.create("Client of Server " + port + " got response " + request));
         });
 
         // Tuple2<RSocketClient, List<Disposable>> tuple = createSameVm(socketAcceptor);
-        Tuple2<RSocketClient, List<Disposable>> tuple = createRemote(socketAcceptor);
+        final Tuple2<RSocketClient, List<Disposable>> tuple = createRemote(socketAcceptor);
         // Tuple2<RSocketClient, List<Disposable>> tuple = createRemoteWithLoadBalancer(socketAcceptor);
         // Tuple2<RSocketClient, List<Disposable>> tuple = createRemoteWithLoadBalancerAndServiceDiscovery(socketAcceptor);
 
-        RSocketClient rSocketClient = tuple.getT1();
-        List<Disposable> servers = tuple.getT2();
+        final RSocketClient rSocketClient = tuple.getT1();
+        final List<Disposable> servers = tuple.getT2();
 
         // The Flux do not block.
         // @formatter:off
@@ -123,10 +123,10 @@ public final class RSocketDemo {
     }
 
     static Tuple2<RSocketClient, List<Disposable>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
-        InetSocketAddress serverAddress = new InetSocketAddress("localhost", 6000);
+        final InetSocketAddress serverAddress = new InetSocketAddress("localhost", 6000);
 
         // @formatter:off
-        CloseableChannel server = RSocketBuilders.serverRemote()
+        final CloseableChannel server = RSocketBuilders.serverRemote()
                 .socketAddress(serverAddress)
                 .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
                 .resumeDefault()
@@ -139,7 +139,7 @@ public final class RSocketDemo {
         // @formatter:on
 
         // @formatter:off
-        RSocketClient client = RSocketBuilders.clientRemote()
+        final RSocketClient client = RSocketBuilders.clientRemote()
                 .remoteAddress(serverAddress)
                 .resumeDefault()
                 .retryDefault()
@@ -154,10 +154,10 @@ public final class RSocketDemo {
     }
 
     static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
-        List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000).map(port -> new InetSocketAddress("localhost", port)).toList();
+        final List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000).map(port -> new InetSocketAddress("localhost", port)).toList();
 
         // @formatter:off
-        List<Disposable> servers = serverAddresses.stream()
+        final List<Disposable> servers = serverAddresses.stream()
                 .map(serverAddress -> RSocketBuilders.serverRemote()
                         .socketAddress(serverAddress)
                         .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
@@ -170,7 +170,7 @@ public final class RSocketDemo {
                 .toList()
                 ;
 
-        RSocketClient client = RSocketBuilders.clientRemoteLoadBalanced()
+        final RSocketClient client = RSocketBuilders.clientRemoteLoadBalanced()
                 .remoteAddresses(serverAddresses)
                 .resumeDefault()
                 .retryDefault()
@@ -184,19 +184,19 @@ public final class RSocketDemo {
     }
 
     static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
-        List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000, 8000, 9000).map(port -> new InetSocketAddress("localhost", port)).toList();
+        final List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000, 8000, 9000).map(port -> new InetSocketAddress("localhost", port)).toList();
 
         // @formatter:off
         // Simulate Service-Discovery.
         // org.springframework.cloud.client.discovery.DiscoveryClient - org.springframework.cloud:spring-cloud-commons
-        Random random = new Random();
-        Supplier<List<SocketAddress>> serviceDiscovery = () -> serverAddresses.stream()
+        final Random random = new Random();
+        final Supplier<List<SocketAddress>> serviceDiscovery = () -> serverAddresses.stream()
                 .filter(server -> random.nextBoolean()) // Do not use every Server.
                 .map(SocketAddress.class::cast)
                 .toList()
                 ;
 
-        List<Disposable> servers = serverAddresses.stream()
+        final List<Disposable> servers = serverAddresses.stream()
                 .map(serverAddress -> RSocketBuilders.serverRemote()
                         .socketAddress(serverAddress)
                         .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
@@ -209,7 +209,7 @@ public final class RSocketDemo {
                 .toList()
                 ;
 
-        RSocketClient client = RSocketBuilders.clientRemoteLoadBalancedWithServiceDiscovery()
+        final RSocketClient client = RSocketBuilders.clientRemoteLoadBalancedWithServiceDiscovery()
                 .serviceDiscovery(serviceDiscovery)
                 .resumeDefault()
                 .retryDefault()
@@ -224,7 +224,7 @@ public final class RSocketDemo {
 
     static Tuple2<RSocketClient, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
         // @formatter:off
-        Disposable server = RSocketBuilders.serverLocal()
+        final Disposable server = RSocketBuilders.serverLocal()
                 .name("test1")
                 .socketAcceptor(socketAcceptor.apply(0))
                 .build()
@@ -232,7 +232,7 @@ public final class RSocketDemo {
                 ;
         // @formatter:on
 
-        RSocketClient client = RSocketBuilders.clientLocal().name("test1").build();
+        final RSocketClient client = RSocketBuilders.clientLocal().name("test1").build();
 
         return Tuples.of(client, List.of(server));
     }

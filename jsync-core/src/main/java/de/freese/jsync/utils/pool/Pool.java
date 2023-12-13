@@ -101,13 +101,13 @@ public abstract class Pool<T> {
         @Override
         public T poll() {
             while (true) {
-                SoftReference<T> reference = this.delegate.poll();
+                final SoftReference<T> reference = this.delegate.poll();
 
                 if (reference == null) {
                     return null;
                 }
 
-                T object = reference.get();
+                final T object = reference.get();
 
                 if (object != null) {
                     return object;
@@ -165,11 +165,9 @@ public abstract class Pool<T> {
     }
 
     private final Queue<T> freeObjects;
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private int created;
-
     private int peak;
 
     protected Pool(final boolean threadSafe, final boolean softReferences) {
@@ -182,7 +180,7 @@ public abstract class Pool<T> {
      */
     @SuppressWarnings("unchecked")
     protected Pool(final boolean threadSafe, final boolean softReferences, final int maximumCapacity) {
-        Queue<T> queue;
+        final Queue<T> queue;
 
         if (threadSafe) {
             queue = new LinkedBlockingQueue<>(maximumCapacity) {

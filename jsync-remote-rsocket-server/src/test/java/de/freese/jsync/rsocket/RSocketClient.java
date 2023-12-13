@@ -52,7 +52,7 @@ public final class RSocketClient {
         // @formatter:on
 
         // @formatter:off
-        TcpClient tcpClient = TcpClient.create()
+        final TcpClient tcpClient = TcpClient.create()
                 .host("localhost")
                 .port(8888)
                 //.remoteAddress(() -> SocketAddress)
@@ -64,10 +64,10 @@ public final class RSocketClient {
                 ;
         // @formatter:on
 
-        Retry retry = Retry.fixedDelay(3, Duration.ofSeconds(1));
+        final Retry retry = Retry.fixedDelay(3, Duration.ofSeconds(1));
 
         // @formatter:off
-        Resume resume = new Resume()
+        final Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
                         .doBeforeRetry(signal -> LOGGER.info("Disconnected. Trying to resume..."))
@@ -76,18 +76,18 @@ public final class RSocketClient {
         // @formatter:on
 
         // @formatter:off
-        RSocketConnector connector = RSocketConnector.create()
+        final RSocketConnector connector = RSocketConnector.create()
                 .payloadDecoder(PayloadDecoder.DEFAULT)
                 .reconnect(retry)
                 .resume(resume)
                 ;
         // @formatter:on
 
-        ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
+        final ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
         // ClientTransport clientTransport = LocalClientTransport.create("alias");
 
-        Mono<RSocket> rSocket = connector.connect(clientTransport);
-        io.rsocket.core.RSocketClient rSocketClient = io.rsocket.core.RSocketClient.from(rSocket);
+        final Mono<RSocket> rSocket = connector.connect(clientTransport);
+        final io.rsocket.core.RSocketClient rSocketClient = io.rsocket.core.RSocketClient.from(rSocket);
 
         // @formatter:off
         rSocketClient

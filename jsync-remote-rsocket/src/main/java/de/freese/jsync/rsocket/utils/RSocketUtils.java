@@ -30,7 +30,7 @@ public final class RSocketUtils {
     }
 
     public static int write(final Payload payload, final WritableByteChannel channel) {
-        ByteBuffer buffer = payload.getData();
+        final ByteBuffer buffer = payload.getData();
 
         int bytesWritten = 0;
 

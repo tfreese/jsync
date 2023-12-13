@@ -20,7 +20,6 @@ public class JSyncController {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Client client;
-
     private SyncView syncView;
 
     public void init(final SyncView syncView) {
@@ -78,14 +77,14 @@ public class JSyncController {
     }
 
     private void compare() {
-        CompareWorker worker = new CompareWorker(this);
+        final CompareWorker worker = new CompareWorker(this);
 
         worker.execute();
     }
 
     private void synchronize() {
         // JOptionPane.showMessageDialog(JSyncSwingApplication.getInstance().getMainFrame(), "Not implemented !", "Error", JOptionPane.ERROR_MESSAGE);
-        SynchronizeWorker worker = new SynchronizeWorker(this);
+        final SynchronizeWorker worker = new SynchronizeWorker(this);
 
         worker.execute();
     }

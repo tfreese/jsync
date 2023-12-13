@@ -93,8 +93,8 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
     @Test
     void testLocal() throws Exception {
-        URI senderUri = PATH_SOURCE.toUri();
-        URI receiverUri = PATH_DEST.toUri();
+        final URI senderUri = PATH_SOURCE.toUri();
+        final URI receiverUri = PATH_DEST.toUri();
 
         syncDirectories(options, senderUri, receiverUri);
 
@@ -103,11 +103,10 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
     @Test
     void testNio() throws Exception {
-
         startServerNio(8001);
 
-        URI senderUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_SOURCE.toString());
-        URI receiverUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_DEST.toString());
+        final URI senderUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_SOURCE.toString());
+        final URI receiverUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_DEST.toString());
 
         syncDirectories(options, senderUri, receiverUri);
 
@@ -120,8 +119,8 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
         startServerRSocket(8002);
 
-        URI senderUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_SOURCE.toString());
-        URI receiverUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_DEST.toString());
+        final URI senderUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_SOURCE.toString());
+        final URI receiverUri = JSyncProtocol.RSOCKET.toUri("localhost:8002", PATH_DEST.toString());
 
         syncDirectories(options, senderUri, receiverUri);
 
@@ -130,7 +129,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
     private void startServerNio(final int port) throws Exception {
         if (!CLOSEABLES.containsKey("nio")) {
-            JSyncNioServer server = new JSyncNioServer(port, 2, 4);
+            final JSyncNioServer server = new JSyncNioServer(port, 2, 4);
             server.setName("nio");
             server.setIoHandler(new JSyncIoHandler());
             server.start();
@@ -150,7 +149,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
     private void startServerRSocket(final int port) throws Exception {
         if (!CLOSEABLES.containsKey("rSocket")) {
-            JSyncRSocketServer server = new JSyncRSocketServer();
+            final JSyncRSocketServer server = new JSyncRSocketServer();
             server.start(port);
             CLOSEABLES.put("rSocket", server::stop);
 
@@ -195,28 +194,28 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     // }
 
     private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception {
-        Client client = new DefaultClient(options, senderUri, receiverUri);
+        final Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
-        List<SyncItem> syncItemsSender = new ArrayList<>();
+        final List<SyncItem> syncItemsSender = new ArrayList<>();
         client.generateSyncItems(EFileSystem.SENDER, PathFilterNoOp.INSTANCE, syncItem -> {
             syncItemsSender.add(syncItem);
-            String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+            final String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);
             });
             syncItem.setChecksum(checksum);
         });
 
-        List<SyncItem> syncItemsReceiver = new ArrayList<>();
+        final List<SyncItem> syncItemsReceiver = new ArrayList<>();
         client.generateSyncItems(EFileSystem.RECEIVER, PathFilterNoOp.INSTANCE, syncItem -> {
             syncItemsReceiver.add(syncItem);
-            String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+            final String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);
             });
             syncItem.setChecksum(checksum);
         });
 
-        List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
+        final List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
 
         syncPairs.forEach(SyncPair::validateStatus);
 

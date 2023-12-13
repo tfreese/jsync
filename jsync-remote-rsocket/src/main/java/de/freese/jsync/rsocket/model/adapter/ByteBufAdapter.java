@@ -16,7 +16,7 @@ public class ByteBufAdapter implements DataAdapter<ByteBuf, ByteBuf> {
 
     @Override
     public byte[] readBytes(final ByteBuf source, final int length) {
-        byte[] bytes = new byte[length];
+        final byte[] bytes = new byte[length];
         source.readBytes(bytes);
 
         return bytes;

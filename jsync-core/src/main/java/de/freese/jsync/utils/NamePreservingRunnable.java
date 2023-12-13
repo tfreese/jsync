@@ -16,7 +16,6 @@ public class NamePreservingRunnable implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(NamePreservingRunnable.class);
 
     private final Runnable runnable;
-
     private final String runnableName;
 
     public NamePreservingRunnable(final Runnable runnable, final String runnableName) {
@@ -28,8 +27,8 @@ public class NamePreservingRunnable implements Runnable {
 
     @Override
     public void run() {
-        Thread currentThread = Thread.currentThread();
-        String oldName = currentThread.getName();
+        final Thread currentThread = Thread.currentThread();
+        final String oldName = currentThread.getName();
 
         setName(currentThread, this.runnableName);
 

@@ -17,10 +17,10 @@ public final class GroupSerializer implements ObjectSerializer<Group> {
         }
 
         // gid
-        int gid = adapter.readInteger(source);
+        final int gid = adapter.readInteger(source);
 
         // name
-        String name = adapter.readString(source, getCharset());
+        final String name = adapter.readString(source, getCharset());
 
         return new Group(name, gid);
     }

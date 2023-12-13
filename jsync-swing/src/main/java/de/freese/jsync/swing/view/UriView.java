@@ -22,10 +22,10 @@ import de.freese.jsync.swing.util.GbcBuilder;
  */
 class UriView extends AbstractView {
     private final JPanel panel = new JPanel();
+
     private JButton buttonOpen;
     private JComboBox<JSyncProtocol> comboBoxProtocol;
     private JTextField textFieldHostPort;
-
     private JTextField textFieldPath;
 
     JButton getButtonOpen() {
@@ -50,9 +50,9 @@ class UriView extends AbstractView {
     }
 
     URI getUri() {
-        JSyncProtocol protocol = (JSyncProtocol) this.comboBoxProtocol.getSelectedItem();
-        String hostPort = this.textFieldHostPort.getText();
-        String path = this.textFieldPath.getText();
+        final JSyncProtocol protocol = (JSyncProtocol) this.comboBoxProtocol.getSelectedItem();
+        final String hostPort = this.textFieldHostPort.getText();
+        final String path = this.textFieldPath.getText();
 
         if ((path == null) || path.isBlank()) {
             return null;
@@ -66,7 +66,7 @@ class UriView extends AbstractView {
 
         int row = 0;
 
-        JLabel labelTitle;
+        final JLabel labelTitle;
 
         if (EFileSystem.SENDER.equals(fileSystem)) {
             labelTitle = new JLabel(getMessage("jsync.source"));

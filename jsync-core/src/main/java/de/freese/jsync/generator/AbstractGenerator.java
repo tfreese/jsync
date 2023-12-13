@@ -27,7 +27,7 @@ public abstract class AbstractGenerator implements Generator {
     }
 
     protected Set<Path> getPathsAsSet(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter) {
-        Set<Path> set = new TreeSet<>();
+        final Set<Path> set = new TreeSet<>();
 
         walkFileTree(base, visitOptions, pathFilter, set::add);
 

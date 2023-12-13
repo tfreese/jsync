@@ -28,7 +28,7 @@ public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair> {
 
     @Override
     public Object getValueAt(final int rowIndex, final int columnIndex) {
-        SyncPair syncPair = getObjectAt(rowIndex);
+        final SyncPair syncPair = getObjectAt(rowIndex);
 
         return switch (columnIndex) {
             case 0 -> syncPair.getStatus();

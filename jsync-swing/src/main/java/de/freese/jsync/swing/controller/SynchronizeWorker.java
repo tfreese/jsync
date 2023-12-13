@@ -71,7 +71,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
 
     @Override
     protected Void doInBackground() throws Exception {
-        List<SyncPair> syncPairs = getSyncView().getSyncList();
+        final List<SyncPair> syncPairs = getSyncView().getSyncList();
 
         getSyncView().setProgressBarFilesMax(syncPairs.size());
 

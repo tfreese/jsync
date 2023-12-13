@@ -27,7 +27,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
 
         this.options = new Options();
 
-        OptionGroup groupParams = new OptionGroup();
+        final OptionGroup groupParams = new OptionGroup();
         groupParams.addOption(Option.builder("d").longOpt("delete").hasArg(false).desc("Empfänger löscht Dateien vor dem Transfer").build());
         this.options.addOptionGroup(groupParams);
 
@@ -38,7 +38,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
         this.options.addOption(Option.builder("s").longOpt("sender").hasArg().argName("DIR").desc("Quell-Verzeichnis").required().build());
         this.options.addOption(Option.builder("r").longOpt("receiver").hasArg().argName("DIR").desc("Ziel-Verzeichnis").required().build());
 
-        CommandLineParser parser = new DefaultParser();
+        final CommandLineParser parser = new DefaultParser();
 
         try {
             this.line = parser.parse(this.options, args);
@@ -72,19 +72,19 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
 
     @Override
     public boolean hasArgs() {
-        Option[] opts = this.line.getOptions();
+        final Option[] opts = this.line.getOptions();
 
         return (opts != null) && (opts.length > 0);
     }
 
     @Override
     public void printHelp(final PrintStream printStream) {
-        HelpFormatter formatter = new HelpFormatter();
+        final HelpFormatter formatter = new HelpFormatter();
         formatter.setOptionComparator(null);
         // formatter.setWidth(120);
         // formatter.printHelp("JSync\n", getCommandOptions(), true);
 
-        StringBuilder footer = new StringBuilder();
+        final StringBuilder footer = new StringBuilder();
         footer.append("\n@Thomas Freese");
 
         try (PrintWriter pw = new PrintWriter(printStream, true, StandardCharsets.UTF_8)) {

@@ -35,7 +35,7 @@ class Acceptor extends AbstractNioProcessor {
     protected void onAcceptable(final SelectionKey selectionKey) {
         try {
             // Establish Client Connection.
-            SocketChannel socketChannel = this.serverSocketChannel.accept();
+            final SocketChannel socketChannel = this.serverSocketChannel.accept();
 
             if (socketChannel == null) {
                 // In case that another Acceptor has processed the Connection.

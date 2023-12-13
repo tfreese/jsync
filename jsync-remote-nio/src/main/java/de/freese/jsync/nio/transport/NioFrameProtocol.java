@@ -65,7 +65,7 @@ public class NioFrameProtocol {
      */
     public void readAll(final ReadableByteChannel channel, final Consumer<ByteBuffer> consumer) throws Exception {
         while (true) {
-            ByteBuffer buffer = readFrame(channel);
+            final ByteBuffer buffer = readFrame(channel);
 
             if (buffer == null) {
                 // FINISH-Frame
@@ -85,8 +85,8 @@ public class NioFrameProtocol {
         // Header
         ByteBuffer buffer = readFrameHeader(channel);
 
-        FrameType frameType = FrameType.fromEncodedType(buffer.getInt());
-        int contentLength = buffer.getInt();
+        final FrameType frameType = FrameType.fromEncodedType(buffer.getInt());
+        final int contentLength = buffer.getInt();
 
         getBufferPool().free(buffer);
 
@@ -102,9 +102,9 @@ public class NioFrameProtocol {
             read(channel, buffer, contentLength);
             buffer.flip();
 
-            byte[] bytes = new byte[contentLength];
+            final byte[] bytes = new byte[contentLength];
             buffer.get(bytes);
-            String message = new String(bytes, StandardCharsets.UTF_8);
+            final String message = new String(bytes, StandardCharsets.UTF_8);
 
             getBufferPool().free(buffer);
 
@@ -138,7 +138,7 @@ public class NioFrameProtocol {
      * Write the DATA-Frame.
      */
     public void writeData(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException {
-        ByteBuffer buffer = getBufferPool().get();
+        final ByteBuffer buffer = getBufferPool().get();
 
         try {
             consumer.accept(buffer);
@@ -154,7 +154,7 @@ public class NioFrameProtocol {
      * Write the ERROR-Frame.
      */
     public void writeError(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException {
-        ByteBuffer buffer = getBufferPool().get();
+        final ByteBuffer buffer = getBufferPool().get();
 
         try {
             consumer.accept(buffer);
@@ -181,8 +181,8 @@ public class NioFrameProtocol {
      */
     public void writeError(final WritableByteChannel channel, final Throwable th) throws IOException {
         writeError(channel, buffer -> {
-            String message = th.getMessage() == null ? "" : th.getMessage();
-            byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
+            final String message = th.getMessage() == null ? "" : th.getMessage();
+            final byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
             buffer.put(messageBytes);
         });
     }
@@ -199,12 +199,12 @@ public class NioFrameProtocol {
      */
     protected void read(final ReadableByteChannel channel, final ByteBuffer buffer, final int contentLength) throws IOException {
         // The Buffer can be bigger than required.
-        ByteBuffer bb = buffer.slice(0, contentLength);
+        final ByteBuffer bb = buffer.slice(0, contentLength);
 
         int totalRead = channel.read(bb);
 
         while (totalRead < contentLength) {
-            int bytesRead = channel.read(bb);
+            final int bytesRead = channel.read(bb);
             totalRead += bytesRead;
         }
 
@@ -213,7 +213,7 @@ public class NioFrameProtocol {
     }
 
     protected ByteBuffer readFrameHeader(final ReadableByteChannel channel) throws IOException {
-        ByteBuffer buffer = getBufferPool().get();
+        final ByteBuffer buffer = getBufferPool().get();
 
         read(channel, buffer, 8);
 
@@ -241,7 +241,7 @@ public class NioFrameProtocol {
         long totalWritten = 0;
 
         while (buffer.hasRemaining()) {
-            long bytesWritten = channel.write(buffer);
+            final long bytesWritten = channel.write(buffer);
 
             totalWritten += bytesWritten;
         }
@@ -250,7 +250,7 @@ public class NioFrameProtocol {
     }
 
     protected void writeFrameHeader(final WritableByteChannel channel, final FrameType frameType, final int contentLength) throws IOException {
-        ByteBuffer buffer = getBufferPool().get();
+        final ByteBuffer buffer = getBufferPool().get();
 
         try {
             buffer.putInt(frameType.getEncodedType());

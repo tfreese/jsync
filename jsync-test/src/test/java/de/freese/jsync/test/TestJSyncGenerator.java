@@ -41,7 +41,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest {
     @Test
     void testFileAttributes() throws Exception {
         // @formatter:off
-        SyncItem syncItem = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, PathFilterNoOp.INSTANCE)
+        final SyncItem syncItem = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, PathFilterNoOp.INSTANCE)
                 .filter(si -> si.getRelativePath().endsWith("pom.xml"))
                 .blockFirst()
                 ;
@@ -73,10 +73,10 @@ class TestJSyncGenerator extends AbstractJSyncIoTest {
 
     @Test
     void testFilter() throws Exception {
-        PathFilter filter = new PathFilterEndsWith(Set.of("src", "target", ".settings"), Set.of(".classpath", ".project"));
+        final PathFilter filter = new PathFilterEndsWith(Set.of("src", "target", ".settings"), Set.of(".classpath", ".project"));
 
         // @formatter:off
-        Map<String, SyncItem> map = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, filter)
+        final Map<String, SyncItem> map = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, filter)
                 .collectMap(SyncItem::getRelativePath)
                 .block()
                 ;
@@ -93,7 +93,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest {
 
     @Test
     void testGenerator() throws Exception {
-        List<SyncItem> syncItems = new ArrayList<>();
+        final List<SyncItem> syncItems = new ArrayList<>();
 
         new DefaultGenerator().generateItems(PATH_SOURCE.toString(), false, PathFilterNoOp.INSTANCE, syncItems::add);
 

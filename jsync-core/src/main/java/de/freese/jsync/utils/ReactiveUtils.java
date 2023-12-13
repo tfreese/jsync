@@ -60,10 +60,10 @@ public final class ReactiveUtils {
      * The {@link ByteBuffer} will be released in the {@link WritableByteChannelSubscriber}.
      */
     public static Flux<Long> write(final Publisher<ByteBuffer> source, final WritableByteChannel channel) {
-        Flux<ByteBuffer> flux = Flux.from(source);
+        final Flux<ByteBuffer> flux = Flux.from(source);
 
         return Flux.create(sink -> {
-            WritableByteChannelSubscriber subscriber = new WritableByteChannelSubscriber(sink, channel);
+            final WritableByteChannelSubscriber subscriber = new WritableByteChannelSubscriber(sink, channel);
             sink.onDispose(subscriber);
             flux.subscribe(subscriber);
         });

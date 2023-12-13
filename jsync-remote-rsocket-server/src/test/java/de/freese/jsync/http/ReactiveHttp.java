@@ -26,7 +26,7 @@ public final class ReactiveHttp {
         HttpResources.set(LoopResources.create("reactive-http", 2, 4, true));
 
         // @formatter:off
-        DisposableServer httpServer = HttpServer.create()
+        final DisposableServer httpServer = HttpServer.create()
             .protocol(HttpProtocol.H2C)
             .route(routes -> routes
                     .get("/hello", (request, response) -> response.sendString(Mono.just("Hello World!")))
@@ -42,7 +42,7 @@ public final class ReactiveHttp {
         // @formatter:on
 
         // @formatter:off
-        HttpClient httpClient = HttpClient.create()
+        final HttpClient httpClient = HttpClient.create()
             .host("localhost")
             .port(httpServer.port())
             .protocol(HttpProtocol.H2C)
@@ -53,13 +53,13 @@ public final class ReactiveHttp {
         httpClient.get().uri("/hello").responseContent().aggregate().asString().subscribe(LOGGER::info);
         httpClient.post().uri("/echo").send(ByteBufFlux.fromString(Mono.just("Echo!"))).responseContent().aggregate().asString().subscribe(LOGGER::info);
 
-        Consumer<Tuple2<String, HttpHeaders>> responseSubscriber = response -> {
+        final Consumer<Tuple2<String, HttpHeaders>> responseSubscriber = response -> {
             LOGGER.info("Response: {}", response.getT1());
             LOGGER.info("Used stream ID: {}", response.getT2().get("x-http2-stream-id"));
         };
 
         for (int i = 0; i < 3; i++) {
-            Tuple2<String, HttpHeaders> response = httpClient.get().uri("/hello").responseSingle((res, bytes) -> bytes.asString().zipWith(Mono.just(res.responseHeaders()))).block();
+            final Tuple2<String, HttpHeaders> response = httpClient.get().uri("/hello").responseSingle((res, bytes) -> bytes.asString().zipWith(Mono.just(res.responseHeaders()))).block();
 
             // Ausgabe im main-Thread.
             responseSubscriber.accept(response);

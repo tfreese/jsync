@@ -11,10 +11,10 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 public final class StackTraceElementSerializer implements ObjectSerializer<StackTraceElement> {
     @Override
     public <W, R> StackTraceElement readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
-        String clazzName = adapter.readString(source, getCharset());
-        String methodName = adapter.readString(source, getCharset());
-        String fileName = adapter.readString(source, getCharset());
-        int lineNumber = adapter.readInteger(source);
+        final String clazzName = adapter.readString(source, getCharset());
+        final String methodName = adapter.readString(source, getCharset());
+        final String fileName = adapter.readString(source, getCharset());
+        final int lineNumber = adapter.readInteger(source);
 
         return new StackTraceElement(clazzName, methodName, fileName, lineNumber);
     }

@@ -66,17 +66,17 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         // KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("NewSunX509");
         // keyManagerFactory.init(keyStore, "gehaim".toCharArray());
 
-        KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
+        final KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
 
         try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_truststore.p12")) {
             keyStoreTrust.load(is, "password".toCharArray());
         }
 
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
         trustManagerFactory.init(keyStoreTrust);
 
         // @formatter:off
-        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
+        final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
                 .configure(builder -> builder
                         //.keyManager(keyManagerFactory)
                         .trustManager(trustManagerFactory)
@@ -93,7 +93,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
 
     public T protocolSslContextSpecTrusted() {
         // @formatter:off
-        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
+        final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
                 .configure(builder -> builder
                         .trustManager(InsecureTrustManagerFactory.INSTANCE)
                         .protocols("TLSv1.3")
@@ -117,7 +117,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
 
     public T resumeDefault() {
         // @formatter:off
-        Resume resume = new Resume()
+        final Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
                         .doBeforeRetry(signal -> getLogger().info("Disconnected. Trying to resume..."))

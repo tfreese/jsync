@@ -50,7 +50,7 @@ public final class RSocketServer {
          // @formatter:on
 
         // @formatter:off
-        TcpServer tcpServer = TcpServer.create()
+        final TcpServer tcpServer = TcpServer.create()
                 .host("localhost")
                 .port(8888)
                 //.bindAddress(() -> SocketAddress)
@@ -63,14 +63,14 @@ public final class RSocketServer {
                 ;
         // @formatter:on
 
-        SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
-            String request = payload.getDataUtf8();
+        final SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
+            final String request = payload.getDataUtf8();
             LOGGER.info("Server got request: {}", request);
             return Mono.just(DefaultPayload.create("Client got response: " + request));
         });
 
         // @formatter:off
-        Resume resume = new Resume()
+        final Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
                         .doBeforeRetry(signal -> LOGGER.info("Disconnected. Trying to resume..."))
@@ -78,7 +78,7 @@ public final class RSocketServer {
                 ;
         // @formatter:on
 
-        ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
+        final ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
         // ServerTransport<CloseableChannel> serverTransport = LocalServerTransport.create("alias");
 
         // @formatter:off

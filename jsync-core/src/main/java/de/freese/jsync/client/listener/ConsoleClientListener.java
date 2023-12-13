@@ -13,7 +13,6 @@ import de.freese.jsync.model.SyncItem;
  */
 public class ConsoleClientListener extends AbstractClientListener {
     private final PrintStream printStream;
-
     private final PrintStream printStreamError;
 
     public ConsoleClientListener() {
@@ -41,7 +40,7 @@ public class ConsoleClientListener extends AbstractClientListener {
             return;
         }
 
-        String message = checksumProgressMessage(options, syncItem, bytesRead);
+        final String message = checksumProgressMessage(options, syncItem, bytesRead);
 
         if (message == null) {
             return;
@@ -56,7 +55,7 @@ public class ConsoleClientListener extends AbstractClientListener {
             return;
         }
 
-        String message = copyProgressMessage(options, syncItem, bytesTransferred);
+        final String message = copyProgressMessage(options, syncItem, bytesTransferred);
 
         if (message == null) {
             return;
@@ -73,17 +72,18 @@ public class ConsoleClientListener extends AbstractClientListener {
 
     @Override
     public void delete(final Options options, final SyncItem syncItem) {
-        String message = deleteMessage(options, syncItem);
+        final String message = deleteMessage(options, syncItem);
 
         getPrintStream().println(message);
     }
 
     @Override
     public void error(final String message, final Throwable th) {
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(stringWriter);
+        final StringWriter stringWriter = new StringWriter();
+        final PrintWriter printWriter = new PrintWriter(stringWriter);
         th.printStackTrace(printWriter);
-        String stackTrace = stringWriter.toString();
+
+        final String stackTrace = stringWriter.toString();
 
         getPrintStreamError().println();
         getPrintStreamError().println("ERROR - " + (message == null ? "" : message));
@@ -92,14 +92,14 @@ public class ConsoleClientListener extends AbstractClientListener {
 
     @Override
     public void update(final Options options, final SyncItem syncItem) {
-        String message = updateMessage(options, syncItem);
+        final String message = updateMessage(options, syncItem);
 
         getPrintStream().println(message);
     }
 
     @Override
     public void validate(final Options options, final SyncItem syncItem) {
-        String message = validateMessage(options, syncItem);
+        final String message = validateMessage(options, syncItem);
 
         getPrintStream().println(message);
     }

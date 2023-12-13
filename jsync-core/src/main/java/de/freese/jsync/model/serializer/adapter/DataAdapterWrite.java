@@ -28,7 +28,7 @@ public interface DataAdapterWrite<W> {
     void writeBytes(W sink, byte[] bytes);
 
     default void writeDouble(W sink, double value) {
-        long longValue = Double.doubleToRawLongBits(value);
+        final long longValue = Double.doubleToRawLongBits(value);
 
         writeLong(sink, longValue);
     }
@@ -44,7 +44,7 @@ public interface DataAdapterWrite<W> {
     }
 
     default void writeFloat(W sink, float value) {
-        int intValue = Float.floatToRawIntBits(value);
+        final int intValue = Float.floatToRawIntBits(value);
 
         writeInteger(sink, intValue);
     }
@@ -60,7 +60,7 @@ public interface DataAdapterWrite<W> {
     }
 
     default void writeInteger(W sink, int value) {
-        byte[] bytes = new byte[4];
+        final byte[] bytes = new byte[4];
 
         bytes[0] = (byte) (0xFF & (value >> 24));
         bytes[1] = (byte) (0xFF & (value >> 16));
@@ -81,7 +81,7 @@ public interface DataAdapterWrite<W> {
     }
 
     default void writeLong(W sink, long value) {
-        byte[] bytes = new byte[8];
+        final byte[] bytes = new byte[8];
 
         bytes[0] = (byte) (0xFF & (value >> 56));
         bytes[1] = (byte) (0xFF & (value >> 48));
@@ -115,7 +115,7 @@ public interface DataAdapterWrite<W> {
             return;
         }
 
-        byte[] bytes = value.getBytes(charset);
+        final byte[] bytes = value.getBytes(charset);
 
         writeInteger(sink, bytes.length);
         writeBytes(sink, bytes);

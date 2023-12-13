@@ -19,6 +19,7 @@ public abstract class AbstractNioProcessor implements Runnable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Selector selector;
     private final Semaphore stopLock = new Semaphore(1, true);
+
     private boolean isShutdown;
 
     protected AbstractNioProcessor(final Selector selector) {
@@ -35,7 +36,7 @@ public abstract class AbstractNioProcessor implements Runnable {
             beforeSelectorWhile();
 
             while (!Thread.interrupted()) {
-                int readyChannels = getSelector().select();
+                final int readyChannels = getSelector().select();
 
                 getLogger().debug("readyChannels = {}", readyChannels);
 
@@ -44,12 +45,12 @@ public abstract class AbstractNioProcessor implements Runnable {
                 }
 
                 if (readyChannels > 0) {
-                    Set<SelectionKey> selected = getSelector().selectedKeys();
-                    Iterator<SelectionKey> iterator = selected.iterator();
+                    final Set<SelectionKey> selected = getSelector().selectedKeys();
+                    final Iterator<SelectionKey> iterator = selected.iterator();
 
                     try {
                         while (iterator.hasNext()) {
-                            SelectionKey selectionKey = iterator.next();
+                            final SelectionKey selectionKey = iterator.next();
                             iterator.remove();
 
                             if (!selectionKey.isValid()) {
@@ -139,11 +140,11 @@ public abstract class AbstractNioProcessor implements Runnable {
     }
 
     protected void cancelKeys() {
-        Set<SelectionKey> selected = getSelector().selectedKeys();
-        Iterator<SelectionKey> iterator = selected.iterator();
+        final Set<SelectionKey> selected = getSelector().selectedKeys();
+        final Iterator<SelectionKey> iterator = selected.iterator();
 
         while (iterator.hasNext()) {
-            SelectionKey selectionKey = iterator.next();
+            final SelectionKey selectionKey = iterator.next();
             iterator.remove();
 
             if (selectionKey == null) {

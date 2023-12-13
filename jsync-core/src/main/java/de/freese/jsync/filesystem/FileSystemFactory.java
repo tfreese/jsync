@@ -42,7 +42,7 @@ public final class FileSystemFactory {
     public Receiver createReceiver(final URI uri) {
         Objects.requireNonNull(uri, "uri required");
 
-        String scheme = uri.getScheme();
+        final String scheme = uri.getScheme();
 
         for (FileSystemProvider provider : this.serviceLoader) {
             if (provider.supportsProtocol(scheme)) {
@@ -56,7 +56,7 @@ public final class FileSystemFactory {
     public Sender createSender(final URI uri) {
         Objects.requireNonNull(uri, "uri required");
 
-        String scheme = uri.getScheme();
+        final String scheme = uri.getScheme();
 
         for (FileSystemProvider provider : this.serviceLoader) {
             if (provider.supportsProtocol(scheme)) {
@@ -68,9 +68,9 @@ public final class FileSystemFactory {
     }
 
     public List<JSyncProtocol> getAvailableProtocols() {
-        List<JSyncProtocol> protocols = List.of(JSyncProtocol.values());
+        final List<JSyncProtocol> protocols = List.of(JSyncProtocol.values());
 
-        Set<JSyncProtocol> availableProtocols = new HashSet<>();
+        final Set<JSyncProtocol> availableProtocols = new HashSet<>();
 
         for (FileSystemProvider provider : this.serviceLoader) {
             for (JSyncProtocol protocol : protocols) {
@@ -80,7 +80,7 @@ public final class FileSystemFactory {
             }
         }
 
-        List<JSyncProtocol> list = new ArrayList<>();
+        final List<JSyncProtocol> list = new ArrayList<>();
 
         // FILE ist immer dabei.
         list.add(JSyncProtocol.FILE);

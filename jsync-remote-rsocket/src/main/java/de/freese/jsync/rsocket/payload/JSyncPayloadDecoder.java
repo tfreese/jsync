@@ -30,10 +30,10 @@ class JSyncPayloadDecoder implements PayloadDecoder {
 
     @Override
     public Payload apply(final ByteBuf byteBuf) {
-        ByteBuf m;
-        ByteBuf d;
+        final ByteBuf m;
+        final ByteBuf d;
 
-        FrameType type = FrameHeaderCodec.frameType(byteBuf);
+        final FrameType type = FrameHeaderCodec.frameType(byteBuf);
 
         switch (type) {
             case REQUEST_FNF -> {
@@ -63,12 +63,12 @@ class JSyncPayloadDecoder implements PayloadDecoder {
             default -> throw new IllegalArgumentException("unsupported frame type: " + type);
         }
 
-        ByteBuffer data = this.byteBufferPool.get();
+        final ByteBuffer data = this.byteBufferPool.get();
         data.put(d.nioBuffer());
         data.flip();
 
         if (m != null) {
-            ByteBuffer metadata = this.byteBufferPool.get();
+            final ByteBuffer metadata = this.byteBufferPool.get();
             metadata.put(m.nioBuffer());
             metadata.flip();
 

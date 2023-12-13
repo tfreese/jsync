@@ -41,7 +41,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
 
     @Override
     public void disconnect() {
-        ByteBuffer bufferMeta = getByteBufferPool().get();
+        final ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, JSyncCommand.DISCONNECT);
 
         // @formatter:off
@@ -70,7 +70,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
             this.client = createClientLocal(uri, tcpClientCustomizer);
         }
 
-        ByteBuffer bufferMeta = getByteBufferPool().get();
+        final ByteBuffer bufferMeta = getByteBufferPool().get();
 
         getSerializer().writeTo(bufferMeta, JSyncCommand.CONNECT);
 
@@ -113,10 +113,10 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
     }
 
     protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead, final JSyncCommand command) {
-        ByteBuffer bufferMeta = getByteBufferPool().get();
+        final ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, command);
 
-        ByteBuffer bufferData = getByteBufferPool().get();
+        final ByteBuffer bufferData = getByteBufferPool().get();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, relativeFile);
 
@@ -143,10 +143,10 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
     }
 
     protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command) {
-        ByteBuffer bufferMeta = getByteBufferPool().get();
+        final ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, command);
 
-        ByteBuffer bufferData = getByteBufferPool().get();
+        final ByteBuffer bufferData = getByteBufferPool().get();
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, followSymLinks);
         getSerializer().writeTo(bufferData, pathFilter);
@@ -162,7 +162,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
             .publishOn(Schedulers.boundedElastic()) // Consumer calls generateChecksum = swap to another Thread or an Exception is caused !
             .doOnError(th -> getLogger().error(th.getMessage(), th))
             .map(payload -> {
-                ByteBuffer buffer = payload.getData();
+                final ByteBuffer buffer = payload.getData();
                 return getSerializer().readFrom(buffer, SyncItem.class);
             })
             ;

@@ -26,10 +26,10 @@ public final class JSyncConsole {
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncConsole.class);
 
     public static void main(final String[] args) throws Exception {
-        String[] args2 = args;
+        String[] arguments = args;
 
-        if (args2.length == 0) {
-            args2 = new String[]{"--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync-console"};
+        if (arguments.length == 0) {
+            arguments = new String[]{"--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync-console"};
             // args2 = new String[]
             // {
             // "--delete",
@@ -45,7 +45,7 @@ public final class JSyncConsole {
         ArgumentParser argumentParser = null;
 
         try {
-            argumentParser = new ArgumentParserApacheCommonsCli(args2);
+            argumentParser = new ArgumentParserApacheCommonsCli(arguments);
             // argumentParser = new ArgumentParserJopt(args2);
         }
         catch (Exception ex) {
@@ -58,7 +58,7 @@ public final class JSyncConsole {
             System.exit(0);
         }
 
-        JSyncConsole jSync = new JSyncConsole();
+        final JSyncConsole jSync = new JSyncConsole();
         jSync.run(argumentParser);
     }
 
@@ -74,7 +74,7 @@ public final class JSyncConsole {
 
     public void run(final ArgumentParser argumentParser) throws Exception {
         // @formatter:off
-        Options options = new Builder()
+        final Options options = new Builder()
                 .delete(argumentParser.delete())
                 .followSymLinks(argumentParser.followSymlinks())
                 .dryRun(argumentParser.dryRun())
@@ -83,8 +83,8 @@ public final class JSyncConsole {
                 ;
         // @formatter:on
 
-        URI senderUri = new URI(argumentParser.sender());
-        URI receiverUri = new URI(argumentParser.receiver());
+        final URI senderUri = new URI(argumentParser.sender());
+        final URI receiverUri = new URI(argumentParser.receiver());
 
         System.out.println("Start synchronisation");
         syncDirectories(options, senderUri, receiverUri, new ConsoleClientListener());
@@ -92,13 +92,13 @@ public final class JSyncConsole {
     }
 
     public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener) {
-        Client client = new DefaultClient(options, senderUri, receiverUri);
+        final Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
         // @formatter:off
-        Flux<SyncItem> syncItemsSender = client.generateSyncItems(EFileSystem.SENDER, null)
+        final Flux<SyncItem> syncItemsSender = client.generateSyncItems(EFileSystem.SENDER, null)
                 .doOnNext(syncItem -> {
-                    String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+                    final String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
                             // System.out.println("Sender Bytes read: " + i);
                         });
                     syncItem.setChecksum(checksum);
@@ -107,9 +107,9 @@ public final class JSyncConsole {
         // @formatter:on
 
         // @formatter:off
-        Flux<SyncItem> syncItemsReceiver = client.generateSyncItems(EFileSystem.RECEIVER, null)
+        final Flux<SyncItem> syncItemsReceiver = client.generateSyncItems(EFileSystem.RECEIVER, null)
                 .doOnNext(syncItem -> {
-                    String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+                    final String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
                         // System.out.println("Sender Bytes read: " + i);
                     });
                     syncItem.setChecksum(checksum);
@@ -117,7 +117,7 @@ public final class JSyncConsole {
                 ;
         // @formatter:on
 
-        List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender.collectList().block(), syncItemsReceiver.collectList().block());
+        final List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender.collectList().block(), syncItemsReceiver.collectList().block());
 
         syncPairs.forEach(SyncPair::validateStatus);
 

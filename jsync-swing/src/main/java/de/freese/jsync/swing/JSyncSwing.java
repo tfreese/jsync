@@ -51,13 +51,13 @@ public final class JSyncSwing {
     void initGui(final Consumer<JFrame> consumer) throws Exception {
         initUIDefaults();
 
-        JFrame frame = new JFrame();
+        final JFrame frame = new JFrame();
         frame.setTitle(JSyncContext.getMessages().getString("jsync.title"));
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new MainFrameListener());
         frame.setLayout(new BorderLayout());
 
-        SyncView syncView = new DefaultSyncView();
+        final SyncView syncView = new DefaultSyncView();
         syncView.initGui();
 
         this.controller = new JSyncController();
@@ -84,14 +84,14 @@ public final class JSyncSwing {
 
         UIManager.put("FileChooser.useSystemIcons", Boolean.TRUE);
 
-        Color color = new Color(215, 215, 215);
+        final Color color = new Color(215, 215, 215);
         // UIManager.put("Table.alternatingBackground", color);
         UIManager.put("Table.alternateRowColor", color);
         // UIManager.put("List.alternatingBackground", color);
         // defaults.put("Tree.alternatingBackground", color);
 
         // Fonts: Dialog, Monospaced, Arial, DejaVu Sans
-        Font font = new Font("DejaVu Sans", Font.PLAIN, 16);
+        final Font font = new Font("DejaVu Sans", Font.PLAIN, 16);
 
         UIManager.getLookAndFeelDefaults().forEach((key, value) -> {
             if (value instanceof FontUIResource) {
@@ -106,7 +106,7 @@ public final class JSyncSwing {
             // }
         });
 
-        // Font fontBold = font.deriveFont(Font.BOLD);
+        // final Font fontBold = font.deriveFont(Font.BOLD);
         // UIManager.put("TitledBorder.font", fontBold);
 
         // UIDefaults defaults = UIManager.getLookAndFeelDefaults();

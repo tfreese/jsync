@@ -23,17 +23,17 @@ import de.freese.jsync.utils.ReactiveUtils;
 public class LocalhostSender extends AbstractLocalFileSystem implements Sender {
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile) {
-        Path path = Paths.get(baseDir, relativeFile);
+        final Path path = Paths.get(baseDir, relativeFile);
 
         if (!Files.exists(path)) {
-            String message = String.format("file doesn't exist anymore: %s", path);
+            final String message = String.format("file doesn't exist anymore: %s", path);
             getLogger().warn(message);
 
             return Flux.empty();
         }
 
         try {
-            FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.READ);
+            final FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.READ);
 
             return ReactiveUtils.readByteChannel(() -> fileChannel);
         }

@@ -110,7 +110,7 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
 
     @Override
     public <T> T readFrom(final R source, final Class<T> type) {
-        ObjectSerializer<T> serializer = getSerializer(type);
+        final ObjectSerializer<T> serializer = getSerializer(type);
 
         return serializer.readFrom(this, this.adapter, source);
     }
@@ -122,7 +122,7 @@ public final class DefaultSerializer<W, R> implements Serializer<W, R>, Serializ
 
     @Override
     public <T> void writeTo(final W sink, final T value, final Class<T> type) {
-        ObjectSerializer<T> serializer = getSerializer(type);
+        final ObjectSerializer<T> serializer = getSerializer(type);
 
         serializer.writeTo(this, this.adapter, sink, value);
     }

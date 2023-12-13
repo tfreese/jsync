@@ -8,9 +8,7 @@ import java.util.Objects;
  */
 public class User {
     public static final int ID_MAX = 65535;
-
     public static final User NOBODY = new User("nobody", ID_MAX - 1);
-
     public static final User ROOT = new User("root", 0);
 
     private final String name;
@@ -54,7 +52,7 @@ public class User {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         builder.append("User [uid=");
         builder.append(this.uid);
         builder.append(", name=");

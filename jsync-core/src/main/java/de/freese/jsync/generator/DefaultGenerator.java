@@ -27,27 +27,26 @@ import de.freese.jsync.utils.JSyncUtils;
 public class DefaultGenerator extends AbstractGenerator {
     @Override
     public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead) {
-        Path path = Paths.get(baseDir, relativeFile);
+        final Path path = Paths.get(baseDir, relativeFile);
 
         return DigestUtils.sha256DigestAsHex(path, consumerChecksumBytesRead);
     }
 
     @Override
     public Flux<SyncItem> generateItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter) {
-        Path base = Paths.get(baseDir);
+        final Path base = Paths.get(baseDir);
 
         if (Files.notExists(base)) {
             return Flux.empty();
         }
 
-        FileVisitOption[] visitOptions = JSyncUtils.getFileVisitOptions(followSymLinks);
-        LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
+        final FileVisitOption[] visitOptions = JSyncUtils.getFileVisitOptions(followSymLinks);
+        final LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
 
         // @formatter:off
         return getPathsAsFlux(base, visitOptions, pathFilter)
                 .mapNotNull(path -> {
-                    if (Files.isDirectory(path))
-                    {
+                    if (Files.isDirectory(path)) {
                         return toDirectoryItem(path, base.relativize(path).toString(), linkOptions);
                     }
 
@@ -66,12 +65,12 @@ public class DefaultGenerator extends AbstractGenerator {
             return null;
         }
 
-        SyncItem syncItem = new DefaultSyncItem(relativeDir);
+        final SyncItem syncItem = new DefaultSyncItem(relativeDir);
 
         try {
             try (Stream<Path> children = Files.list(directory)) {
                 // @formatter:off
-                long count = children
+                final long count = children
                         .filter(child -> !child.equals(directory)) // We do not want the Base-Directory.
                         .count()
                         ;
@@ -80,7 +79,7 @@ public class DefaultGenerator extends AbstractGenerator {
                 syncItem.setSize(count);
             }
 
-            long lastModifiedTime = Files.getLastModifiedTime(directory, linkOptions).to(TimeUnit.SECONDS);
+            final long lastModifiedTime = Files.getLastModifiedTime(directory, linkOptions).to(TimeUnit.SECONDS);
             syncItem.setLastModifiedTime(lastModifiedTime);
 
             //            if (Options.IS_WINDOWS)
@@ -123,11 +122,11 @@ public class DefaultGenerator extends AbstractGenerator {
      * @param linkOptions {@link LinkOption}; if LinkOption#NOFOLLOW_LINKS null than Follow
      */
     protected SyncItem toFileItem(final Path file, final String relativeFile, final LinkOption[] linkOptions) {
-        SyncItem syncItem = new DefaultSyncItem(relativeFile);
+        final SyncItem syncItem = new DefaultSyncItem(relativeFile);
         syncItem.setFile(true);
 
         try {
-            BasicFileAttributes basicFileAttributes = Files.readAttributes(file, BasicFileAttributes.class, linkOptions);
+            final BasicFileAttributes basicFileAttributes = Files.readAttributes(file, BasicFileAttributes.class, linkOptions);
             syncItem.setLastModifiedTime(basicFileAttributes.lastModifiedTime().to(TimeUnit.SECONDS));
             syncItem.setSize(basicFileAttributes.size());
 

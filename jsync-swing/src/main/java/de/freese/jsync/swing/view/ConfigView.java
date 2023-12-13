@@ -22,17 +22,11 @@ public class ConfigView extends AbstractView {
     private final JPanel panel = new JPanel();
 
     private JButton buttonCompare;
-
     private JButton buttonSynchronize;
-
     private JCheckBox checkBoxChecksum;
-
     private JCheckBox checkBoxDelete;
-
     private JCheckBox checkBoxDryRun;
-
     private JCheckBox checkBoxFollowSymLinks;
-
     private JCheckBox checkBoxParallelism;
 
     void doOnCompare(final Consumer<JButton> consumer) {
@@ -80,7 +74,7 @@ public class ConfigView extends AbstractView {
         this.panel.add(this.buttonCompare, GbcBuilder.of(0, 0).insets(5, 5, 5, 20));
 
         // Optionen
-        JPanel panelOptions = new JPanel();
+        final JPanel panelOptions = new JPanel();
         panelOptions.setLayout(new GridBagLayout());
         panelOptions.setBorder(new TitledBorder(getMessage("jsync.options")));
         this.panel.add(panelOptions, GbcBuilder.of(1, 0).anchorWest());

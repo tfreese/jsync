@@ -14,7 +14,6 @@ import de.freese.jsync.model.SyncItem;
  */
 public class LoggerGeneratorListener extends AbstractGeneratorListener {
     private final Logger logger = LoggerFactory.getLogger("Generator");
-
     private final String prefix;
 
     public LoggerGeneratorListener(final String prefix) {
@@ -30,14 +29,14 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener {
 
     @Override
     public void currentItem(final SyncItem syncItem) {
-        String message = currentItemMessage(syncItem, this.prefix);
+        final String message = currentItemMessage(syncItem, this.prefix);
 
         getLogger().debug(message);
     }
 
     @Override
     public void itemCount(final Path path, final int itemCount) {
-        String message = itemCountMessage(path, itemCount, this.prefix);
+        final String message = itemCountMessage(path, itemCount, this.prefix);
 
         getLogger().info(message);
     }

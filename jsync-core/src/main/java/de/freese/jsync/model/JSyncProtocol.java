@@ -38,7 +38,7 @@ public enum JSyncProtocol {
 
         @Override
         public URI toUri(final String hostPort, final String path) {
-            URI uri = Paths.get(path).toUri();
+            final URI uri = Paths.get(path).toUri();
 
             return URI.create(getScheme() + "://" + hostPort + uri.getRawPath());
         }
@@ -57,7 +57,7 @@ public enum JSyncProtocol {
 
         @Override
         public URI toUri(final String hostPort, final String path) {
-            URI uri = Paths.get(path).toUri();
+            final URI uri = Paths.get(path).toUri();
 
             return URI.create(getScheme() + "://" + hostPort + uri.getRawPath());
 
@@ -86,7 +86,7 @@ public enum JSyncProtocol {
 
         @Override
         public URI toUri(final String hostPort, final String path) {
-            URI uri = Paths.get(path).toUri();
+            final URI uri = Paths.get(path).toUri();
 
             return URI.create(getScheme() + "://" + uri.getRawPath());
         }

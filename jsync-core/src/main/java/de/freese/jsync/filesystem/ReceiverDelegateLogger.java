@@ -18,7 +18,6 @@ import de.freese.jsync.model.SyncItem;
  */
 public class ReceiverDelegateLogger implements Receiver {
     private final Receiver delegate;
-
     private final Logger logger;
 
     public ReceiverDelegateLogger(final Receiver delegate) {

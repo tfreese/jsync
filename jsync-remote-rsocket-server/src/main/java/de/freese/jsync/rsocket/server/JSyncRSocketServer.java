@@ -30,9 +30,9 @@ public final class JSyncRSocketServer {
         System.setProperty("reactor.netty.ioSelectCount", Integer.toString(4));
         System.setProperty("reactor.netty.ioWorkerCount", Integer.toString(8));
 
-        int port = Integer.parseInt(args[0]);
+        final int port = Integer.parseInt(args[0]);
 
-        JSyncRSocketServer server = new JSyncRSocketServer();
+        final JSyncRSocketServer server = new JSyncRSocketServer();
 
         server.start(port);
 

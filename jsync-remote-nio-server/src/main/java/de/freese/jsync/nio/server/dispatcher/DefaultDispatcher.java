@@ -21,9 +21,7 @@ import de.freese.jsync.nio.server.handler.IoHandler;
  */
 class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
     private final Executor executor;
-
     private final IoHandler<SelectionKey> ioHandler;
-
     private final Queue<SocketChannel> newSessions = new ConcurrentLinkedQueue<>();
 
     DefaultDispatcher(final Selector selector, final IoHandler<SelectionKey> ioHandler, final Executor executor) {
@@ -63,7 +61,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
     protected void afterSelectorWhile() {
         // Close new Channels.
         for (Iterator<SocketChannel> iterator = getNewSessions().iterator(); iterator.hasNext(); ) {
-            SocketChannel socketChannel = iterator.next();
+            final SocketChannel socketChannel = iterator.next();
             iterator.remove();
 
             try {
@@ -118,7 +116,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
 
         // for (SocketChannel socketChannel = getNewSessions().poll(); socketChannel != null; socketChannel = this.newSessions.poll())
         while (!getNewSessions().isEmpty()) {
-            SocketChannel socketChannel = getNewSessions().poll();
+            final SocketChannel socketChannel = getNewSessions().poll();
 
             if (socketChannel == null) {
                 continue;

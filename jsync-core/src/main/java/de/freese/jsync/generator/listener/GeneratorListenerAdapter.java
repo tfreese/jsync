@@ -13,9 +13,7 @@ import de.freese.jsync.model.SyncItem;
  */
 public class GeneratorListenerAdapter implements GeneratorListener {
     private LongConsumer checksumConsumer;
-
     private Consumer<SyncItem> currentItemConsumer;
-
     private BiConsumer<Path, Integer> itemCountConsumer;
 
     @Override

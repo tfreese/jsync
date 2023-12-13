@@ -12,7 +12,7 @@ import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
 public final class JSyncCommandSerializer implements ObjectSerializer<JSyncCommand> {
     @Override
     public <W, R> JSyncCommand readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
-        String name = adapter.readString(source, getCharset());
+        final String name = adapter.readString(source, getCharset());
 
         if ((name == null) || name.isBlank()) {
             return null;

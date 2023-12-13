@@ -27,6 +27,7 @@ public class TableFacade {
     private final JTable tableReceiver;
     private final JTable tableSender;
     private final JTable tableStatus;
+
     private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterReceiver;
     private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterSender;
     private TableRowSorter<AbstractListTableModel<SyncPair>> rowSorterStatus;
@@ -94,9 +95,9 @@ public class TableFacade {
     }
 
     void initRowSorter(final Supplier<Predicate<SyncPair>> supplierPredicate) {
-        RowFilter<AbstractListTableModel<SyncPair>, Integer> rowFilter = new RowFilter<>() {
+        final RowFilter<AbstractListTableModel<SyncPair>, Integer> rowFilter = new RowFilter<>() {
             public boolean include(final Entry<? extends AbstractListTableModel<SyncPair>, ? extends Integer> entry) {
-                SyncPair syncPair = entry.getModel().getObjectAt(entry.getIdentifier());
+                final SyncPair syncPair = entry.getModel().getObjectAt(entry.getIdentifier());
 
                 return supplierPredicate.get().test(syncPair);
             }
@@ -116,7 +117,7 @@ public class TableFacade {
     }
 
     void scrollToLastRow() {
-        int rowCount = getRowCount();
+        final int rowCount = getRowCount();
 
         Rectangle rectangle = this.tableSender.getCellRect(rowCount - 1, 0, false);
         this.tableSender.scrollRectToVisible(rectangle);

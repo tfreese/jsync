@@ -33,19 +33,12 @@ import de.freese.jsync.utils.io.FileVisitorDelete;
  */
 public final class JSyncUtils {
     private static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = {};
-
     private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = {FileVisitOption.FOLLOW_LINKS};
-
     private static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
-
     private static final LinkOption[] LINKOPTION_NO_SYMLINKS = {LinkOption.NOFOLLOW_LINKS};
-
     private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = {};
-
     private static final Pattern PATTERN_FILTER = Pattern.compile("[;,]");
-
     private static final String[] SIZE_UNITS = {"B", "KB", "MB", "GB", "TB", "PB", "EB"};
 
     /**
@@ -111,13 +104,13 @@ public final class JSyncUtils {
         // Alternative
         // Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
 
-        LinkOption[] linkOptions = getLinkOptions(followSymLinks);
+        final LinkOption[] linkOptions = getLinkOptions(followSymLinks);
 
         if (!Files.exists(path, linkOptions)) {
             return;
         }
 
-        FileVisitOption[] fileVisitOptions = getFileVisitOptions(followSymLinks);
+        final FileVisitOption[] fileVisitOptions = getFileVisitOptions(followSymLinks);
 
         if (Files.isDirectory(path, linkOptions)) {
             Files.walkFileTree(path, Set.of(fileVisitOptions), Integer.MAX_VALUE, new FileVisitorDelete());
@@ -143,7 +136,7 @@ public final class JSyncUtils {
      * @return double 0.0 - 100.0
      */
     public static double getPercent(final long value, final long max) {
-        double progress = getProgress(value, max);
+        final double progress = getProgress(value, max);
 
         return progress * 100D;
     }
@@ -190,19 +183,19 @@ public final class JSyncUtils {
     }
 
     public static boolean isLinux() {
-        String os = getOsName().toLowerCase();
+        final String os = getOsName().toLowerCase();
 
         return os.contains("linux");
     }
 
     public static boolean isUnix() {
-        String os = getOsName().toLowerCase();
+        final String os = getOsName().toLowerCase();
 
         return os.contains("nix") || os.contains("nux") || os.contains("aix");
     }
 
     public static boolean isWindows() {
-        String os = getOsName().toLowerCase();
+        final String os = getOsName().toLowerCase();
 
         return os.startsWith("win");
     }
@@ -334,7 +327,7 @@ public final class JSyncUtils {
             return Collections.emptySet();
         }
 
-        String[] splits = PATTERN_FILTER.split(value);
+        final String[] splits = PATTERN_FILTER.split(value);
 
         return Arrays.stream(splits).map(String::strip).collect(Collectors.toSet());
     }
@@ -349,7 +342,7 @@ public final class JSyncUtils {
             unitIndex = (int) (Math.log10(size) / 3);
         }
 
-        double unitValue = 1 << (unitIndex * 10);
+        final double unitValue = 1 << (unitIndex * 10);
 
         // return new DecimalFormat("#,##0.#").format(size / unitValue) + " " + SIZE_UNITS[unitIndex];
         // return String.format("%7.0f %s", size / unitValue, SIZE_UNITS[unitIndex]);

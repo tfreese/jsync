@@ -60,14 +60,14 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
 
     @Override
     public Flux<Payload> requestChannel(final Publisher<Payload> payloads) {
-        Receiver receiver = POOL_RECEIVER.obtain();
+        final Receiver receiver = POOL_RECEIVER.obtain();
 
         return Flux.from(payloads).switchOnFirst((firstSignal, flux) -> {
             try {
                 final Payload payload = firstSignal.get();
-                ByteBuffer bufferMeta = payload.getMetadata();
+                final ByteBuffer bufferMeta = payload.getMetadata();
 
-                JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
+                final JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
                 getLogger().debug("read command: {}", command);
                 RSocketUtils.release(payload);
 
@@ -90,13 +90,13 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
 
     @Override
     public Mono<Payload> requestResponse(final Payload payload) {
-        Sender sender = POOL_SENDER.obtain();
-        Receiver receiver = POOL_RECEIVER.obtain();
+        final Sender sender = POOL_SENDER.obtain();
+        final Receiver receiver = POOL_RECEIVER.obtain();
 
         try {
-            ByteBuffer bufferMeta = payload.getMetadata();
+            final ByteBuffer bufferMeta = payload.getMetadata();
 
-            JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
+            final JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
             getLogger().debug("read command: {}", command);
 
             return switch (command) {
@@ -125,13 +125,13 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
 
     @Override
     public Flux<Payload> requestStream(final Payload payload) {
-        Sender sender = POOL_SENDER.obtain();
-        Receiver receiver = POOL_RECEIVER.obtain();
+        final Sender sender = POOL_SENDER.obtain();
+        final Receiver receiver = POOL_RECEIVER.obtain();
 
         try {
-            ByteBuffer bufferMeta = payload.getMetadata();
+            final ByteBuffer bufferMeta = payload.getMetadata();
 
-            JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
+            final JSyncCommand command = getSerializer().readFrom(bufferMeta, JSyncCommand.class);
             getLogger().debug("read command: {}", command);
 
             return switch (command) {
@@ -162,15 +162,15 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     }
 
     private Flux<Payload> checksum(final Payload payload, final FileSystem fileSystem) {
-        ByteBuffer bufferData = payload.getData();
+        final ByteBuffer bufferData = payload.getData();
 
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        String relativeFile = getSerializer().readFrom(bufferData, String.class);
+        final String baseDir = getSerializer().readFrom(bufferData, String.class);
+        final String relativeFile = getSerializer().readFrom(bufferData, String.class);
 
         return Flux.create(sink -> {
-            LongConsumer consumer = checksumBytesRead -> sink.next(DefaultPayload.create(Long.toString(checksumBytesRead)));
+            final LongConsumer consumer = checksumBytesRead -> sink.next(DefaultPayload.create(Long.toString(checksumBytesRead)));
 
-            String checksum = fileSystem.generateChecksum(baseDir, relativeFile, consumer);
+            final String checksum = fileSystem.generateChecksum(baseDir, relativeFile, consumer);
             sink.next(DefaultPayload.create(checksum));
 
             sink.complete();
@@ -178,53 +178,53 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     }
 
     private Mono<Payload> connect() {
-        Payload responsePayload = DefaultPayload.create("OK");
+        final Payload responsePayload = DefaultPayload.create("OK");
 
         return Mono.just(responsePayload);
     }
 
     private Mono<Payload> createDirectory(final Payload payload, final Receiver receiver) {
-        ByteBuffer bufferData = payload.getData();
+        final ByteBuffer bufferData = payload.getData();
 
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        String relativePath = getSerializer().readFrom(bufferData, String.class);
+        final String baseDir = getSerializer().readFrom(bufferData, String.class);
+        final String relativePath = getSerializer().readFrom(bufferData, String.class);
 
         receiver.createDirectory(baseDir, relativePath);
 
-        Payload responsePayload = DefaultPayload.create("OK");
+        final Payload responsePayload = DefaultPayload.create("OK");
 
         return Mono.just(responsePayload);
     }
 
     private Mono<Payload> delete(final Payload payload, final Receiver receiver) {
-        ByteBuffer bufferData = payload.getData();
+        final ByteBuffer bufferData = payload.getData();
 
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        String relativePath = getSerializer().readFrom(bufferData, String.class);
-        boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
+        final String baseDir = getSerializer().readFrom(bufferData, String.class);
+        final String relativePath = getSerializer().readFrom(bufferData, String.class);
+        final boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
 
         receiver.delete(baseDir, relativePath, followSymLinks);
 
-        Payload responsePayload = DefaultPayload.create("OK");
+        final Payload responsePayload = DefaultPayload.create("OK");
 
         return Mono.just(responsePayload);
     }
 
     private Mono<Payload> disconnect() {
-        Payload responsePayload = DefaultPayload.create("OK");
+        final Payload responsePayload = DefaultPayload.create("OK");
 
         return Mono.just(responsePayload);
     }
 
     private Flux<Payload> generateSyncItems(final Payload payload, final FileSystem fileSystem) {
-        ByteBuffer bufferData = payload.getData();
+        final ByteBuffer bufferData = payload.getData();
 
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
-        PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
+        final String baseDir = getSerializer().readFrom(bufferData, String.class);
+        final boolean followSymLinks = getSerializer().readFrom(bufferData, Boolean.class);
+        final PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
 
         return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem -> {
-            ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.byteBufferPool.get();
+            final ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.byteBufferPool.get();
             getSerializer().writeTo(buffer, syncItem);
             return buffer.flip();
         }).map(DefaultPayload::create);
@@ -246,11 +246,11 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     }
 
     private Flux<Payload> readFile(final Payload payload, final Sender sender) {
-        ByteBuffer bufferData = payload.getData();
+        final ByteBuffer bufferData = payload.getData();
 
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        String relativeFile = getSerializer().readFrom(bufferData, String.class);
-        long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
+        final String baseDir = getSerializer().readFrom(bufferData, String.class);
+        final String relativeFile = getSerializer().readFrom(bufferData, String.class);
+        final long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
 
         // @formatter:off
         return sender.readFile(baseDir, relativeFile, sizeOfFile)
@@ -260,43 +260,43 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     }
 
     private Mono<Payload> update(final Payload payload, final Receiver receiver) {
-        ByteBuffer bufferData = payload.getData();
+        final ByteBuffer bufferData = payload.getData();
 
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        SyncItem syncItem = getSerializer().readFrom(bufferData, SyncItem.class);
+        final String baseDir = getSerializer().readFrom(bufferData, String.class);
+        final SyncItem syncItem = getSerializer().readFrom(bufferData, SyncItem.class);
 
         receiver.update(baseDir, syncItem);
 
-        Payload responsePayload = DefaultPayload.create("OK");
+        final Payload responsePayload = DefaultPayload.create("OK");
 
         return Mono.just(responsePayload);
     }
 
     private Mono<Payload> validate(final Payload payload, final Receiver receiver) {
-        ByteBuffer bufferData = payload.getMetadata();
+        final ByteBuffer bufferData = payload.getMetadata();
 
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        SyncItem syncItem = getSerializer().readFrom(bufferData, SyncItem.class);
-        boolean withChecksum = getSerializer().readFrom(bufferData, Boolean.class);
+        final String baseDir = getSerializer().readFrom(bufferData, String.class);
+        final SyncItem syncItem = getSerializer().readFrom(bufferData, SyncItem.class);
+        final boolean withChecksum = getSerializer().readFrom(bufferData, Boolean.class);
 
         receiver.validateFile(baseDir, syncItem, withChecksum, null);
 
-        Payload responsePayload = DefaultPayload.create("OK");
+        final Payload responsePayload = DefaultPayload.create("OK");
 
         return Mono.just(responsePayload);
     }
 
     private Flux<Payload> writeFile(final Payload payload, final Flux<Payload> flux, final Receiver receiver) {
-        ByteBuffer bufferData = payload.getData();
+        final ByteBuffer bufferData = payload.getData();
 
-        String baseDir = getSerializer().readFrom(bufferData, String.class);
-        String relativeFile = getSerializer().readFrom(bufferData, String.class);
-        long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
+        final String baseDir = getSerializer().readFrom(bufferData, String.class);
+        final String relativeFile = getSerializer().readFrom(bufferData, String.class);
+        final long sizeOfFile = getSerializer().readFrom(bufferData, Long.class);
 
         // @formatter:off
         return receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
                 .map(bytesWritten -> {
-                    ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.byteBufferPool.get();
+                    final ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.byteBufferPool.get();
                     buffer.putLong(bytesWritten).flip();
                     return DefaultPayload.create(buffer);
                 })

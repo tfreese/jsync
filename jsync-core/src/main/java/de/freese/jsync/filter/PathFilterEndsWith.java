@@ -12,7 +12,6 @@ import java.util.Set;
  */
 public class PathFilterEndsWith implements PathFilter {
     private final Set<String> directoryFilter;
-
     private final Set<String> fileFilter;
 
     public PathFilterEndsWith(final Set<String> directoryFilter, final Set<String> fileFilter) {

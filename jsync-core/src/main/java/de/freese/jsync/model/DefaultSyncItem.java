@@ -10,17 +10,11 @@ public class DefaultSyncItem implements SyncItem {
     private final String relativePath;
 
     private String checksum;
-
     //    private Group group;
-
     private boolean isFile;
-
     private long lastModifiedTime;
-
     //    private Set<PosixFilePermission> permissions;
-
     private long size;
-
     //    private User user;
 
     public DefaultSyncItem(final String relativePath) {
@@ -112,7 +106,7 @@ public class DefaultSyncItem implements SyncItem {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("SyncItem [");
         sb.append("relativePath=").append(getRelativePath());
 

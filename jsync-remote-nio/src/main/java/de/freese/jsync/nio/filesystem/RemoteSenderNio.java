@@ -30,7 +30,7 @@ public class RemoteSenderNio extends AbstractNioFileSystem implements Sender {
 
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile) {
-        SocketChannel channel = getChannelPool().obtain();
+        final SocketChannel channel = getChannelPool().obtain();
 
         try {
             // MetaData-Frame

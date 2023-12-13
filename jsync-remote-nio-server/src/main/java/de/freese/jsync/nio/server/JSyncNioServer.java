@@ -33,9 +33,9 @@ public final class JSyncNioServer implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncNioServer.class);
 
     public static void main(final String[] args) throws Exception {
-        int port = Integer.parseInt(args[0]);
+        final int port = Integer.parseInt(args[0]);
 
-        JSyncNioServer server = new JSyncNioServer(port, 2, 4);
+        final JSyncNioServer server = new JSyncNioServer(port, 2, 4);
         server.setIoHandler(new JSyncIoHandler());
         server.start();
 
@@ -55,9 +55,7 @@ public final class JSyncNioServer implements Runnable {
     }
 
     private final DispatcherPool dispatcherPool;
-
     private final int port;
-
     private final SelectorProvider selectorProvider;
     /**
      * ReentrantLock is not possible, Locks are handles on Thread-Level.
@@ -65,11 +63,8 @@ public final class JSyncNioServer implements Runnable {
     private final Semaphore startLock = new Semaphore(1, true);
 
     private Acceptor acceptor;
-
     private IoHandler<SelectionKey> ioHandler;
-
     private String name = getClass().getSimpleName();
-
     private ServerSocketChannel serverSocketChannel;
 
     public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker) {
@@ -142,7 +137,7 @@ public final class JSyncNioServer implements Runnable {
             // Create Acceptor.
             this.acceptor = new Acceptor(this.selectorProvider.openSelector(), this.serverSocketChannel, this.dispatcherPool);
 
-            Thread thread = new JSyncThreadFactory(this.name + "-" + this.port + "-acceptor-").newThread(this.acceptor);
+            final Thread thread = new JSyncThreadFactory(this.name + "-" + this.port + "-acceptor-").newThread(this.acceptor);
             getLogger().debug("start {}", thread.getName());
             thread.start();
 

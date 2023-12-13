@@ -22,7 +22,6 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> // implements Subscriber<ByteBuffer>
 {
     private final WritableByteChannel channel;
-
     private final FluxSink<Long> sink;
 
     // private Subscription subscription;
@@ -97,7 +96,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     @Override
     protected void hookOnNext(final ByteBuffer buffer) {
         try {
-            long limit = buffer.limit();
+            final long limit = buffer.limit();
 
             while (buffer.hasRemaining()) {
                 this.channel.write(buffer);

@@ -25,7 +25,6 @@ import de.freese.jsync.nio.utils.pool.SocketChannelPool;
  */
 public abstract class AbstractNioFileSystem extends AbstractFileSystem {
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
-
     private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     private SocketChannelPool channelPool;
@@ -34,7 +33,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
     public void connect(final URI uri) {
         this.channelPool = new SocketChannelPool(uri);
 
-        SocketChannel channel = getChannelPool().obtain();
+        final SocketChannel channel = getChannelPool().obtain();
 
         try {
             // MetaData-Frame
@@ -62,7 +61,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
     @Override
     public void disconnect() {
-        SocketChannel channel = getChannelPool().obtain();
+        final SocketChannel channel = getChannelPool().obtain();
 
         try {
             // MetaData-Frame
@@ -88,7 +87,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
     }
 
     protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead, final JSyncCommand command) {
-        SocketChannel channel = getChannelPool().obtain();
+        final SocketChannel channel = getChannelPool().obtain();
 
         try {
             // MetaData-Frame
@@ -105,7 +104,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
             // Response
             return getFrameProtocol().readAll(channel).map(buffer -> {
-                String value = getSerializer().readFrom(buffer, String.class);
+                final String value = getSerializer().readFrom(buffer, String.class);
                 getFrameProtocol().getBufferPool().free(buffer);
 
                 return value;
@@ -131,7 +130,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
     protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command) {
         return Flux.create(sink -> {
-            SocketChannel channel = getChannelPool().obtain();
+            final SocketChannel channel = getChannelPool().obtain();
 
             try {
                 // MetaData-Frame
@@ -149,7 +148,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
                 // Response
                 getFrameProtocol().readAll(channel, buffer -> {
-                    SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
+                    final SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
 
                     sink.next(syncItem);
 

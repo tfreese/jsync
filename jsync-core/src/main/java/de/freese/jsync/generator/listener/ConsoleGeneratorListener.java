@@ -12,9 +12,7 @@ import de.freese.jsync.model.SyncItem;
  */
 public class ConsoleGeneratorListener extends AbstractGeneratorListener {
     private final String prefix;
-
     private final PrintStream printStream;
-
     private final PrintStream printStreamError;
 
     public ConsoleGeneratorListener(final String prefix) {
@@ -52,7 +50,7 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener {
 
     @Override
     public void itemCount(final Path path, final int itemCount) {
-        String message = itemCountMessage(path, itemCount, this.prefix);
+        final String message = itemCountMessage(path, itemCount, this.prefix);
 
         getPrintStream().println(message);
     }

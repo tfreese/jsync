@@ -47,8 +47,8 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V> {
         this.controller = controller;
         this.options = controller.getSyncView().getOptions();
 
-        URI senderUri = controller.getSyncView().getUri(EFileSystem.SENDER);
-        URI receiverUri = controller.getSyncView().getUri(EFileSystem.RECEIVER);
+        final URI senderUri = controller.getSyncView().getUri(EFileSystem.SENDER);
+        final URI receiverUri = controller.getSyncView().getUri(EFileSystem.RECEIVER);
 
         controller.createNewClient(this.options, senderUri, receiverUri);
 
@@ -67,7 +67,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V> {
         if ("file".equals(senderUri.getScheme()) && "file".equals(receiverUri.getScheme())) {
             // Local
             try {
-                FileStore fileStoreSender = Files.getFileStore(Paths.get(senderUri));
+                final FileStore fileStoreSender = Files.getFileStore(Paths.get(senderUri));
 
                 Path receiverPath = Paths.get(receiverUri);
 
@@ -75,7 +75,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V> {
                     receiverPath = receiverPath.getParent();
                 }
 
-                FileStore fileStoreReceiver = Files.getFileStore(receiverPath);
+                final FileStore fileStoreReceiver = Files.getFileStore(receiverPath);
 
                 if (!fileStoreSender.name().equals(fileStoreReceiver.name())) {
                     canRunParallel = true;

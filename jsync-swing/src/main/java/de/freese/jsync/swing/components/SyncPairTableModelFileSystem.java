@@ -36,8 +36,8 @@ public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPai
 
     @Override
     public Object getValueAt(final int rowIndex, final int columnIndex) {
-        SyncPair syncPair = getObjectAt(rowIndex);
-        SyncItem syncItem = EFileSystem.SENDER.equals(this.fileSystem) ? syncPair.getSenderItem() : syncPair.getReceiverItem();
+        final SyncPair syncPair = getObjectAt(rowIndex);
+        final SyncItem syncItem = EFileSystem.SENDER.equals(this.fileSystem) ? syncPair.getSenderItem() : syncPair.getReceiverItem();
 
         return switch (columnIndex) {
             case 0 -> syncItem != null ? syncItem.getRelativePath() : null;

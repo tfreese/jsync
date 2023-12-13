@@ -25,7 +25,7 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
     @Override
     public void accept(final SynchronousSink<ByteBuffer> sink) {
         boolean release = true;
-        ByteBuffer buffer = ByteBufferPool.DEFAULT.get();
+        final ByteBuffer buffer = ByteBufferPool.DEFAULT.get();
 
         try {
             if (this.channel.read(buffer) >= 0) {

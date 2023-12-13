@@ -25,9 +25,9 @@ public final class ReactiveTcp {
         TcpResources.set(LoopResources.create("tcpServer", 2, 4, true));
 
         // @formatter:off
-        DisposableServer tcpServer = TcpServer.create()
+        final DisposableServer tcpServer = TcpServer.create()
                 .handle((in, out) -> {
-                    Flux<String> inFlux = in.receive()
+                    final Flux<String> inFlux = in.receive()
                             .asString(StandardCharsets.UTF_8)
                             .doOnNext(request -> LOGGER.info("Server: Request = {}", request))
                             ;
@@ -42,7 +42,7 @@ public final class ReactiveTcp {
         // @formatter:on
 
         // @formatter:off
-        Connection connection = TcpClient.create()
+        final Connection connection = TcpClient.create()
                 .port(tcpServer.port())
                 .connectNow()
                 ;

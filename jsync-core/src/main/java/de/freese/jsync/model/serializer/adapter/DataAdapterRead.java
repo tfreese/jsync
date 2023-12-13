@@ -26,7 +26,7 @@ public interface DataAdapterRead<R> {
     byte[] readBytes(R source, int length);
 
     default double readDouble(R source) {
-        long longValue = readLong(source);
+        final long longValue = readLong(source);
 
         return Double.longBitsToDouble(longValue);
     }
@@ -40,7 +40,7 @@ public interface DataAdapterRead<R> {
     }
 
     default float readFloat(R source) {
-        int intValue = readInteger(source);
+        final int intValue = readInteger(source);
 
         return Float.intBitsToFloat(intValue);
     }
@@ -54,15 +54,15 @@ public interface DataAdapterRead<R> {
     }
 
     default int readInteger(R source) {
-        byte[] bytes = readBytes(source, 4);
+        final byte[] bytes = readBytes(source, 4);
 
         // @formatter:off
-       return ((bytes[0] & 0xFF) << 24)
-               + ((bytes[1] & 0xFF) << 16)
-               + ((bytes[2] & 0xFF) << 8)
-               + (bytes[3] & 0xFF)
-               ;
-       // @formatter:on
+        return ((bytes[0] & 0xFF) << 24)
+                + ((bytes[1] & 0xFF) << 16)
+                + ((bytes[2] & 0xFF) << 8)
+                + (bytes[3] & 0xFF)
+                ;
+        // @formatter:on
     }
 
     default Integer readIntegerWrapper(final R source) {
@@ -74,7 +74,7 @@ public interface DataAdapterRead<R> {
     }
 
     default long readLong(R source) {
-        byte[] bytes = readBytes(source, 8);
+        final byte[] bytes = readBytes(source, 8);
 
         // @formatter:off
         return ((long) (bytes[0] & 0xFF) << 56)
@@ -98,7 +98,7 @@ public interface DataAdapterRead<R> {
     }
 
     default String readString(final R source, final Charset charset) {
-        int length = readInteger(source);
+        final int length = readInteger(source);
 
         if (length == -1) {
             return null;
@@ -107,7 +107,7 @@ public interface DataAdapterRead<R> {
             return "";
         }
 
-        byte[] bytes = readBytes(source, length);
+        final byte[] bytes = readBytes(source, length);
 
         return new String(bytes, charset);
     }

@@ -17,10 +17,10 @@ public final class UserSerializer implements ObjectSerializer<User> {
         }
 
         // uid
-        int uid = adapter.readInteger(source);
+        final int uid = adapter.readInteger(source);
 
         // name
-        String name = adapter.readString(source, getCharset());
+        final String name = adapter.readString(source, getCharset());
 
         return new User(name, uid);
     }

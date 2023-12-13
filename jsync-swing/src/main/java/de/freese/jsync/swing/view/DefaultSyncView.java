@@ -58,35 +58,21 @@ import de.freese.jsync.utils.JSyncUtils;
  */
 public class DefaultSyncView extends AbstractView implements SyncView {
     private final Map<EFileSystem, Sinks.Many<Tuple3<Integer, Integer, String>>> accumulatorProgressBarMinMaxText = new EnumMap<>(EFileSystem.class);
-
     private final Map<EFileSystem, Sinks.Many<String>> accumulatorProgressBarText = new EnumMap<>(EFileSystem.class);
-
     private final Map<EFileSystem, Sinks.Many<Integer>> accumulatorProgressBarValue = new EnumMap<>(EFileSystem.class);
-
     private final ConfigView configView = new ConfigView();
-
     private final JPanel panel = new JPanel();
-
     private final ShowView showView = new ShowView();
-
     private final TableFacade tableFacade = new TableFacade();
 
     private Sinks.Many<Integer> accumulatorProgressFiles;
-
     private Sinks.Many<SyncPair> accumulatorTableAdd;
-
     private JProgressBar progressBarFiles;
-
     private JProgressBar progressBarReceiver;
-
     private JProgressBar progressBarSender;
-
     private JTextArea textAreaFilterDirs;
-
     private JTextArea textAreaFilterFiles;
-
     private UriView uriViewReceiver;
-
     private UriView uriViewSender;
 
     @Override
@@ -98,7 +84,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
                 this.tableFacade.scrollToLastRow();
                 // this.scrollBarVertical.setValue(this.scrollBarVertical.getMaximum());
 
-                int rowCount = this.tableFacade.getRowCount();
+                final int rowCount = this.tableFacade.getRowCount();
 
                 this.progressBarFiles.setValue(rowCount);
                 this.progressBarFiles.setString(getMessage("jsync.files") + ": " + rowCount + "/" + this.progressBarFiles.getMaximum());
@@ -139,15 +125,15 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
     @Override
     public PathFilter getPathFilter() {
-        Set<String> directoryFilters = JSyncUtils.toFilter(this.textAreaFilterDirs.getText());
-        Set<String> fileFilters = JSyncUtils.toFilter(this.textAreaFilterFiles.getText());
+        final Set<String> directoryFilters = JSyncUtils.toFilter(this.textAreaFilterDirs.getText());
+        final Set<String> fileFilters = JSyncUtils.toFilter(this.textAreaFilterFiles.getText());
 
         return new PathFilterEndsWith(directoryFilters, fileFilters);
     }
 
     @Override
     public List<SyncPair> getSyncList() {
-        Predicate<SyncPair> predicate = this.showView.getPredicate();
+        final Predicate<SyncPair> predicate = this.showView.getPredicate();
 
         return this.tableFacade.getStream().filter(predicate).toList();
     }
@@ -161,7 +147,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
     public void incrementProgressBarFilesValue(final int value) {
         if (this.accumulatorProgressFiles == null) {
             this.accumulatorProgressFiles = new AccumulativeSinkSwing().createForList(list -> {
-                int v = list.stream().mapToInt(Integer::intValue).sum();
+                final int v = list.stream().mapToInt(Integer::intValue).sum();
 
                 this.progressBarFiles.setValue(v + this.progressBarFiles.getValue());
 
@@ -190,7 +176,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         // glue.setPreferredSize(new Dimension(230, 1));
         // glue.setMaximumSize(new Dimension(230, 1));
         // this.panel.add(glue, new GbcBuilder(1, row).fillHorizontal().weightX(0));
-        JPanel panelFilter = new JPanel();
+        final JPanel panelFilter = new JPanel();
         panelFilter.setLayout(new GridBagLayout());
         panelFilter.setBorder(BorderFactory.createTitledBorder(getMessage("jsync.filter")));
 
@@ -225,7 +211,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         row++;
 
         // Table Sender
-        JTable tableSender = this.tableFacade.getTableSender();
+        final JTable tableSender = this.tableFacade.getTableSender();
         tableSender.setModel(this.tableFacade.getTableModelSender());
         tableSender.setAutoCreateRowSorter(false);
         tableSender.setDefaultRenderer(Object.class, new SyncPairTableCellRendererFileSystem());
@@ -233,23 +219,23 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         tableSender.getColumnModel().getColumn(1).setMinWidth(70);
         tableSender.getColumnModel().getColumn(1).setMaxWidth(70);
 
-        JScrollPane scrollPaneSender = new JScrollPane(tableSender);
+        final JScrollPane scrollPaneSender = new JScrollPane(tableSender);
         scrollPaneSender.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPaneSender, GbcBuilder.of(0, row).fillBoth());
 
         // Table Status
-        JTable tableStatus = this.tableFacade.getTableStatus();
+        final JTable tableStatus = this.tableFacade.getTableStatus();
         tableStatus.setModel(this.tableFacade.getTableModelStatus());
         tableStatus.setAutoCreateRowSorter(false);
         tableStatus.setDefaultRenderer(Object.class, new SyncPairTableCellRendererStatus());
         // tableStatus.setPreferredScrollableViewportSize(new Dimension(220, 1000));
 
-        JScrollPane scrollPaneStatus = new JScrollPane(tableStatus);
+        final JScrollPane scrollPaneStatus = new JScrollPane(tableStatus);
         scrollPaneStatus.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPaneStatus, GbcBuilder.of(1, row).fillBoth().weightX(0D));
 
         // Table Receiver
-        JTable tableReceiver = this.tableFacade.getTableReceiver();
+        final JTable tableReceiver = this.tableFacade.getTableReceiver();
         tableReceiver.setModel(this.tableFacade.getTableModelReceiver());
         tableReceiver.setAutoCreateRowSorter(false);
         tableReceiver.setDefaultRenderer(Object.class, new SyncPairTableCellRendererFileSystem());
@@ -257,7 +243,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         tableReceiver.getColumnModel().getColumn(1).setMinWidth(70);
         tableReceiver.getColumnModel().getColumn(1).setMaxWidth(70);
 
-        JScrollPane scrollPaneReceiver = new JScrollPane(tableReceiver);
+        final JScrollPane scrollPaneReceiver = new JScrollPane(tableReceiver);
         scrollPaneReceiver.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         this.panel.add(scrollPaneReceiver, GbcBuilder.of(2, row).fillBoth());
 
@@ -292,8 +278,8 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
     @Override
     public void restoreState() {
-        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
-        Properties properties = new Properties();
+        final Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
+        final Properties properties = new Properties();
 
         if (Files.exists(path)) {
             try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
@@ -319,9 +305,9 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
     @Override
     public void saveState() {
-        Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
+        final Path path = Paths.get(System.getProperty("user.home"), ".java-apps", "jsync", "jSyncGuiState");
 
-        Properties properties = new Properties();
+        final Properties properties = new Properties();
         properties.setProperty("sender.textfieldHostPort", getTextFieldHostPort(EFileSystem.SENDER).getText());
         properties.setProperty("receiver.textfieldHostPort", getTextFieldHostPort(EFileSystem.RECEIVER).getText());
 
@@ -355,7 +341,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
     @Override
     public void setProgressBarIndeterminate(final EFileSystem fileSystem, final boolean indeterminate) {
         runInEdt(() -> {
-            JProgressBar progressBar = getProgressBar(fileSystem);
+            final JProgressBar progressBar = getProgressBar(fileSystem);
             progressBar.setIndeterminate(indeterminate);
         });
     }
@@ -410,13 +396,13 @@ public class DefaultSyncView extends AbstractView implements SyncView {
     @Override
     public void updateLastEntry() {
         runInEdt(() -> {
-            int rowCount = this.tableFacade.getRowCount();
+            final int rowCount = this.tableFacade.getRowCount();
             this.tableFacade.fireTableRowsUpdated(rowCount - 1, rowCount - 1);
         });
     }
 
     protected File selectFolder(final String selectedFolder) {
-        JFileChooser fc = new JFileChooser();
+        final JFileChooser fc = new JFileChooser();
         fc.setDialogType(JFileChooser.OPEN_DIALOG);
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setAcceptAllFileFilterUsed(false);
@@ -443,7 +429,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         // BasicFileChooserUI ui = (BasicFileChooserUI)fc.getUI();
         // ui.getNewFolderAction().setEnabled(false);
 
-        int choice = fc.showOpenDialog(getMainFrame());
+        final int choice = fc.showOpenDialog(getMainFrame());
 
         if (choice == JFileChooser.APPROVE_OPTION) {
             return fc.getSelectedFile();
@@ -453,24 +439,24 @@ public class DefaultSyncView extends AbstractView implements SyncView {
     }
 
     private void configGui() {
-        JComboBox<JSyncProtocol> comboBoxProtocolSender = getComboBoxProtocol(EFileSystem.SENDER);
-        JComboBox<JSyncProtocol> comboBoxProtocolReceiver = getComboBoxProtocol(EFileSystem.RECEIVER);
+        final JComboBox<JSyncProtocol> comboBoxProtocolSender = getComboBoxProtocol(EFileSystem.SENDER);
+        final JComboBox<JSyncProtocol> comboBoxProtocolReceiver = getComboBoxProtocol(EFileSystem.RECEIVER);
 
-        JTextField textFieldHostPortSender = getTextFieldHostPort(EFileSystem.SENDER);
-        JTextField textFieldHostPortReceiver = getTextFieldHostPort(EFileSystem.RECEIVER);
+        final JTextField textFieldHostPortSender = getTextFieldHostPort(EFileSystem.SENDER);
+        final JTextField textFieldHostPortReceiver = getTextFieldHostPort(EFileSystem.RECEIVER);
 
-        JTextField textFieldPathSender = getTextFieldPath(EFileSystem.SENDER);
-        JTextField textFieldPathReceiver = getTextFieldPath(EFileSystem.RECEIVER);
+        final JTextField textFieldPathSender = getTextFieldPath(EFileSystem.SENDER);
+        final JTextField textFieldPathReceiver = getTextFieldPath(EFileSystem.RECEIVER);
 
-        JButton buttonOpenSender = getButtonOpen(EFileSystem.SENDER);
-        JButton buttonOpenReceiver = getButtonOpen(EFileSystem.RECEIVER);
+        final JButton buttonOpenSender = getButtonOpen(EFileSystem.SENDER);
+        final JButton buttonOpenReceiver = getButtonOpen(EFileSystem.RECEIVER);
 
         comboBoxProtocolSender.addItemListener(event -> {
             if (event.getStateChange() != ItemEvent.SELECTED) {
                 return;
             }
 
-            JSyncProtocol protocol = (JSyncProtocol) event.getItem();
+            final JSyncProtocol protocol = (JSyncProtocol) event.getItem();
 
             textFieldHostPortSender.setVisible(protocol.isRemote());
             buttonOpenSender.setVisible(JSyncProtocol.FILE.equals(protocol));
@@ -484,7 +470,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
                 return;
             }
 
-            JSyncProtocol protocol = (JSyncProtocol) event.getItem();
+            final JSyncProtocol protocol = (JSyncProtocol) event.getItem();
 
             textFieldHostPortReceiver.setVisible(protocol.isRemote());
             buttonOpenReceiver.setVisible(JSyncProtocol.FILE.equals(protocol));
@@ -494,7 +480,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         });
 
         buttonOpenSender.addActionListener(event -> {
-            File folder = selectFolder(textFieldPathSender.getText());
+            final File folder = selectFolder(textFieldPathSender.getText());
 
             if (folder != null) {
                 textFieldPathSender.setText(folder.toString());
@@ -505,7 +491,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         });
 
         buttonOpenReceiver.addActionListener(event -> {
-            File folder = selectFolder(textFieldPathReceiver.getText());
+            final File folder = selectFolder(textFieldPathReceiver.getText());
 
             if (folder != null) {
                 textFieldPathReceiver.setText(folder.toString());

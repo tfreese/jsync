@@ -20,18 +20,18 @@ import de.freese.jsync.utils.JSyncUtils;
 class TestJSyncUtils {
     @Test
     void testBytesToHex() throws Exception {
-        String hex = "0123456789ABCDEF";
-        byte[] bytes = JSyncUtils.hexToBytes(hex);
+        final String hex = "0123456789ABCDEF";
+        final byte[] bytes = JSyncUtils.hexToBytes(hex);
 
         assertEquals(hex, JSyncUtils.bytesToHex(bytes));
     }
 
     @Test
     void testChecksum() throws Exception {
-        Path path = Paths.get("pom.xml");
+        final Path path = Paths.get("pom.xml");
 
-        String checksum1 = DigestUtils.sha256DigestAsHex(path);
-        String checksum2 = DigestUtils.sha256DigestAsHex(path);
+        final String checksum1 = DigestUtils.sha256DigestAsHex(path);
+        final String checksum2 = DigestUtils.sha256DigestAsHex(path);
 
         assertEquals(checksum1, checksum2);
     }

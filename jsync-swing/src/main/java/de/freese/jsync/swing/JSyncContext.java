@@ -19,11 +19,8 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  */
 public final class JSyncContext {
     private static ExecutorService executorService;
-
     private static JFrame mainFrame;
-
     private static Messages messages;
-
     private static Closeable rSocketServerLocal;
 
     public static ExecutorService getExecutorService() {

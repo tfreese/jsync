@@ -27,7 +27,7 @@ public class SyncPairTableCellRendererStatus extends DefaultTableCellRenderer {
         // SyncPair syncPair = tableModel.getObjectAt(modelIndex);
         // SyncStatus syncStatus = syncPair.getStatus();
 
-        SyncStatus syncStatus = (SyncStatus) value;
+        final SyncStatus syncStatus = (SyncStatus) value;
 
         setHorizontalAlignment(SwingConstants.CENTER);
 

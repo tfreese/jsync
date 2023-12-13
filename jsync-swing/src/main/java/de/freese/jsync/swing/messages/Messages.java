@@ -41,15 +41,15 @@ public class Messages {
     private void setLocale(final Locale locale) {
         Objects.requireNonNull(locale, "locale required");
 
-        Map<String, String> map = new HashMap<>();
+        final Map<String, String> map = new HashMap<>();
 
-        ResourceBundle bundle = ResourceBundle.getBundle("bundles/jsync");
+        final ResourceBundle bundle = ResourceBundle.getBundle("bundles/jsync");
 
-        Enumeration<String> keys = bundle.getKeys();
+        final Enumeration<String> keys = bundle.getKeys();
 
         while (keys.hasMoreElements()) {
-            String key = keys.nextElement();
-            String value = bundle.getString(key);
+            final String key = keys.nextElement();
+            final String value = bundle.getString(key);
 
             map.put(key, value);
         }

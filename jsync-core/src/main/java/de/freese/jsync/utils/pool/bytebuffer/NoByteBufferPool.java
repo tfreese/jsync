@@ -10,7 +10,6 @@ import de.freese.jsync.Options;
  */
 class NoByteBufferPool implements ByteBufferPool {
     private int created;
-
     private int free;
 
     NoByteBufferPool() {
@@ -36,7 +35,7 @@ class NoByteBufferPool implements ByteBufferPool {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(":");
         sb.append(" created=").append(this.created);
         sb.append(", free=").append(this.free);

@@ -106,13 +106,13 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testBoolean(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Boolean.class);
         serializer.writeTo(sink, true);
         serializer.writeTo(sink, false);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
         assertNull(serializer.readFrom(source, Boolean.class));
         assertTrue(serializer.readFrom(source, boolean.class));
@@ -122,12 +122,12 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testDouble(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Double.class);
         serializer.writeTo(sink, 123.123D);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
         assertNull(serializer.readFrom(source, Double.class));
         assertEquals(123.123D, serializer.readFrom(source, double.class));
@@ -136,14 +136,14 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testException(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
-        Exception exception1 = new UnsupportedOperationException("Test Fail");
+        final Exception exception1 = new UnsupportedOperationException("Test Fail");
         serializer.writeTo(sink, exception1, Exception.class);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
-        Exception exception2 = serializer.readFrom(source, Exception.class);
+        final Exception exception2 = serializer.readFrom(source, Exception.class);
 
         assertEquals(UnsupportedOperationException.class, exception2.getClass());
         assertEquals("Test Fail", exception2.getMessage());
@@ -153,12 +153,12 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testFloat(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Float.class);
         serializer.writeTo(sink, 123.123F);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
         assertNull(serializer.readFrom(source, Float.class));
         assertEquals(123.123F, serializer.readFrom(source, float.class));
@@ -167,7 +167,7 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testGroup(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
         Group group1 = new Group("TestGroupA", 41);
         Group group2 = new Group("TestGroupB", 42);
@@ -175,7 +175,7 @@ class TestJSyncSerializers {
         serializer.writeTo(sink, group1);
         serializer.writeTo(sink, group2);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
         group1 = serializer.readFrom(source, Group.class);
         assertEquals("TestGroupA", group1.getName());
@@ -189,12 +189,12 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testInteger(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Integer.class);
         serializer.writeTo(sink, 123);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
         assertNull(serializer.readFrom(source, Integer.class));
         assertEquals(123, serializer.readFrom(source, int.class));
@@ -203,12 +203,12 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testLong(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, Long.class);
         serializer.writeTo(sink, 123L);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
         assertNull(serializer.readFrom(source, Long.class));
         assertEquals(123L, serializer.readFrom(source, long.class));
@@ -217,16 +217,16 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testPathFilter(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
-        Set<String> directoryFiltersOrigin = Set.of("a", "b");
-        Set<String> fileFiltersOrigin = Set.of("c", "d");
+        final Set<String> directoryFiltersOrigin = Set.of("a", "b");
+        final Set<String> fileFiltersOrigin = Set.of("c", "d");
 
         serializer.writeTo(sink, new PathFilterEndsWith(directoryFiltersOrigin, fileFiltersOrigin), PathFilterEndsWith.class);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
-        PathFilter pathFilter = serializer.readFrom(source, PathFilter.class);
+        final PathFilter pathFilter = serializer.readFrom(source, PathFilter.class);
 
         assertEquals(PathFilterEndsWith.class, pathFilter.getClass());
         assertEquals(directoryFiltersOrigin, pathFilter.getDirectoryFilter());
@@ -236,13 +236,13 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testString(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
         serializer.writeTo(sink, null, String.class);
         serializer.writeTo(sink, "-");
         serializer.writeTo(sink, "###");
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
         assertNull(serializer.readFrom(source, String.class));
         assertEquals("-", serializer.readFrom(source, String.class));
@@ -252,7 +252,7 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testSyncItem(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
         SyncItem syncItem1 = new DefaultSyncItem("/");
         syncItem1.setChecksum("ABC");
@@ -275,7 +275,7 @@ class TestJSyncSerializers {
         serializer.writeTo(sink, syncItem1);
         serializer.writeTo(sink, syncItem2);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
         syncItem1 = serializer.readFrom(source, SyncItem.class);
         assertEquals("/", syncItem1.getRelativePath());
@@ -307,7 +307,7 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testUser(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        Object sink = dataHolder.getSink();
+        final Object sink = dataHolder.getSink();
 
         User user1 = new User("TestUserA", 41);
         User user2 = new User("TestUserB", 42);
@@ -315,7 +315,7 @@ class TestJSyncSerializers {
         serializer.writeTo(sink, user1);
         serializer.writeTo(sink, user2);
 
-        Object source = dataHolder.getSource();
+        final Object source = dataHolder.getSource();
 
         user1 = serializer.readFrom(source, User.class);
         assertEquals("TestUserA", user1.getName());

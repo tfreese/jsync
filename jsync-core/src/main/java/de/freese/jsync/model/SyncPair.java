@@ -10,7 +10,6 @@ import java.util.Objects;
  */
 public class SyncPair {
     private final SyncItem receiverItem;
-
     private final SyncItem senderItem;
 
     private SyncStatus status = SyncStatus.UNKNOWN;
@@ -54,7 +53,7 @@ public class SyncPair {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         builder.append("SyncPair [");
         builder.append("relativePath=").append(getRelativePath());
         builder.append(", status=").append(getStatus());

@@ -16,7 +16,6 @@ class SimpleByteBufferPool implements ByteBufferPool {
     private final Queue<ByteBuffer> cache = new LinkedBlockingQueue<>(Integer.MAX_VALUE);
 
     private int created;
-
     private int free;
 
     SimpleByteBufferPool() {
@@ -57,7 +56,7 @@ class SimpleByteBufferPool implements ByteBufferPool {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(":");
         sb.append(" created=").append(this.created);
         sb.append(", free=").append(this.free);

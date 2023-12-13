@@ -23,7 +23,6 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 @Deprecated
 final class JSyncPayload implements Payload {
     private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
-
     private static final Serializer<ByteBuffer, ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
 
     public static Payload create(final ByteBuffer data) {
@@ -35,7 +34,7 @@ final class JSyncPayload implements Payload {
     }
 
     public static Payload create(final CharSequence data) {
-        ByteBuffer buffer = BYTE_BUFFER_POOL.get();
+        final ByteBuffer buffer = BYTE_BUFFER_POOL.get();
         SERIALIZER.writeTo(buffer, data.toString());
         buffer.flip();
 
@@ -43,7 +42,6 @@ final class JSyncPayload implements Payload {
     }
 
     private final ByteBuffer data;
-
     private final ByteBuffer metadata;
 
     private JSyncPayload(final ByteBuffer data, final ByteBuffer metadata) {

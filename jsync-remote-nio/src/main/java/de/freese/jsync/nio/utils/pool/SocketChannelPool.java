@@ -40,9 +40,9 @@ public final class SocketChannelPool extends Pool<SocketChannel> {
     @Override
     protected SocketChannel create() {
         try {
-            InetSocketAddress serverAddress = new InetSocketAddress(this.uri.getHost(), this.uri.getPort());
+            final InetSocketAddress serverAddress = new InetSocketAddress(this.uri.getHost(), this.uri.getPort());
 
-            SocketChannel channel = SocketChannel.open(serverAddress);
+            final SocketChannel channel = SocketChannel.open(serverAddress);
 
             while (!channel.finishConnect()) {
                 try {

@@ -62,8 +62,8 @@ class TestJSyncClient extends AbstractJSyncIoTest {
     void testLocalToLocal() throws Exception {
         System.out.println();
 
-        URI senderUri = PATH_SOURCE.toUri();
-        URI receiverUri = PATH_DEST.toUri();
+        final URI senderUri = PATH_SOURCE.toUri();
+        final URI receiverUri = PATH_DEST.toUri();
 
         syncDirectories(options, senderUri, receiverUri);
 
@@ -71,28 +71,28 @@ class TestJSyncClient extends AbstractJSyncIoTest {
     }
 
     private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception {
-        Client client = new DefaultClient(options, senderUri, receiverUri);
+        final Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
-        List<SyncItem> syncItemsSender = new ArrayList<>();
+        final List<SyncItem> syncItemsSender = new ArrayList<>();
         client.generateSyncItems(EFileSystem.SENDER, PathFilterNoOp.INSTANCE, syncItem -> {
             syncItemsSender.add(syncItem);
-            String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
+            final String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);
             });
             syncItem.setChecksum(checksum);
         });
 
-        List<SyncItem> syncItemsReceiver = new ArrayList<>();
+        final List<SyncItem> syncItemsReceiver = new ArrayList<>();
         client.generateSyncItems(EFileSystem.RECEIVER, PathFilterNoOp.INSTANCE, syncItem -> {
             syncItemsReceiver.add(syncItem);
-            String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
+            final String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
                 // System.out.println("Sender Bytes read: " + i);
             });
             syncItem.setChecksum(checksum);
         });
 
-        List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
+        final List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender, syncItemsReceiver);
 
         syncPairs.forEach(SyncPair::validateStatus);
 

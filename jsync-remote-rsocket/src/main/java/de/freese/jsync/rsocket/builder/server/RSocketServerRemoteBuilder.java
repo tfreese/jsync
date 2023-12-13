@@ -45,10 +45,10 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
 
     @Override
     public Mono<CloseableChannel> build() {
-        RSocketServer rSocketServer = configure(RSocketServer.create());
-        TcpServer tcpServer = configure(TcpServer.create());
+        final RSocketServer rSocketServer = configure(RSocketServer.create());
+        final TcpServer tcpServer = configure(TcpServer.create());
 
-        ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
+        final ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
 
         // @formatter:off
         return rSocketServer.bind(serverTransport)
@@ -78,7 +78,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     }
 
     public RSocketServerRemoteBuilder protocolSslContextSpecCertificate() throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        final KeyStore keyStore = KeyStore.getInstance("PKCS12");
 
         try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/server_keystore.p12")) {
             keyStore.load(is, "password".toCharArray());
@@ -87,22 +87,22 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         // KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("NewSunX509");
         // keyManagerFactory.init(keyStore, "gehaim".toCharArray());
 
-        KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
+        final KeyStore keyStoreTrust = KeyStore.getInstance("PKCS12");
 
         try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/server_truststore.p12")) {
             keyStoreTrust.load(is, "password".toCharArray());
         }
 
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+        final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
         trustManagerFactory.init(keyStoreTrust);
 
-        Certificate certificate = keyStore.getCertificate("server");
-        PrivateKey privateKey = (PrivateKey) keyStore.getKey("server", "password".toCharArray());
+        final Certificate certificate = keyStore.getCertificate("server");
+        final PrivateKey privateKey = (PrivateKey) keyStore.getKey("server", "password".toCharArray());
         // KeyStore.Entry entry = keyStore.getEntry("server", new KeyStore.PasswordProtection("password".toCharArray()));
         // PrivateKey privateKey = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
 
         // @formatter:off
-        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(privateKey, (X509Certificate) certificate)
+        final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(privateKey, (X509Certificate) certificate)
                 .configure(builder -> builder
                         //.keyManager(keyManagerFactory) // Verursacht Fehler
                         .trustManager(trustManagerFactory)
@@ -118,10 +118,10 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     }
 
     public RSocketServerRemoteBuilder protocolSslContextSpecCertificateSelfSigned() throws Exception {
-        SelfSignedCertificate cert = new SelfSignedCertificate();
+        final SelfSignedCertificate cert = new SelfSignedCertificate();
 
         // @formatter:off
-        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
+        final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
                 .configure(builder -> builder
                         .protocols("TLSv1.3")
                         .sslProvider(SslProvider.JDK)
@@ -144,7 +144,7 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
 
     public RSocketServerRemoteBuilder resumeDefault() {
         // @formatter:off
-        Resume resume = new Resume()
+        final Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
                         .doBeforeRetry(signal -> getLogger().info("Disconnected. Trying to resume..."))
@@ -193,9 +193,9 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     }
 
     protected void startDaemonOnCloseThread(final CloseableChannel channel) {
-        String name = "daemon-rSocket-" + channel.address().getPort();
+        final String name = "daemon-rSocket-" + channel.address().getPort();
 
-        Thread thread = new Thread(() -> {
+        final Thread thread = new Thread(() -> {
             channel.onClose().block();
             getLogger().info("terminated: {}", name);
         }, name);
