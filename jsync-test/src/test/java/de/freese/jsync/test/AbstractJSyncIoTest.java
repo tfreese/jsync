@@ -18,15 +18,15 @@ abstract class AbstractJSyncIoTest {
 
     private static final Path PATH_TEST = Paths.get(System.getProperty("java.io.tmpdir"), "jsync");
 
-    protected static Path createDestPath(Class<? extends AbstractJSyncIoTest> testClass) {
+    protected static Path createDestPath(final Class<? extends AbstractJSyncIoTest> testClass) {
         return PATH_TEST.resolve("dest").resolve(testClass.getSimpleName());
     }
 
-    protected static Path createSourcePath(Class<? extends AbstractJSyncIoTest> testClass) {
+    protected static Path createSourcePath(final Class<? extends AbstractJSyncIoTest> testClass) {
         return PATH_TEST.resolve("source").resolve(testClass.getSimpleName());
     }
 
-    protected static void createSourceStructure(Path pathSource) throws IOException {
+    protected static void createSourceStructure(final Path pathSource) throws IOException {
         // Create Source-Files.
         Path path = pathSource;
         Path pathFile = path.resolve("file.txt");
@@ -85,7 +85,7 @@ abstract class AbstractJSyncIoTest {
         }
     }
 
-    protected static void deletePaths(Path pathSource, Path pathDest) throws IOException {
+    protected static void deletePaths(final Path pathSource, final Path pathDest) throws IOException {
         JSyncUtils.delete(pathSource, false);
         JSyncUtils.delete(pathDest, false);
     }

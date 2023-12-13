@@ -23,7 +23,7 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
     private final Consumer<Path> consumer;
     private final PathFilter pathFilter;
 
-    public FileVisitorHierarchie(Path basePath, final PathFilter pathFilter, final Consumer<Path> consumer) {
+    public FileVisitorHierarchie(final Path basePath, final PathFilter pathFilter, final Consumer<Path> consumer) {
         super();
 
         this.basePath = Objects.requireNonNull(basePath, "basePath required");
