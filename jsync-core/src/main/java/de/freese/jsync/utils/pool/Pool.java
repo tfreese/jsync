@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
  * The pool is optionally thread safe and can be configured to use soft references.<br>
  * <a href="https://github.com/EsotericSoftware/kryo/blob/master/src/com/esotericsoftware/kryo/util/Pool.java">Github</a>
  *
- * @param <T> Type
- *
  * @author Nathan Sweet
  * @author Martin Grotzke
  * @author Thomas Freese
@@ -271,8 +269,7 @@ public abstract class Pool<T> {
 
     /**
      * Puts the specified object in the pool, making it eligible to be returned by {@link #obtain()}. If the pool already contains the maximum number of free
-     * objects, the specified object is reset but not added to the pool.
-     * <p>
+     * objects, the specified object is reset but not added to the pool.<br>
      * If using soft references and the pool contains the maximum number of free objects, the first soft reference whose object has been garbage collected is
      * discarded to make room.
      */
@@ -298,8 +295,7 @@ public abstract class Pool<T> {
     }
 
     /**
-     * The number of objects available to be obtained.
-     * <p>
+     * The number of objects available to be obtained.<br>
      * If using soft references, this number may include objects that have been garbage collected. {@link #clean()} may be used first to remove empty soft
      * references.
      */
@@ -309,8 +305,7 @@ public abstract class Pool<T> {
 
     /**
      * The all-time highest number of free objects. This can help determine if a pool's maximum capacity is set appropriately. It can be reset any time with
-     * {@link #resetPeak()}.
-     * <p>
+     * {@link #resetPeak()}.<br>
      * If using soft references, this number may include objects that have been garbage collected.
      */
     public int getPeak() {

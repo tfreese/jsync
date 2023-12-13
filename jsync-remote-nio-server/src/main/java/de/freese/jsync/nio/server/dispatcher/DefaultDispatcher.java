@@ -129,7 +129,8 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
 
                 getLogger().debug("{}: register channel on selector", socketChannel.getRemoteAddress());
 
-                SelectionKey selectionKey = socketChannel.register(getSelector(), SelectionKey.OP_READ);
+                //                SelectionKey selectionKey =
+                socketChannel.register(getSelector(), SelectionKey.OP_READ);
                 // selectionKey.attach(obj)
             }
             catch (Exception ex) {

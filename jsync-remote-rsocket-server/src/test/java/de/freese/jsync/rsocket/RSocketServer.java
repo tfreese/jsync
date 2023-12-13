@@ -82,7 +82,8 @@ public final class RSocketServer {
         // ServerTransport<CloseableChannel> serverTransport = LocalServerTransport.create("alias");
 
         // @formatter:off
-        CloseableChannel rSocketServer = io.rsocket.core.RSocketServer.create()
+//        CloseableChannel rSocketServer =
+        io.rsocket.core.RSocketServer.create()
                 .acceptor(socketAcceptor)
                 .resume(resume)
                 .payloadDecoder(PayloadDecoder.DEFAULT)
