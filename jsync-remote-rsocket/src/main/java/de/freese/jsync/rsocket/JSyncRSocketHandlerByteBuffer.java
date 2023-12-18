@@ -38,24 +38,21 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  */
 @Deprecated
 class JSyncRSocketHandlerByteBuffer implements RSocket {
+    private static final ByteBufferPool BYTEBUFFER_POOL = ByteBufferPool.DEFAULT;
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketHandlerByteBuffer.class);
-
+    
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true) {
         @Override
         protected Receiver create() {
             return new ReceiverDelegateLogger(new LocalhostReceiver());
         }
     };
-
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true) {
         @Override
         protected Sender create() {
             return new SenderDelegateLogger(new LocalhostSender());
         }
     };
-
-    private static final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
-
     private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
 
     @Override
@@ -224,7 +221,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
         final PathFilter pathFilter = getSerializer().readFrom(bufferData, PathFilter.class);
 
         return fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).map(syncItem -> {
-            final ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.byteBufferPool.get();
+            final ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.BYTEBUFFER_POOL.get();
             getSerializer().writeTo(buffer, syncItem);
             return buffer.flip();
         }).map(DefaultPayload::create);
@@ -296,7 +293,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
         // @formatter:off
         return receiver.writeFile(baseDir, relativeFile, sizeOfFile, flux.map(Payload::getData))
                 .map(bytesWritten -> {
-                    final ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.byteBufferPool.get();
+                    final ByteBuffer buffer = JSyncRSocketHandlerByteBuffer.BYTEBUFFER_POOL.get();
                     buffer.putLong(bytesWritten).flip();
                     return DefaultPayload.create(buffer);
                 })
