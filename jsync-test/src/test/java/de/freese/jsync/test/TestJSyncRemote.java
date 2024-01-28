@@ -47,6 +47,8 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     private static final Path PATH_DEST = createDestPath(TestJSyncRemote.class);
     private static final Path PATH_SOURCE = createSourcePath(TestJSyncRemote.class);
 
+    private static Options options;
+
     /**
      * @author Thomas Freese
      */
@@ -56,8 +58,6 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
             assertNull(th);
         }
     }
-
-    private static Options options;
 
     @AfterAll
     static void afterAll() throws Exception {

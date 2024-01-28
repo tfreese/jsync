@@ -40,7 +40,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 class JSyncRSocketHandlerByteBuffer implements RSocket {
     private static final ByteBufferPool BYTEBUFFER_POOL = ByteBufferPool.DEFAULT;
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketHandlerByteBuffer.class);
-    
+
     private static final Pool<Receiver> POOL_RECEIVER = new Pool<>(true, true) {
         @Override
         protected Receiver create() {

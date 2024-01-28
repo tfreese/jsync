@@ -29,9 +29,9 @@
             <artifactId>logback-classic</artifactId>
             <scope>runtime</scope>
         </dependency>
-                
+
         <!-- provided scope -->
-        <!-- test scope -->      
+        <!-- test scope -->
     </dependencies>
 
 </project>

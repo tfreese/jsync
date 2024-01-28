@@ -59,7 +59,8 @@ public final class ReactiveHttp {
         };
 
         for (int i = 0; i < 3; i++) {
-            final Tuple2<String, HttpHeaders> response = httpClient.get().uri("/hello").responseSingle((res, bytes) -> bytes.asString().zipWith(Mono.just(res.responseHeaders()))).block();
+            final Tuple2<String, HttpHeaders> response = httpClient.get().uri("/hello").responseSingle((res, bytes) -> bytes.asString().zipWith(Mono.just(res.responseHeaders())))
+                    .block();
 
             // Ausgabe im main-Thread.
             responseSubscriber.accept(response);
