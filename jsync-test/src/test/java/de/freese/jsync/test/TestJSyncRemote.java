@@ -70,8 +70,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
             }
         }
 
-        // if (ByteBufAllocator.DEFAULT instanceof PooledByteBufAllocator)
-        // {
+        // if (ByteBufAllocator.DEFAULT instanceof PooledByteBufAllocator) {
         // LOGGER.info(((PooledByteBufAllocator) ByteBufAllocator.DEFAULT).dumpStats());
         // }
     }
@@ -137,10 +136,8 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
         }
     }
 
-    // private void startServerNetty() throws Exception
-    // {
-    // if (!CLOSEABLES.containsKey("netty"))
-    // {
+    // private void startServerNetty() throws Exception {
+    // if (!CLOSEABLES.containsKey("netty")) {
     // JSyncNettyServer server = new JSyncNettyServer();
     // server.start(8002, 2, 4);
     // CLOSEABLES.put("netty", () -> server.stop());
@@ -160,33 +157,25 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
         }
     }
 
-    // private void startServerSpringRest() throws Exception
-    // {
-    ////      // @formatter:off
-////      new SpringApplicationBuilder(JsyncServerApplication.class)
-////              //.properties("server.port=8081") // Does not work, if 'server.port' exist in application.yml.
-////              //.run(args);
-////              .run(new String[]{"--server.port=8001"});
-////      // @formatter:on
+    // private void startServerSpringRest() throws Exception {
+    //  new SpringApplicationBuilder(JsyncServerApplication.class)
+    //          //.properties("server.port=8081") // Does not work, if 'server.port' exist in application.yml.
+    //          //.run(args);
+    //          .run(new String[]{"--server.port=8001"});
     //
-    // if (!CLOSEABLES.containsKey("springrest"))
-    // {
+    // if (!CLOSEABLES.containsKey("springrest")) {
     // JSyncRestApplication server = new JSyncRestApplication();
-    // server.start(new String[]
-    // {
+    // server.start(new String[] {
     // "--server.port=8003"
     // });
     // CLOSEABLES.put("springrest", () -> server.stop());
     // }
     // }
 
-    // private void startServerSpringWebflux() throws Exception
-    // {
-    // if (!CLOSEABLES.containsKey("springwebflux"))
-    // {
+    // private void startServerSpringWebflux() throws Exception {
+    // if (!CLOSEABLES.containsKey("springwebflux")) {
     // JSyncWebfluxApplication server = new JSyncWebfluxApplication();
-    // server.start(new String[]
-    // {
+    // server.start(new String[] {
     // "--server.port=8004"
     // });
     // CLOSEABLES.put("springwebflux", () -> server.stop());
@@ -225,8 +214,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     }
 
     // @Test
-    // void testSpringRest() throws Exception
-    // {
+    // void testSpringRest() throws Exception {
     // TimeUnit.MILLISECONDS.sleep(500);
     //
     // startServerSpringRest();
@@ -240,8 +228,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     // }
 
     // @Test
-    // void testSpringWebFlux() throws Exception
-    // {
+    // void testSpringWebFlux() throws Exception {
     // TimeUnit.MILLISECONDS.sleep(500);
     //
     // startServerSpringRest();

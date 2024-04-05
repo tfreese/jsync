@@ -24,23 +24,19 @@ public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClien
 
     @Override
     public RSocketClient build() {
-        // @formatter:off
         final Publisher<List<LoadbalanceTarget>> serverProducer = Flux.fromIterable(this.remoteAddresses)
-            .map(serverAddress ->  {
-                final TcpClient tcpClient = configure(TcpClient.create()).remoteAddress(() -> serverAddress);
-                final ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
+                .map(serverAddress -> {
+                    final TcpClient tcpClient = configure(TcpClient.create()).remoteAddress(() -> serverAddress);
+                    final ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
 
-                return LoadbalanceTarget.from(serverAddress.toString(), clientTransport);
-            })
-            .collectList()
-            ;
-        // @formatter:on
+                    return LoadbalanceTarget.from(serverAddress.toString(), clientTransport);
+                })
+                .collectList();
 
         // Publisher<List<LoadbalanceTarget>> serverProducer2 = Flux.interval(Duration.ofSeconds(1)).log().map(i -> {
         // int val = i.intValue();
         //
-        // return switch (val)
-        // {
+        // return switch (val) {
         // case 0 -> Collections.emptyList();
         // case 1 -> List.of(targets.get(0));
         // case 2 -> List.of(targets.get(0), targets.get(1));
@@ -55,14 +51,12 @@ public class RSocketClientRemoteLoadBalancedBuilder extends AbstractRSocketClien
 
         final RSocketConnector rSocketConnector = configure(RSocketConnector.create());
 
-        // @formatter:off
         return LoadbalanceRSocketClient.builder(serverProducer)
                 .connector(rSocketConnector)
                 .roundRobinLoadbalanceStrategy()
                 // .weightedLoadbalanceStrategy()
                 .build()
                 ;
-        // @formatter:on
     }
 
     public RSocketClientRemoteLoadBalancedBuilder remoteAddresses(final List<? extends SocketAddress> remoteAddresses) {

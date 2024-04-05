@@ -40,20 +40,18 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, relativePath);
 
-        // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> {
-                        getByteBufferPool().free(bufferMeta);
-                        getByteBufferPool().free(bufferData);
-                    })
-            )
-            .map(Payload::getDataUtf8)
-            .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(th.getMessage(), th))
-            .block()
-            ;
-        // @formatter:on
+                .requestResponse(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                        .doOnSubscribe(subscription -> {
+                            getByteBufferPool().free(bufferMeta);
+                            getByteBufferPool().free(bufferData);
+                        })
+                )
+                .map(Payload::getDataUtf8)
+                .doOnNext(getLogger()::debug)
+                .doOnError(th -> getLogger().error(th.getMessage(), th))
+                .block()
+        ;
     }
 
     @Override
@@ -66,20 +64,18 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
         getSerializer().writeTo(bufferData, relativePath);
         getSerializer().writeTo(bufferData, followSymLinks);
 
-        // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> {
-                        getByteBufferPool().free(bufferMeta);
-                        getByteBufferPool().free(bufferData);
-                    })
-            )
-            .map(Payload::getDataUtf8)
-            .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(th.getMessage(), th))
-            .block()
-            ;
-        // @formatter:on
+                .requestResponse(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                        .doOnSubscribe(subscription -> {
+                            getByteBufferPool().free(bufferMeta);
+                            getByteBufferPool().free(bufferData);
+                        })
+                )
+                .map(Payload::getDataUtf8)
+                .doOnNext(getLogger()::debug)
+                .doOnError(th -> getLogger().error(th.getMessage(), th))
+                .block()
+        ;
     }
 
     @Override
@@ -101,20 +97,18 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, syncItem);
 
-        // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> {
-                        getByteBufferPool().free(bufferMeta);
-                        getByteBufferPool().free(bufferData);
-                    })
-            )
-            .map(Payload::getDataUtf8)
-            .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(th.getMessage(), th))
-            .block()
-            ;
-        // @formatter:on
+                .requestResponse(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                        .doOnSubscribe(subscription -> {
+                            getByteBufferPool().free(bufferMeta);
+                            getByteBufferPool().free(bufferData);
+                        })
+                )
+                .map(Payload::getDataUtf8)
+                .doOnNext(getLogger()::debug)
+                .doOnError(th -> getLogger().error(th.getMessage(), th))
+                .block()
+        ;
     }
 
     @Override
@@ -127,21 +121,19 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
         getSerializer().writeTo(bufferData, syncItem);
         getSerializer().writeTo(bufferData, withChecksum);
 
-        // @formatter:off
         getClient()
-            .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> {
-                        getByteBufferPool().free(bufferMeta);
-                        getByteBufferPool().free(bufferData);
-                    })
-            )
-            .map(Payload::getDataUtf8)
-            .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(th.getMessage(), th))
-            .map(Long::parseLong)
-            .subscribe(consumerChecksumBytesRead::accept)
-            ;
-        // @formatter:on
+                .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                        .doOnSubscribe(subscription -> {
+                            getByteBufferPool().free(bufferMeta);
+                            getByteBufferPool().free(bufferData);
+                        })
+                )
+                .map(Payload::getDataUtf8)
+                .doOnNext(getLogger()::debug)
+                .doOnError(th -> getLogger().error(th.getMessage(), th))
+                .map(Long::parseLong)
+                .subscribe(consumerChecksumBytesRead::accept)
+        ;
     }
 
     @Override
@@ -154,23 +146,19 @@ public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements 
         getSerializer().writeTo(bufferData, relativeFile);
         getSerializer().writeTo(bufferData, sizeOfFile);
 
-        // @formatter:off
         final Flux<Payload> flux = Flux.concat(
                 Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> {
-                        getByteBufferPool().free(bufferMeta);
-                        getByteBufferPool().free(bufferData);
-                    })
-                , fileFlux.map(DefaultPayload::create)
-                );
-        // @formatter:on
+                        .doOnSubscribe(subscription -> {
+                            getByteBufferPool().free(bufferMeta);
+                            getByteBufferPool().free(bufferData);
+                        }),
+                fileFlux.map(DefaultPayload::create)
+        );
 
-        // @formatter:off
         return getClient()
-          .requestChannel(flux)
-          .map(payload -> payload.data().readLong())
-          .doOnError(th -> getLogger().error(th.getMessage(), th))
-          ;
-       // @formatter:on
+                .requestChannel(flux)
+                .map(payload -> payload.data().readLong())
+                .doOnError(th -> getLogger().error(th.getMessage(), th))
+                ;
     }
 }

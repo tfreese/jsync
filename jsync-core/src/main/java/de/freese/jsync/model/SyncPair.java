@@ -26,7 +26,7 @@ public class SyncPair {
         this.senderItem = senderItem;
         this.receiverItem = receiverItem;
 
-        if ((senderItem == null) && (receiverItem == null)) {
+        if (senderItem == null && receiverItem == null) {
             throw new IllegalArgumentException("only one SyncItem can be null");
         }
     }
@@ -66,15 +66,15 @@ public class SyncPair {
      * Compares Source with Target.
      */
     public void validateStatus() {
-        if ((getSenderItem() == null) && (getReceiverItem() != null)) {
+        if (getSenderItem() == null && getReceiverItem() != null) {
             // Delete: only available in Target but not in Source.
             this.status = SyncStatus.ONLY_IN_TARGET;
         }
-        else if ((getSenderItem() != null) && (getReceiverItem() == null)) {
+        else if (getSenderItem() != null && getReceiverItem() == null) {
             // Copy: only available in Source but not in Target.
             this.status = SyncStatus.ONLY_IN_SOURCE;
         }
-        else if ((getSenderItem() != null) && (getReceiverItem() != null)) {
+        else if (getSenderItem() != null && getReceiverItem() != null) {
             // Copy: Different Attributes
             if (getSenderItem().getLastModifiedTime() != getReceiverItem().getLastModifiedTime()) {
                 this.status = SyncStatus.DIFFERENT_LAST_MODIFIEDTIME;
@@ -85,18 +85,15 @@ public class SyncPair {
             else if (!Objects.equals(getSenderItem().getChecksum(), getReceiverItem().getChecksum())) {
                 this.status = SyncStatus.DIFFERENT_CHECKSUM;
             }
-            //            else if (!Objects.equals(getSenderItem().getPermissionsToString(), getReceiverItem().getPermissionsToString()))
-            //            {
-            //                this.status = SyncStatus.DIFFERENT_PERMISSIONS;
-            //            }
-            //            else if (!Objects.equals(getSenderItem().getUser(), getReceiverItem().getUser()))
-            //            {
-            //                this.status = SyncStatus.DIFFERENT_USER;
-            //            }
-            //            else if (!Objects.equals(getSenderItem().getGroup(), getReceiverItem().getGroup()))
-            //            {
-            //                this.status = SyncStatus.DIFFERENT_GROUP;
-            //            }
+            // else if (!Objects.equals(getSenderItem().getPermissionsToString(), getReceiverItem().getPermissionsToString())) {
+            //     this.status = SyncStatus.DIFFERENT_PERMISSIONS;
+            // }
+            // else if (!Objects.equals(getSenderItem().getUser(), getReceiverItem().getUser())) {
+            //     this.status = SyncStatus.DIFFERENT_USER;
+            // }
+            // else if (!Objects.equals(getSenderItem().getGroup(), getReceiverItem().getGroup())) {
+            //     this.status = SyncStatus.DIFFERENT_GROUP;
+            // }
             else {
                 this.status = SyncStatus.SYNCHRONIZED;
             }

@@ -44,17 +44,15 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
         final ByteBuffer bufferMeta = getByteBufferPool().get();
         getSerializer().writeTo(bufferMeta, JSyncCommand.DISCONNECT);
 
-        // @formatter:off
         getClient()
-            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> getByteBufferPool().free(bufferMeta))
-            )
-            .map(Payload::getDataUtf8)
-            .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().warn(th.getMessage()))
-            .block()
-            ;
-        // @formatter:on
+                .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
+                        .doOnSubscribe(subscription -> getByteBufferPool().free(bufferMeta))
+                )
+                .map(Payload::getDataUtf8)
+                .doOnNext(getLogger()::debug)
+                .doOnError(th -> getLogger().warn(th.getMessage()))
+                .block()
+        ;
 
         getClient().dispose();
         this.client = null;
@@ -74,32 +72,27 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
 
         getSerializer().writeTo(bufferMeta, JSyncCommand.CONNECT);
 
-        // @formatter:off
         this.client
-            .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> getByteBufferPool().free(bufferMeta))
-            )
-            .map(Payload::getDataUtf8)
-            .doOnNext(getLogger()::debug)
-            .doOnError(th -> getLogger().error(th.getMessage(), th))
-            .block()
-            //.subscribe()
-            ;
-        // @formatter:on
+                .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
+                        .doOnSubscribe(subscription -> getByteBufferPool().free(bufferMeta))
+                )
+                .map(Payload::getDataUtf8)
+                .doOnNext(getLogger()::debug)
+                .doOnError(th -> getLogger().error(th.getMessage(), th))
+                .block()
+        //.subscribe()
+        ;
     }
 
     protected RSocketClient createClientLocal(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
-        // @formatter:off
         return RSocketBuilders.clientLocal()
                 .name("jSync")
                 .logger(getLogger())
                 .build()
                 ;
-        // @formatter:on
     }
 
     protected RSocketClient createClientRemote(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
-        // @formatter:off
         return RSocketBuilders.clientRemote()
                 .remoteAddress(new InetSocketAddress(uri.getHost(), uri.getPort()))
                 .resumeDefault()
@@ -109,7 +102,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
                 .addTcpClientCustomizer(tcpClientCustomizer)
                 .build()
                 ;
-        // @formatter:on
     }
 
     protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead, final JSyncCommand command) {
@@ -120,7 +112,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
         getSerializer().writeTo(bufferData, baseDir);
         getSerializer().writeTo(bufferData, relativeFile);
 
-        // @formatter:off
         return getClient()
                 .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
                         .doOnSubscribe(subscription -> {
@@ -132,14 +123,12 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
                 .doOnNext(getLogger()::debug)
                 .doOnError(th -> getLogger().error(th.getMessage(), th))
                 .doOnNext(value -> {
-                    if(PATTERN_NUMBER.matcher(value).matches())
-                    {
+                    if (PATTERN_NUMBER.matcher(value).matches()) {
                         consumerChecksumBytesRead.accept(Long.parseLong(value));
                     }
                 })
                 .blockLast()
                 ;
-        // @formatter:on
     }
 
     protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command) {
@@ -151,22 +140,20 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
         getSerializer().writeTo(bufferData, followSymLinks);
         getSerializer().writeTo(bufferData, pathFilter);
 
-        // @formatter:off
         return getClient()
-            .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
-                    .doOnSubscribe(subscription -> {
-                        getByteBufferPool().free(bufferMeta);
-                        getByteBufferPool().free(bufferData);
-                    })
-            )
-            .publishOn(Schedulers.boundedElastic()) // Consumer calls generateChecksum = swap to another Thread or an Exception is caused !
-            .doOnError(th -> getLogger().error(th.getMessage(), th))
-            .map(payload -> {
-                final ByteBuffer buffer = payload.getData();
-                return getSerializer().readFrom(buffer, SyncItem.class);
-            })
-            ;
-        // @formatter:on
+                .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
+                        .doOnSubscribe(subscription -> {
+                            getByteBufferPool().free(bufferMeta);
+                            getByteBufferPool().free(bufferData);
+                        })
+                )
+                .publishOn(Schedulers.boundedElastic()) // Consumer calls generateChecksum = swap to another Thread or an Exception is caused !
+                .doOnError(th -> getLogger().error(th.getMessage(), th))
+                .map(payload -> {
+                    final ByteBuffer buffer = payload.getData();
+                    return getSerializer().readFrom(buffer, SyncItem.class);
+                })
+                ;
     }
 
     protected RSocketClient getClient() {

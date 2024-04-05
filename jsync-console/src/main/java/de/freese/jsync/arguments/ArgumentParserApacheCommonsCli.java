@@ -74,7 +74,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
     public boolean hasArgs() {
         final Option[] opts = this.line.getOptions();
 
-        return (opts != null) && (opts.length > 0);
+        return opts != null && opts.length > 0;
     }
 
     @Override

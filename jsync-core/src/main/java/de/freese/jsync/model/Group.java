@@ -33,7 +33,7 @@ public class Group {
             return false;
         }
 
-        return (this.gid == other.gid) && Objects.equals(this.name, other.name);
+        return this.gid == other.gid && Objects.equals(this.name, other.name);
     }
 
     public int getGid() {

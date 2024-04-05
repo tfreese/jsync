@@ -50,21 +50,17 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
 
         final ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
 
-        // @formatter:off
         return rSocketServer.bind(serverTransport)
                 .doOnNext(this::startDaemonOnCloseThread)
                 ;
-        // @formatter:on
     }
 
     public RSocketServerRemoteBuilder logTcpServerBoundStatus() {
-        // @formatter:off
         addTcpServerCustomizer(tcpServer -> tcpServer
-            .doOnBound(server -> getLogger().info("Bound: {}", server.channel()))
-            .doOnUnbound(server -> getLogger().info("Unbound: {}", server.channel()))
-            )
-            ;
-        // @formatter:on
+                .doOnBound(server -> getLogger().info("Bound: {}", server.channel()))
+                .doOnUnbound(server -> getLogger().info("Unbound: {}", server.channel()))
+        )
+        ;
 
         return this;
     }
@@ -101,16 +97,13 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
         // KeyStore.Entry entry = keyStore.getEntry("server", new KeyStore.PasswordProtection("password".toCharArray()));
         // PrivateKey privateKey = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
 
-        // @formatter:off
         final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(privateKey, (X509Certificate) certificate)
                 .configure(builder -> builder
                         //.keyManager(keyManagerFactory) // Verursacht Fehler
                         .trustManager(trustManagerFactory)
                         .protocols("TLSv1.3")
                         .sslProvider(SslProvider.JDK)
-                        )
-                ;
-        // @formatter:on
+                );
 
         protocolSslContextSpec(protocolSslContextSpec);
 
@@ -120,14 +113,11 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     public RSocketServerRemoteBuilder protocolSslContextSpecCertificateSelfSigned() throws Exception {
         final SelfSignedCertificate cert = new SelfSignedCertificate();
 
-        // @formatter:off
         final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
                 .configure(builder -> builder
                         .protocols("TLSv1.3")
                         .sslProvider(SslProvider.JDK)
-                        )
-                 ;
-         // @formatter:on
+                );
 
         protocolSslContextSpec(protocolSslContextSpec);
 
@@ -143,14 +133,11 @@ public class RSocketServerRemoteBuilder extends AbstractRSocketServerBuilder<RSo
     }
 
     public RSocketServerRemoteBuilder resumeDefault() {
-        // @formatter:off
         final Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
                         .doBeforeRetry(signal -> getLogger().info("Disconnected. Trying to resume..."))
-                )
-                ;
-        // @formatter:on
+                );
 
         return resume(resume);
     }

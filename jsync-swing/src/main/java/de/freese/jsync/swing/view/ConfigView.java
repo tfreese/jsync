@@ -51,16 +51,14 @@ public class ConfigView extends AbstractView {
     }
 
     Options getOptions() {
-        // @formatter:off
-         return new Builder()
-                 .checksum(this.checkBoxChecksum.isSelected())
-                 .parallel(this.checkBoxParallelism.isSelected())
-                 .delete(this.checkBoxDelete.isSelected())
-                 .followSymLinks(this.checkBoxFollowSymLinks.isSelected())
-                 .dryRun(this.checkBoxDryRun.isSelected())
-                 .build()
-                 ;
-         // @formatter:on
+        return new Builder()
+                .checksum(this.checkBoxChecksum.isSelected())
+                .parallel(this.checkBoxParallelism.isSelected())
+                .delete(this.checkBoxDelete.isSelected())
+                .followSymLinks(this.checkBoxFollowSymLinks.isSelected())
+                .dryRun(this.checkBoxDryRun.isSelected())
+                .build()
+                ;
     }
 
     void initGUI() {

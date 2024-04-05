@@ -65,7 +65,7 @@ public final class JSyncUtils {
      * A {@link SocketChannel} will <strong>NOT</strong> be closed !
      */
     public static void close(final Channel channel) {
-        if ((channel != null) && channel.isOpen()) {
+        if (channel != null && channel.isOpen()) {
             try {
                 if (channel instanceof FileChannel fc) {
                     fc.force(false);
@@ -84,7 +84,7 @@ public final class JSyncUtils {
      */
     public static void closeSilently(final Closeable closeable) {
         try {
-            if ((closeable != null) && !(closeable instanceof SocketChannel)) {
+            if (closeable != null && !(closeable instanceof SocketChannel)) {
                 closeable.close();
             }
         }
@@ -145,41 +145,38 @@ public final class JSyncUtils {
      * @return double 0.0 - 1.0
      */
     public static double getProgress(final long value, final long max) {
-        if ((value <= 0L) || (value > max)) {
+        if (value <= 0L || value > max) {
             // throw new IllegalArgumentException("invalid value: " + value);
             return 0.0D;
         }
 
         return (double) value / (double) max;
 
-        // Nachkommastellen
-        // return Math.round(((double) value / (double) max) * 100) / 100D;
+        // Fraction Digits
+        // return Math.round(((double) value / (double) max) * 100D) / 100D;
     }
 
     public static byte[] hexToBytes(final CharSequence hexString) {
         return HEX_FORMAT.parseHex(hexString);
 
-        //        if ((hexString.length() % 2) == 1)
-        //        {
-        //            throw new IllegalArgumentException("Invalid hexadecimal String supplied.");
-        //        }
+        // if ((hexString.length() % 2) == 1) {
+        //     throw new IllegalArgumentException("Invalid hexadecimal String supplied.");
+        // }
         //
-        //        byte[] bytes = new byte[hexString.length() / 2];
+        // final byte[] bytes = new byte[hexString.length() / 2];
         //
-        //        for (int i = 0; i < hexString.length(); i += 2)
-        //        {
-        //            int firstDigit = Character.digit(hexString.charAt(i), 16);
-        //            int secondDigit = Character.digit(hexString.charAt(i + 1), 16);
+        // for (int i = 0; i < hexString.length(); i += 2) {
+        //     final int firstDigit = Character.digit(hexString.charAt(i), 16);
+        //     final int secondDigit = Character.digit(hexString.charAt(i + 1), 16);
         //
-        //            if ((firstDigit < 0) || (secondDigit < 0))
-        //            {
-        //                throw new IllegalArgumentException("Invalid Hexadecimal Character in: " + hexString);
-        //            }
+        //     if ((firstDigit < 0) || (secondDigit < 0)) {
+        //         throw new IllegalArgumentException("Invalid Hexadecimal Character in: " + hexString);
+        //     }
         //
-        //            bytes[i / 2] = (byte) ((firstDigit << 4) + secondDigit);
-        //        }
+        //     bytes[i / 2] = (byte) ((firstDigit << 4) + secondDigit);
+        // }
         //
-        //        return bytes;
+        // return bytes;
     }
 
     public static boolean isLinux() {
@@ -323,7 +320,7 @@ public final class JSyncUtils {
      * Split by ';' or ',' to build a Set for the {@link PathFilter}.
      */
     public static Set<String> toFilter(final String value) {
-        if ((value == null) || value.isBlank()) {
+        if (value == null || value.isBlank()) {
             return Collections.emptySet();
         }
 
@@ -360,23 +357,19 @@ public final class JSyncUtils {
         // double divider = 1D;
         // String unit = "";
         //
-        // if (size < 1024)
-        // {
+        // if (size < 1024) {
         // divider = 1D;
         // unit = "B";
         // }
-        // else if (size < 1_048_576)
-        // {
+        // else if (size < 1_048_576) {
         // divider = 1024D;
         // unit = "KB";
         // }
-        // else if (size < 1_073_741_824)
-        // {
+        // else if (size < 1_073_741_824) {
         // divider = 1_048_576D;
         // unit = "MB";
         // }
-        // else if (size < (1_099_511_627_776))
-        // {
+        // else if (size < (1_099_511_627_776)) {
         // divider = 1_073_741_824D;
         // unit = "GB";
         // }
@@ -388,15 +381,13 @@ public final class JSyncUtils {
         // Variante 4:
         // double value = Math.abs(size);
         //
-        // if (value < 1024D)
-        // {
+        // if (value < 1024D) {
         // return size + " B";
         // }
         //
         // CharacterIterator ci = new StringCharacterIterator("KMGTPE");
         //
-        // while (value > 1024D)
-        // {
+        // while (value > 1024D) {
         // value /= 1024;
         // ci.next();
         // }

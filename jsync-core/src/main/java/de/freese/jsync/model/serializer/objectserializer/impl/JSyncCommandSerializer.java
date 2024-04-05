@@ -14,7 +14,7 @@ public final class JSyncCommandSerializer implements ObjectSerializer<JSyncComma
     public <W, R> JSyncCommand readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
         final String name = adapter.readString(source, getCharset());
 
-        if ((name == null) || name.isBlank()) {
+        if (name == null || name.isBlank()) {
             return null;
         }
 

@@ -40,18 +40,14 @@ public final class RSocketClient {
         // Enable Debug.
         // Hooks.onOperatorDebug();
 
-        // @formatter:off
-//        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
-//                .configure(builder -> builder
-//                        //.keyManager(null)
-//                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
-//                        .protocols("TLSv1.3")
-//                        .sslProvider(SslProvider.JDK)
-//                        )
-//                ;
-        // @formatter:on
+        // final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
+        //         .configure(builder -> builder
+        //                 //.keyManager(null)
+        //                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
+        //                 .protocols("TLSv1.3")
+        //                 .sslProvider(SslProvider.JDK)
+        //         );
 
-        // @formatter:off
         final TcpClient tcpClient = TcpClient.create()
                 .host("localhost")
                 .port(8888)
@@ -62,26 +58,19 @@ public final class RSocketClient {
                 .doOnDisconnected(connection -> LOGGER.info("Disconnected: {}", connection.channel()))
                 //.secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
                 ;
-        // @formatter:on
 
         final Retry retry = Retry.fixedDelay(3, Duration.ofSeconds(1));
 
-        // @formatter:off
         final Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
                         .doBeforeRetry(signal -> LOGGER.info("Disconnected. Trying to resume..."))
-                )
-                ;
-        // @formatter:on
+                );
 
-        // @formatter:off
         final RSocketConnector connector = RSocketConnector.create()
                 .payloadDecoder(PayloadDecoder.DEFAULT)
                 .reconnect(retry)
-                .resume(resume)
-                ;
-        // @formatter:on
+                .resume(resume);
 
         final ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
         // ClientTransport clientTransport = LocalClientTransport.create("alias");
@@ -89,14 +78,12 @@ public final class RSocketClient {
         final Mono<RSocket> rSocket = connector.connect(clientTransport);
         final io.rsocket.core.RSocketClient rSocketClient = io.rsocket.core.RSocketClient.from(rSocket);
 
-        // @formatter:off
         rSocketClient
-            .requestResponse(Mono.just(ByteBufPayload.create("Hello World")))
-            .map(Payload::getDataUtf8)
-            .doOnNext(LOGGER::info)
-            .block()
-            ;
-        // @formatter:on
+                .requestResponse(Mono.just(ByteBufPayload.create("Hello World")))
+                .map(Payload::getDataUtf8)
+                .doOnNext(LOGGER::info)
+                .block()
+        ;
 
         rSocketClient.dispose();
     }

@@ -39,17 +39,13 @@ public final class RSocketServer {
         // Enable Debug.
         // Hooks.onOperatorDebug();
 
-        // @formatter:off
-//        SelfSignedCertificate cert = new SelfSignedCertificate();
-//        ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
-//                .configure(builder -> builder
-//                        .protocols("TLSv1.3")
-//                        .sslProvider(SslProvider.JDK)
-//                        )
-//                 ;
-         // @formatter:on
+        // final SelfSignedCertificate cert = new SelfSignedCertificate();
+        // final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
+        //         .configure(builder -> builder
+        //                 .protocols("TLSv1.3")
+        //                 .sslProvider(SslProvider.JDK)
+        //         );
 
-        // @formatter:off
         final TcpServer tcpServer = TcpServer.create()
                 .host("localhost")
                 .port(8888)
@@ -61,7 +57,6 @@ public final class RSocketServer {
                 .doOnConnection(connection -> LOGGER.info("Connected client: {}", connection.channel()))
                 //.secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec))
                 ;
-        // @formatter:on
 
         final SocketAcceptor socketAcceptor = SocketAcceptor.forRequestResponse(payload -> {
             final String request = payload.getDataUtf8();
@@ -69,27 +64,22 @@ public final class RSocketServer {
             return Mono.just(DefaultPayload.create("Client got response: " + request));
         });
 
-        // @formatter:off
         final Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
                         .doBeforeRetry(signal -> LOGGER.info("Disconnected. Trying to resume..."))
-                )
-                ;
-        // @formatter:on
+                );
 
         final ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
         // ServerTransport<CloseableChannel> serverTransport = LocalServerTransport.create("alias");
 
-        // @formatter:off
-//        CloseableChannel rSocketServer =
+        // CloseableChannel rSocketServer =
         io.rsocket.core.RSocketServer.create()
                 .acceptor(socketAcceptor)
                 .resume(resume)
                 .payloadDecoder(PayloadDecoder.DEFAULT)
                 .bindNow(serverTransport)
-                ;
-        // @formatter:on
+        ;
     }
 
     private RSocketServer() {

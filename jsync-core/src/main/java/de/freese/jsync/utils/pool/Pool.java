@@ -155,7 +155,7 @@ public abstract class Pool<T> {
         }
 
         void cleanOne() {
-            for (Iterator<SoftReference<T>> iter = this.delegate.iterator(); iter.hasNext(); ) {
+            for (final Iterator<SoftReference<T>> iter = this.delegate.iterator(); iter.hasNext(); ) {
                 if (iter.next().get() == null) {
                     iter.remove();
                     break;
@@ -227,7 +227,7 @@ public abstract class Pool<T> {
             };
         }
 
-        this.freeObjects = softReferences ? new SoftReferenceQueue<>(((Queue<SoftReference<T>>) queue)) : queue;
+        this.freeObjects = softReferences ? new SoftReferenceQueue<>((Queue<SoftReference<T>>) queue) : queue;
     }
 
     /**
@@ -254,10 +254,8 @@ public abstract class Pool<T> {
     public void clear(final Consumer<T> cleanup) {
         this.freeObjects.forEach(cleanup);
 
-        // for (T obj : this.freeObjects)
-        // {
-        // if (obj != null)
-        // {
+        // for (T obj : this.freeObjects) {
+        // if (obj != null) {
         // cleanup.accept(obj);
         // }
         // }
@@ -276,7 +274,7 @@ public abstract class Pool<T> {
 
         reset(object);
 
-        if (!this.freeObjects.offer(object) && (this.freeObjects instanceof SoftReferenceQueue)) {
+        if (!this.freeObjects.offer(object) && this.freeObjects instanceof SoftReferenceQueue) {
             ((SoftReferenceQueue<T>) this.freeObjects).cleanOne();
 
             this.freeObjects.offer(object);

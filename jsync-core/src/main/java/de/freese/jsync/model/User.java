@@ -34,7 +34,7 @@ public class User {
             return false;
         }
 
-        return Objects.equals(this.name, other.name) && (this.uid == other.uid);
+        return Objects.equals(this.name, other.name) && this.uid == other.uid;
     }
 
     public String getName() {

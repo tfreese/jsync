@@ -52,15 +52,13 @@ public final class JSyncContext {
 
     public static void startLocalRSocketServer() {
         if (rSocketServerLocal == null) {
-            // @formatter:off
             rSocketServerLocal = RSocketBuilders.serverLocal()
-              .name("jSync")
-              .socketAcceptor(SocketAcceptor.with(new JSyncRSocketHandlerByteBuf()))
-              .logger(JSyncSwing.getLogger())
-              .build()
-              .block()
-              ;
-          // @formatter:on
+                    .name("jSync")
+                    .socketAcceptor(SocketAcceptor.with(new JSyncRSocketHandlerByteBuf()))
+                    .logger(JSyncSwing.getLogger())
+                    .build()
+                    .block()
+            ;
         }
     }
 

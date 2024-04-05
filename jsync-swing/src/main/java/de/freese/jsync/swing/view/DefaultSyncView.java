@@ -414,7 +414,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         File currentDirectory = null;
         File selectedDirectory = null;
 
-        if ((selectedFolder == null) || selectedFolder.isBlank()) {
+        if (selectedFolder == null || selectedFolder.isBlank()) {
             currentDirectory = Paths.get(System.getProperty("user.home")).toFile();
         }
         else {

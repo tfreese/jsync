@@ -23,7 +23,7 @@ public abstract class AbstractClientListener implements ClientListener {
         final double percent = JSyncUtils.getPercent(bytesRead, syncItem.getSize());
         String message = null;
 
-        if ((bytesRead == 0) || Double.compare(percent % 10, 0D) == 0) {
+        if (bytesRead == 0 || Double.compare(percent % 10, 0D) == 0) {
             message = String.format("checksum %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(bytesRead), percent);
         }
 
@@ -42,7 +42,7 @@ public abstract class AbstractClientListener implements ClientListener {
         final double percent = JSyncUtils.getPercent(bytesTransferred, syncItem.getSize());
         String message = null;
 
-        if ((bytesTransferred == 0) || Double.compare(percent % 10, 0D) == 0) {
+        if (bytesTransferred == 0 || Double.compare(percent % 10, 0D) == 0) {
             message = String.format("copy %s: %s = %6.2f %%", syncItem.getRelativePath(), JSyncUtils.toHumanReadableSize(bytesTransferred), percent);
         }
 

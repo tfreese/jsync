@@ -87,7 +87,7 @@ final class JSyncPayload implements Payload {
             BYTE_BUFFER_POOL.free(this.data);
         }
 
-        if ((this.metadata != null) && (this.metadata != DefaultPayload.EMPTY_BUFFER)) {
+        if (this.metadata != null && this.metadata != DefaultPayload.EMPTY_BUFFER) {
             BYTE_BUFFER_POOL.free(this.metadata);
         }
 

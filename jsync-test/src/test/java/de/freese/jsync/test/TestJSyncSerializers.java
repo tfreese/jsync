@@ -94,13 +94,11 @@ class TestJSyncSerializers {
     }
 
     static Stream<Arguments> createArguments() {
-        // @formatter:off
         return Stream.of(
-                Arguments.of("ByteBufferAdapter", DefaultSerializer.of(new ByteBufferAdapter()), DATA_HOLDER_BYTE_BUFFER)
-                , Arguments.of("ByteBufAdapter", DefaultSerializer.of(new ByteBufAdapter()), DATA_HOLDER_BYTE_BUF)
-                , Arguments.of("InputOutputStreamAdapter", DefaultSerializer.of(new InputOutputStreamAdapter()), DATA_HOLDER_OUTPUT_INPUT_STREAM)
+                Arguments.of("ByteBufferAdapter", DefaultSerializer.of(new ByteBufferAdapter()), DATA_HOLDER_BYTE_BUFFER),
+                Arguments.of("ByteBufAdapter", DefaultSerializer.of(new ByteBufAdapter()), DATA_HOLDER_BYTE_BUF),
+                Arguments.of("InputOutputStreamAdapter", DefaultSerializer.of(new InputOutputStreamAdapter()), DATA_HOLDER_OUTPUT_INPUT_STREAM)
         );
-        // @formatter:on
     }
 
     @ParameterizedTest(name = "{index} -> {0}")

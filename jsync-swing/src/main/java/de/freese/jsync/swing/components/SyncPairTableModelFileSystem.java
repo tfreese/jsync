@@ -41,7 +41,7 @@ public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPai
 
         return switch (columnIndex) {
             case 0 -> syncItem != null ? syncItem.getRelativePath() : null;
-            case 1 -> (syncItem != null) && syncItem.isFile() ? JSyncUtils.toHumanReadableSize(syncItem.getSize()) : null;
+            case 1 -> syncItem != null && syncItem.isFile() ? JSyncUtils.toHumanReadableSize(syncItem.getSize()) : null;
             default -> null;
         };
     }

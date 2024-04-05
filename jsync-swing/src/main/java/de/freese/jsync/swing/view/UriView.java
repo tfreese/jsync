@@ -54,7 +54,7 @@ class UriView extends AbstractView {
         final String hostPort = this.textFieldHostPort.getText();
         final String path = this.textFieldPath.getText();
 
-        if ((path == null) || path.isBlank()) {
+        if (path == null || path.isBlank()) {
             return null;
         }
 
