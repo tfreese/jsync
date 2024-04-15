@@ -100,8 +100,7 @@ public final class JSyncSwing {
 
             // String keyString = key.toString();
             //
-            // if (keyString.endsWith(".font") || keyString.endsWith(".acceleratorFont"))
-            // {
+            // if (keyString.endsWith(".font") || keyString.endsWith(".acceleratorFont")) {
             // UIManager.put(key, new FontUIResource(font));
             // }
         });
@@ -111,11 +110,9 @@ public final class JSyncSwing {
 
         // UIDefaults defaults = UIManager.getLookAndFeelDefaults();
         //
-        // SortedSet<Object> uiKeys = new TreeSet<>(new Comparator<Object>()
-        // {
+        // SortedSet<Object> uiKeys = new TreeSet<>(new Comparator<Object>() {
         // @Override
-        // public int compare(final Object o1, final Object o2)
-        // {
+        // public int compare(final Object o1, final Object o2) {
         // return o1.toString().compareTo(o2.toString());
         // }
         //
@@ -124,8 +121,7 @@ public final class JSyncSwing {
         //
         // String format = "%1$s \t %2$s %n";
         //
-        // for (Object key : uiKeys)
-        // {
+        // for (Object key : uiKeys) {
         // Object value = defaults.get(key);
         //
         // System.out.printf(format, key.toString(), (value != null) ? value.toString() : "NULL");

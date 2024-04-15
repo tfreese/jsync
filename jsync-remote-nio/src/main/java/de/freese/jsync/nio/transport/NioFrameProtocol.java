@@ -221,20 +221,17 @@ public class NioFrameProtocol {
     }
 
     protected long write(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException {
-        // for (ByteBuffer buffer : buffers)
-        // {
+        // for (ByteBuffer buffer : buffers) {
         // if (buffer.position() > 0)
-        // // if (buffer.remaining() != buffer.limit())
-        // {
+        // // if (buffer.remaining() != buffer.limit()) {
         // buffer.flip();
         // }
         // }
         //
         // return channel.write(buffers);
 
-        if (buffer.position() > 0)
         // if (buffer.remaining() != buffer.limit())
-        {
+        if (buffer.position() > 0) {
             buffer.flip();
         }
 

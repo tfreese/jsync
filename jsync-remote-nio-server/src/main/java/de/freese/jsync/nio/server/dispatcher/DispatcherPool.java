@@ -85,10 +85,10 @@ public class DispatcherPool implements Dispatcher {
      * Returns the next {@link Dispatcher} in a Round-Robin procedure.<br>
      */
     private synchronized Dispatcher nextDispatcher() {
-        // Ersten Dispatcher entnehmen.
+        // Remove first Dispatcher.
         final DefaultDispatcher dispatcher = this.dispatchers.poll();
 
-        // Dispatcher wieder hinten dran hängen.
+        // Attach Dispatcher at the end.
         this.dispatchers.add(dispatcher);
 
         return dispatcher;

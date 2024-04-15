@@ -39,8 +39,8 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
         if (ex != null) {
             getLogger().error(dir.toString(), ex);
         }
-        else if (!basePath.endsWith(dir)) // Das Basisverzeichnis wollen wir nicht.
-        {
+        else if (!basePath.endsWith(dir)) {
+            // We do not want the Base-Directory.
             this.consumer.accept(dir);
         }
 

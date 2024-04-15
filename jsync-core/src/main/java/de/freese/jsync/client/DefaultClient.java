@@ -77,12 +77,10 @@ public class DefaultClient extends AbstractClient {
         // Map of ReceiverItems.
         final Map<String, SyncItem> mapReceiver = syncItemsReceiver.stream().collect(Collectors.toMap(SyncItem::getRelativePath, Function.identity()));
 
-        // @formatter:off
         syncItemsSender.stream()
                 .map(senderItem -> new SyncPair(senderItem, mapReceiver.remove(senderItem.getRelativePath())))
                 .forEach(consumer)
-                ;
-        // @formatter:on
+        ;
 
         // What it is now in the Map must be deleted (source = null).
         mapReceiver.forEach((key, value) -> consumer.accept(new SyncPair(null, value)));

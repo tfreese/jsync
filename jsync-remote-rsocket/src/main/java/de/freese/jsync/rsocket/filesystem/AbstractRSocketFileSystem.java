@@ -19,10 +19,11 @@ import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.rsocket.builder.RSocketBuilders;
+import de.freese.jsync.serialisation.DefaultSerializer;
+import de.freese.jsync.serialisation.Serializer;
+import de.freese.jsync.serialisation.io.ByteBufferReader;
+import de.freese.jsync.serialisation.io.ByteBufferWriter;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
@@ -35,14 +36,14 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
         return BYTEBUFFER_POOL;
     }
 
-    private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<ByteBuffer, ByteBuffer> serializer = new DefaultSerializer<>(new ByteBufferReader(), new ByteBufferWriter());
 
     private RSocketClient client;
 
     @Override
     public void disconnect() {
         final ByteBuffer bufferMeta = getByteBufferPool().get();
-        getSerializer().writeTo(bufferMeta, JSyncCommand.DISCONNECT);
+        getSerializer().write(bufferMeta, JSyncCommand.DISCONNECT);
 
         getClient()
                 .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
@@ -70,7 +71,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
 
         final ByteBuffer bufferMeta = getByteBufferPool().get();
 
-        getSerializer().writeTo(bufferMeta, JSyncCommand.CONNECT);
+        getSerializer().write(bufferMeta, JSyncCommand.CONNECT);
 
         this.client
                 .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
@@ -106,11 +107,11 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
 
     protected String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead, final JSyncCommand command) {
         final ByteBuffer bufferMeta = getByteBufferPool().get();
-        getSerializer().writeTo(bufferMeta, command);
+        getSerializer().write(bufferMeta, command);
 
         final ByteBuffer bufferData = getByteBufferPool().get();
-        getSerializer().writeTo(bufferData, baseDir);
-        getSerializer().writeTo(bufferData, relativeFile);
+        getSerializer().writeString(bufferData, baseDir);
+        getSerializer().writeString(bufferData, relativeFile);
 
         return getClient()
                 .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
@@ -133,12 +134,12 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
 
     protected Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final JSyncCommand command) {
         final ByteBuffer bufferMeta = getByteBufferPool().get();
-        getSerializer().writeTo(bufferMeta, command);
+        getSerializer().write(bufferMeta, command);
 
         final ByteBuffer bufferData = getByteBufferPool().get();
-        getSerializer().writeTo(bufferData, baseDir);
-        getSerializer().writeTo(bufferData, followSymLinks);
-        getSerializer().writeTo(bufferData, pathFilter);
+        getSerializer().writeString(bufferData, baseDir);
+        getSerializer().writeBoolean(bufferData, followSymLinks);
+        getSerializer().write(bufferData, pathFilter);
 
         return getClient()
                 .requestStream(Mono.just(DefaultPayload.create(bufferData.flip(), bufferMeta.flip()))
@@ -151,7 +152,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
                 .doOnError(th -> getLogger().error(th.getMessage(), th))
                 .map(payload -> {
                     final ByteBuffer buffer = payload.getData();
-                    return getSerializer().readFrom(buffer, SyncItem.class);
+                    return getSerializer().readSyncItem(buffer);
                 })
                 ;
     }

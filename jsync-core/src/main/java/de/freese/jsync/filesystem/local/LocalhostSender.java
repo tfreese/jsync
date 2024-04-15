@@ -1,8 +1,6 @@
 // Created: 05.04.2018
 package de.freese.jsync.filesystem.local;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -32,13 +30,6 @@ public class LocalhostSender extends AbstractLocalFileSystem implements Sender {
             return Flux.empty();
         }
 
-        try {
-            final FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.READ);
-
-            return ReactiveUtils.readByteChannel(() -> fileChannel);
-        }
-        catch (IOException ex) {
-            throw new UncheckedIOException(ex);
-        }
+        return ReactiveUtils.readByteChannel(() -> FileChannel.open(path, StandardOpenOption.READ));
     }
 }

@@ -14,18 +14,19 @@ import de.freese.jsync.filesystem.AbstractFileSystem;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.nio.transport.NioFrameProtocol;
 import de.freese.jsync.nio.utils.pool.SocketChannelPool;
+import de.freese.jsync.serialisation.DefaultSerializer;
+import de.freese.jsync.serialisation.Serializer;
+import de.freese.jsync.serialisation.io.ByteBufferReader;
+import de.freese.jsync.serialisation.io.ByteBufferWriter;
 
 /**
  * @author Thomas Freese
  */
 public abstract class AbstractNioFileSystem extends AbstractFileSystem {
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
-    private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<ByteBuffer, ByteBuffer> serializer = new DefaultSerializer<>(new ByteBufferReader(), new ByteBufferWriter());
 
     private SocketChannelPool channelPool;
 
@@ -37,7 +38,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
         try {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.CONNECT));
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().write(buffer, JSyncCommand.CONNECT));
 
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
@@ -65,7 +66,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
         try {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.DISCONNECT));
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().write(buffer, JSyncCommand.DISCONNECT));
 
             // Finish-Frame
             getFrameProtocol().writeFinish(channel);
@@ -91,12 +92,12 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
         try {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, command));
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().write(buffer, command));
 
             // Data-Frame
             getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, baseDir);
-                getSerializer().writeTo(buffer, relativeFile);
+                getSerializer().writeString(buffer, baseDir);
+                getSerializer().writeString(buffer, relativeFile);
             });
 
             // Finish-Frame
@@ -104,7 +105,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
             // Response
             return getFrameProtocol().readAll(channel).map(buffer -> {
-                final String value = getSerializer().readFrom(buffer, String.class);
+                final String value = getSerializer().readString(buffer);
                 getFrameProtocol().getBufferPool().free(buffer);
 
                 return value;
@@ -134,13 +135,13 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
             try {
                 // MetaData-Frame
-                getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, command));
+                getFrameProtocol().writeData(channel, buffer -> getSerializer().write(buffer, command));
 
                 // Data-Frame
                 getFrameProtocol().writeData(channel, buffer -> {
-                    getSerializer().writeTo(buffer, baseDir);
-                    getSerializer().writeTo(buffer, followSymLinks);
-                    getSerializer().writeTo(buffer, pathFilter);
+                    getSerializer().writeString(buffer, baseDir);
+                    getSerializer().writeBoolean(buffer, followSymLinks);
+                    getSerializer().write(buffer, pathFilter);
                 });
 
                 // Finish-Frame
@@ -148,7 +149,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
                 // Response
                 getFrameProtocol().readAll(channel, buffer -> {
-                    final SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
+                    final SyncItem syncItem = getSerializer().readSyncItem(buffer);
 
                     sink.next(syncItem);
 

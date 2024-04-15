@@ -29,8 +29,7 @@ public class DefaultSyncItem implements SyncItem {
     }
 
     //    @Override
-    //    public Group getGroup()
-    //    {
+    //    public Group getGroup() {
     //        return this.group;
     //    }
 
@@ -40,8 +39,7 @@ public class DefaultSyncItem implements SyncItem {
     }
 
     //    @Override
-    //    public Set<PosixFilePermission> getPermissions()
-    //    {
+    //    public Set<PosixFilePermission> getPermissions() {
     //        return this.permissions;
     //    }
 
@@ -56,8 +54,7 @@ public class DefaultSyncItem implements SyncItem {
     }
 
     //    @Override
-    //    public User getUser()
-    //    {
+    //    public User getUser() {
     //        return this.user;
     //    }
 
@@ -77,8 +74,7 @@ public class DefaultSyncItem implements SyncItem {
     }
 
     //    @Override
-    //    public void setGroup(final Group group)
-    //    {
+    //    public void setGroup(final Group group) {
     //        this.group = group;
     //    }
 
@@ -88,8 +84,7 @@ public class DefaultSyncItem implements SyncItem {
     }
 
     //    @Override
-    //    public void setPermissions(final Set<PosixFilePermission> permissions)
-    //    {
+    //    public void setPermissions(final Set<PosixFilePermission> permissions) {
     //        this.permissions = permissions;
     //    }
 
@@ -99,8 +94,7 @@ public class DefaultSyncItem implements SyncItem {
     }
 
     //    @Override
-    //    public void setUser(final User user)
-    //    {
+    //    public void setUser(final User user) {
     //        this.user = user;
     //    }
 

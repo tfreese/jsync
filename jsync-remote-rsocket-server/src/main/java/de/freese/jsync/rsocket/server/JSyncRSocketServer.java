@@ -69,7 +69,6 @@ public final class JSyncRSocketServer {
         // Hooks.onErrorDropped(th -> {
         // });
 
-        // @formatter:off
         this.server = RSocketBuilders.serverRemote()
                 .socketAddress(new InetSocketAddress(port))
                 .socketAcceptor(SocketAcceptor.with(new JSyncRSocketHandlerByteBuf()))
@@ -78,8 +77,7 @@ public final class JSyncRSocketServer {
                 .logger(LOGGER)
                 .build()
                 .block()
-                ;
-        // @formatter:on
+        ;
     }
 
     public void stop() {

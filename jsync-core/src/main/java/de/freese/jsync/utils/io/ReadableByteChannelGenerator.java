@@ -19,6 +19,8 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
     private final ReadableByteChannel channel;
 
     public ReadableByteChannelGenerator(final ReadableByteChannel channel) {
+        super();
+        
         this.channel = Objects.requireNonNull(channel, "channel required");
     }
 

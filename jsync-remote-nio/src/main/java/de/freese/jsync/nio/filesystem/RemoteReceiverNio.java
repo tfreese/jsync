@@ -25,12 +25,12 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
         try {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY));
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().write(buffer, JSyncCommand.TARGET_CREATE_DIRECTORY));
 
             // Data-Frame
             getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, baseDir);
-                getSerializer().writeTo(buffer, relativePath);
+                getSerializer().writeString(buffer, baseDir);
+                getSerializer().writeString(buffer, relativePath);
             });
 
             // Finish-Frame
@@ -59,13 +59,13 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
         try {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.TARGET_DELETE));
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().write(buffer, JSyncCommand.TARGET_DELETE));
 
             // Data-Frame
             getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, baseDir);
-                getSerializer().writeTo(buffer, relativePath);
-                getSerializer().writeTo(buffer, followSymLinks);
+                getSerializer().writeString(buffer, baseDir);
+                getSerializer().writeString(buffer, relativePath);
+                getSerializer().writeBoolean(buffer, followSymLinks);
             });
 
             // Finish-Frame
@@ -104,12 +104,12 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
         try {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.TARGET_UPDATE));
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().write(buffer, JSyncCommand.TARGET_UPDATE));
 
             // Data-Frame
             getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, baseDir);
-                getSerializer().writeTo(buffer, syncItem);
+                getSerializer().writeString(buffer, baseDir);
+                getSerializer().write(buffer, syncItem);
             });
 
             // Finish-Frame
@@ -138,13 +138,13 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
         try {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.TARGET_VALIDATE_FILE));
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().write(buffer, JSyncCommand.TARGET_VALIDATE_FILE));
 
             // Data-Frame
             getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, baseDir);
-                getSerializer().writeTo(buffer, syncItem);
-                getSerializer().writeTo(buffer, withChecksum);
+                getSerializer().writeString(buffer, baseDir);
+                getSerializer().write(buffer, syncItem);
+                getSerializer().writeBoolean(buffer, withChecksum);
             });
 
             // Finish-Frame
@@ -152,7 +152,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
             // Response
             getFrameProtocol().readAll(channel).map(buffer -> {
-                final long value = getSerializer().readFrom(buffer, Long.class);
+                final long value = getSerializer().readLong(buffer);
                 getFrameProtocol().getBufferPool().free(buffer);
 
                 return value;
@@ -178,13 +178,13 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
         try {
             // MetaData-Frame
-            getFrameProtocol().writeData(channel, buffer -> getSerializer().writeTo(buffer, JSyncCommand.TARGET_WRITE_FILE));
+            getFrameProtocol().writeData(channel, buffer -> getSerializer().write(buffer, JSyncCommand.TARGET_WRITE_FILE));
 
             // Data-Frame
             getFrameProtocol().writeData(channel, buffer -> {
-                getSerializer().writeTo(buffer, baseDir);
-                getSerializer().writeTo(buffer, relativeFile);
-                getSerializer().writeTo(buffer, sizeOfFile);
+                getSerializer().writeString(buffer, baseDir);
+                getSerializer().writeString(buffer, relativeFile);
+                getSerializer().writeLong(buffer, sizeOfFile);
             });
 
             fileFlux.subscribe(buffer -> {
@@ -201,7 +201,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
 
             // Response
             return getFrameProtocol().readAll(channel).map(buffer -> {
-                final long bytesWritten = getSerializer().readFrom(buffer, Long.class);
+                final long bytesWritten = getSerializer().readLong(buffer);
                 getFrameProtocol().getBufferPool().free(buffer);
 
                 return bytesWritten;

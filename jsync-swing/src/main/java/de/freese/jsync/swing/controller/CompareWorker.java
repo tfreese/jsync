@@ -37,7 +37,6 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
     }
 
     protected RunnableFuture<List<SyncItem>> createFutureSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter) {
-        // @formatter:off
         final Callable<List<SyncItem>> callable = () -> getClient().generateSyncItems(fileSystem, pathFilter)
                 .index()
                 //.delayElements(Duration.ofMillis(10))
@@ -45,7 +44,6 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
                 .map(Tuple2::getT2)
                 .collectList()
                 .block();
-        // @formatter:on
 
         return new FutureTask<>(callable);
     }

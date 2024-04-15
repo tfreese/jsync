@@ -19,10 +19,8 @@ public interface SyncItem {
     /**
      * For Windows or Net-Drives these can be NULL.
      */
-    //    default String getPermissionsToString()
-    //    {
-    //        if ((getPermissions() == null) || getPermissions().isEmpty())
-    //        {
+    //    default String getPermissionsToString() {
+    //        if ((getPermissions() == null) || getPermissions().isEmpty()) {
     //            return null;
     //        }
     //

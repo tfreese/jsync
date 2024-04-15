@@ -29,7 +29,7 @@ public interface Client {
 
     Flux<SyncItem> generateSyncItems(EFileSystem fileSystem, PathFilter pathFilter);
 
-    default void generateSyncItems(EFileSystem fileSystem, PathFilter pathFilter, Consumer<SyncItem> consumer) {
+    default void generateSyncItems(final EFileSystem fileSystem, final PathFilter pathFilter, final Consumer<SyncItem> consumer) {
         generateSyncItems(fileSystem, pathFilter).subscribe(consumer);
     }
 

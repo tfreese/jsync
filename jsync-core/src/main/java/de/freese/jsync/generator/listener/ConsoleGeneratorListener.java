@@ -22,12 +22,10 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener {
 
         // Console console = System.console();
         //
-        // if (console != null)
-        // {
+        // if (console != null) {
         // printStream = console.writer();
         // }
-        // else
-        // {
+        // else {
         // printStream = System.out;
         // }
 

@@ -19,12 +19,10 @@ public final class RSocketUtils {
 
         payload.release(payload.refCnt());
 
-        // if (payload.refCnt() > 2)
-        // {
+        // if (payload.refCnt() > 2) {
         // payload.release();
         // }
-        // else
-        // {
+        // else {
         // payload.retain();
         // }
     }

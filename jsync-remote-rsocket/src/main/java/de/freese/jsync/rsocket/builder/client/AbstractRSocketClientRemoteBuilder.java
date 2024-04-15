@@ -59,8 +59,7 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     public T protocolSslContextSpecCertificate() throws Exception {
         // KeyStore keyStore = KeyStore.getInstance("PKCS12");
         //
-        // try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_keystore.p12"))
-        // {
+        // try (InputStream is = new FileInputStream("../../spring/spring-thymeleaf/CA/client_keystore.p12")) {
         // keyStore.load(is, "password".toCharArray());
         // }
         //
@@ -76,16 +75,13 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
         trustManagerFactory.init(keyStoreTrust);
 
-        // @formatter:off
         final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
                 .configure(builder -> builder
                         //.keyManager(keyManagerFactory)
                         .trustManager(trustManagerFactory)
                         .protocols("TLSv1.3")
                         .sslProvider(SslProvider.JDK)
-                        )
-                ;
-        // @formatter:on
+                );
 
         protocolSslContextSpec(protocolSslContextSpec);
 
@@ -93,15 +89,12 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     }
 
     public T protocolSslContextSpecTrusted() {
-        // @formatter:off
         final ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forClient()
                 .configure(builder -> builder
                         .trustManager(InsecureTrustManagerFactory.INSTANCE)
                         .protocols("TLSv1.3")
                         .sslProvider(SslProvider.JDK)
-                        )
-                ;
-        // @formatter:on
+                );
 
         protocolSslContextSpec(protocolSslContextSpec);
 
@@ -117,14 +110,11 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     }
 
     public T resumeDefault() {
-        // @formatter:off
         final Resume resume = new Resume()
                 .sessionDuration(Duration.ofMinutes(5))
                 .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
                         .doBeforeRetry(signal -> getLogger().info("Disconnected. Trying to resume..."))
-                )
-                ;
-        // @formatter:on
+                );
 
         return resume(resume);
     }

@@ -79,23 +79,22 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
         try {
             Files.setLastModifiedTime(path, FileTime.from(lastModifiedTime, TimeUnit.SECONDS));
 
-            //            if (Options.IS_LINUX)
-            //            {
-            //                Set<PosixFilePermission> filePermissions = PosixFilePermissions.fromString(permissions);
-            //                // FileAttribute<Set<PosixFilePermission>> fileAttributePermissions = PosixFilePermissions.asFileAttribute(filePermissions);
+            // if (Options.IS_LINUX) {
+            //     final Set<PosixFilePermission> filePermissions = PosixFilePermissions.fromString(permissions);
+            //     // FileAttribute<Set<PosixFilePermission>> fileAttributePermissions = PosixFilePermissions.asFileAttribute(filePermissions);
             //
-            //                Files.setPosixFilePermissions(path, filePermissions);
+            //     Files.setPosixFilePermissions(path, filePermissions);
             //
-            //                FileSystem fileSystem = path.getFileSystem();
-            //                UserPrincipalLookupService lookupService = fileSystem.getUserPrincipalLookupService();
+            //     final FileSystem fileSystem = path.getFileSystem();
+            //     final UserPrincipalLookupService lookupService = fileSystem.getUserPrincipalLookupService();
             //
-            //                PosixFileAttributeView fileAttributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class);
-            //                GroupPrincipal groupPrincipal = lookupService.lookupPrincipalByGroupName(groupName);
-            //                fileAttributeView.setGroup(groupPrincipal);
+            //     final PosixFileAttributeView fileAttributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class);
+            //     final GroupPrincipal groupPrincipal = lookupService.lookupPrincipalByGroupName(groupName);
+            //     fileAttributeView.setGroup(groupPrincipal);
             //
-            //                UserPrincipal userPrincipal = lookupService.lookupPrincipalByName(userName);
-            //                fileAttributeView.setOwner(userPrincipal);
-            //            }
+            //     final UserPrincipal userPrincipal = lookupService.lookupPrincipalByName(userName);
+            //     fileAttributeView.setOwner(userPrincipal);
+            // }
         }
         catch (IOException ex) {
             throw new UncheckedIOException(ex);

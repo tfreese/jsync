@@ -52,8 +52,7 @@ public final class JSyncUtils {
 
         //        StringBuilder sb = new StringBuilder(bytes.length * 2);
         //
-        //        for (byte b : bytes)
-        //        {
+        //        for (byte b : bytes) {
         //            sb.append(HEX_CHARS[(b & 0xF0) >>> 4]);
         //            sb.append(HEX_CHARS[b & 0x0F]);
         //        }

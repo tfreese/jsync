@@ -43,7 +43,6 @@ public class DefaultGenerator extends AbstractGenerator {
         final FileVisitOption[] visitOptions = JSyncUtils.getFileVisitOptions(followSymLinks);
         final LinkOption[] linkOptions = JSyncUtils.getLinkOptions(followSymLinks);
 
-        // @formatter:off
         return getPathsAsFlux(base, visitOptions, pathFilter)
                 .mapNotNull(path -> {
                     if (Files.isDirectory(path)) {
@@ -53,7 +52,6 @@ public class DefaultGenerator extends AbstractGenerator {
                     return toFileItem(path, base.relativize(path).toString(), linkOptions);
                 })
                 ;
-        // @formatter:on
     }
 
     /**
@@ -69,12 +67,10 @@ public class DefaultGenerator extends AbstractGenerator {
 
         try {
             try (Stream<Path> children = Files.list(directory)) {
-                // @formatter:off
+
                 final long count = children
                         .filter(child -> !child.equals(directory)) // We do not want the Base-Directory.
-                        .count()
-                        ;
-                // @formatter:on
+                        .count();
 
                 syncItem.setSize(count);
             }
@@ -82,34 +78,32 @@ public class DefaultGenerator extends AbstractGenerator {
             final long lastModifiedTime = Files.getLastModifiedTime(directory, linkOptions).to(TimeUnit.SECONDS);
             syncItem.setLastModifiedTime(lastModifiedTime);
 
-            //            if (Options.IS_WINDOWS)
-            //            {
-            //                long lastModifiedTime = Files.getLastModifiedTime(directory, linkOptions).to(TimeUnit.SECONDS);
+            // if (Options.IS_WINDOWS) {
+            //     final long lastModifiedTime = Files.getLastModifiedTime(directory, linkOptions).to(TimeUnit.SECONDS);
             //
-            //                syncItem.setLastModifiedTime(lastModifiedTime);
-            //            }
-            //            else if (Options.IS_LINUX)
-            //            {
-            //                // unix:mode
-            //                Map<String, Object> attributes = Files.readAttributes(directory, "unix:lastModifiedTime,permissions,owner,group,uid,gid", linkOptions);
+            //     syncItem.setLastModifiedTime(lastModifiedTime);
+            // }
+            // else if (Options.IS_LINUX) {
+            //     // unix:mode
+            //     final Map<String, Object> attributes = Files.readAttributes(directory, "unix:lastModifiedTime,permissions,owner,group,uid,gid", linkOptions);
             //
-            //                long lastModifiedTime = ((FileTime) attributes.get("lastModifiedTime")).to(TimeUnit.SECONDS);
+            //     final long lastModifiedTime = ((FileTime) attributes.get("lastModifiedTime")).to(TimeUnit.SECONDS);
             //
-            //                Set<PosixFilePermission> filePermissions = (Set<PosixFilePermission>) attributes.get("permissions");
+            //     final Set<PosixFilePermission> filePermissions = (Set<PosixFilePermission>) attributes.get("permissions");
             //
-            //                String userName = ((UserPrincipal) attributes.get("owner")).getName();
-            //                String groupName = ((GroupPrincipal) attributes.get("group")).getName();
-            //                int uid = (int) attributes.get("uid");
-            //                int gid = (int) attributes.get("gid");
+            //     final String userName = ((UserPrincipal) attributes.get("owner")).getName();
+            //     final String groupName = ((GroupPrincipal) attributes.get("group")).getName();
+            //     final int uid = (int) attributes.get("uid");
+            //     final int gid = (int) attributes.get("gid");
             //
-            //                syncItem.setLastModifiedTime(lastModifiedTime);
-            //                syncItem.setPermissions(filePermissions);
-            //                syncItem.setUser(new User(userName, uid));
-            //                syncItem.setGroup(new Group(groupName, gid));
+            //     syncItem.setLastModifiedTime(lastModifiedTime);
+            //     syncItem.setPermissions(filePermissions);
+            //     syncItem.setUser(new User(userName, uid));
+            //     syncItem.setGroup(new Group(groupName, gid));
             //
-            //                // UserPrincipalLookupService lookupService = provider(path).getUserPrincipalLookupService();
-            //                // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
-            //            }
+            //     // UserPrincipalLookupService lookupService = provider(path).getUserPrincipalLookupService();
+            //     // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
+            // }
         }
         catch (IOException ex) {
             throw new UncheckedIOException(ex);
@@ -130,43 +124,40 @@ public class DefaultGenerator extends AbstractGenerator {
             syncItem.setLastModifiedTime(basicFileAttributes.lastModifiedTime().to(TimeUnit.SECONDS));
             syncItem.setSize(basicFileAttributes.size());
 
-            //            if (Options.IS_WINDOWS)
-            //            {
-            //                BasicFileAttributes basicFileAttributes = Files.readAttributes(file, BasicFileAttributes.class, linkOptions);
+            // if (Options.IS_WINDOWS) {
+            //     final BasicFileAttributes basicFileAttributes = Files.readAttributes(file, BasicFileAttributes.class, linkOptions);
             //
-            //                long lastModifiedTime = basicFileAttributes.lastModifiedTime().to(TimeUnit.SECONDS);
-            //                long size = basicFileAttributes.size();
+            //     final long lastModifiedTime = basicFileAttributes.lastModifiedTime().to(TimeUnit.SECONDS);
+            //     final long size = basicFileAttributes.size();
             //
-            //                syncItem.setLastModifiedTime(lastModifiedTime);
-            //                syncItem.setSize(size);
-            //            }
-            //            else if (Options.IS_LINUX)
-            //            {
-            //                // PosixFileAttributes basicFileAttributes = Files.readAttributes(file, PosixFileAttributes.class, linkOption);
+            //     syncItem.setLastModifiedTime(lastModifiedTime);
+            //     syncItem.setSize(size);
+            // }
+            // else if (Options.IS_LINUX) {
+            //     // PosixFileAttributes basicFileAttributes = Files.readAttributes(file, PosixFileAttributes.class, linkOption);
             //
-            //                // posix:*, basic:*, unix:*
-            //                Map<String, Object> attributes = Files.readAttributes(file, "unix:lastModifiedTime,size,permissions,owner,group,uid,gid", linkOptions);
+            //     // posix:*, basic:*, unix:*
+            //     final Map<String, Object> attributes = Files.readAttributes(file, "unix:lastModifiedTime,size,permissions,owner,group,uid,gid", linkOptions);
             //
-            //                long lastModifiedTime = ((FileTime) attributes.get("lastModifiedTime")).to(TimeUnit.SECONDS);
-            //                long size = (long) attributes.get("size");
+            //     final long lastModifiedTime = ((FileTime) attributes.get("lastModifiedTime")).to(TimeUnit.SECONDS);
+            //     final long size = (long) attributes.get("size");
             //
-            //                @SuppressWarnings("unchecked")
-            //                Set<PosixFilePermission> filePermissions = (Set<PosixFilePermission>) attributes.get("permissions");
+            //     @SuppressWarnings("unchecked") final Set<PosixFilePermission> filePermissions = (Set<PosixFilePermission>) attributes.get("permissions");
             //
-            //                String userName = ((UserPrincipal) attributes.get("owner")).getName();
-            //                String groupName = ((GroupPrincipal) attributes.get("group")).getName();
-            //                int uid = (int) attributes.get("uid");
-            //                int gid = (int) attributes.get("gid");
+            //     final String userName = ((UserPrincipal) attributes.get("owner")).getName();
+            //     final String groupName = ((GroupPrincipal) attributes.get("group")).getName();
+            //     final int uid = (int) attributes.get("uid");
+            //     final int gid = (int) attributes.get("gid");
             //
-            //                syncItem.setLastModifiedTime(lastModifiedTime);
-            //                syncItem.setSize(size);
-            //                syncItem.setPermissions(filePermissions);
-            //                syncItem.setUser(new User(userName, uid));
-            //                syncItem.setGroup(new Group(groupName, gid));
+            //     syncItem.setLastModifiedTime(lastModifiedTime);
+            //     syncItem.setSize(size);
+            //     syncItem.setPermissions(filePermissions);
+            //     syncItem.setUser(new User(userName, uid));
+            //     syncItem.setGroup(new Group(groupName, gid));
             //
-            //                // UserPrincipalLookupService lookupService = provider(path).getUserPrincipalLookupService();
-            //                // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
-            //            }
+            //     // UserPrincipalLookupService lookupService = provider(path).getUserPrincipalLookupService();
+            //     // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
+            // }
         }
         catch (IOException ex) {
             throw new UncheckedIOException(ex);

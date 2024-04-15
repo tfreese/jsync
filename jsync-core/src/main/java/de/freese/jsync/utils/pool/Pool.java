@@ -41,7 +41,7 @@ public abstract class Pool<T> {
      * @author Martin Grotzke
      * @author Thomas Freese
      */
-    static class SoftReferenceQueue<T> implements Queue<T> {
+    static final class SoftReferenceQueue<T> implements Queue<T> {
         private final Queue<SoftReference<T>> delegate;
 
         SoftReferenceQueue(final Queue<SoftReference<T>> delegate) {

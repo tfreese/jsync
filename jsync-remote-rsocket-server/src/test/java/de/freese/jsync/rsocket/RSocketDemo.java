@@ -72,45 +72,39 @@ public final class RSocketDemo {
         final List<Disposable> servers = tuple.getT2();
 
         // The Flux do not block.
-        // @formatter:off
         Flux.range(0, 30).parallel().runOn(Schedulers.boundedElastic())
-            .map(i ->
-                rSocketClient
-                    .requestResponse(Mono.just(DefaultPayload.create("flux-" + i)))
-                    .map(Payload::getDataUtf8)
-                    .doOnNext(LOGGER::info)
+                .map(i ->
+                        rSocketClient
+                                .requestResponse(Mono.just(DefaultPayload.create("flux-" + i)))
+                                .map(Payload::getDataUtf8)
+                                .doOnNext(LOGGER::info)
                 )
-            .subscribe(Mono::subscribe)
-            ;
-        // @formatter:on
+                .subscribe(Mono::subscribe)
+        ;
 
         // The IntStream blocked, until all parallel Operations are finished.
-        // @formatter:off
         IntStream.range(0, 30).parallel()
-            .mapToObj(i ->
-                rSocketClient
-                    .requestResponse(Mono.just(DefaultPayload.create("intStream-" + i)))
-                    .map(Payload::getDataUtf8)
-                    .doOnNext(LOGGER::info)
+                .mapToObj(i ->
+                        rSocketClient
+                                .requestResponse(Mono.just(DefaultPayload.create("intStream-" + i)))
+                                .map(Payload::getDataUtf8)
+                                .doOnNext(LOGGER::info)
                 )
-            .forEach(Mono::subscribe)
-            ;
-        // @formatter:on
+                .forEach(Mono::subscribe)
+        ;
 
         TimeUnit.SECONDS.sleep(1);
 
         for (int i = 0; i < 30; i++) {
             TimeUnit.MILLISECONDS.sleep(100);
 
-            // @formatter:off
             rSocketClient
-                .requestResponse(Mono.just(DefaultPayload.create("for-" + i)))
-                .map(Payload::getDataUtf8)
-                .doOnNext(LOGGER::info)
-                //.block()
-                .subscribe()
-                ;
-            // @formatter:on
+                    .requestResponse(Mono.just(DefaultPayload.create("for-" + i)))
+                    .map(Payload::getDataUtf8)
+                    .doOnNext(LOGGER::info)
+                    //.block()
+                    .subscribe()
+            ;
         }
 
         TimeUnit.SECONDS.sleep(2);
@@ -125,7 +119,6 @@ public final class RSocketDemo {
     static Tuple2<RSocketClient, List<Disposable>> createRemote(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
         final InetSocketAddress serverAddress = new InetSocketAddress("localhost", 6000);
 
-        // @formatter:off
         final CloseableChannel server = RSocketBuilders.serverRemote()
                 .socketAddress(serverAddress)
                 .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
@@ -134,11 +127,8 @@ public final class RSocketDemo {
                 .logger(LoggerFactory.getLogger("server"))
                 .protocolSslContextSpecCertificate()
                 .build()
-                .block()
-                ;
-        // @formatter:on
+                .block();
 
-        // @formatter:off
         final RSocketClient client = RSocketBuilders.clientRemote()
                 .remoteAddress(serverAddress)
                 .resumeDefault()
@@ -146,9 +136,7 @@ public final class RSocketDemo {
                 .logTcpClientBoundStatus()
                 .logger(LoggerFactory.getLogger("client"))
                 .protocolSslContextSpecTrusted()
-                .build()
-                ;
-        // @formatter:on
+                .build();
 
         return Tuples.of(client, List.of(server));
     }
@@ -156,7 +144,6 @@ public final class RSocketDemo {
     static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
         final List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000).map(port -> new InetSocketAddress("localhost", port)).toList();
 
-        // @formatter:off
         final List<Disposable> servers = serverAddresses.stream()
                 .map(serverAddress -> RSocketBuilders.serverRemote()
                         .socketAddress(serverAddress)
@@ -167,8 +154,7 @@ public final class RSocketDemo {
                         .build())
                 .map(Mono::block)
                 .map(Disposable.class::cast)
-                .toList()
-                ;
+                .toList();
 
         final RSocketClient client = RSocketBuilders.clientRemoteLoadBalanced()
                 .remoteAddresses(serverAddresses)
@@ -176,9 +162,7 @@ public final class RSocketDemo {
                 .retryDefault()
                 .logTcpClientBoundStatus()
                 .logger(LoggerFactory.getLogger("client"))
-                .build()
-                ;
-        // @formatter:on
+                .build();
 
         return Tuples.of(client, servers);
     }
@@ -186,15 +170,13 @@ public final class RSocketDemo {
     static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
         final List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000, 8000, 9000).map(port -> new InetSocketAddress("localhost", port)).toList();
 
-        // @formatter:off
         // Simulate Service-Discovery.
         // org.springframework.cloud.client.discovery.DiscoveryClient - org.springframework.cloud:spring-cloud-commons
         final Random random = new Random();
         final Supplier<List<SocketAddress>> serviceDiscovery = () -> serverAddresses.stream()
                 .filter(server -> random.nextBoolean()) // Do not use every Server.
                 .map(SocketAddress.class::cast)
-                .toList()
-                ;
+                .toList();
 
         final List<Disposable> servers = serverAddresses.stream()
                 .map(serverAddress -> RSocketBuilders.serverRemote()
@@ -206,8 +188,7 @@ public final class RSocketDemo {
                         .build())
                 .map(Mono::block)
                 .map(Disposable.class::cast)
-                .toList()
-                ;
+                .toList();
 
         final RSocketClient client = RSocketBuilders.clientRemoteLoadBalancedWithServiceDiscovery()
                 .serviceDiscovery(serviceDiscovery)
@@ -215,22 +196,17 @@ public final class RSocketDemo {
                 .retryDefault()
                 .logTcpClientBoundStatus()
                 .logger(LoggerFactory.getLogger("client"))
-                .build()
-                ;
-        // @formatter:on
+                .build();
 
         return Tuples.of(client, servers);
     }
 
     static Tuple2<RSocketClient, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
-        // @formatter:off
         final Disposable server = RSocketBuilders.serverLocal()
                 .name("test1")
                 .socketAcceptor(socketAcceptor.apply(0))
                 .build()
-                .block()
-                ;
-        // @formatter:on
+                .block();
 
         final RSocketClient client = RSocketBuilders.clientLocal().name("test1").build();
 

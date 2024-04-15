@@ -31,7 +31,7 @@ public interface Generator {
     /**
      * Erzeugt die SyncItems (Verzeichnisse, Dateien) des Basis-Verzeichnisses.<br>
      */
-    default void generateItems(String baseDir, boolean followSymLinks, PathFilter pathFilter, Consumer<SyncItem> consumer) {
+    default void generateItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter, final Consumer<SyncItem> consumer) {
         generateItems(baseDir, followSymLinks, pathFilter).subscribe(consumer);
     }
 }

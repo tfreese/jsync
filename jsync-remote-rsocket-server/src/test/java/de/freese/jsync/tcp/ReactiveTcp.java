@@ -24,29 +24,22 @@ public final class ReactiveTcp {
     public static void main(final String[] args) throws Exception {
         TcpResources.set(LoopResources.create("tcpServer", 2, 4, true));
 
-        // @formatter:off
         final DisposableServer tcpServer = TcpServer.create()
                 .handle((in, out) -> {
                     final Flux<String> inFlux = in.receive()
                             .asString(StandardCharsets.UTF_8)
-                            .doOnNext(request -> LOGGER.info("Server: Request = {}", request))
-                            ;
+                            .doOnNext(request -> LOGGER.info("Server: Request = {}", request));
 
-                    //return out.sendString(Flux.concat(inFlux, Mono.just(" World !")), StandardCharsets.UTF_8);
-                    //return out.sendString(inFlux.concatWith(Mono.just(" World !")), StandardCharsets.UTF_8);
+                    // return out.sendString(Flux.concat(inFlux, Mono.just(" World !")), StandardCharsets.UTF_8);
+                    // return out.sendString(inFlux.concatWith(Mono.just(" World !")), StandardCharsets.UTF_8);
                     return out.sendString(inFlux.concatWithValues(" World !"), StandardCharsets.UTF_8);
                 })
                 .doOnBound(server -> LOGGER.info("Server started on port: {}", server.port()))
-                .bindNow()
-                ;
-        // @formatter:on
+                .bindNow();
 
-        // @formatter:off
         final Connection connection = TcpClient.create()
                 .port(tcpServer.port())
-                .connectNow()
-                ;
-        // @formatter:on
+                .connectNow();
 
         // .aggregate()
         // .collect(Collectors.joining())

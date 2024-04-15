@@ -17,8 +17,8 @@ public class PathFilterEndsWith implements PathFilter {
     public PathFilterEndsWith(final Set<String> directoryFilter, final Set<String> fileFilter) {
         super();
 
-        this.directoryFilter = Objects.requireNonNull(directoryFilter, "directoryFilter required");
-        this.fileFilter = Objects.requireNonNull(fileFilter, "fileFilter required");
+        this.directoryFilter = Set.copyOf(Objects.requireNonNull(directoryFilter, "directoryFilter required"));
+        this.fileFilter = Set.copyOf(Objects.requireNonNull(fileFilter, "fileFilter required"));
     }
 
     @Override

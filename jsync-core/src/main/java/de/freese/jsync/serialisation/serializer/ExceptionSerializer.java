@@ -1,30 +1,27 @@
 // Created: 24.09.2020
-package de.freese.jsync.model.serializer.objectserializer.impl;
+package de.freese.jsync.serialisation.serializer;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
-import de.freese.jsync.model.serializer.SerializerRegistry;
-import de.freese.jsync.model.serializer.adapter.DataAdapter;
-import de.freese.jsync.model.serializer.objectserializer.ObjectSerializer;
+import de.freese.jsync.serialisation.io.DataReader;
+import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
  */
-public final class ExceptionSerializer implements ObjectSerializer<Exception> {
+public final class ExceptionSerializer {
     @SuppressWarnings("unchecked")
-    @Override
-    public <W, R> Exception readFrom(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final R source) {
-        final String clazzName = adapter.readString(source, getCharset());
-        final String message = adapter.readString(source, getCharset());
-        final int stackTraceLength = adapter.readInteger(source);
+    public static <R> Exception read(final DataReader<R> reader, final R input) {
+        final String clazzName = reader.readString(input);
+        final String message = reader.readString(input);
+        final int stackTraceLength = reader.readInteger(input);
 
-        final ObjectSerializer<StackTraceElement> stackTraceElementSerializer = registry.getSerializer(StackTraceElement.class);
         final StackTraceElement[] stackTrace = new StackTraceElement[stackTraceLength];
 
         for (int i = 0; i < stackTrace.length; i++) {
-            stackTrace[i] = stackTraceElementSerializer.readFrom(registry, adapter, source);
+            stackTrace[i] = StackTraceElementSerializer.read(reader, input);
         }
 
         Exception exception = null;
@@ -59,17 +56,19 @@ public final class ExceptionSerializer implements ObjectSerializer<Exception> {
         return exception;
     }
 
-    @Override
-    public <W, R> void writeTo(final SerializerRegistry registry, final DataAdapter<W, R> adapter, final W sink, final Exception value) {
-        adapter.writeString(sink, value.getClass().getName(), getCharset());
-        adapter.writeString(sink, value.getMessage(), getCharset());
+    public static <W> void write(final DataWriter<W> writer, final W output, final Exception value) {
+        writer.writeString(output, value.getClass().getName());
+        writer.writeString(output, value.getMessage());
 
-        final ObjectSerializer<StackTraceElement> stackTraceElementSerializer = registry.getSerializer(StackTraceElement.class);
         final StackTraceElement[] stackTrace = value.getStackTrace();
-        adapter.writeInteger(sink, stackTrace.length);
+        writer.writeInteger(output, stackTrace.length);
 
         for (StackTraceElement stackTraceElement : stackTrace) {
-            stackTraceElementSerializer.writeTo(registry, adapter, sink, stackTraceElement);
+            StackTraceElementSerializer.write(writer, output, stackTraceElement);
         }
+    }
+
+    private ExceptionSerializer() {
+        super();
     }
 }

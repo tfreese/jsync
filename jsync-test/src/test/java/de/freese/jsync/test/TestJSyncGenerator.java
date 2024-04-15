@@ -2,6 +2,7 @@
 package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,49 +41,43 @@ class TestJSyncGenerator extends AbstractJSyncIoTest {
 
     @Test
     void testFileAttributes() throws Exception {
-        // @formatter:off
         final SyncItem syncItem = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, PathFilterNoOp.INSTANCE)
                 .filter(si -> si.getRelativePath().endsWith("pom.xml"))
-                .blockFirst()
-                ;
-        // @formatter:on
+                .blockFirst();
 
         assertNotNull(syncItem);
         assertTrue(syncItem.getLastModifiedTime() > 0);
         assertTrue(syncItem.getSize() > 0);
 
-        //        if (Options.IS_LINUX)
-        //        {
-        //            assertNotNull(syncItem.getPermissions());
+        // if (Options.IS_LINUX) {
+        //     assertNotNull(syncItem.getPermissions());
         //
-        //            assertNotNull(syncItem.getGroup());
-        //            assertNotNull(syncItem.getGroup().getName());
-        //            assertTrue(syncItem.getGroup().getGid() > (Group.ROOT.getGid() - 1));
-        //            assertTrue(syncItem.getGroup().getGid() < (Group.ID_MAX + 1));
-        //            assertEquals("tommy", syncItem.getGroup().getName());
-        //            assertEquals(1000, syncItem.getGroup().getGid()); // tommy
+        //     assertNotNull(syncItem.getGroup());
+        //     assertNotNull(syncItem.getGroup().getName());
+        //     assertTrue(syncItem.getGroup().getGid() > (Group.ROOT.getGid() - 1));
+        //     assertTrue(syncItem.getGroup().getGid() < (Group.ID_MAX + 1));
+        //     assertEquals("tommy", syncItem.getGroup().getName());
+        //     assertEquals(1000, syncItem.getGroup().getGid()); // tommy
         //
-        //            assertNotNull(syncItem.getUser());
-        //            assertNotNull(syncItem.getUser().getName());
-        //            assertTrue(syncItem.getUser().getUid() > (User.ROOT.getUid() - 1));
-        //            assertTrue(syncItem.getUser().getUid() < (User.ID_MAX + 1));
-        //            assertEquals("tommy", syncItem.getUser().getName());
-        //            assertEquals(1000, syncItem.getUser().getUid()); // tommy
-        //        }
+        //     assertNotNull(syncItem.getUser());
+        //     assertNotNull(syncItem.getUser().getName());
+        //     assertTrue(syncItem.getUser().getUid() > (User.ROOT.getUid() - 1));
+        //     assertTrue(syncItem.getUser().getUid() < (User.ID_MAX + 1));
+        //     assertEquals("tommy", syncItem.getUser().getName());
+        //     assertEquals(1000, syncItem.getUser().getUid()); // tommy
+        // }
     }
 
     @Test
     void testFilter() throws Exception {
         final PathFilter filter = new PathFilterEndsWith(Set.of("src", "target", ".settings"), Set.of(".classpath", ".project"));
 
-        // @formatter:off
         final Map<String, SyncItem> map = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, filter)
                 .collectMap(SyncItem::getRelativePath)
-                .block()
-                ;
-        // @formatter:on
+                .block();
 
-        assertTrue(map.size() >= 1);
+        assertNotNull(map);
+        assertFalse(map.isEmpty());
 
         assertTrue(map.keySet().stream().noneMatch(path -> path.endsWith(".classpath")));
         assertTrue(map.keySet().stream().noneMatch(path -> path.endsWith(".project")));

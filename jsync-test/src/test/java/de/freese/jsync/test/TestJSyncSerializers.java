@@ -3,6 +3,7 @@ package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,11 +27,16 @@ import de.freese.jsync.model.DefaultSyncItem;
 import de.freese.jsync.model.Group;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.model.User;
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
-import de.freese.jsync.model.serializer.adapter.impl.InputOutputStreamAdapter;
-import de.freese.jsync.rsocket.model.adapter.ByteBufAdapter;
+import de.freese.jsync.rsocket.serialisation.ByteBufReader;
+import de.freese.jsync.rsocket.serialisation.ByteBufWriter;
+import de.freese.jsync.serialisation.DefaultSerializer;
+import de.freese.jsync.serialisation.Serializer;
+import de.freese.jsync.serialisation.io.ByteBufferReader;
+import de.freese.jsync.serialisation.io.ByteBufferWriter;
+import de.freese.jsync.serialisation.io.InputStreamReader;
+import de.freese.jsync.serialisation.io.OutputStreamWriter;
+import de.freese.jsync.serialisation.serializer.GroupSerializer;
+import de.freese.jsync.serialisation.serializer.UserSerializer;
 
 /**
  * @author Thomas Freese
@@ -40,108 +46,102 @@ class TestJSyncSerializers {
     private static final int BUFFER_SIZE = 1024 * 16;
 
     private static final DataHolder DATA_HOLDER_BYTE_BUF = new DataHolder() {
-        private static final ByteBuf BYTE_BUF = UnpooledByteBufAllocator.DEFAULT.buffer(BUFFER_SIZE);
+        private final ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.buffer(BUFFER_SIZE);
 
         @Override
-        public Object getSink() {
-            BYTE_BUF.clear();
-
-            return BYTE_BUF;
+        public Object getInput() {
+            return buffer;
         }
 
         @Override
-        public Object getSource() {
-            return BYTE_BUF;
+        public Object getOutput() {
+            buffer.clear();
+
+            return buffer;
         }
     };
     private static final DataHolder DATA_HOLDER_BYTE_BUFFER = new DataHolder() {
-        private static final ByteBuffer BYTE_BUFFER = ByteBuffer.allocate(BUFFER_SIZE);
+        private final ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 
         @Override
-        public Object getSink() {
-            BYTE_BUFFER.clear();
+        public Object getInput() {
+            buffer.flip();
 
-            return BYTE_BUFFER;
+            return buffer;
         }
 
         @Override
-        public Object getSource() {
-            BYTE_BUFFER.flip();
+        public Object getOutput() {
+            buffer.clear();
 
-            return BYTE_BUFFER;
+            return buffer;
         }
     };
     private static final DataHolder DATA_HOLDER_OUTPUT_INPUT_STREAM = new DataHolder() {
         private ByteArrayOutputStream baos;
 
         @Override
-        public Object getSink() {
+        public Object getInput() {
+            return new ByteArrayInputStream(baos.toByteArray());
+        }
+
+        @Override
+        public Object getOutput() {
             baos = new ByteArrayOutputStream(BUFFER_SIZE);
 
             return baos;
         }
-
-        @Override
-        public Object getSource() {
-            return new ByteArrayInputStream(baos.toByteArray());
-        }
     };
 
     private interface DataHolder {
-        Object getSink();
+        Object getInput();
 
-        Object getSource();
+        Object getOutput();
     }
 
     static Stream<Arguments> createArguments() {
         return Stream.of(
-                Arguments.of("ByteBufferAdapter", DefaultSerializer.of(new ByteBufferAdapter()), DATA_HOLDER_BYTE_BUFFER),
-                Arguments.of("ByteBufAdapter", DefaultSerializer.of(new ByteBufAdapter()), DATA_HOLDER_BYTE_BUF),
-                Arguments.of("InputOutputStreamAdapter", DefaultSerializer.of(new InputOutputStreamAdapter()), DATA_HOLDER_OUTPUT_INPUT_STREAM)
+                Arguments.of("ByteBuf", new DefaultSerializer<>(new ByteBufReader(), new ByteBufWriter()), DATA_HOLDER_BYTE_BUF),
+                Arguments.of("ByteBuffer", new DefaultSerializer<>(new ByteBufferReader(), new ByteBufferWriter()), DATA_HOLDER_BYTE_BUFFER),
+                Arguments.of("InputOutputStream", new DefaultSerializer<>(new InputStreamReader(), new OutputStreamWriter()), DATA_HOLDER_OUTPUT_INPUT_STREAM)
         );
     }
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testBoolean(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
+        final Object output = dataHolder.getOutput();
+        serializer.getWriter().writeBooleanOrNull(output, null);
+        serializer.writeBoolean(output, true);
+        serializer.writeBoolean(output, false);
 
-        serializer.writeTo(sink, null, Boolean.class);
-        serializer.writeTo(sink, true);
-        serializer.writeTo(sink, false);
-
-        final Object source = dataHolder.getSource();
-
-        assertNull(serializer.readFrom(source, Boolean.class));
-        assertTrue(serializer.readFrom(source, boolean.class));
-        assertFalse(serializer.readFrom(source, boolean.class));
+        final Object input = dataHolder.getInput();
+        assertNull(serializer.getReader().readBooleanOrNull(input));
+        assertTrue(serializer.readBoolean(input));
+        assertFalse(serializer.readBoolean(input));
     }
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testDouble(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
+        final Object output = dataHolder.getOutput();
+        serializer.getWriter().writeDoubleOrNull(output, null);
+        serializer.getWriter().writeDouble(output, 123.123D);
 
-        serializer.writeTo(sink, null, Double.class);
-        serializer.writeTo(sink, 123.123D);
-
-        final Object source = dataHolder.getSource();
-
-        assertNull(serializer.readFrom(source, Double.class));
-        assertEquals(123.123D, serializer.readFrom(source, double.class));
+        final Object input = dataHolder.getInput();
+        assertNull(serializer.getReader().readDoubleOrNull(input));
+        assertEquals(123.123D, serializer.getReader().readDouble(input));
     }
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testException(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
-
+        final Object output = dataHolder.getOutput();
         final Exception exception1 = new UnsupportedOperationException("Test Fail");
-        serializer.writeTo(sink, exception1, Exception.class);
+        serializer.write(output, exception1);
 
-        final Object source = dataHolder.getSource();
-
-        final Exception exception2 = serializer.readFrom(source, Exception.class);
+        final Object input = dataHolder.getInput();
+        final Exception exception2 = serializer.readException(input);
 
         assertEquals(UnsupportedOperationException.class, exception2.getClass());
         assertEquals("Test Fail", exception2.getMessage());
@@ -151,35 +151,33 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testFloat(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
+        final Object output = dataHolder.getOutput();
+        serializer.getWriter().writeFloatOrNull(output, null);
+        serializer.getWriter().writeFloat(output, 123.123F);
 
-        serializer.writeTo(sink, null, Float.class);
-        serializer.writeTo(sink, 123.123F);
-
-        final Object source = dataHolder.getSource();
-
-        assertNull(serializer.readFrom(source, Float.class));
-        assertEquals(123.123F, serializer.readFrom(source, float.class));
+        final Object input = dataHolder.getInput();
+        assertNull(serializer.getReader().readFloatOrNull(input));
+        assertEquals(123.123F, serializer.getReader().readFloat(input));
     }
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testGroup(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
-
+        final Object output = dataHolder.getOutput();
         Group group1 = new Group("TestGroupA", 41);
         Group group2 = new Group("TestGroupB", 42);
 
-        serializer.writeTo(sink, group1);
-        serializer.writeTo(sink, group2);
+        GroupSerializer.write(serializer.getWriter(), output, group1);
+        GroupSerializer.write(serializer.getWriter(), output, group2);
 
-        final Object source = dataHolder.getSource();
-
-        group1 = serializer.readFrom(source, Group.class);
+        final Object input = dataHolder.getInput();
+        group1 = GroupSerializer.read(serializer.getReader(), input);
+        assertNotNull(group1);
         assertEquals("TestGroupA", group1.getName());
         assertEquals(41, group1.getGid());
 
-        group2 = serializer.readFrom(source, Group.class);
+        group2 = GroupSerializer.read(serializer.getReader(), input);
+        assertNotNull(group2);
         assertEquals("TestGroupB", group2.getName());
         assertEquals(42, group2.getGid());
     }
@@ -187,44 +185,39 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testInteger(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
+        final Object output = dataHolder.getOutput();
+        serializer.getWriter().writeIntegerOrNull(output, null);
+        serializer.getWriter().writeInteger(output, 123);
 
-        serializer.writeTo(sink, null, Integer.class);
-        serializer.writeTo(sink, 123);
-
-        final Object source = dataHolder.getSource();
-
-        assertNull(serializer.readFrom(source, Integer.class));
-        assertEquals(123, serializer.readFrom(source, int.class));
+        final Object input = dataHolder.getInput();
+        assertNull(serializer.getReader().readIntegerOrNull(input));
+        assertEquals(123, serializer.getReader().readInteger(input));
     }
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testLong(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
+        final Object output = dataHolder.getOutput();
+        serializer.getWriter().writeLongOrNull(output, null);
+        serializer.writeLong(output, 123L);
 
-        serializer.writeTo(sink, null, Long.class);
-        serializer.writeTo(sink, 123L);
-
-        final Object source = dataHolder.getSource();
-
-        assertNull(serializer.readFrom(source, Long.class));
-        assertEquals(123L, serializer.readFrom(source, long.class));
+        final Object input = dataHolder.getInput();
+        assertNull(serializer.getReader().readLongOrNull(input));
+        assertEquals(123L, serializer.readLong(input));
     }
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testPathFilter(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
+        final Object output = dataHolder.getOutput();
 
         final Set<String> directoryFiltersOrigin = Set.of("a", "b");
         final Set<String> fileFiltersOrigin = Set.of("c", "d");
 
-        serializer.writeTo(sink, new PathFilterEndsWith(directoryFiltersOrigin, fileFiltersOrigin), PathFilterEndsWith.class);
+        serializer.write(output, new PathFilterEndsWith(directoryFiltersOrigin, fileFiltersOrigin));
 
-        final Object source = dataHolder.getSource();
-
-        final PathFilter pathFilter = serializer.readFrom(source, PathFilter.class);
+        final Object input = dataHolder.getInput();
+        final PathFilter pathFilter = serializer.readPathFilter(input);
 
         assertEquals(PathFilterEndsWith.class, pathFilter.getClass());
         assertEquals(directoryFiltersOrigin, pathFilter.getDirectoryFilter());
@@ -234,23 +227,23 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testString(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
+        final String text = "abcABC123,.;:-_ÖÄÜöäü*'#+`?ß´987/()=?";
 
-        serializer.writeTo(sink, null, String.class);
-        serializer.writeTo(sink, "-");
-        serializer.writeTo(sink, "###");
+        final Object output = dataHolder.getOutput();
+        serializer.writeString(output, null);
+        serializer.writeString(output, "");
+        serializer.writeString(output, text);
 
-        final Object source = dataHolder.getSource();
-
-        assertNull(serializer.readFrom(source, String.class));
-        assertEquals("-", serializer.readFrom(source, String.class));
-        assertEquals("###", serializer.readFrom(source, String.class));
+        final Object input = dataHolder.getInput();
+        assertNull(serializer.readString(input));
+        assertEquals("", serializer.readString(input));
+        assertEquals(text, serializer.readString(input));
     }
 
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testSyncItem(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
+        final Object output = dataHolder.getOutput();
 
         SyncItem syncItem1 = new DefaultSyncItem("/");
         syncItem1.setChecksum("ABC");
@@ -270,12 +263,11 @@ class TestJSyncSerializers {
         //        syncItem2.setPermissions(Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE));
         //        syncItem2.setUser(new User("TestUserB", 42));
 
-        serializer.writeTo(sink, syncItem1);
-        serializer.writeTo(sink, syncItem2);
+        serializer.write(output, syncItem1);
+        serializer.write(output, syncItem2);
 
-        final Object source = dataHolder.getSource();
-
-        syncItem1 = serializer.readFrom(source, SyncItem.class);
+        final Object input = dataHolder.getInput();
+        syncItem1 = serializer.readSyncItem(input);
         assertEquals("/", syncItem1.getRelativePath());
         assertEquals("ABC", syncItem1.getChecksum());
         assertFalse(syncItem1.isFile());
@@ -288,7 +280,7 @@ class TestJSyncSerializers {
         //        assertEquals("TestUserA", syncItem1.getUser().getName());
         //        assertEquals(41, syncItem1.getUser().getUid());
 
-        syncItem2 = serializer.readFrom(source, SyncItem.class);
+        syncItem2 = serializer.readSyncItem(input);
         assertEquals("/script.sh", syncItem2.getRelativePath());
         assertEquals("XYZ", syncItem2.getChecksum());
         assertTrue(syncItem2.isFile());
@@ -305,21 +297,21 @@ class TestJSyncSerializers {
     @ParameterizedTest(name = "{index} -> {0}")
     @MethodSource("createArguments")
     void testUser(final String name, final Serializer<Object, Object> serializer, final DataHolder dataHolder) {
-        final Object sink = dataHolder.getSink();
-
+        final Object output = dataHolder.getOutput();
         User user1 = new User("TestUserA", 41);
         User user2 = new User("TestUserB", 42);
 
-        serializer.writeTo(sink, user1);
-        serializer.writeTo(sink, user2);
+        UserSerializer.write(serializer.getWriter(), output, user1);
+        UserSerializer.write(serializer.getWriter(), output, user2);
 
-        final Object source = dataHolder.getSource();
-
-        user1 = serializer.readFrom(source, User.class);
+        final Object input = dataHolder.getInput();
+        user1 = UserSerializer.read(serializer.getReader(), input);
+        assertNotNull(user1);
         assertEquals("TestUserA", user1.getName());
         assertEquals(41, user1.getUid());
 
-        user2 = serializer.readFrom(source, User.class);
+        user2 = UserSerializer.read(serializer.getReader(), input);
+        assertNotNull(user2);
         assertEquals("TestUserB", user2.getName());
         assertEquals(42, user2.getUid());
     }

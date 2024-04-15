@@ -26,7 +26,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  */
 @Deprecated
 class JSyncPayloadDecoder implements PayloadDecoder {
-    private final ByteBufferPool byteBufferPool = ByteBufferPool.DEFAULT;
+    private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
 
     @Override
     public Payload apply(final ByteBuf byteBuf) {
@@ -63,12 +63,12 @@ class JSyncPayloadDecoder implements PayloadDecoder {
             default -> throw new IllegalArgumentException("unsupported frame type: " + type);
         }
 
-        final ByteBuffer data = this.byteBufferPool.get();
+        final ByteBuffer data = BYTE_BUFFER_POOL.get();
         data.put(d.nioBuffer());
         data.flip();
 
         if (m != null) {
-            final ByteBuffer metadata = this.byteBufferPool.get();
+            final ByteBuffer metadata = BYTE_BUFFER_POOL.get();
             metadata.put(m.nioBuffer());
             metadata.flip();
 

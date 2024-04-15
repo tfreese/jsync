@@ -20,12 +20,10 @@ public class ConsoleClientListener extends AbstractClientListener {
 
         // Console console = System.console();
         //
-        // if (console != null)
-        // {
+        // if (console != null) {
         // this.printStream = console.writer();
         // }
-        // else
-        // {
+        // else {
         // this.printStream = System.out;
         // }
 
@@ -64,8 +62,7 @@ public class ConsoleClientListener extends AbstractClientListener {
         // getPrintStream().printf("\t%s%n", message);
         getPrintStream().println(message);
 
-        // if (syncItem.getSize() == bytesTransferred)
-        // {
+        // if (syncItem.getSize() == bytesTransferred) {
         // getPrintStream().println();
         // }
     }

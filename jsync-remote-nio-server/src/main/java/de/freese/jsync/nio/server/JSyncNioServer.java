@@ -174,8 +174,7 @@ public final class JSyncNioServer implements Runnable {
         try {
             // SelectionKey selectionKey = this.serverSocketChannel.keyFor(this.selector);
             //
-            // if (selectionKey != null)
-            // {
+            // if (selectionKey != null) {
             // selectionKey.cancel();
             // }
 

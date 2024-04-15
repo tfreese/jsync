@@ -62,8 +62,7 @@ public final class JSyncConsole {
         jSync.run(argumentParser);
     }
 
-    // private static void disableLogging()
-    // {
+    // private static void disableLogging() {
     // // ch.qos.logback.classic.Logger Logger rootLogger = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     // // rootLogger.setLevel(Level.OFF);
     // //
@@ -73,49 +72,40 @@ public final class JSyncConsole {
     // }
 
     public void run(final ArgumentParser argumentParser) throws Exception {
-        // @formatter:off
         final Options options = new Builder()
                 .delete(argumentParser.delete())
                 .followSymLinks(argumentParser.followSymlinks())
                 .dryRun(argumentParser.dryRun())
                 .checksum(argumentParser.checksum())
-                .build()
-                ;
-        // @formatter:on
+                .build();
 
         final URI senderUri = new URI(argumentParser.sender());
         final URI receiverUri = new URI(argumentParser.receiver());
 
-        System.out.println("Start synchronisation");
+        LOGGER.info("Start synchronisation");
         syncDirectories(options, senderUri, receiverUri, new ConsoleClientListener());
-        System.out.println("Synchronisation finished");
+        LOGGER.info("Synchronisation finished");
     }
 
     public void syncDirectories(final Options options, final URI senderUri, final URI receiverUri, final ClientListener clientListener) {
         final Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
-        // @formatter:off
         final Flux<SyncItem> syncItemsSender = client.generateSyncItems(EFileSystem.SENDER, null)
                 .doOnNext(syncItem -> {
                     final String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
-                            // System.out.println("Sender Bytes read: " + i);
-                        });
+                        // System.out.println("Sender Bytes read: " + i);
+                    });
                     syncItem.setChecksum(checksum);
-                })
-                ;
-        // @formatter:on
+                });
 
-        // @formatter:off
         final Flux<SyncItem> syncItemsReceiver = client.generateSyncItems(EFileSystem.RECEIVER, null)
                 .doOnNext(syncItem -> {
                     final String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
                         // System.out.println("Sender Bytes read: " + i);
                     });
                     syncItem.setChecksum(checksum);
-                })
-                ;
-        // @formatter:on
+                });
 
         final List<SyncPair> syncPairs = client.mergeSyncItems(syncItemsSender.collectList().block(), syncItemsReceiver.collectList().block());
 

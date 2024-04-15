@@ -22,10 +22,11 @@ import de.freese.jsync.filesystem.local.LocalhostSender;
 import de.freese.jsync.filter.PathFilter;
 import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
 import de.freese.jsync.nio.transport.NioFrameProtocol;
+import de.freese.jsync.serialisation.DefaultSerializer;
+import de.freese.jsync.serialisation.Serializer;
+import de.freese.jsync.serialisation.io.ByteBufferReader;
+import de.freese.jsync.serialisation.io.ByteBufferWriter;
 import de.freese.jsync.utils.pool.Pool;
 
 /**
@@ -50,7 +51,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();
 
-    private final Serializer<ByteBuffer, ByteBuffer> serializer = DefaultSerializer.of(new ByteBufferAdapter());
+    private final Serializer<ByteBuffer, ByteBuffer> serializer = new DefaultSerializer<>(new ByteBufferReader(), new ByteBufferWriter());
 
     @Override
     public void read(final SelectionKey selectionKey) {
@@ -62,7 +63,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
             final ByteBuffer buffer = this.frameProtocol.readFrame(channel);
 
-            final JSyncCommand command = getSerializer().readFrom(buffer, JSyncCommand.class);
+            final JSyncCommand command = getSerializer().readJSyncCommand(buffer);
 
             this.frameProtocol.getBufferPool().free(buffer);
 
@@ -80,7 +81,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
                 case DISCONNECT -> {
                     // FINISH-Frame
                     this.frameProtocol.readFrame(channel);
-                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, "DISCONNECTED"));
+                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeString(buf, "DISCONNECTED"));
                     this.frameProtocol.writeFinish(channel);
                     selectionKey.attach(null);
                     // selectionKey.interestOps(SelectionKey.OP_CONNECT);
@@ -90,7 +91,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
                 case CONNECT -> {
                     // FINISH-Frame
                     this.frameProtocol.readFrame(channel);
-                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, "CONNECTED"));
+                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeString(buf, "CONNECTED"));
                     this.frameProtocol.writeFinish(channel);
                 }
                 case SOURCE_CHECKSUM -> createChecksum(channel, sender);
@@ -144,12 +145,12 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         final ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
 
         try {
-            final String baseDir = getSerializer().readFrom(buffer, String.class);
-            final String relativeFile = getSerializer().readFrom(buffer, String.class);
+            final String baseDir = getSerializer().readString(buffer);
+            final String relativeFile = getSerializer().readString(buffer);
 
             final LongConsumer consumer = checksumBytesRead -> {
                 try {
-                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, Long.toString(checksumBytesRead)));
+                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeString(buf, Long.toString(checksumBytesRead)));
                 }
                 catch (IOException ex) {
                     throw new UncheckedIOException(ex);
@@ -158,14 +159,14 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
             final String checksum = fileSystem.generateChecksum(baseDir, relativeFile, consumer);
 
-            this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, checksum));
+            this.frameProtocol.writeData(channel, buf -> getSerializer().writeString(buf, checksum));
             this.frameProtocol.writeFinish(channel);
         }
         catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             try {
-                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
+                this.frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
             catch (Exception ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
@@ -180,8 +181,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         final ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
 
         try {
-            final String baseDir = getSerializer().readFrom(buffer, String.class);
-            final String relativePath = getSerializer().readFrom(buffer, String.class);
+            final String baseDir = getSerializer().readString(buffer);
+            final String relativePath = getSerializer().readString(buffer);
 
             receiver.createDirectory(baseDir, relativePath);
 
@@ -191,7 +192,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
             getLogger().error(ex.getMessage(), ex);
 
             try {
-                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
+                this.frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
             catch (IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
@@ -206,13 +207,13 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         final ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
 
         try {
-            final String baseDir = getSerializer().readFrom(buffer, String.class);
-            final boolean followSymLinks = getSerializer().readFrom(buffer, Boolean.class);
-            final PathFilter pathFilter = getSerializer().readFrom(buffer, PathFilter.class);
+            final String baseDir = getSerializer().readString(buffer);
+            final boolean followSymLinks = getSerializer().readBoolean(buffer);
+            final PathFilter pathFilter = getSerializer().readPathFilter(buffer);
 
             fileSystem.generateSyncItems(baseDir, followSymLinks, pathFilter).subscribe(syncItem -> {
                 try {
-                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, syncItem));
+                    this.frameProtocol.writeData(channel, buf -> getSerializer().write(buf, syncItem));
                 }
                 catch (IOException ex) {
                     throw new UncheckedIOException(ex);
@@ -225,7 +226,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
             getLogger().error(ex.getMessage(), ex);
 
             try {
-                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
+                this.frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
             catch (Exception ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
@@ -240,9 +241,9 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         final ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
 
         try {
-            final String baseDir = getSerializer().readFrom(buffer, String.class);
-            final String relativePath = getSerializer().readFrom(buffer, String.class);
-            final boolean followSymLinks = getSerializer().readFrom(buffer, Boolean.class);
+            final String baseDir = getSerializer().readString(buffer);
+            final String relativePath = getSerializer().readString(buffer);
+            final boolean followSymLinks = getSerializer().readBoolean(buffer);
 
             receiver.delete(baseDir, relativePath, followSymLinks);
 
@@ -250,7 +251,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         }
         catch (Exception ex) {
             try {
-                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
+                this.frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
             catch (IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
@@ -282,9 +283,9 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         final ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
 
         try {
-            final String baseDir = getSerializer().readFrom(buffer, String.class);
-            final String relativeFile = getSerializer().readFrom(buffer, String.class);
-            final long sizeOfFile = getSerializer().readFrom(buffer, Long.class);
+            final String baseDir = getSerializer().readString(buffer);
+            final String relativeFile = getSerializer().readString(buffer);
+            final long sizeOfFile = getSerializer().readLong(buffer);
 
             sender.readFile(baseDir, relativeFile, sizeOfFile).subscribe(buf -> {
                 try {
@@ -302,7 +303,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         }
         catch (Exception ex) {
             try {
-                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
+                this.frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
             catch (IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
@@ -317,8 +318,8 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         final ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
 
         try {
-            final String baseDir = getSerializer().readFrom(buffer, String.class);
-            final SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
+            final String baseDir = getSerializer().readString(buffer);
+            final SyncItem syncItem = getSerializer().readSyncItem(buffer);
 
             receiver.update(baseDir, syncItem);
 
@@ -328,7 +329,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
             getLogger().error(ex.getMessage(), ex);
 
             try {
-                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
+                this.frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
             catch (IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
@@ -343,13 +344,13 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         final ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
 
         try {
-            final String baseDir = getSerializer().readFrom(buffer, String.class);
-            final SyncItem syncItem = getSerializer().readFrom(buffer, SyncItem.class);
-            final boolean withChecksum = getSerializer().readFrom(buffer, Boolean.class);
+            final String baseDir = getSerializer().readString(buffer);
+            final SyncItem syncItem = getSerializer().readSyncItem(buffer);
+            final boolean withChecksum = getSerializer().readBoolean(buffer);
 
             final LongConsumer consumer = checksumBytesRead -> {
                 try {
-                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, checksumBytesRead));
+                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeLong(buf, checksumBytesRead));
                 }
                 catch (IOException ex) {
                     throw new UncheckedIOException(ex);
@@ -364,7 +365,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
             getLogger().error(ex.getMessage(), ex);
 
             try {
-                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
+                this.frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
             catch (IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
@@ -379,15 +380,15 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         final ByteBuffer buffer = this.frameProtocol.readFrame(channel);
 
         try {
-            final String baseDir = getSerializer().readFrom(buffer, String.class);
-            final String relativeFile = getSerializer().readFrom(buffer, String.class);
-            final long sizeOfFile = getSerializer().readFrom(buffer, Long.class);
+            final String baseDir = getSerializer().readString(buffer);
+            final String relativeFile = getSerializer().readString(buffer);
+            final long sizeOfFile = getSerializer().readLong(buffer);
 
             final Flux<ByteBuffer> data = this.frameProtocol.readAll(channel);
 
             receiver.writeFile(baseDir, relativeFile, sizeOfFile, data).subscribe(bytesWritten -> {
                 try {
-                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeTo(buf, bytesWritten));
+                    this.frameProtocol.writeData(channel, buf -> getSerializer().writeLong(buf, bytesWritten));
                 }
                 catch (IOException ex) {
                     throw new UncheckedIOException(ex);
@@ -400,7 +401,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
             getLogger().error(ex.getMessage(), ex);
 
             try {
-                this.frameProtocol.writeError(channel, buf -> getSerializer().writeTo(buf, ex));
+                this.frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
             catch (IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);

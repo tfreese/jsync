@@ -44,40 +44,33 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     }
 
     // @Override
-    // public void onComplete()
-    // {
+    // public void onComplete() {
     // this.sink.complete();
     // }
     //
     // @Override
-    // public void onError(final Throwable throwable)
-    // {
+    // public void onError(final Throwable throwable) {
     // this.sink.error(throwable);
     // }
     //
     // @Override
-    // public void onNext(final ByteBuffer byteBuffer)
-    // {
-    // try
-    // {
-    // while (byteBuffer.hasRemaining())
-    // {
+    // public void onNext(final ByteBuffer byteBuffer) {
+    // try {
+    // while (byteBuffer.hasRemaining()) {
     // this.channel.write(byteBuffer);
     // }
     //
     // this.sink.next(byteBuffer);
     // this.subscription.request(1);
     // }
-    // catch (IOException ex)
-    // {
+    // catch (IOException ex) {
     // this.sink.next(byteBuffer);
     // this.sink.error(ex);
     // }
     // }
     //
     // @Override
-    // public void onSubscribe(final Subscription subscription)
-    // {
+    // public void onSubscribe(final Subscription subscription) {
     // this.subscription = subscription;
     //
     // this.subscription.request(1);

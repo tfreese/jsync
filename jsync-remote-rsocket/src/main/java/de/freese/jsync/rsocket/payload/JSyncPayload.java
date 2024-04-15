@@ -9,9 +9,10 @@ import io.rsocket.Payload;
 import io.rsocket.util.DefaultPayload;
 import reactor.util.annotation.Nullable;
 
-import de.freese.jsync.model.serializer.DefaultSerializer;
-import de.freese.jsync.model.serializer.Serializer;
-import de.freese.jsync.model.serializer.adapter.impl.ByteBufferAdapter;
+import de.freese.jsync.serialisation.DefaultSerializer;
+import de.freese.jsync.serialisation.Serializer;
+import de.freese.jsync.serialisation.io.ByteBufferReader;
+import de.freese.jsync.serialisation.io.ByteBufferWriter;
 import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
@@ -23,7 +24,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 @Deprecated
 final class JSyncPayload implements Payload {
     private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
-    private static final Serializer<ByteBuffer, ByteBuffer> SERIALIZER = DefaultSerializer.of(new ByteBufferAdapter());
+    private static final Serializer<ByteBuffer, ByteBuffer> SERIALIZER = new DefaultSerializer<>(new ByteBufferReader(), new ByteBufferWriter());
 
     public static Payload create(final ByteBuffer data) {
         return create(data, null);
@@ -35,7 +36,7 @@ final class JSyncPayload implements Payload {
 
     public static Payload create(final CharSequence data) {
         final ByteBuffer buffer = BYTE_BUFFER_POOL.get();
-        SERIALIZER.writeTo(buffer, data.toString());
+        SERIALIZER.writeString(buffer, data.toString());
         buffer.flip();
 
         return create(buffer);
