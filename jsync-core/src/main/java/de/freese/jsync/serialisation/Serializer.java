@@ -5,6 +5,7 @@ import de.freese.jsync.model.JSyncCommand;
 import de.freese.jsync.model.SyncItem;
 import de.freese.jsync.serialisation.io.DataReader;
 import de.freese.jsync.serialisation.io.DataWriter;
+import de.freese.jsync.serialisation.serializer.ClassSerializer;
 import de.freese.jsync.serialisation.serializer.ExceptionSerializer;
 import de.freese.jsync.serialisation.serializer.JSyncCommandSerializer;
 import de.freese.jsync.serialisation.serializer.PathFilterSerializer;
@@ -15,16 +16,20 @@ public interface Serializer<R, W> {
 
     DataWriter<W> getWriter();
 
+    default <T> T read(final R input, final ClassSerializer<T> classSerializer) {
+        return classSerializer.read(getReader(), input);
+    }
+
     default boolean readBoolean(final R input) {
         return getReader().readBoolean(input);
     }
 
     default Exception readException(final R input) {
-        return ExceptionSerializer.read(getReader(), input);
+        return read(input, ExceptionSerializer.getInstance());
     }
 
     default JSyncCommand readJSyncCommand(final R input) {
-        return JSyncCommandSerializer.read(getReader(), input);
+        return read(input, JSyncCommandSerializer.getInstance());
     }
 
     default Long readLong(final R input) {
@@ -32,7 +37,7 @@ public interface Serializer<R, W> {
     }
 
     default PathFilter readPathFilter(final R input) {
-        return PathFilterSerializer.read(getReader(), input);
+        return read(input, PathFilterSerializer.getInstance());
     }
 
     default String readString(final R input) {
@@ -40,23 +45,27 @@ public interface Serializer<R, W> {
     }
 
     default SyncItem readSyncItem(final R input) {
-        return SyncItemSerializer.read(getReader(), input);
+        return read(input, SyncItemSerializer.getInstance());
     }
 
     default void write(final W output, final JSyncCommand value) {
-        JSyncCommandSerializer.write(getWriter(), output, value);
+        write(output, value, JSyncCommandSerializer.getInstance());
     }
 
     default void write(final W output, final PathFilter value) {
-        PathFilterSerializer.write(getWriter(), output, value);
+        write(output, value, PathFilterSerializer.getInstance());
     }
 
     default void write(final W output, final SyncItem value) {
-        SyncItemSerializer.write(getWriter(), output, value);
+        write(output, value, SyncItemSerializer.getInstance());
     }
 
     default void write(final W output, final Exception value) {
-        ExceptionSerializer.write(getWriter(), output, value);
+        write(output, value, ExceptionSerializer.getInstance());
+    }
+
+    default <T> void write(final W output, final T value, final ClassSerializer<T> classSerializer) {
+        classSerializer.write(getWriter(), output, value);
     }
 
     default void writeBoolean(final W output, final boolean value) {

@@ -8,8 +8,25 @@ import de.freese.jsync.serialisation.io.DataWriter;
 /**
  * @author Thomas Freese
  */
-public final class GroupSerializer {
-    public static <R> Group read(final DataReader<R> reader, final R input) {
+public final class GroupSerializer implements ClassSerializer<Group> {
+    private static final class GroupSerializerHolder {
+        private static final GroupSerializer INSTANCE = new GroupSerializer();
+
+        private GroupSerializerHolder() {
+            super();
+        }
+    }
+
+    public static GroupSerializer getInstance() {
+        return GroupSerializerHolder.INSTANCE;
+    }
+    
+    private GroupSerializer() {
+        super();
+    }
+
+    @Override
+    public <R> Group read(final DataReader<R> reader, final R input) {
         if (reader.readByte(input) == -1) {
             return null;
         }
@@ -23,7 +40,8 @@ public final class GroupSerializer {
         return new Group(name, gid);
     }
 
-    public static <W> void write(final DataWriter<W> writer, final W output, final Group value) {
+    @Override
+    public <W> void write(final DataWriter<W> writer, final W output, final Group value) {
         if (value == null) {
             writer.writeByte(output, (byte) -1);
             return;
@@ -36,9 +54,5 @@ public final class GroupSerializer {
 
         // name
         writer.writeString(output, value.getName());
-    }
-
-    private GroupSerializer() {
-        super();
     }
 }

@@ -8,8 +8,25 @@ import de.freese.jsync.serialisation.io.DataWriter;
 /**
  * @author Thomas Freese
  */
-public final class UserSerializer {
-    public static <R> User read(final DataReader<R> reader, final R input) {
+public final class UserSerializer implements ClassSerializer<User> {
+    private static final class UserSerializerHolder {
+        private static final UserSerializer INSTANCE = new UserSerializer();
+
+        private UserSerializerHolder() {
+            super();
+        }
+    }
+
+    public static UserSerializer getInstance() {
+        return UserSerializerHolder.INSTANCE;
+    }
+    
+    private UserSerializer() {
+        super();
+    }
+
+    @Override
+    public <R> User read(final DataReader<R> reader, final R input) {
         if (reader.readByte(input) == -1) {
             return null;
         }
@@ -23,7 +40,8 @@ public final class UserSerializer {
         return new User(name, uid);
     }
 
-    public static <W> void write(final DataWriter<W> writer, final W output, final User value) {
+    @Override
+    public <W> void write(final DataWriter<W> writer, final W output, final User value) {
         if (value == null) {
             writer.writeByte(output, (byte) -1);
             return;
@@ -36,9 +54,5 @@ public final class UserSerializer {
 
         // name
         writer.writeString(output, value.getName());
-    }
-
-    private UserSerializer() {
-        super();
     }
 }

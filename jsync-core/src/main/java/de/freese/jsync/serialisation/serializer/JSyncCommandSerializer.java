@@ -8,9 +8,25 @@ import de.freese.jsync.serialisation.io.DataWriter;
 /**
  * @author Thomas Freese
  */
-public final class JSyncCommandSerializer {
+public final class JSyncCommandSerializer implements ClassSerializer<JSyncCommand> {
+    private static final class JSyncCommandSerializerHolder {
+        private static final JSyncCommandSerializer INSTANCE = new JSyncCommandSerializer();
 
-    public static <R> JSyncCommand read(final DataReader<R> dataReader, final R input) {
+        private JSyncCommandSerializerHolder() {
+            super();
+        }
+    }
+
+    public static JSyncCommandSerializer getInstance() {
+        return JSyncCommandSerializerHolder.INSTANCE;
+    }
+    
+    private JSyncCommandSerializer() {
+        super();
+    }
+
+    @Override
+    public <R> JSyncCommand read(final DataReader<R> dataReader, final R input) {
         final String name = dataReader.readString(input);
 
         if (name == null || name.isBlank()) {
@@ -20,11 +36,8 @@ public final class JSyncCommandSerializer {
         return JSyncCommand.valueOf(name);
     }
 
-    public static <W> void write(final DataWriter<W> dataWriter, final W output, final JSyncCommand value) {
+    @Override
+    public <W> void write(final DataWriter<W> dataWriter, final W output, final JSyncCommand value) {
         dataWriter.writeString(output, value.name());
-    }
-
-    private JSyncCommandSerializer() {
-        super();
     }
 }

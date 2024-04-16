@@ -78,18 +78,18 @@ class TestJSyncSerializers {
         }
     };
     private static final DataHolder DATA_HOLDER_OUTPUT_INPUT_STREAM = new DataHolder() {
-        private ByteArrayOutputStream baos;
+        private ByteArrayOutputStream outputStream;
 
         @Override
         public Object getInput() {
-            return new ByteArrayInputStream(baos.toByteArray());
+            return new ByteArrayInputStream(outputStream.toByteArray());
         }
 
         @Override
         public Object getOutput() {
-            baos = new ByteArrayOutputStream(BUFFER_SIZE);
+            outputStream = new ByteArrayOutputStream(BUFFER_SIZE);
 
-            return baos;
+            return outputStream;
         }
     };
 
@@ -167,16 +167,16 @@ class TestJSyncSerializers {
         Group group1 = new Group("TestGroupA", 41);
         Group group2 = new Group("TestGroupB", 42);
 
-        GroupSerializer.write(serializer.getWriter(), output, group1);
-        GroupSerializer.write(serializer.getWriter(), output, group2);
+        serializer.write(output, group1, GroupSerializer.getInstance());
+        serializer.write(output, group2, GroupSerializer.getInstance());
 
         final Object input = dataHolder.getInput();
-        group1 = GroupSerializer.read(serializer.getReader(), input);
+        group1 = serializer.read(input, GroupSerializer.getInstance());
         assertNotNull(group1);
         assertEquals("TestGroupA", group1.getName());
         assertEquals(41, group1.getGid());
 
-        group2 = GroupSerializer.read(serializer.getReader(), input);
+        group2 = serializer.read(input, GroupSerializer.getInstance());
         assertNotNull(group2);
         assertEquals("TestGroupB", group2.getName());
         assertEquals(42, group2.getGid());
@@ -301,16 +301,16 @@ class TestJSyncSerializers {
         User user1 = new User("TestUserA", 41);
         User user2 = new User("TestUserB", 42);
 
-        UserSerializer.write(serializer.getWriter(), output, user1);
-        UserSerializer.write(serializer.getWriter(), output, user2);
+        serializer.write(output, user1, UserSerializer.getInstance());
+        serializer.write(output, user2, UserSerializer.getInstance());
 
         final Object input = dataHolder.getInput();
-        user1 = UserSerializer.read(serializer.getReader(), input);
+        user1 = serializer.read(input, UserSerializer.getInstance());
         assertNotNull(user1);
         assertEquals("TestUserA", user1.getName());
         assertEquals(41, user1.getUid());
 
-        user2 = UserSerializer.read(serializer.getReader(), input);
+        user2 = serializer.read(input, UserSerializer.getInstance());
         assertNotNull(user2);
         assertEquals("TestUserB", user2.getName());
         assertEquals(42, user2.getUid());

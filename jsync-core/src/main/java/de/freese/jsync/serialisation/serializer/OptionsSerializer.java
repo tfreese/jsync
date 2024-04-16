@@ -9,8 +9,25 @@ import de.freese.jsync.serialisation.io.DataWriter;
 /**
  * @author Thomas Freese
  */
-public final class OptionsSerializer {
-    public static <R> Options read(final DataReader<R> reader, final R input) {
+public final class OptionsSerializer implements ClassSerializer<Options> {
+    private static final class OptionsSerializerHolder {
+        private static final OptionsSerializer INSTANCE = new OptionsSerializer();
+
+        private OptionsSerializerHolder() {
+            super();
+        }
+    }
+
+    public static OptionsSerializer getInstance() {
+        return OptionsSerializerHolder.INSTANCE;
+    }
+    
+    private OptionsSerializer() {
+        super();
+    }
+
+    @Override
+    public <R> Options read(final DataReader<R> reader, final R input) {
         // bufferSize
         // int bufferSize = reader.readInteger(input);
 
@@ -35,7 +52,8 @@ public final class OptionsSerializer {
                 .build();
     }
 
-    public static <W> void write(final DataWriter<W> writer, final W output, final Options value) {
+    @Override
+    public <W> void write(final DataWriter<W> writer, final W output, final Options value) {
         // bufferSize
         // writer.writeInteger(output, value.getBufferSize());
 
@@ -50,9 +68,5 @@ public final class OptionsSerializer {
 
         // followSymLinks
         writer.writeBoolean(output, value.isFollowSymLinks());
-    }
-
-    private OptionsSerializer() {
-        super();
     }
 }

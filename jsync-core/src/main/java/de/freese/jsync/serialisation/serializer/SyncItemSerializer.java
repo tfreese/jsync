@@ -9,8 +9,25 @@ import de.freese.jsync.serialisation.io.DataWriter;
 /**
  * @author Thomas Freese
  */
-public final class SyncItemSerializer {
-    public static <R> SyncItem read(final DataReader<R> reader, final R input) {
+public final class SyncItemSerializer implements ClassSerializer<SyncItem> {
+    private static final class SyncItemSerializerHolder {
+        private static final SyncItemSerializer INSTANCE = new SyncItemSerializer();
+
+        private SyncItemSerializerHolder() {
+            super();
+        }
+    }
+
+    public static SyncItemSerializer getInstance() {
+        return SyncItemSerializerHolder.INSTANCE;
+    }
+    
+    private SyncItemSerializer() {
+        super();
+    }
+
+    @Override
+    public <R> SyncItem read(final DataReader<R> reader, final R input) {
         // relativePath
         final String relativePath = reader.readString(input);
 
@@ -45,7 +62,8 @@ public final class SyncItemSerializer {
         return syncItem;
     }
 
-    public static <W> void write(final DataWriter<W> writer, final W output, final SyncItem value) {
+    @Override
+    public <W> void write(final DataWriter<W> writer, final W output, final SyncItem value) {
         // relativePath
         writer.writeString(output, value.getRelativePath());
 
@@ -69,9 +87,5 @@ public final class SyncItemSerializer {
         //
         //        // user
         //        registry.getSerializer(User.class).writeTo(registry, writer, sink, value.getUser());
-    }
-
-    private SyncItemSerializer() {
-        super();
     }
 }

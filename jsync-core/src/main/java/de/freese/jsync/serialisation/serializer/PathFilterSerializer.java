@@ -13,8 +13,25 @@ import de.freese.jsync.serialisation.io.DataWriter;
 /**
  * @author Thomas Freese
  */
-public final class PathFilterSerializer {
-    public static <R> PathFilter read(final DataReader<R> reader, final R input) {
+public final class PathFilterSerializer implements ClassSerializer<PathFilter> {
+    private static final class PathFilterSerializerHolder {
+        private static final PathFilterSerializer INSTANCE = new PathFilterSerializer();
+
+        private PathFilterSerializerHolder() {
+            super();
+        }
+    }
+
+    public static PathFilterSerializer getInstance() {
+        return PathFilterSerializerHolder.INSTANCE;
+    }
+    
+    private PathFilterSerializer() {
+        super();
+    }
+
+    @Override
+    public <R> PathFilter read(final DataReader<R> reader, final R input) {
         int count = reader.readInteger(input);
 
         final Set<String> directoryFilters = new HashSet<>();
@@ -38,7 +55,8 @@ public final class PathFilterSerializer {
         return new PathFilterEndsWith(directoryFilters, fileFilters);
     }
 
-    public static <W> void write(final DataWriter<W> writer, final W output, final PathFilter value) {
+    @Override
+    public <W> void write(final DataWriter<W> writer, final W output, final PathFilter value) {
         Set<String> filters = value.getDirectoryFilter();
         writer.writeInteger(output, filters.size());
         filters.forEach(filter -> writer.writeString(output, filter));
@@ -46,9 +64,5 @@ public final class PathFilterSerializer {
         filters = value.getFileFilter();
         writer.writeInteger(output, filters.size());
         filters.forEach(filter -> writer.writeString(output, filter));
-    }
-
-    private PathFilterSerializer() {
-        super();
     }
 }

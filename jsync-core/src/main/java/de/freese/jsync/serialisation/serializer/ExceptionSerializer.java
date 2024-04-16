@@ -11,9 +11,26 @@ import de.freese.jsync.serialisation.io.DataWriter;
 /**
  * @author Thomas Freese
  */
-public final class ExceptionSerializer {
+public final class ExceptionSerializer implements ClassSerializer<Exception> {
+    private static final class ExceptionSerializerHolder {
+        private static final ExceptionSerializer INSTANCE = new ExceptionSerializer();
+
+        private ExceptionSerializerHolder() {
+            super();
+        }
+    }
+
+    public static ExceptionSerializer getInstance() {
+        return ExceptionSerializerHolder.INSTANCE;
+    }
+
+    private ExceptionSerializer() {
+        super();
+    }
+
     @SuppressWarnings("unchecked")
-    public static <R> Exception read(final DataReader<R> reader, final R input) {
+    @Override
+    public <R> Exception read(final DataReader<R> reader, final R input) {
         final String clazzName = reader.readString(input);
         final String message = reader.readString(input);
         final int stackTraceLength = reader.readInteger(input);
@@ -21,7 +38,7 @@ public final class ExceptionSerializer {
         final StackTraceElement[] stackTrace = new StackTraceElement[stackTraceLength];
 
         for (int i = 0; i < stackTrace.length; i++) {
-            stackTrace[i] = StackTraceElementSerializer.read(reader, input);
+            stackTrace[i] = StackTraceElementSerializer.getInstance().read(reader, input);
         }
 
         Exception exception = null;
@@ -56,7 +73,8 @@ public final class ExceptionSerializer {
         return exception;
     }
 
-    public static <W> void write(final DataWriter<W> writer, final W output, final Exception value) {
+    @Override
+    public <W> void write(final DataWriter<W> writer, final W output, final Exception value) {
         writer.writeString(output, value.getClass().getName());
         writer.writeString(output, value.getMessage());
 
@@ -64,11 +82,7 @@ public final class ExceptionSerializer {
         writer.writeInteger(output, stackTrace.length);
 
         for (StackTraceElement stackTraceElement : stackTrace) {
-            StackTraceElementSerializer.write(writer, output, stackTraceElement);
+            StackTraceElementSerializer.getInstance().write(writer, output, stackTraceElement);
         }
-    }
-
-    private ExceptionSerializer() {
-        super();
     }
 }
