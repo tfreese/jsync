@@ -37,13 +37,11 @@ public abstract class AbstractRSocketClientRemoteBuilder<T extends AbstractRSock
     }
 
     public T logTcpClientBoundStatus() {
-        // @formatter:off
         addTcpClientCustomizer(tcpClient -> tcpClient
-            .doOnConnected(connection -> getLogger().info("Connected: {}", connection.channel()))
-            .doOnDisconnected(connection -> getLogger().info("Disconnected: {}", connection.channel()))
-            )
-            ;
-        // @formatter:on
+                .doOnConnected(connection -> getLogger().info("Connected: {}", connection.channel()))
+                .doOnDisconnected(connection -> getLogger().info("Disconnected: {}", connection.channel()))
+        )
+        ;
 
         return (T) this;
     }
