@@ -311,7 +311,8 @@ public final class JSyncUtils {
             timeUnit.sleep(timeout);
         }
         catch (InterruptedException ex) {
-            // Empty
+            // Restore interrupted state.
+            Thread.currentThread().interrupt();
         }
     }
 

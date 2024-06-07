@@ -21,7 +21,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  * @author Thomas Freese
  * @deprecated Does not work
  */
-@Deprecated
+@Deprecated(since = "now")
 final class JSyncPayload implements Payload {
     private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
     private static final Serializer<ByteBuffer, ByteBuffer> SERIALIZER = new DefaultSerializer<>(new ByteBufferReader(), new ByteBufferWriter());

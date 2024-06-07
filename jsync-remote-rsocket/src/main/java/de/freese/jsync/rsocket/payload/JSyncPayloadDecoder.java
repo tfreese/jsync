@@ -24,7 +24,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  * @author Thomas Freese
  * @deprecated Does not work
  */
-@Deprecated
+@Deprecated(since = "now")
 class JSyncPayloadDecoder implements PayloadDecoder {
     private static final ByteBufferPool BYTE_BUFFER_POOL = ByteBufferPool.DEFAULT;
 

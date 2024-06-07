@@ -113,6 +113,12 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
         try {
             get();
         }
+        catch (InterruptedException ex) {
+            getLogger().error(ex.getMessage(), ex);
+
+            // Restore interrupted state.
+            Thread.currentThread().interrupt();
+        }
         catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }

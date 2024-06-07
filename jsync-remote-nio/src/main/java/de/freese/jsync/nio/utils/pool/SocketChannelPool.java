@@ -49,7 +49,8 @@ public final class SocketChannelPool extends Pool<SocketChannel> {
                     TimeUnit.MILLISECONDS.sleep(10);
                 }
                 catch (InterruptedException ex) {
-                    // Ignore
+                    // Restore interrupted state.
+                    Thread.currentThread().interrupt();
                 }
             }
 

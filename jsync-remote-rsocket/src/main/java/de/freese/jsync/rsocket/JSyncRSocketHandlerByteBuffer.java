@@ -37,7 +37,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  * @author Thomas Freese
  * @deprecated Throws a BufferUnderflowException during copy process
  */
-@Deprecated
+@Deprecated(since = "now")
 class JSyncRSocketHandlerByteBuffer implements RSocket {
     private static final ByteBufferPool BYTEBUFFER_POOL = ByteBufferPool.DEFAULT;
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketHandlerByteBuffer.class);
