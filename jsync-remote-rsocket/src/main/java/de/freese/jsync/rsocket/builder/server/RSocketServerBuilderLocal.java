@@ -2,12 +2,9 @@
 package de.freese.jsync.rsocket.builder.server;
 
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 import io.rsocket.Closeable;
-import io.rsocket.SocketAcceptor;
 import io.rsocket.core.RSocketServer;
-import io.rsocket.frame.decoder.PayloadDecoder;
 import io.rsocket.transport.ServerTransport;
 import io.rsocket.transport.local.LocalServerTransport;
 import reactor.core.publisher.Mono;
@@ -15,21 +12,14 @@ import reactor.core.publisher.Mono;
 /**
  * @author Thomas Freese
  */
-public final class RSocketServerBuilderLocal {
-    private final RSocketServerBuilderSupport builderSupport = new RSocketServerBuilderSupport();
-
+public final class RSocketServerBuilderLocal extends AbstractServerBuilder<RSocketServerBuilderLocal, Mono<Closeable>> {
     private String name;
 
-    public RSocketServerBuilderLocal addRSocketServerCustomizer(final UnaryOperator<RSocketServer> rSocketServerCustomizer) {
-        builderSupport.addRSocketServerCustomizer(rSocketServerCustomizer);
-
-        return this;
-    }
-
+    @Override
     public Mono<Closeable> build() {
         Objects.requireNonNull(this.name, "name required");
 
-        final RSocketServer rSocketServer = builderSupport.configure(RSocketServer.create());
+        final RSocketServer rSocketServer = getBuilderSupport().configure(RSocketServer.create());
 
         final ServerTransport<Closeable> serverTransport = LocalServerTransport.create(this.name);
 
@@ -42,15 +32,8 @@ public final class RSocketServerBuilderLocal {
         return this;
     }
 
-    public RSocketServerBuilderLocal payloadDecoder(final PayloadDecoder payloadDecoder) {
-        builderSupport.payloadDecoder(payloadDecoder);
-
-        return this;
-    }
-
-    public RSocketServerBuilderLocal socketAcceptor(final SocketAcceptor socketAcceptor) {
-        builderSupport.socketAcceptor(socketAcceptor);
-
+    @Override
+    protected RSocketServerBuilderLocal self() {
         return this;
     }
 }
