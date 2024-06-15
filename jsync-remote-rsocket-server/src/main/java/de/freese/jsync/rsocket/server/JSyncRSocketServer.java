@@ -74,7 +74,6 @@ public final class JSyncRSocketServer {
                 .socketAcceptor(SocketAcceptor.with(new JSyncRSocketHandlerByteBuf()))
                 .resumeDefault()
                 .logTcpServerBoundStatus()
-                .logger(LOGGER)
                 .build()
                 .block()
         ;

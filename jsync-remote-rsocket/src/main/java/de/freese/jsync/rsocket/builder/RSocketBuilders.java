@@ -1,12 +1,12 @@
 // Created: 31.07.2021
 package de.freese.jsync.rsocket.builder;
 
-import de.freese.jsync.rsocket.builder.client.RSocketClientLocalBuilder;
-import de.freese.jsync.rsocket.builder.client.RSocketClientRemoteBuilder;
-import de.freese.jsync.rsocket.builder.client.RSocketClientRemoteLoadBalancedBuilder;
-import de.freese.jsync.rsocket.builder.client.RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder;
-import de.freese.jsync.rsocket.builder.server.RSocketServerLocalBuilder;
-import de.freese.jsync.rsocket.builder.server.RSocketServerRemoteBuilder;
+import de.freese.jsync.rsocket.builder.client.RSocketClientBuilderLocal;
+import de.freese.jsync.rsocket.builder.client.RSocketClientBuilderRemote;
+import de.freese.jsync.rsocket.builder.client.RSocketClientBuilderRemoteLoadBalanced;
+import de.freese.jsync.rsocket.builder.client.RSocketClientBuilderRemoteLoadBalancedWithServiceDiscovery;
+import de.freese.jsync.rsocket.builder.server.RSocketServerBuilderLocal;
+import de.freese.jsync.rsocket.builder.server.RSocketServerBuilderRemote;
 
 /**
  * org.springframework.boot.rsocket.netty.NettyRSocketServerFactory<br>
@@ -15,28 +15,28 @@ import de.freese.jsync.rsocket.builder.server.RSocketServerRemoteBuilder;
  * @author Thomas Freese
  */
 public final class RSocketBuilders {
-    public static RSocketClientLocalBuilder clientLocal() {
-        return new RSocketClientLocalBuilder();
+    public static RSocketClientBuilderLocal clientLocal() {
+        return new RSocketClientBuilderLocal();
     }
 
-    public static RSocketClientRemoteBuilder clientRemote() {
-        return new RSocketClientRemoteBuilder();
+    public static RSocketClientBuilderRemote clientRemote() {
+        return new RSocketClientBuilderRemote();
     }
 
-    public static RSocketClientRemoteLoadBalancedBuilder clientRemoteLoadBalanced() {
-        return new RSocketClientRemoteLoadBalancedBuilder();
+    public static RSocketClientBuilderRemoteLoadBalanced clientRemoteLoadBalanced() {
+        return new RSocketClientBuilderRemoteLoadBalanced();
     }
 
-    public static RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder clientRemoteLoadBalancedWithServiceDiscovery() {
-        return new RSocketClientRemoteLoadBalancedWithServiceDiscoveryBuilder();
+    public static RSocketClientBuilderRemoteLoadBalancedWithServiceDiscovery clientRemoteLoadBalancedWithServiceDiscovery() {
+        return new RSocketClientBuilderRemoteLoadBalancedWithServiceDiscovery();
     }
 
-    public static RSocketServerLocalBuilder serverLocal() {
-        return new RSocketServerLocalBuilder();
+    public static RSocketServerBuilderLocal serverLocal() {
+        return new RSocketServerBuilderLocal();
     }
 
-    public static RSocketServerRemoteBuilder serverRemote() {
-        return new RSocketServerRemoteBuilder();
+    public static RSocketServerBuilderRemote serverRemote() {
+        return new RSocketServerBuilderRemote();
     }
 
     private RSocketBuilders() {

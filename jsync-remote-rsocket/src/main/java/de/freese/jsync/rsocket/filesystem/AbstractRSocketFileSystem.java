@@ -88,7 +88,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
     protected RSocketClient createClientLocal(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
         return RSocketBuilders.clientLocal()
                 .name("jSync")
-                .logger(getLogger())
                 .build()
                 ;
     }
@@ -99,7 +98,6 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
                 .resumeDefault()
                 .retryDefault()
                 .logTcpClientBoundStatus()
-                .logger(getLogger())
                 .addTcpClientCustomizer(tcpClientCustomizer)
                 .build()
                 ;

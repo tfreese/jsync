@@ -124,7 +124,6 @@ public final class RSocketDemo {
                 .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
                 .resumeDefault()
                 .logTcpServerBoundStatus()
-                .logger(LoggerFactory.getLogger("server"))
                 .protocolSslContextSpecCertificate()
                 .build()
                 .block();
@@ -134,7 +133,6 @@ public final class RSocketDemo {
                 .resumeDefault()
                 .retryDefault()
                 .logTcpClientBoundStatus()
-                .logger(LoggerFactory.getLogger("client"))
                 .protocolSslContextSpecTrusted()
                 .build();
 
@@ -150,7 +148,6 @@ public final class RSocketDemo {
                         .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
                         .resumeDefault()
                         .logTcpServerBoundStatus()
-                        .logger(LoggerFactory.getLogger("server-" + serverAddress.getPort()))
                         .build())
                 .map(Mono::block)
                 .map(Disposable.class::cast)
@@ -161,7 +158,6 @@ public final class RSocketDemo {
                 .resumeDefault()
                 .retryDefault()
                 .logTcpClientBoundStatus()
-                .logger(LoggerFactory.getLogger("client"))
                 .build();
 
         return Tuples.of(client, servers);
@@ -184,7 +180,6 @@ public final class RSocketDemo {
                         .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
                         .resumeDefault()
                         .logTcpServerBoundStatus()
-                        .logger(LoggerFactory.getLogger("server-" + serverAddress.getPort()))
                         .build())
                 .map(Mono::block)
                 .map(Disposable.class::cast)
@@ -195,7 +190,6 @@ public final class RSocketDemo {
                 .resumeDefault()
                 .retryDefault()
                 .logTcpClientBoundStatus()
-                .logger(LoggerFactory.getLogger("client"))
                 .build();
 
         return Tuples.of(client, servers);
