@@ -70,6 +70,7 @@ public final class JSyncRSocketServer {
         // });
 
         this.server = RSocketBuilders.serverRemote()
+                .logger(getLogger())
                 .socketAddress(new InetSocketAddress(port))
                 .socketAcceptor(SocketAcceptor.with(new JSyncRSocketHandlerByteBuf()))
                 .resumeDefault()

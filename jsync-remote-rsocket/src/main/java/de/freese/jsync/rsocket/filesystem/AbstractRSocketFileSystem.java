@@ -87,6 +87,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
 
     protected RSocketClient createClientLocal(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
         return RSocketBuilders.clientLocal()
+                .logger(getLogger())
                 .name("jSync")
                 .build()
                 ;
@@ -94,6 +95,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
 
     protected RSocketClient createClientRemote(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
         return RSocketBuilders.clientRemote()
+                .logger(getLogger())
                 .remoteAddress(new InetSocketAddress(uri.getHost(), uri.getPort()))
                 .resumeDefault()
                 .retryDefault()

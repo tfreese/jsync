@@ -21,7 +21,7 @@ public class RSocketClientBuilderLocal extends AbstractClientBuilder<RSocketClie
     public RSocketClient build() {
         Objects.requireNonNull(this.name, "name required");
 
-        final RSocketConnector rSocketConnector = getBuilderSupport().configure(RSocketConnector.create());
+        final RSocketConnector rSocketConnector = configure(RSocketConnector.create());
 
         final ClientTransport clientTransport = LocalClientTransport.create(this.name);
 

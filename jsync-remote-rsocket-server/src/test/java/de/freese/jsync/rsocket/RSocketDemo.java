@@ -120,6 +120,7 @@ public final class RSocketDemo {
         final InetSocketAddress serverAddress = new InetSocketAddress("localhost", 6000);
 
         final CloseableChannel server = RSocketBuilders.serverRemote()
+                .logger(LoggerFactory.getLogger("server-remote"))
                 .socketAddress(serverAddress)
                 .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
                 .resumeDefault()
@@ -129,6 +130,7 @@ public final class RSocketDemo {
                 .block();
 
         final RSocketClient client = RSocketBuilders.clientRemote()
+                .logger(LoggerFactory.getLogger("client-remote"))
                 .remoteAddress(serverAddress)
                 .resumeDefault()
                 .retryDefault()
@@ -144,6 +146,7 @@ public final class RSocketDemo {
 
         final List<Disposable> servers = serverAddresses.stream()
                 .map(serverAddress -> RSocketBuilders.serverRemote()
+                        .logger(LoggerFactory.getLogger("server-remote"))
                         .socketAddress(serverAddress)
                         .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
                         .resumeDefault()
@@ -154,6 +157,7 @@ public final class RSocketDemo {
                 .toList();
 
         final RSocketClient client = RSocketBuilders.clientRemoteLoadBalanced()
+                .logger(LoggerFactory.getLogger("client-lb"))
                 .remoteAddresses(serverAddresses)
                 .resumeDefault()
                 .retryDefault()
@@ -176,6 +180,7 @@ public final class RSocketDemo {
 
         final List<Disposable> servers = serverAddresses.stream()
                 .map(serverAddress -> RSocketBuilders.serverRemote()
+                        .logger(LoggerFactory.getLogger("server-remote"))
                         .socketAddress(serverAddress)
                         .socketAcceptor(socketAcceptor.apply(serverAddress.getPort()))
                         .resumeDefault()
@@ -186,6 +191,7 @@ public final class RSocketDemo {
                 .toList();
 
         final RSocketClient client = RSocketBuilders.clientRemoteLoadBalancedWithServiceDiscovery()
+                .logger(LoggerFactory.getLogger("client-sd"))
                 .serviceDiscovery(serviceDiscovery)
                 .resumeDefault()
                 .retryDefault()
@@ -197,12 +203,16 @@ public final class RSocketDemo {
 
     static Tuple2<RSocketClient, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
         final Disposable server = RSocketBuilders.serverLocal()
+                .logger(LoggerFactory.getLogger("server-local"))
                 .name("test1")
                 .socketAcceptor(socketAcceptor.apply(0))
                 .build()
                 .block();
 
-        final RSocketClient client = RSocketBuilders.clientLocal().name("test1").build();
+        final RSocketClient client = RSocketBuilders.clientLocal()
+                .logger(LoggerFactory.getLogger("client-local"))
+                .name("test1")
+                .build();
 
         return Tuples.of(client, List.of(server));
     }

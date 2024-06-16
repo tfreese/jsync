@@ -19,7 +19,7 @@ public final class RSocketServerBuilderLocal extends AbstractServerBuilder<RSock
     public Mono<Closeable> build() {
         Objects.requireNonNull(this.name, "name required");
 
-        final RSocketServer rSocketServer = getBuilderSupport().configure(RSocketServer.create());
+        final RSocketServer rSocketServer = configure(RSocketServer.create());
 
         final ServerTransport<Closeable> serverTransport = LocalServerTransport.create(this.name);
 

@@ -8,12 +8,17 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import io.netty.channel.EventLoopGroup;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
 import io.rsocket.transport.ServerTransport;
@@ -23,40 +28,47 @@ import reactor.core.publisher.Mono;
 import reactor.netty.resources.LoopResources;
 import reactor.netty.tcp.SslProvider;
 import reactor.netty.tcp.TcpServer;
+import reactor.netty.tcp.TcpSslContextSpec;
+import reactor.util.retry.Retry;
+import reactor.util.retry.RetryBackoffSpec;
 
 /**
  * @author Thomas Freese
  */
 public final class RSocketServerBuilderRemote extends AbstractServerBuilder<RSocketServerBuilderRemote, Mono<CloseableChannel>> {
+    private final List<UnaryOperator<TcpServer>> tcpServerCustomizers = new ArrayList<>();
 
     public RSocketServerBuilderRemote addTcpServerCustomizer(final UnaryOperator<TcpServer> tcpServerCustomizer) {
-        getBuilderSupport().addTcpServerCustomizer(tcpServerCustomizer);
+        tcpServerCustomizers.add(Objects.requireNonNull(tcpServerCustomizer, "tcpServerCustomizer required"));
 
         return this;
     }
 
     @Override
     public Mono<CloseableChannel> build() {
-        final RSocketServer rSocketServer = getBuilderSupport().configure(RSocketServer.create());
-        final TcpServer tcpServer = getBuilderSupport().configure(TcpServer.create());
+        final RSocketServer rSocketServer = configure(RSocketServer.create());
+        final TcpServer tcpServer = configure(TcpServer.create());
 
         final ServerTransport<CloseableChannel> serverTransport = TcpServerTransport.create(tcpServer);
 
         return rSocketServer.bind(serverTransport)
-                .doOnNext(channel -> getBuilderSupport().startDaemonOnCloseThread(channel, getLogger()))
+                .doOnNext(this::startDaemonOnCloseThread)
                 ;
     }
 
     public RSocketServerBuilderRemote logTcpServerBoundStatus() {
-        getBuilderSupport().logTcpServerBoundStatus(getLogger());
-
-        return this;
+        Objects.requireNonNull(getLogger(), "call Method #logger(...) first");
+        
+        return addTcpServerCustomizer(tcpServer -> tcpServer
+                .doOnBound(server -> getLogger().info("Bound: {}", server.channel()))
+                .doOnUnbound(server -> getLogger().info("Unbound: {}", server.channel()))
+        );
     }
 
     public RSocketServerBuilderRemote protocolSslContextSpec(final SslProvider.ProtocolSslContextSpec protocolSslContextSpec) {
-        getBuilderSupport().protocolSslContextSpec(protocolSslContextSpec);
+        Objects.requireNonNull(protocolSslContextSpec, "protocolSslContextSpec required");
 
-        return this;
+        return addTcpServerCustomizer(tcpServer -> tcpServer.secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec)));
     }
 
     public RSocketServerBuilderRemote protocolSslContextSpecCertificate() throws Exception {
@@ -85,52 +97,97 @@ public final class RSocketServerBuilderRemote extends AbstractServerBuilder<RSoc
         // KeyStore.Entry entry = keyStore.getEntry("myServer", new KeyStore.PasswordProtection(password));
         // PrivateKey privateKey = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
 
-        getBuilderSupport().protocolSslContextSpecCertificate(keyManagerFactory, trustManagerFactory, (X509Certificate) certificate, privateKey);
+        final SslProvider.ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(privateKey, (X509Certificate) certificate)
+                .configure(builder -> builder
+                        .keyManager(keyManagerFactory)
+                        .trustManager(trustManagerFactory)
+                        .protocols("TLSv1.3")
+                        .sslProvider(io.netty.handler.ssl.SslProvider.JDK)
+                );
 
-        return this;
+        return protocolSslContextSpec(protocolSslContextSpec);
     }
 
     public RSocketServerBuilderRemote protocolSslContextSpecCertificateSelfSigned() throws Exception {
-        getBuilderSupport().protocolSslContextSpecCertificateSelfSigned();
+        final SelfSignedCertificate cert = new SelfSignedCertificate();
 
-        return this;
+        final SslProvider.ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(cert.certificate(), cert.privateKey())
+                .configure(builder -> builder
+                        .protocols("TLSv1.3")
+                        .sslProvider(io.netty.handler.ssl.SslProvider.JDK)
+                );
+
+        return protocolSslContextSpec(protocolSslContextSpec);
     }
 
     public RSocketServerBuilderRemote resume(final Resume resume) {
-        getBuilderSupport().resume(resume);
+        Objects.requireNonNull(resume, "resume required");
 
-        return this;
+        return addRSocketServerCustomizer(rSocketServer -> rSocketServer.resume(resume));
     }
 
     public RSocketServerBuilderRemote resumeDefault() {
-        getBuilderSupport().resumeDefault(getLogger());
+        RetryBackoffSpec retry = Retry.fixedDelay(5, Duration.ofMillis(500));
 
-        return this;
+        if (getLogger() != null) {
+            retry = retry.doBeforeRetry(signal -> getLogger().info("Disconnected. Trying to resume..."));
+        }
+
+        final Resume resume = new Resume()
+                .sessionDuration(Duration.ofMinutes(5))
+                .retry(retry);
+
+        return resume(resume);
     }
 
     /**
      * EpollEventLoopGroup only available on Linux -> Use NioEventLoopGroup instead.
      */
     public RSocketServerBuilderRemote runOn(final EventLoopGroup eventLoopGroup) {
-        getBuilderSupport().runOn(eventLoopGroup);
+        Objects.requireNonNull(eventLoopGroup, "eventLoopGroup required");
 
-        return this;
+        return addTcpServerCustomizer(tcpServer -> tcpServer.runOn(eventLoopGroup));
     }
 
     public RSocketServerBuilderRemote runOn(final LoopResources loopResources) {
-        getBuilderSupport().runOn(loopResources);
+        Objects.requireNonNull(loopResources, "loopResources required");
 
-        return this;
+        return addTcpServerCustomizer(tcpServer -> tcpServer.runOn(loopResources));
     }
 
     public RSocketServerBuilderRemote socketAddress(final SocketAddress socketAddress) {
-        getBuilderSupport().socketAddress(socketAddress);
+        Objects.requireNonNull(socketAddress, "socketAddress required");
 
-        return this;
+        return addTcpServerCustomizer(tcpServer -> tcpServer.bindAddress(() -> socketAddress));
     }
 
     @Override
     protected RSocketServerBuilderRemote self() {
         return this;
+    }
+
+    private TcpServer configure(final TcpServer tcpServer) {
+        TcpServer server = tcpServer;
+
+        for (UnaryOperator<TcpServer> serverCustomizer : this.tcpServerCustomizers) {
+            server = serverCustomizer.apply(server);
+        }
+
+        return server;
+    }
+
+    private void startDaemonOnCloseThread(final CloseableChannel channel) {
+        final String name = "daemon-rSocket-" + channel.address().getPort();
+
+        final Thread thread = new Thread(() -> {
+            channel.onClose().block();
+
+            if (getLogger() != null) {
+                getLogger().info("terminated: {}", name);
+            }
+        }, name);
+        thread.setContextClassLoader(getClass().getClassLoader());
+        thread.setDaemon(false);
+        thread.start();
     }
 }

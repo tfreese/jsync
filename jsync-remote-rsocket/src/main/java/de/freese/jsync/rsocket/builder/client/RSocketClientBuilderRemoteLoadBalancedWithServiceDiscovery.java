@@ -27,11 +27,13 @@ public class RSocketClientBuilderRemoteLoadBalancedWithServiceDiscovery extends 
     public RSocketClient build() {
         final Publisher<List<LoadbalanceTarget>> serverProducer = Mono.fromSupplier(this.serviceDiscovery)
                 .map(servers -> {
-                    getLogger().info("Update Server Instances: {}", servers);
+                    if (getLogger() != null) {
+                        getLogger().info("Update Server Instances: {}", servers);
+                    }
 
                     return servers.stream()
                             .map(serverAddress -> {
-                                final TcpClient tcpClient = getBuilderSupport().configure(TcpClient.create()).remoteAddress(() -> serverAddress);
+                                final TcpClient tcpClient = configure(TcpClient.create()).remoteAddress(() -> serverAddress);
                                 final ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
 
                                 return LoadbalanceTarget.from(serverAddress.toString(), clientTransport);
@@ -42,7 +44,7 @@ public class RSocketClientBuilderRemoteLoadBalancedWithServiceDiscovery extends 
                 .repeatWhen(flux -> flux.delayElements(Duration.ofMillis(600))) // Flux regelmäßig aktualisieren.
                 ;
 
-        final RSocketConnector rSocketConnector = getBuilderSupport().configure(RSocketConnector.create());
+        final RSocketConnector rSocketConnector = configure(RSocketConnector.create());
 
         return LoadbalanceRSocketClient.builder(serverProducer)
                 .connector(rSocketConnector)

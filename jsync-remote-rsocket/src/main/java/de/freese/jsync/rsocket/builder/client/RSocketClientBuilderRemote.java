@@ -2,6 +2,7 @@
 package de.freese.jsync.rsocket.builder.client;
 
 import java.net.SocketAddress;
+import java.util.Objects;
 
 import io.rsocket.RSocket;
 import io.rsocket.core.RSocketClient;
@@ -18,8 +19,8 @@ public class RSocketClientBuilderRemote extends AbstractClientBuilderRemote<RSoc
 
     @Override
     public RSocketClient build() {
-        final TcpClient tcpClient = getBuilderSupport().configure(TcpClient.create());
-        final RSocketConnector rSocketConnector = getBuilderSupport().configure(RSocketConnector.create());
+        final TcpClient tcpClient = configure(TcpClient.create());
+        final RSocketConnector rSocketConnector = configure(RSocketConnector.create());
 
         final ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
 
@@ -29,9 +30,9 @@ public class RSocketClientBuilderRemote extends AbstractClientBuilderRemote<RSoc
     }
 
     public RSocketClientBuilderRemote remoteAddress(final SocketAddress remoteAddress) {
-        getBuilderSupport().remoteAddress(remoteAddress);
+        Objects.requireNonNull(remoteAddress, "remoteAddress required");
 
-        return this;
+        return addTcpClientCustomizer(tcpClient -> tcpClient.remoteAddress(() -> remoteAddress));
     }
 
     @Override

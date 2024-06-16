@@ -26,7 +26,7 @@ public class RSocketClientBuilderRemoteLoadBalanced extends AbstractClientBuilde
     public RSocketClient build() {
         final Publisher<List<LoadbalanceTarget>> serverProducer = Flux.fromIterable(this.remoteAddresses)
                 .map(serverAddress -> {
-                    final TcpClient tcpClient = getBuilderSupport().configure(TcpClient.create()).remoteAddress(() -> serverAddress);
+                    final TcpClient tcpClient = configure(TcpClient.create()).remoteAddress(() -> serverAddress);
                     final ClientTransport clientTransport = TcpClientTransport.create(tcpClient);
 
                     return LoadbalanceTarget.from(serverAddress.toString(), clientTransport);
@@ -49,7 +49,7 @@ public class RSocketClientBuilderRemoteLoadBalanced extends AbstractClientBuilde
         // };
         // });
 
-        final RSocketConnector rSocketConnector = getBuilderSupport().configure(RSocketConnector.create());
+        final RSocketConnector rSocketConnector = configure(RSocketConnector.create());
 
         return LoadbalanceRSocketClient.builder(serverProducer)
                 .connector(rSocketConnector)
