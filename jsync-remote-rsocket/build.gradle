@@ -1,0 +1,12 @@
+plugins {
+    id "java-library"
+}
+
+description = "A Java rsync clone: RSocket Module"
+
+dependencies {
+    api(project(":jsync-core"))
+
+    api("io.rsocket:rsocket-transport-local")
+    api("io.rsocket:rsocket-transport-netty")
+}

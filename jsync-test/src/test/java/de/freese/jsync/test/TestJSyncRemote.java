@@ -60,7 +60,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     }
 
     @AfterAll
-    static void afterAll() throws Exception {
+    static void afterAll() {
         for (AutoCloseable closeable : CLOSEABLES.values()) {
             try {
                 closeable.close();
@@ -76,7 +76,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     }
 
     @BeforeAll
-    static void beforeAll() throws Exception {
+    static void beforeAll() {
         options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
     }
 
@@ -126,7 +126,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
         assertTrue(true);
     }
 
-    private void startServerNio(final int port) throws Exception {
+    private void startServerNio(final int port) {
         if (!CLOSEABLES.containsKey("nio")) {
             final JSyncNioServer server = new JSyncNioServer(port, 2, 4);
             server.setName("nio");
@@ -136,7 +136,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
         }
     }
 
-    // private void startServerNetty() throws Exception {
+    // private void startServerNetty() {
     // if (!CLOSEABLES.containsKey("netty")) {
     // JSyncNettyServer server = new JSyncNettyServer();
     // server.start(8002, 2, 4);
@@ -144,7 +144,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     // }
     // }
 
-    private void startServerRSocket(final int port) throws Exception {
+    private void startServerRSocket(final int port) {
         if (!CLOSEABLES.containsKey("rSocket")) {
             final JSyncRSocketServer server = new JSyncRSocketServer();
             server.start(port);
@@ -157,7 +157,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
         }
     }
 
-    // private void startServerSpringRest() throws Exception {
+    // private void startServerSpringRest() {
     //  new SpringApplicationBuilder(JsyncServerApplication.class)
     //          //.properties("server.port=8081") // Does not work, if 'server.port' exist in application.yml.
     //          //.run(args);
@@ -172,7 +172,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     // }
     // }
 
-    // private void startServerSpringWebflux() throws Exception {
+    // private void startServerSpringWebflux() {
     // if (!CLOSEABLES.containsKey("springwebflux")) {
     // JSyncWebfluxApplication server = new JSyncWebfluxApplication();
     // server.start(new String[] {
@@ -182,7 +182,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     // }
     // }
 
-    private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception {
+    private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) {
         final Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 
@@ -214,7 +214,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     }
 
     // @Test
-    // void testSpringRest() throws Exception {
+    // void testSpringRest() {
     // TimeUnit.MILLISECONDS.sleep(500);
     //
     // startServerSpringRest();
@@ -228,7 +228,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     // }
 
     // @Test
-    // void testSpringWebFlux() throws Exception {
+    // void testSpringWebFlux() {
     // TimeUnit.MILLISECONDS.sleep(500);
     //
     // startServerSpringRest();

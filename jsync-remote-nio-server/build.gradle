@@ -1,0 +1,11 @@
+plugins {
+    id "java-library"
+}
+
+description = "A Java rsync clone: NIO-Server Module"
+
+dependencies {
+    api(project(":jsync-remote-nio"))
+
+    runtimeOnly("ch.qos.logback:logback-classic")
+}

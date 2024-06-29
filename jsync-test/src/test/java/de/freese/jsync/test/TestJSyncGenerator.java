@@ -40,9 +40,9 @@ class TestJSyncGenerator extends AbstractJSyncIoTest {
     }
 
     @Test
-    void testFileAttributes() throws Exception {
+    void testFileAttributes() {
         final SyncItem syncItem = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, PathFilterNoOp.INSTANCE)
-                .filter(si -> si.getRelativePath().endsWith("pom.xml"))
+                .filter(si -> si.getRelativePath().endsWith("build.gradle"))
                 .blockFirst();
 
         assertNotNull(syncItem);
@@ -69,7 +69,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest {
     }
 
     @Test
-    void testFilter() throws Exception {
+    void testFilter() {
         final PathFilter filter = new PathFilterEndsWith(Set.of("src", "target", ".settings"), Set.of(".classpath", ".project"));
 
         final Map<String, SyncItem> map = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, filter)
@@ -87,7 +87,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest {
     }
 
     @Test
-    void testGenerator() throws Exception {
+    void testGenerator() {
         final List<SyncItem> syncItems = new ArrayList<>();
 
         new DefaultGenerator().generateItems(PATH_SOURCE.toString(), false, PathFilterNoOp.INSTANCE, syncItems::add);

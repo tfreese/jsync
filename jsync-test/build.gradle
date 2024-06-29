@@ -1,0 +1,19 @@
+plugins {
+    id "java"
+}
+
+description = "A Java rsync clone: Test Module"
+
+dependencies {
+    testImplementation(project(":jsync-remote-rsocket-server"))
+    testImplementation(project(":jsync-remote-nio-server"))
+
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation("org.junit.jupiter:junit-jupiter")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+//    test {
+//        maxParallelForks = 1 // Will not do parallel execution
+//    }

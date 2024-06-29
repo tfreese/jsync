@@ -1,0 +1,10 @@
+plugins {
+    id "java-library"
+}
+
+description = "A Java rsync clone: Core Module"
+
+dependencies {
+    api("io.projectreactor:reactor-core")
+    api("org.slf4j:slf4j-api")
+}

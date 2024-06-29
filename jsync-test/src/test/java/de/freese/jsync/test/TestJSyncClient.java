@@ -44,7 +44,7 @@ class TestJSyncClient extends AbstractJSyncIoTest {
     }
 
     @BeforeAll
-    static void beforeAll() throws Exception {
+    static void beforeAll() {
         options = new Builder().delete(true).checksum(true).followSymLinks(false).dryRun(false).build();
     }
 
@@ -70,7 +70,7 @@ class TestJSyncClient extends AbstractJSyncIoTest {
         assertTrue(true);
     }
 
-    private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) throws Exception {
+    private void syncDirectories(final Options options, final URI senderUri, final URI receiverUri) {
         final Client client = new DefaultClient(options, senderUri, receiverUri);
         client.connectFileSystems();
 

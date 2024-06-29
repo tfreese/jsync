@@ -1,0 +1,13 @@
+plugins {
+    id "java"
+}
+
+description = "A Java rsync clone: Console Module"
+
+dependencies {
+    implementation(project(":jsync-core"))
+
+    implementation("commons-cli:commons-cli")
+
+    runtimeOnly("org.slf4j:slf4j-nop")
+}

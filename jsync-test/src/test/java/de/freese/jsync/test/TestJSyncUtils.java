@@ -3,8 +3,7 @@ package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,7 @@ import de.freese.jsync.utils.JSyncUtils;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncUtils {
     @Test
-    void testBytesToHex() throws Exception {
+    void testBytesToHex() {
         final String hex = "0123456789ABCDEF";
         final byte[] bytes = JSyncUtils.hexToBytes(hex);
 
@@ -27,11 +26,9 @@ class TestJSyncUtils {
     }
 
     @Test
-    void testChecksum() throws Exception {
-        final Path path = Paths.get("pom.xml");
-
-        final String checksum1 = DigestUtils.sha256DigestAsHex(path);
-        final String checksum2 = DigestUtils.sha256DigestAsHex(path);
+    void testChecksum() {
+        final String checksum1 = JSyncUtils.bytesToHex(DigestUtils.sha256Digest("Hello World!".getBytes(StandardCharsets.UTF_8)));
+        final String checksum2 = JSyncUtils.bytesToHex(DigestUtils.sha256Digest("Hello World!".getBytes(StandardCharsets.UTF_8)));
 
         assertEquals(checksum1, checksum2);
     }
