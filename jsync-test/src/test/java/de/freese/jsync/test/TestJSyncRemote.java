@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Hooks;
 
@@ -43,7 +42,6 @@ import de.freese.jsync.rsocket.server.JSyncRSocketServer;
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncRemote extends AbstractJSyncIoTest {
     private static final Map<String, AutoCloseable> CLOSEABLES = new HashMap<>();
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestJSyncRemote.class);
     private static final Path PATH_DEST = createDestPath(TestJSyncRemote.class);
     private static final Path PATH_SOURCE = createSourcePath(TestJSyncRemote.class);
 
@@ -66,12 +64,12 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
                 closeable.close();
             }
             catch (Exception ex) {
-                LOGGER.error(ex.getMessage(), ex);
+                LoggerFactory.getLogger(TestJSyncRemote.class).error(ex.getMessage(), ex);
             }
         }
 
         // if (ByteBufAllocator.DEFAULT instanceof PooledByteBufAllocator) {
-        // LOGGER.info(((PooledByteBufAllocator) ByteBufAllocator.DEFAULT).dumpStats());
+        // LoggerFactory.getLogger(TestJSyncRemote.class).info(((PooledByteBufAllocator) ByteBufAllocator.DEFAULT).dumpStats());
         // }
     }
 
@@ -91,7 +89,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     }
 
     @Test
-    void testLocal() throws Exception {
+    void testLocal() {
         final URI senderUri = PATH_SOURCE.toUri();
         final URI receiverUri = PATH_DEST.toUri();
 
@@ -101,7 +99,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
     }
 
     @Test
-    void testNio() throws Exception {
+    void testNio() {
         startServerNio(8001);
 
         final URI senderUri = JSyncProtocol.NIO.toUri("localhost:8001", PATH_SOURCE.toString());
@@ -153,6 +151,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
             // Fehlermeldungen beim Disconnect ausschalten.
             Hooks.resetOnErrorDropped();
             Hooks.onErrorDropped(th -> {
+                // Empty
             });
         }
     }
@@ -190,7 +189,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
         client.generateSyncItems(EFileSystem.SENDER, PathFilterNoOp.INSTANCE, syncItem -> {
             syncItemsSender.add(syncItem);
             final String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
-                // System.out.println("Sender Bytes read: " + i);
+                // getLogger().info("Sender Bytes read: {}", i);
             });
             syncItem.setChecksum(checksum);
         });
@@ -199,7 +198,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
         client.generateSyncItems(EFileSystem.RECEIVER, PathFilterNoOp.INSTANCE, syncItem -> {
             syncItemsReceiver.add(syncItem);
             final String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
-                // System.out.println("Sender Bytes read: " + i);
+                // getLogger().info("Receiver Bytes read: {}", i);
             });
             syncItem.setChecksum(checksum);
         });

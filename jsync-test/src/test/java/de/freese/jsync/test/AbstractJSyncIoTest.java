@@ -9,13 +9,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
  */
 abstract class AbstractJSyncIoTest {
-
     private static final Path PATH_TEST = Paths.get(System.getProperty("java.io.tmpdir"), "jsync");
 
     protected static Path createDestPath(final Class<? extends AbstractJSyncIoTest> testClass) {
@@ -88,5 +90,11 @@ abstract class AbstractJSyncIoTest {
     protected static void deletePaths(final Path pathSource, final Path pathDest) throws IOException {
         JSyncUtils.delete(pathSource, false);
         JSyncUtils.delete(pathDest, false);
+    }
+    
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    protected Logger getLogger() {
+        return logger;
     }
 }

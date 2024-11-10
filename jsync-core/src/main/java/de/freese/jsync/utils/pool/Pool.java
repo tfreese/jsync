@@ -45,6 +45,8 @@ public abstract class Pool<T> {
         private final Queue<SoftReference<T>> delegate;
 
         SoftReferenceQueue(final Queue<SoftReference<T>> delegate) {
+            super();
+
             this.delegate = delegate;
         }
 
@@ -180,6 +182,8 @@ public abstract class Pool<T> {
      */
     @SuppressWarnings("unchecked")
     protected Pool(final boolean threadSafe, final boolean softReferences, final int maximumCapacity) {
+        super();
+        
         final Queue<T> queue;
 
         if (threadSafe) {

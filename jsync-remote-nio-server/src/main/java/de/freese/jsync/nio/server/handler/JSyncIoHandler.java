@@ -279,7 +279,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         return this.serializer;
     }
 
-    protected void readFile(final SocketChannel channel, final Sender sender) throws Exception {
+    protected void readFile(final SocketChannel channel, final Sender sender) {
         final ByteBuffer buffer = this.frameProtocol.readAll(channel).blockFirst();
 
         try {

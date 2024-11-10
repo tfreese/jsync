@@ -141,7 +141,7 @@ public final class RSocketDemo {
         return Tuples.of(client, List.of(server));
     }
 
-    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
+    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancer(final Function<Integer, SocketAcceptor> socketAcceptor) {
         final List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000).map(port -> new InetSocketAddress("localhost", port)).toList();
 
         final List<Disposable> servers = serverAddresses.stream()
@@ -167,7 +167,7 @@ public final class RSocketDemo {
         return Tuples.of(client, servers);
     }
 
-    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
+    static Tuple2<RSocketClient, List<Disposable>> createRemoteWithLoadBalancerAndServiceDiscovery(final Function<Integer, SocketAcceptor> socketAcceptor) {
         final List<InetSocketAddress> serverAddresses = Stream.of(6000, 7000, 8000, 9000).map(port -> new InetSocketAddress("localhost", port)).toList();
 
         // Simulate Service-Discovery.
@@ -201,7 +201,7 @@ public final class RSocketDemo {
         return Tuples.of(client, servers);
     }
 
-    static Tuple2<RSocketClient, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) throws Exception {
+    static Tuple2<RSocketClient, List<Disposable>> createSameVm(final Function<Integer, SocketAcceptor> socketAcceptor) {
         final Disposable server = RSocketBuilders.serverLocal()
                 .logger(LoggerFactory.getLogger("server-local"))
                 .name("test1")

@@ -19,7 +19,7 @@ public class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public int available() throws IOException {
+    public int available() {
         return this.buffer.remaining();
     }
 
@@ -57,12 +57,12 @@ public class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public synchronized void reset() throws IOException {
+    public synchronized void reset() {
         this.buffer.reset();
     }
 
     @Override
-    public long skip(final long n) throws IOException {
+    public long skip(final long n) {
         final int bytes;
 
         if (n > Integer.MAX_VALUE) {

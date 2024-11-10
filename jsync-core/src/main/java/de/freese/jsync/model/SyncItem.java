@@ -7,25 +7,25 @@ package de.freese.jsync.model;
 public interface SyncItem {
     String getChecksum();
 
-    //    Group getGroup();
+    // Group getGroup();
 
     long getLastModifiedTime();
 
-    /**
-     * For Windows or Net-Drives these can be NULL.
-     */
-    //    Set<PosixFilePermission> getPermissions();
+    // /**
+    //  * For Windows or Net-Drives these can be NULL.
+    //  */
+    // Set<PosixFilePermission> getPermissions();
 
-    /**
-     * For Windows or Net-Drives these can be NULL.
-     */
-    //    default String getPermissionsToString() {
-    //        if ((getPermissions() == null) || getPermissions().isEmpty()) {
-    //            return null;
-    //        }
+    // /**
+    //  * For Windows or Net-Drives these can be NULL.
+    //  */
+    // default String getPermissionsToString() {
+    //     if ((getPermissions() == null) || getPermissions().isEmpty()) {
+    //         return null;
+    //     }
     //
-    //        return PosixFilePermissions.toString(getPermissions());
-    //    }
+    //     return PosixFilePermissions.toString(getPermissions());
+    // }
 
     String getRelativePath();
 
@@ -35,7 +35,7 @@ public interface SyncItem {
      */
     long getSize();
 
-    //    User getUser();
+    // User getUser();
 
     default boolean isDirectory() {
         return !isFile();
@@ -47,11 +47,11 @@ public interface SyncItem {
 
     void setFile(boolean isFile);
 
-    //    void setGroup(Group group);
+    // void setGroup(Group group);
 
     void setLastModifiedTime(long lastModifiedTime);
 
-    //    void setPermissions(Set<PosixFilePermission> permissions);
+    // void setPermissions(Set<PosixFilePermission> permissions);
 
     /**
      * Directory: Number of 1st-Level Children<br>
@@ -59,5 +59,5 @@ public interface SyncItem {
      */
     void setSize(long size);
 
-    //    void setUser(User user);
+    // void setUser(User user);
 }

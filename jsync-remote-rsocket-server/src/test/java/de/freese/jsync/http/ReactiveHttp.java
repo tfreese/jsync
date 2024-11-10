@@ -22,7 +22,7 @@ import reactor.util.function.Tuple2;
 public final class ReactiveHttp {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveHttp.class);
 
-    public static void main(final String[] args) throws Exception {
+    public static void main(final String[] args) {
         HttpResources.set(LoopResources.create("reactive-http", 2, 4, true));
 
         final DisposableServer httpServer = HttpServer.create()

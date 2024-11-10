@@ -85,10 +85,10 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
         // formatter.printHelp("JSync\n", getCommandOptions(), true);
 
         final StringBuilder footer = new StringBuilder();
-        footer.append("\n@Thomas Freese");
+        footer.append(System.lineSeparator()).append("@Thomas Freese");
 
         try (PrintWriter pw = new PrintWriter(printStream, true, StandardCharsets.UTF_8)) {
-            formatter.printHelp(pw, 120, "jsync [OPTIONS]\n", "\nParameter:", this.options, 3, 5, footer.toString(), true);
+            formatter.printHelp(pw, 120, "jsync [OPTIONS]" + System.lineSeparator(), System.lineSeparator() + "Parameter:", this.options, 3, 5, footer.toString(), true);
         }
     }
 

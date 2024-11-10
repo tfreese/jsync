@@ -59,9 +59,7 @@ class TestJSyncClient extends AbstractJSyncIoTest {
     }
 
     @Test
-    void testLocalToLocal() throws Exception {
-        System.out.println();
-
+    void testLocalToLocal() {
         final URI senderUri = PATH_SOURCE.toUri();
         final URI receiverUri = PATH_DEST.toUri();
 
@@ -78,7 +76,7 @@ class TestJSyncClient extends AbstractJSyncIoTest {
         client.generateSyncItems(EFileSystem.SENDER, PathFilterNoOp.INSTANCE, syncItem -> {
             syncItemsSender.add(syncItem);
             final String checksum = client.generateChecksum(EFileSystem.SENDER, syncItem, i -> {
-                // System.out.println("Sender Bytes read: " + i);
+                // getLogger().info("Sender Bytes read: {}", i);
             });
             syncItem.setChecksum(checksum);
         });
@@ -87,7 +85,7 @@ class TestJSyncClient extends AbstractJSyncIoTest {
         client.generateSyncItems(EFileSystem.RECEIVER, PathFilterNoOp.INSTANCE, syncItem -> {
             syncItemsReceiver.add(syncItem);
             final String checksum = client.generateChecksum(EFileSystem.RECEIVER, syncItem, i -> {
-                // System.out.println("Sender Bytes read: " + i);
+                // getLogger().info("Receiver Bytes read: {}", i);
             });
             syncItem.setChecksum(checksum);
         });
