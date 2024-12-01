@@ -35,6 +35,7 @@ import reactor.util.retry.RetryBackoffSpec;
 /**
  * @author Thomas Freese
  */
+@SuppressWarnings("java:S6437")
 public final class RSocketServerBuilderRemote extends AbstractServerBuilder<RSocketServerBuilderRemote, Mono<CloseableChannel>> {
     private final List<UnaryOperator<TcpServer>> tcpServerCustomizers = new ArrayList<>();
 
@@ -58,7 +59,7 @@ public final class RSocketServerBuilderRemote extends AbstractServerBuilder<RSoc
 
     public RSocketServerBuilderRemote logTcpServerBoundStatus() {
         Objects.requireNonNull(getLogger(), "call Method #logger(...) first");
-        
+
         return addTcpServerCustomizer(tcpServer -> tcpServer
                 .doOnBound(server -> getLogger().info("Bound: {}", server.channel()))
                 .doOnUnbound(server -> getLogger().info("Unbound: {}", server.channel()))
@@ -97,13 +98,15 @@ public final class RSocketServerBuilderRemote extends AbstractServerBuilder<RSoc
         // KeyStore.Entry entry = keyStore.getEntry("myServer", new KeyStore.PasswordProtection(password));
         // PrivateKey privateKey = ((KeyStore.PrivateKeyEntry) entry).getPrivateKey();
 
-        final SslProvider.ProtocolSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(privateKey, (X509Certificate) certificate)
+        final TcpSslContextSpec protocolSslContextSpec = TcpSslContextSpec.forServer(privateKey, (X509Certificate) certificate)
                 .configure(builder -> builder
                         .keyManager(keyManagerFactory)
                         .trustManager(trustManagerFactory)
                         .protocols("TLSv1.3")
                         .sslProvider(io.netty.handler.ssl.SslProvider.JDK)
                 );
+
+        // final SslProvider.GenericSslContextSpec sslContextSpec
 
         return protocolSslContextSpec(protocolSslContextSpec);
     }

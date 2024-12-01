@@ -41,6 +41,7 @@ public abstract class Pool<T> {
      * @author Martin Grotzke
      * @author Thomas Freese
      */
+    @SuppressWarnings("java:S1168")
     static final class SoftReferenceQueue<T> implements Queue<T> {
         private final Queue<SoftReference<T>> delegate;
 
@@ -183,7 +184,7 @@ public abstract class Pool<T> {
     @SuppressWarnings("unchecked")
     protected Pool(final boolean threadSafe, final boolean softReferences, final int maximumCapacity) {
         super();
-        
+
         final Queue<T> queue;
 
         if (threadSafe) {
