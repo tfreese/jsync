@@ -1,6 +1,8 @@
 // Created: 20.07.2021
 package de.freese.jsync.tcp;
 
+import static org.awaitility.Awaitility.await;
+
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +50,8 @@ public final class ReactiveTcp {
         // Complete Response is missing, only the Request 'Hello' is displayed ?!
         connection.inbound().receive().asString(StandardCharsets.UTF_8).subscribe(response -> LOGGER.info("Client: Response = {}", response));
 
-        TimeUnit.SECONDS.sleep(1);
+        // TimeUnit.SECONDS.sleep(1L);
+        await().pollDelay(1000L, TimeUnit.MILLISECONDS).until(() -> true);
 
         // connection.onDispose().block();
         // tcpServer.onDispose().block();

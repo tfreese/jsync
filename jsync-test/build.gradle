@@ -8,6 +8,7 @@ dependencies {
     testImplementation(project(":jsync-remote-rsocket-server"))
     testImplementation(project(":jsync-remote-nio-server"))
 
+    testImplementation("org.awaitility:awaitility")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.junit.jupiter:junit-jupiter")
 

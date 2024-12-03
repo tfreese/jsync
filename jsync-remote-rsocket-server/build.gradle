@@ -9,6 +9,8 @@ dependencies {
     api(project(":jsync-remote-rsocket"))
 
     runtimeOnly("ch.qos.logback:logback-classic")
+
+    testImplementation("org.awaitility:awaitility")
 }
 
 // Start: gradle bootRun --args="--spring.profiles.active=dev"

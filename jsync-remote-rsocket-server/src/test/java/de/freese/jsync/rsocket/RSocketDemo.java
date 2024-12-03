@@ -1,6 +1,8 @@
 // Created: 11.07.2021
 package de.freese.jsync.rsocket;
 
+import static org.awaitility.Awaitility.await;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
@@ -93,10 +95,12 @@ public final class RSocketDemo {
                 .forEach(Mono::subscribe)
         ;
 
-        TimeUnit.SECONDS.sleep(1);
+        // TimeUnit.SECONDS.sleep(1L);
+        await().pollDelay(1000L, TimeUnit.MILLISECONDS).until(() -> true);
 
         for (int i = 0; i < 30; i++) {
-            TimeUnit.MILLISECONDS.sleep(100);
+            // TimeUnit.MILLISECONDS.sleep(100L);
+            await().pollDelay(100L, TimeUnit.MILLISECONDS).until(() -> true);
 
             rSocketClient
                     .requestResponse(Mono.just(DefaultPayload.create("for-" + i)))
@@ -107,7 +111,8 @@ public final class RSocketDemo {
             ;
         }
 
-        TimeUnit.SECONDS.sleep(2);
+        // TimeUnit.SECONDS.sleep(2L);
+        await().pollDelay(2000L, TimeUnit.MILLISECONDS).until(() -> true);
         // System.in.read();
 
         rSocketClient.dispose();
