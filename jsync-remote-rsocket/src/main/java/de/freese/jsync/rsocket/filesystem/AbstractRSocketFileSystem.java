@@ -66,7 +66,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
             this.client = createClientRemote(uri, tcpClientCustomizer);
         }
         else {
-            this.client = createClientLocal(uri, tcpClientCustomizer);
+            this.client = createClientLocal();
         }
 
         final ByteBuffer bufferMeta = getByteBufferPool().get();
@@ -85,7 +85,7 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
         ;
     }
 
-    protected RSocketClient createClientLocal(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
+    protected RSocketClient createClientLocal() {
         return RSocketBuilders.clientLocal()
                 .logger(getLogger())
                 .name("jSync")

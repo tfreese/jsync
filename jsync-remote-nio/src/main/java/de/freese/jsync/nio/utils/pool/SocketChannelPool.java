@@ -9,6 +9,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import de.freese.jsync.utils.JSyncUtils;
 import de.freese.jsync.utils.pool.Pool;
 
 /**
@@ -45,13 +46,7 @@ public final class SocketChannelPool extends Pool<SocketChannel> {
             final SocketChannel channel = SocketChannel.open(serverAddress);
 
             while (!channel.finishConnect()) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(10);
-                }
-                catch (InterruptedException ex) {
-                    // Restore interrupted state.
-                    Thread.currentThread().interrupt();
-                }
+                JSyncUtils.sleep(TimeUnit.MILLISECONDS, 10);
             }
 
             channel.configureBlocking(true);

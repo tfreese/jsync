@@ -34,7 +34,7 @@ import de.freese.jsync.utils.io.FileVisitorDelete;
 public final class JSyncUtils {
     private static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = {};
     private static final FileVisitOption[] FILEVISITOPTION_WITH_SYMLINKS = {FileVisitOption.FOLLOW_LINKS};
-    private static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    // private static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
     private static final LinkOption[] LINKOPTION_NO_SYMLINKS = {LinkOption.NOFOLLOW_LINKS};
     private static final LinkOption[] LINKOPTION_WITH_SYMLINKS = {};
@@ -50,14 +50,14 @@ public final class JSyncUtils {
     public static String bytesToHex(final byte[] bytes) {
         return HEX_FORMAT.formatHex(bytes);
 
-        //        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        // final StringBuilder sb = new StringBuilder(bytes.length * 2);
         //
-        //        for (byte b : bytes) {
-        //            sb.append(HEX_CHARS[(b & 0xF0) >>> 4]);
-        //            sb.append(HEX_CHARS[b & 0x0F]);
-        //        }
+        // for (byte b : bytes) {
+        //     sb.append(HEX_CHARS[(b & 0xF0) >>> 4]);
+        //     sb.append(HEX_CHARS[b & 0x0F]);
+        // }
         //
-        //        return sb.toString().toUpperCase();
+        // return sb.toString().toUpperCase();
     }
 
     /**
@@ -234,9 +234,10 @@ public final class JSyncUtils {
                     logger.warn("Timed out while waiting for channelGroup");
                 }
 
-                channelGroup.shutdownNow(); // Cancel currently executing tasks
+                // Cancel currently executing tasks.
+                channelGroup.shutdownNow();
 
-                // Wait a while for tasks to respond to being cancelled
+                // Wait a while for tasks to respond to being cancelled.
                 if (!channelGroup.awaitTermination(5L, TimeUnit.SECONDS)) {
                     logger.error("ChannelGroup did not terminate");
                 }
@@ -247,7 +248,7 @@ public final class JSyncUtils {
                 logger.warn("Interrupted while waiting for ChannelGroup");
             }
 
-            // (Re-)Cancel if current thread also interrupted
+            // (Re-)Cancel if current thread also interrupted.
             try {
                 channelGroup.shutdownNow();
             }
@@ -255,7 +256,7 @@ public final class JSyncUtils {
                 logger.error("ChannelGroup did not terminate");
             }
 
-            // Preserve interrupt status
+            // Preserve interrupt status.
             Thread.currentThread().interrupt();
         }
     }
@@ -298,7 +299,7 @@ public final class JSyncUtils {
         catch (InterruptedException iex) {
             logger.warn("Interrupted while waiting for ExecutorService");
 
-            // (Re-)Cancel if current thread also interrupted
+            // (Re-)Cancel if current thread also interrupted.
             executorService.shutdownNow();
 
             // Preserve interrupt status

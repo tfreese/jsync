@@ -48,12 +48,28 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
             return new ReceiverDelegateLogger(new LocalhostReceiver());
         }
     };
+
     private static final Pool<Sender> POOL_SENDER = new Pool<>(true, true) {
         @Override
         protected Sender create() {
             return new SenderDelegateLogger(new LocalhostSender());
         }
     };
+
+    private static Mono<Payload> connect() {
+        final Payload responsePayload = DefaultPayload.create("OK");
+
+        return Mono.just(responsePayload);
+    }
+
+    private static Mono<Payload> disconnect() {
+        return connect();
+    }
+
+    private static Logger getLogger() {
+        return LOGGER;
+    }
+    
     private final Serializer<ByteBuffer, ByteBuffer> serializer = new DefaultSerializer<>(new ByteBufferReader(), new ByteBufferWriter());
 
     @Override
@@ -153,7 +169,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     }
 
     protected Serializer<ByteBuffer, ByteBuffer> getSerializer() {
-        return this.serializer;
+        return serializer;
     }
 
     private Flux<Payload> checksum(final Payload payload, final FileSystem fileSystem) {
@@ -170,12 +186,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
 
             sink.complete();
         });
-    }
-
-    private Mono<Payload> connect() {
-        final Payload responsePayload = DefaultPayload.create("OK");
-
-        return Mono.just(responsePayload);
     }
 
     private Mono<Payload> createDirectory(final Payload payload, final Receiver receiver) {
@@ -205,12 +215,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
         return Mono.just(responsePayload);
     }
 
-    private Mono<Payload> disconnect() {
-        final Payload responsePayload = DefaultPayload.create("OK");
-
-        return Mono.just(responsePayload);
-    }
-
     private Flux<Payload> generateSyncItems(final Payload payload, final FileSystem fileSystem) {
         final ByteBuffer bufferData = payload.getData();
 
@@ -234,10 +238,6 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
         // getSerializer().write(buffer, syncItem);
         // return buffer.flip();
         // }).map(DefaultPayload::create);
-    }
-
-    private Logger getLogger() {
-        return LOGGER;
     }
 
     private Flux<Payload> readFile(final Payload payload, final Sender sender) {

@@ -55,6 +55,24 @@ public class JSyncRSocketHandlerByteBuf implements RSocket {
         }
     };
 
+    private static Mono<Payload> connect() {
+        final Payload responsePayload = ByteBufPayload.create("OK");
+
+        return Mono.just(responsePayload); // .doFinally(signalType -> RSocketUtils.release(responsePayload));
+    }
+
+    private static Mono<Payload> disconnect() {
+        return connect();
+    }
+
+    private static ByteBufAllocator getByteBufAllocator() {
+        return BYTE_BUF_ALLOCATOR;
+    }
+
+    private static Logger getLogger() {
+        return LOGGER;
+    }
+
     private final Serializer<ByteBuf, ByteBuf> serializer = new DefaultSerializer<>(new ByteBufReader(), new ByteBufWriter());
 
     @Override
@@ -173,12 +191,6 @@ public class JSyncRSocketHandlerByteBuf implements RSocket {
         });
     }
 
-    private Mono<Payload> connect() {
-        final Payload responsePayload = ByteBufPayload.create("OK");
-
-        return Mono.just(responsePayload); // .doFinally(signalType -> RSocketUtils.release(responsePayload));
-    }
-
     private Mono<Payload> createDirectory(final Payload payload, final Receiver receiver) {
         final ByteBuf bufferData = payload.data();
 
@@ -201,12 +213,6 @@ public class JSyncRSocketHandlerByteBuf implements RSocket {
 
         receiver.delete(baseDir, relativePath, followSymLinks);
 
-        final Payload responsePayload = ByteBufPayload.create("OK");
-
-        return Mono.just(responsePayload); // .doFinally(signalType -> RSocketUtils.release(responsePayload));
-    }
-
-    private Mono<Payload> disconnect() {
         final Payload responsePayload = ByteBufPayload.create("OK");
 
         return Mono.just(responsePayload); // .doFinally(signalType -> RSocketUtils.release(responsePayload));
@@ -235,14 +241,6 @@ public class JSyncRSocketHandlerByteBuf implements RSocket {
         // getSerializer().write(byteBuf, syncItem);
         // return byteBuf;
         // }).map(ByteBufPayload::create);
-    }
-
-    private ByteBufAllocator getByteBufAllocator() {
-        return BYTE_BUF_ALLOCATOR;
-    }
-
-    private Logger getLogger() {
-        return LOGGER;
     }
 
     private Flux<Payload> readFile(final Payload payload, final Sender sender) {

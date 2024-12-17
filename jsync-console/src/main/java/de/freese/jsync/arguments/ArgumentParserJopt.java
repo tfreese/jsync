@@ -18,8 +18,7 @@
 // * @author Thomas Freese
 // */
 // @SuppressWarnings("javadoc")
-// public class ArgumentParserJopt implements ArgumentParser
-// {
+// public class ArgumentParserJopt implements ArgumentParser {
 // private final OptionParser optionParser = new OptionParser();
 // private final OptionSet optionSet;
 //
@@ -39,46 +38,39 @@
 // private final OptionSpec<String> optionSpecReceiver =
 // this.optionParser.acceptsAll(Arrays.asList("r", "receiver"), "Ziel-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
 //
-// public ArgumentParserJopt(final String[] args)
-// {
+// public ArgumentParserJopt(final String[] args) {
 // super();
 //
 // this.optionSet = this.optionParser.parse(args);
 // }
 //
 // @Override
-// public boolean checksum()
-// {
+// public boolean checksum() {
 // return this.optionSet.has(this.optionSpecChecksum);
 // }
 //
 // @Override
-// public boolean delete()
-// {
+// public boolean delete() {
 // return this.optionSet.has(this.optionSpecDelete);
 // }
 //
 // @Override
-// public boolean dryRun()
-// {
+// public boolean dryRun() {
 // return this.optionSet.has(this.optionSpecDryRun);
 // }
 //
 // @Override
-// public boolean followSymlinks()
-// {
+// public boolean followSymlinks() {
 // return this.optionSet.has(this.optionSpecFollowSymlinks);
 // }
 //
 // @Override
-// public boolean hasArgs()
-// {
+// public boolean hasArgs() {
 // return this.optionSet.hasOptions();
 // }
 //
 // @Override
-// public void printHelp(final PrintStream printStream)
-// {
+// public void printHelp(final PrintStream printStream) {
 // try
 // {
 // printStream.println("usage: jsync [OPTIONS]");
@@ -86,21 +78,18 @@
 //
 // this.optionParser.printHelpOn(printStream);
 // }
-// catch (IOException ex)
-// {
+// catch (IOException ex) {
 // throw new UncheckedIOException(ex);
 // }
 // }
 //
 // @Override
-// public String sender()
-// {
+// public String sender() {
 // return this.optionSet.valueOf(this.optionSpecSender);
 // }
 //
 // @Override
-// public String receiver()
-// {
+// public String receiver()  {
 // return this.optionSet.valueOf(this.optionSpecReceiver);
 // }
 // }

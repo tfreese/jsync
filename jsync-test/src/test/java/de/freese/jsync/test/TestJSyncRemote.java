@@ -2,7 +2,6 @@
 package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -35,6 +34,7 @@ import de.freese.jsync.model.SyncPair;
 import de.freese.jsync.nio.server.JSyncNioServer;
 import de.freese.jsync.nio.server.handler.JSyncIoHandler;
 import de.freese.jsync.rsocket.server.JSyncRSocketServer;
+import de.freese.jsync.utils.JSyncUtils;
 
 /***
  * @author Thomas Freese
@@ -95,7 +95,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
         syncDirectories(options, senderUri, receiverUri);
 
-        assertTrue(true);
+        // assertTrue(true);
     }
 
     @Test
@@ -107,12 +107,12 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
         syncDirectories(options, senderUri, receiverUri);
 
-        assertTrue(true);
+        // assertTrue(true);
     }
 
     @Test
-    void testRSocket() throws Exception {
-        TimeUnit.MILLISECONDS.sleep(500);
+    void testRSocket() {
+        JSyncUtils.sleep(TimeUnit.MILLISECONDS, 500L);
 
         startServerRSocket(8002);
 
@@ -121,7 +121,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
         syncDirectories(options, senderUri, receiverUri);
 
-        assertTrue(true);
+        // assertTrue(true);
     }
 
     private void startServerNio(final int port) {
@@ -214,7 +214,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
     // @Test
     // void testSpringRest() {
-    // TimeUnit.MILLISECONDS.sleep(500);
+    // JSyncUtils.sleep(TimeUnit.MILLISECONDS, 500L);
     //
     // startServerSpringRest();
     //
@@ -228,7 +228,7 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
     // @Test
     // void testSpringWebFlux() {
-    // TimeUnit.MILLISECONDS.sleep(500);
+    // JSyncUtils.sleep(TimeUnit.MILLISECONDS, 500L);
     //
     // startServerSpringRest();
     //
