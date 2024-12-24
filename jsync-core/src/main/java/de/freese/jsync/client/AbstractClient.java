@@ -41,7 +41,7 @@ public abstract class AbstractClient implements Client {
 
     protected AbstractClient(final Options options, final URI senderUri, final URI receiverUri) {
         super();
-        
+
         this.options = Objects.requireNonNull(options, "options required");
         this.senderUri = Objects.requireNonNull(senderUri, "senderUri required");
         this.receiverUri = Objects.requireNonNull(receiverUri, "receiverUri required");
@@ -118,14 +118,15 @@ public abstract class AbstractClient implements Client {
         try {
             final Flux<ByteBuffer> fileList = getSender().readFile(getSenderPath(), syncItem.getRelativePath(), sizeOfFile);
 
-            final AtomicLong bytesTransferred = new AtomicLong(0);
+            final AtomicLong bytesTransferred = new AtomicLong(0L);
 
-            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList).doOnNext(bytesWritten -> {
-                getLogger().debug("CHUNK_COMPLETED: bytesWritten = {}", bytesWritten);
+            getReceiver().writeFile(getReceiverPath(), syncItem.getRelativePath(), sizeOfFile, fileList)
+                    .doOnNext(bytesWritten -> {
+                        getLogger().debug("CHUNK_COMPLETED: bytesWritten = {}", bytesWritten);
 
-                final long writtenBytesSum = bytesTransferred.addAndGet(bytesWritten);
-                clientListener.copyProgress(getOptions(), syncItem, writtenBytesSum);
-            }).blockLast();
+                        final long writtenBytesSum = bytesTransferred.addAndGet(bytesWritten);
+                        clientListener.copyProgress(getOptions(), syncItem, writtenBytesSum);
+                    }).blockLast();
         }
         catch (Exception ex) {
             clientListener.error(ex.getMessage(), ex);
