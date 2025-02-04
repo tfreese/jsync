@@ -68,18 +68,29 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
         final long lastModifiedTime = syncItem.getLastModifiedTime();
 
         // Format "rwxr-xr-x"; optional, can be NULL on Windows.
-        //        String permissions = syncItem.getPermissionsToString();
+        // String permissions = syncItem.getPermissionsToString();
 
         // Optional, can be NULL on Windows.
-        //        String groupName = syncItem.getGroup() == null ? null : syncItem.getGroup().getName();
+        //  String groupName = syncItem.getGroup() == null ? null : syncItem.getGroup().getName();
 
         // Optional, can be NULL on Windows.
-        //        String userName = syncItem.getUser() == null ? null : syncItem.getUser().getName();
+        // String userName = syncItem.getUser() == null ? null : syncItem.getUser().getName();
+
+        // Optional, Windows only.
+        // Files.setAttribute(path, "dos:readonly", false);
 
         try {
             Files.setLastModifiedTime(path, FileTime.from(lastModifiedTime, TimeUnit.SECONDS));
 
             // if (Options.IS_LINUX) {
+            //     // final Set<PosixFilePermission> filePermissions = new HashSet<>();
+            //     // permissions.add(PosixFilePermission.OWNER_READ);
+            //     // permissions.add(PosixFilePermission.OWNER_WRITE);
+            //     // permissions.add(PosixFilePermission.OWNER_EXECUTE);
+            //     // permissions.add(PosixFilePermission.GROUP_READ);
+            //     //
+            //     // 0755 = "rwxr-xr-x"
+            //
             //     final Set<PosixFilePermission> filePermissions = PosixFilePermissions.fromString(permissions);
             //     // FileAttribute<Set<PosixFilePermission>> fileAttributePermissions = PosixFilePermissions.asFileAttribute(filePermissions);
             //
