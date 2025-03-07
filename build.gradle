@@ -9,17 +9,19 @@ allprojects {
     apply plugin: "base"
 
     clean {
+        Directory projectDir = layout.projectDirectory
+        
         doFirst {
             def dirs = ["bin", "logs", "out", "target"]
 
             dirs.each(dir -> {
-                Directory directory = layout.projectDirectory.dir(dir)
+                Directory directory = projectDir.dir(dir)
 
                 if (directory.getAsFile().exists()) {
                     // println("delete: " + directory)
                     logger.lifecycle("delete: {}", directory)
-                    // delete fileTree(directory).include("**/*")
-                    delete directory
+                    // delete(fileTree(directory).include("**/*"))
+                    delete(directory)
                 }
             })
         }
