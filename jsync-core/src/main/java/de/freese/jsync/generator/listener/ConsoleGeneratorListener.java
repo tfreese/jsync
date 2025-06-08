@@ -41,23 +41,23 @@ public class ConsoleGeneratorListener extends AbstractGeneratorListener {
 
     @Override
     public void currentItem(final SyncItem syncItem) {
-        // String message = currentMetaMessage(relativePath, this.prefix);
+        // String message = currentMetaMessage(relativePath, prefix);
         //
         // getPrintStream().println(message);
     }
 
     @Override
     public void itemCount(final Path path, final int itemCount) {
-        final String message = itemCountMessage(path, itemCount, this.prefix);
+        final String message = itemCountMessage(path, itemCount, prefix);
 
         getPrintStream().println(message);
     }
 
     protected PrintStream getPrintStream() {
-        return this.printStream;
+        return printStream;
     }
 
     protected PrintStream getPrintStreamError() {
-        return this.printStreamError;
+        return printStreamError;
     }
 }

@@ -23,12 +23,12 @@ class NoByteBufferPool implements ByteBufferPool {
 
     @Override
     public void free(final ByteBuffer buffer) {
-        this.free++;
+        free++;
     }
 
     @Override
     public ByteBuffer get() {
-        this.created++;
+        created++;
 
         return ByteBuffer.allocate(Options.BUFFER_SIZE);
     }
@@ -37,8 +37,8 @@ class NoByteBufferPool implements ByteBufferPool {
     public String toString() {
         final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(":");
-        sb.append(" created=").append(this.created);
-        sb.append(", free=").append(this.free);
+        sb.append(" created=").append(created);
+        sb.append(", free=").append(free);
 
         return sb.toString();
     }

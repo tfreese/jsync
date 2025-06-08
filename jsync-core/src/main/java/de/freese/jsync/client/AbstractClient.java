@@ -46,11 +46,11 @@ public abstract class AbstractClient implements Client {
         this.senderUri = Objects.requireNonNull(senderUri, "senderUri required");
         this.receiverUri = Objects.requireNonNull(receiverUri, "receiverUri required");
 
-        this.senderPath = JSyncUtils.normalizePath(senderUri);
-        this.receiverPath = JSyncUtils.normalizePath(receiverUri);
+        senderPath = JSyncUtils.normalizePath(senderUri);
+        receiverPath = JSyncUtils.normalizePath(receiverUri);
 
-        this.sender = FileSystemFactory.getInstance().createSender(senderUri);
-        this.receiver = FileSystemFactory.getInstance().createReceiver(receiverUri);
+        sender = FileSystemFactory.getInstance().createSender(senderUri);
+        receiver = FileSystemFactory.getInstance().createReceiver(receiverUri);
     }
 
     @Override
@@ -242,35 +242,35 @@ public abstract class AbstractClient implements Client {
     }
 
     protected Logger getLogger() {
-        return this.logger;
+        return logger;
     }
 
     protected Options getOptions() {
-        return this.options;
+        return options;
     }
 
     protected Receiver getReceiver() {
-        return this.receiver;
+        return receiver;
     }
 
     protected String getReceiverPath() {
-        return this.receiverPath;
+        return receiverPath;
     }
 
     protected URI getReceiverUri() {
-        return this.receiverUri;
+        return receiverUri;
     }
 
     protected Sender getSender() {
-        return this.sender;
+        return sender;
     }
 
     protected String getSenderPath() {
-        return this.senderPath;
+        return senderPath;
     }
 
     protected URI getSenderUri() {
-        return this.senderUri;
+        return senderUri;
     }
 
     protected void update(final SyncItem syncItem, final ClientListener clientListener) {

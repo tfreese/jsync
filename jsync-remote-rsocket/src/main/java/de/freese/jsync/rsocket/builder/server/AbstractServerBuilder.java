@@ -39,7 +39,7 @@ abstract class AbstractServerBuilder<T extends AbstractBuilder<?, B>, B> extends
     protected RSocketServer configure(final RSocketServer rSocketServer) {
         RSocketServer server = rSocketServer;
 
-        for (UnaryOperator<RSocketServer> serverCustomizer : this.rSocketServerCustomizers) {
+        for (UnaryOperator<RSocketServer> serverCustomizer : rSocketServerCustomizers) {
             server = serverCustomizer.apply(server);
         }
 

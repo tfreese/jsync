@@ -24,7 +24,7 @@ class SimpleByteBufferPool implements ByteBufferPool {
 
     @Override
     public void clear() {
-        this.cache.clear();
+        cache.clear();
     }
 
     @Override
@@ -33,17 +33,17 @@ class SimpleByteBufferPool implements ByteBufferPool {
             return;
         }
 
-        this.free++;
+        free++;
 
-        this.cache.offer(buffer);
+        cache.offer(buffer);
     }
 
     @Override
     public ByteBuffer get() {
-        ByteBuffer buffer = this.cache.poll();
+        ByteBuffer buffer = cache.poll();
 
         if (buffer == null) {
-            this.created++;
+            created++;
 
             buffer = ByteBuffer.allocate(Options.BUFFER_SIZE);
         }
@@ -58,9 +58,9 @@ class SimpleByteBufferPool implements ByteBufferPool {
     public String toString() {
         final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(":");
-        sb.append(" created=").append(this.created);
-        sb.append(", free=").append(this.free);
-        sb.append(", size=").append(this.cache.size());
+        sb.append(" created=").append(created);
+        sb.append(", free=").append(free);
+        sb.append(", size=").append(cache.size());
 
         return sb.toString();
     }

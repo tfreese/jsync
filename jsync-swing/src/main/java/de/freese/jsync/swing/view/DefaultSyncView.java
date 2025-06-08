@@ -77,17 +77,17 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
     @Override
     public void addSyncPair(final SyncPair syncPair) {
-        if (this.accumulatorTableAdd == null) {
-            this.accumulatorTableAdd = new AccumulativeSinkSwing().createForList(list -> {
-                this.tableFacade.addAll(list);
+        if (accumulatorTableAdd == null) {
+            accumulatorTableAdd = new AccumulativeSinkSwing().createForList(list -> {
+                tableFacade.addAll(list);
 
-                this.tableFacade.scrollToLastRow();
-                // this.scrollBarVertical.setValue(this.scrollBarVertical.getMaximum());
+                tableFacade.scrollToLastRow();
+                // scrollBarVertical.setValue(scrollBarVertical.getMaximum());
 
-                final int rowCount = this.tableFacade.getRowCount();
+                final int rowCount = tableFacade.getRowCount();
 
-                this.progressBarFiles.setValue(rowCount);
-                this.progressBarFiles.setString(getMessage("jsync.files") + ": " + rowCount + "/" + this.progressBarFiles.getMaximum());
+                progressBarFiles.setValue(rowCount);
+                progressBarFiles.setString(getMessage("jsync.files") + ": " + rowCount + "/" + progressBarFiles.getMaximum());
 
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug("addSyncPair - rowCount: {}", rowCount);
@@ -95,124 +95,124 @@ public class DefaultSyncView extends AbstractView implements SyncView {
             });
         }
 
-        this.accumulatorTableAdd.tryEmitNext(syncPair);
+        accumulatorTableAdd.tryEmitNext(syncPair);
     }
 
     @Override
     public void clearTable() {
-        this.tableFacade.clear();
+        tableFacade.clear();
     }
 
     @Override
     public void doOnCompare(final Consumer<JButton> consumer) {
-        this.configView.doOnCompare(consumer);
+        configView.doOnCompare(consumer);
     }
 
     @Override
     public void doOnSynchronize(final Consumer<JButton> consumer) {
-        this.configView.doOnSynchronize(consumer);
+        configView.doOnSynchronize(consumer);
     }
 
     @Override
     public Component getComponent() {
-        return this.panel;
+        return panel;
     }
 
     @Override
     public Options getOptions() {
-        return this.configView.getOptions();
+        return configView.getOptions();
     }
 
     @Override
     public PathFilter getPathFilter() {
-        final Set<String> directoryFilters = JSyncUtils.toFilter(this.textAreaFilterDirs.getText());
-        final Set<String> fileFilters = JSyncUtils.toFilter(this.textAreaFilterFiles.getText());
+        final Set<String> directoryFilters = JSyncUtils.toFilter(textAreaFilterDirs.getText());
+        final Set<String> fileFilters = JSyncUtils.toFilter(textAreaFilterFiles.getText());
 
         return new PathFilterEndsWith(directoryFilters, fileFilters);
     }
 
     @Override
     public List<SyncPair> getSyncList() {
-        final Predicate<SyncPair> predicate = this.showView.getPredicate();
+        final Predicate<SyncPair> predicate = showView.getPredicate();
 
-        return this.tableFacade.getStream().filter(predicate).toList();
+        return tableFacade.getStream().filter(predicate).toList();
     }
 
     @Override
     public URI getUri(final EFileSystem fileSystem) {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getUri() : this.uriViewReceiver.getUri();
+        return EFileSystem.SENDER.equals(fileSystem) ? uriViewSender.getUri() : uriViewReceiver.getUri();
     }
 
     @Override
     public void incrementProgressBarFilesValue(final int value) {
-        if (this.accumulatorProgressFiles == null) {
-            this.accumulatorProgressFiles = new AccumulativeSinkSwing().createForList(list -> {
+        if (accumulatorProgressFiles == null) {
+            accumulatorProgressFiles = new AccumulativeSinkSwing().createForList(list -> {
                 final int v = list.stream().mapToInt(Integer::intValue).sum();
 
-                this.progressBarFiles.setValue(v + this.progressBarFiles.getValue());
+                progressBarFiles.setValue(v + progressBarFiles.getValue());
 
-                this.progressBarFiles.setString(getMessage("jsync.files") + ": " + v + "/" + this.progressBarFiles.getMaximum());
+                progressBarFiles.setString(getMessage("jsync.files") + ": " + v + "/" + progressBarFiles.getMaximum());
             });
         }
 
-        this.accumulatorProgressFiles.tryEmitNext(value);
+        accumulatorProgressFiles.tryEmitNext(value);
     }
 
     @Override
     public void initGui() {
-        this.panel.setLayout(new GridBagLayout());
-        this.panel.setName("panel");
+        panel.setLayout(new GridBagLayout());
+        panel.setName("panel");
 
         int row = 0;
 
         // Config
-        this.configView.initGUI();
-        this.configView.getComponent().setMinimumSize(new Dimension(750, 160));
-        this.configView.getComponent().setPreferredSize(new Dimension(4000, 160));
-        this.panel.add(this.configView.getComponent(), GbcBuilder.of(0, row).anchorCenter().fillHorizontal());
+        configView.initGUI();
+        configView.getComponent().setMinimumSize(new Dimension(750, 160));
+        configView.getComponent().setPreferredSize(new Dimension(4000, 160));
+        panel.add(configView.getComponent(), GbcBuilder.of(0, row).anchorCenter().fillHorizontal());
 
         // Component glue = Box.createGlue();
         // glue.setMinimumSize(new Dimension(230, 1));
         // glue.setPreferredSize(new Dimension(230, 1));
         // glue.setMaximumSize(new Dimension(230, 1));
-        // this.panel.add(glue, new GbcBuilder(1, row).fillHorizontal().weightX(0));
+        // panel.add(glue, new GbcBuilder(1, row).fillHorizontal().weightX(0));
         final JPanel panelFilter = new JPanel();
         panelFilter.setLayout(new GridBagLayout());
         panelFilter.setBorder(BorderFactory.createTitledBorder(getMessage("jsync.filter")));
 
         panelFilter.add(new JLabel(getMessage("jsync.directories")), GbcBuilder.of(0, 0).anchorWest());
-        this.textAreaFilterDirs = new JTextArea();
-        panelFilter.add(this.textAreaFilterDirs, GbcBuilder.of(0, 1).fillBoth());
+        textAreaFilterDirs = new JTextArea();
+        panelFilter.add(textAreaFilterDirs, GbcBuilder.of(0, 1).fillBoth());
 
         panelFilter.add(new JLabel(getMessage("jsync.files")), GbcBuilder.of(0, 2).anchorWest());
-        this.textAreaFilterFiles = new JTextArea();
-        panelFilter.add(this.textAreaFilterFiles, GbcBuilder.of(0, 3).fillBoth());
+        textAreaFilterFiles = new JTextArea();
+        panelFilter.add(textAreaFilterFiles, GbcBuilder.of(0, 3).fillBoth());
 
         panelFilter.setMinimumSize(new Dimension(230, 160));
         panelFilter.setPreferredSize(new Dimension(230, 160));
         panelFilter.setMaximumSize(new Dimension(230, 160));
-        this.panel.add(panelFilter, GbcBuilder.of(1, row).fillBoth().gridHeight(2).weightX(0).weightY(0));
+        panel.add(panelFilter, GbcBuilder.of(1, row).fillBoth().gridHeight(2).weightX(0).weightY(0));
 
         // Show
-        this.showView.initGUI(this.tableFacade);
-        this.showView.getComponent().setMinimumSize(new Dimension(750, 160));
-        this.showView.getComponent().setPreferredSize(new Dimension(4000, 160));
-        this.panel.add(this.showView.getComponent(), GbcBuilder.of(2, row).anchorCenter().fillHorizontal());
+        showView.initGUI(tableFacade);
+        showView.getComponent().setMinimumSize(new Dimension(750, 160));
+        showView.getComponent().setPreferredSize(new Dimension(4000, 160));
+        panel.add(showView.getComponent(), GbcBuilder.of(2, row).anchorCenter().fillHorizontal());
 
         row++;
 
         // URI
-        this.uriViewSender = new UriView().initGUI(EFileSystem.SENDER);
-        this.panel.add(this.uriViewSender.getComponent(), GbcBuilder.of(0, row).fillHorizontal());
+        uriViewSender = new UriView().initGUI(EFileSystem.SENDER);
+        panel.add(uriViewSender.getComponent(), GbcBuilder.of(0, row).fillHorizontal());
 
-        this.uriViewReceiver = new UriView().initGUI(EFileSystem.RECEIVER);
-        this.panel.add(this.uriViewReceiver.getComponent(), GbcBuilder.of(2, row).fillHorizontal());
+        uriViewReceiver = new UriView().initGUI(EFileSystem.RECEIVER);
+        panel.add(uriViewReceiver.getComponent(), GbcBuilder.of(2, row).fillHorizontal());
 
         row++;
 
         // Table Sender
-        final JTable tableSender = this.tableFacade.getTableSender();
-        tableSender.setModel(this.tableFacade.getTableModelSender());
+        final JTable tableSender = tableFacade.getTableSender();
+        tableSender.setModel(tableFacade.getTableModelSender());
         tableSender.setAutoCreateRowSorter(false);
         tableSender.setDefaultRenderer(Object.class, new SyncPairTableCellRendererFileSystem());
         tableSender.getColumnModel().getColumn(0).setPreferredWidth(1000);
@@ -221,22 +221,22 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
         final JScrollPane scrollPaneSender = new JScrollPane(tableSender);
         scrollPaneSender.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        this.panel.add(scrollPaneSender, GbcBuilder.of(0, row).fillBoth());
+        panel.add(scrollPaneSender, GbcBuilder.of(0, row).fillBoth());
 
         // Table Status
-        final JTable tableStatus = this.tableFacade.getTableStatus();
-        tableStatus.setModel(this.tableFacade.getTableModelStatus());
+        final JTable tableStatus = tableFacade.getTableStatus();
+        tableStatus.setModel(tableFacade.getTableModelStatus());
         tableStatus.setAutoCreateRowSorter(false);
         tableStatus.setDefaultRenderer(Object.class, new SyncPairTableCellRendererStatus());
         // tableStatus.setPreferredScrollableViewportSize(new Dimension(220, 1000));
 
         final JScrollPane scrollPaneStatus = new JScrollPane(tableStatus);
         scrollPaneStatus.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        this.panel.add(scrollPaneStatus, GbcBuilder.of(1, row).fillBoth().weightX(0D));
+        panel.add(scrollPaneStatus, GbcBuilder.of(1, row).fillBoth().weightX(0D));
 
         // Table Receiver
-        final JTable tableReceiver = this.tableFacade.getTableReceiver();
-        tableReceiver.setModel(this.tableFacade.getTableModelReceiver());
+        final JTable tableReceiver = tableFacade.getTableReceiver();
+        tableReceiver.setModel(tableFacade.getTableModelReceiver());
         tableReceiver.setAutoCreateRowSorter(false);
         tableReceiver.setDefaultRenderer(Object.class, new SyncPairTableCellRendererFileSystem());
         tableReceiver.getColumnModel().getColumn(0).setPreferredWidth(1000);
@@ -245,7 +245,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
         final JScrollPane scrollPaneReceiver = new JScrollPane(tableReceiver);
         scrollPaneReceiver.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        this.panel.add(scrollPaneReceiver, GbcBuilder.of(2, row).fillBoth());
+        panel.add(scrollPaneReceiver, GbcBuilder.of(2, row).fillBoth());
 
         // Synchronise SelectionModel
         tableReceiver.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -259,21 +259,21 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         row++;
 
         // ProgressBars
-        this.progressBarSender = new JProgressBar();
-        this.progressBarSender.setStringPainted(true);
+        progressBarSender = new JProgressBar();
+        progressBarSender.setStringPainted(true);
 
-        this.progressBarFiles = new JProgressBar();
-        this.progressBarFiles.setStringPainted(true);
+        progressBarFiles = new JProgressBar();
+        progressBarFiles.setStringPainted(true);
 
-        this.progressBarReceiver = new JProgressBar();
-        this.progressBarReceiver.setStringPainted(true);
+        progressBarReceiver = new JProgressBar();
+        progressBarReceiver.setStringPainted(true);
 
-        this.panel.add(this.progressBarSender, GbcBuilder.of(0, row).fillHorizontal());
-        this.panel.add(this.progressBarFiles, GbcBuilder.of(1, row).fillHorizontal().weightX(0D));
-        this.panel.add(this.progressBarReceiver, GbcBuilder.of(2, row).fillHorizontal());
+        panel.add(progressBarSender, GbcBuilder.of(0, row).fillHorizontal());
+        panel.add(progressBarFiles, GbcBuilder.of(1, row).fillHorizontal().weightX(0D));
+        panel.add(progressBarReceiver, GbcBuilder.of(2, row).fillHorizontal());
 
         configGui();
-        // enableDebug(this.panel);
+        // enableDebug(panel);
     }
 
     @Override
@@ -299,8 +299,8 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         getComboBoxProtocol(EFileSystem.SENDER).setSelectedItem(JSyncProtocol.valueOf(properties.getProperty("sender.protocol", "FILE")));
         getComboBoxProtocol(EFileSystem.RECEIVER).setSelectedItem(JSyncProtocol.valueOf(properties.getProperty("receiver.protocol", "FILE")));
 
-        this.textAreaFilterDirs.setText(properties.getProperty("filter.directories", "target; build; .settings; .idea; .gradle"));
-        this.textAreaFilterFiles.setText(properties.getProperty("filter.files", ".class; .log"));
+        textAreaFilterDirs.setText(properties.getProperty("filter.directories", "target; build; .settings; .idea; .gradle"));
+        textAreaFilterFiles.setText(properties.getProperty("filter.files", ".class; .log"));
     }
 
     @Override
@@ -317,8 +317,8 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         properties.setProperty("sender.protocol", ((JSyncProtocol) getComboBoxProtocol(EFileSystem.SENDER).getSelectedItem()).name());
         properties.setProperty("receiver.protocol", ((JSyncProtocol) getComboBoxProtocol(EFileSystem.RECEIVER).getSelectedItem()).name());
 
-        properties.setProperty("filter.directories", this.textAreaFilterDirs.getText());
-        properties.setProperty("filter.files", this.textAreaFilterFiles.getText());
+        properties.setProperty("filter.directories", textAreaFilterDirs.getText());
+        properties.setProperty("filter.files", textAreaFilterFiles.getText());
 
         try (OutputStream os = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
             properties.store(os, null);
@@ -331,10 +331,10 @@ public class DefaultSyncView extends AbstractView implements SyncView {
     @Override
     public void setProgressBarFilesMax(final int max) {
         runInEdt(() -> {
-            this.progressBarFiles.setMinimum(0);
-            this.progressBarFiles.setMaximum(max);
-            this.progressBarFiles.setValue(0);
-            this.progressBarFiles.setString("");
+            progressBarFiles.setMinimum(0);
+            progressBarFiles.setMaximum(max);
+            progressBarFiles.setValue(0);
+            progressBarFiles.setString("");
         });
     }
 
@@ -348,7 +348,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
     @Override
     public void setProgressBarMinMaxText(final EFileSystem fileSystem, final int min, final int max, final String text) {
-        this.accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
+        accumulatorProgressBarMinMaxText.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = getProgressBar(fileSystem);
 
             return new AccumulativeSinkSwing().createForSingle(value -> {
@@ -365,7 +365,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
     @Override
     public void setProgressBarText(final EFileSystem fileSystem, final String text) {
-        this.accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
+        accumulatorProgressBarText.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = getProgressBar(fileSystem);
 
             return new AccumulativeSinkSwing().createForSingle(value -> {
@@ -380,7 +380,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
     @Override
     public void setProgressBarValue(final EFileSystem fileSystem, final int value) {
-        this.accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
+        accumulatorProgressBarValue.computeIfAbsent(fileSystem, key -> {
             final JProgressBar progressBar = getProgressBar(fileSystem);
 
             return new AccumulativeSinkSwing().createForSingle(v -> {
@@ -396,8 +396,8 @@ public class DefaultSyncView extends AbstractView implements SyncView {
     @Override
     public void updateLastEntry() {
         runInEdt(() -> {
-            final int rowCount = this.tableFacade.getRowCount();
-            this.tableFacade.fireTableRowsUpdated(rowCount - 1, rowCount - 1);
+            final int rowCount = tableFacade.getRowCount();
+            tableFacade.fireTableRowsUpdated(rowCount - 1, rowCount - 1);
         });
     }
 
@@ -461,8 +461,8 @@ public class DefaultSyncView extends AbstractView implements SyncView {
             textFieldHostPortSender.setVisible(protocol.isRemote());
             buttonOpenSender.setVisible(JSyncProtocol.FILE.equals(protocol));
 
-            this.uriViewSender.getComponent().revalidate();
-            this.uriViewSender.getComponent().repaint();
+            uriViewSender.getComponent().revalidate();
+            uriViewSender.getComponent().repaint();
         });
 
         comboBoxProtocolReceiver.addItemListener(event -> {
@@ -475,8 +475,8 @@ public class DefaultSyncView extends AbstractView implements SyncView {
             textFieldHostPortReceiver.setVisible(protocol.isRemote());
             buttonOpenReceiver.setVisible(JSyncProtocol.FILE.equals(protocol));
 
-            this.uriViewReceiver.getComponent().revalidate();
-            this.uriViewReceiver.getComponent().repaint();
+            uriViewReceiver.getComponent().revalidate();
+            uriViewReceiver.getComponent().repaint();
         });
 
         buttonOpenSender.addActionListener(event -> {
@@ -518,22 +518,22 @@ public class DefaultSyncView extends AbstractView implements SyncView {
     }
 
     private JButton getButtonOpen(final EFileSystem fileSystem) {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getButtonOpen() : this.uriViewReceiver.getButtonOpen();
+        return EFileSystem.SENDER.equals(fileSystem) ? uriViewSender.getButtonOpen() : uriViewReceiver.getButtonOpen();
     }
 
     private JComboBox<JSyncProtocol> getComboBoxProtocol(final EFileSystem fileSystem) {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getComboBoxProtocol() : this.uriViewReceiver.getComboBoxProtocol();
+        return EFileSystem.SENDER.equals(fileSystem) ? uriViewSender.getComboBoxProtocol() : uriViewReceiver.getComboBoxProtocol();
     }
 
     private JProgressBar getProgressBar(final EFileSystem fileSystem) {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.progressBarSender : this.progressBarReceiver;
+        return EFileSystem.SENDER.equals(fileSystem) ? progressBarSender : progressBarReceiver;
     }
 
     private JTextField getTextFieldHostPort(final EFileSystem fileSystem) {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldHostPort() : this.uriViewReceiver.getTextFieldHostPort();
+        return EFileSystem.SENDER.equals(fileSystem) ? uriViewSender.getTextFieldHostPort() : uriViewReceiver.getTextFieldHostPort();
     }
 
     private JTextField getTextFieldPath(final EFileSystem fileSystem) {
-        return EFileSystem.SENDER.equals(fileSystem) ? this.uriViewSender.getTextFieldPath() : this.uriViewReceiver.getTextFieldPath();
+        return EFileSystem.SENDER.equals(fileSystem) ? uriViewSender.getTextFieldPath() : uriViewReceiver.getTextFieldPath();
     }
 }

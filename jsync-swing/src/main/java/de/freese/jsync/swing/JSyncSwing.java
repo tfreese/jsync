@@ -60,8 +60,8 @@ public final class JSyncSwing {
         final SyncView syncView = new DefaultSyncView();
         syncView.initGui();
 
-        this.controller = new JSyncController();
-        this.controller.init(syncView);
+        controller = new JSyncController();
+        controller.init(syncView);
 
         // JLabel label = new JLabel("jSync Swing GUI", SwingConstants.CENTER);
         // frame.add(label, BorderLayout.CENTER);

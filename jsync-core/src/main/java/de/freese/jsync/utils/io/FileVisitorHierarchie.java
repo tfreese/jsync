@@ -41,7 +41,7 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
         }
         else if (!basePath.endsWith(dir)) {
             // We do not want the Base-Directory.
-            this.consumer.accept(dir);
+            consumer.accept(dir);
         }
 
         return FileVisitResult.CONTINUE;
@@ -52,7 +52,7 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
         Objects.requireNonNull(dir);
         Objects.requireNonNull(attrs);
 
-        if (this.pathFilter.isExcludedDirectory(dir)) {
+        if (pathFilter.isExcludedDirectory(dir)) {
             getLogger().debug("exclude directory: {}", dir);
 
             return FileVisitResult.SKIP_SUBTREE;
@@ -66,11 +66,11 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
         Objects.requireNonNull(file);
         Objects.requireNonNull(attrs);
 
-        if (this.pathFilter.isExcludedFile(file)) {
+        if (pathFilter.isExcludedFile(file)) {
             getLogger().debug("exclude file: {}", file);
         }
         else {
-            this.consumer.accept(file);
+            consumer.accept(file);
         }
 
         return FileVisitResult.CONTINUE;

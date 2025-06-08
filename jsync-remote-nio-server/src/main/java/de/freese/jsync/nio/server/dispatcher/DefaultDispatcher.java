@@ -79,12 +79,12 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
     @Override
     protected void onReadable(final SelectionKey selectionKey) {
         // Request.
-        // this.ioHandler.read(selectionKey);
+        // ioHandler.read(selectionKey);
 
         selectionKey.interestOps(0); // Deactivate Selector-Selektion.
 
-        this.executor.execute(() -> {
-            this.ioHandler.read(selectionKey);
+        executor.execute(() -> {
+            ioHandler.read(selectionKey);
             selectionKey.selector().wakeup();
         });
     }
@@ -92,18 +92,18 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
     @Override
     protected void onWritable(final SelectionKey selectionKey) {
         // Response.
-        // this.ioHandler.write(selectionKey);
+        // ioHandler.write(selectionKey);
 
         selectionKey.interestOps(0); // Deactivate Selector-Selektion.
 
-        this.executor.execute(() -> {
-            this.ioHandler.write(selectionKey);
+        executor.execute(() -> {
+            ioHandler.write(selectionKey);
             selectionKey.selector().wakeup();
         });
     }
 
     private Queue<SocketChannel> getNewSessions() {
-        return this.newSessions;
+        return newSessions;
     }
 
     /**
@@ -114,7 +114,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
             return;
         }
 
-        // for (SocketChannel socketChannel = getNewSessions().poll(); socketChannel != null; socketChannel = this.newSessions.poll())
+        // for (SocketChannel socketChannel = getNewSessions().poll(); socketChannel != null; socketChannel = newSessions.poll())
         while (!getNewSessions().isEmpty()) {
             final SocketChannel socketChannel = getNewSessions().poll();
 

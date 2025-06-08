@@ -172,15 +172,15 @@ public abstract class AbstractNioProcessor implements Runnable {
     }
 
     protected Logger getLogger() {
-        return this.logger;
+        return logger;
     }
 
     protected Selector getSelector() {
-        return this.selector;
+        return selector;
     }
 
     protected Semaphore getStopLock() {
-        return this.stopLock;
+        return stopLock;
     }
 
     protected boolean isExitCondition(final int readyChannels) {
@@ -188,7 +188,7 @@ public abstract class AbstractNioProcessor implements Runnable {
     }
 
     protected boolean isShutdown() {
-        return this.isShutdown;
+        return isShutdown;
     }
 
     protected void onAcceptable(final SelectionKey selectionKey) {
@@ -212,6 +212,6 @@ public abstract class AbstractNioProcessor implements Runnable {
     }
 
     protected void setShutdown() {
-        this.isShutdown = true;
+        isShutdown = true;
     }
 }

@@ -30,76 +30,76 @@ public class ConfigView extends AbstractView {
     private JCheckBox checkBoxParallelism;
 
     void doOnCompare(final Consumer<JButton> consumer) {
-        consumer.accept(this.buttonCompare);
+        consumer.accept(buttonCompare);
     }
 
     void doOnSynchronize(final Consumer<JButton> consumer) {
-        consumer.accept(this.buttonSynchronize);
+        consumer.accept(buttonSynchronize);
     }
 
     JButton getButtonCompare() {
-        return this.buttonCompare;
+        return buttonCompare;
     }
 
     JButton getButtonSynchronize() {
-        return this.buttonSynchronize;
+        return buttonSynchronize;
     }
 
     @Override
     Component getComponent() {
-        return this.panel;
+        return panel;
     }
 
     Options getOptions() {
         return new Builder()
-                .checksum(this.checkBoxChecksum.isSelected())
-                .parallel(this.checkBoxParallelism.isSelected())
-                .delete(this.checkBoxDelete.isSelected())
-                .followSymLinks(this.checkBoxFollowSymLinks.isSelected())
-                .dryRun(this.checkBoxDryRun.isSelected())
+                .checksum(checkBoxChecksum.isSelected())
+                .parallel(checkBoxParallelism.isSelected())
+                .delete(checkBoxDelete.isSelected())
+                .followSymLinks(checkBoxFollowSymLinks.isSelected())
+                .dryRun(checkBoxDryRun.isSelected())
                 .build()
                 ;
     }
 
     void initGUI() {
-        this.panel.setLayout(new GridBagLayout());
+        panel.setLayout(new GridBagLayout());
 
         // Button Compare
-        this.buttonCompare = new JButton(getMessage("jsync.compare"));
-        this.buttonCompare.setEnabled(false);
-        this.buttonCompare.setMinimumSize(new Dimension(150, 20));
-        this.buttonCompare.setPreferredSize(new Dimension(200, 100));
-        this.panel.add(this.buttonCompare, GbcBuilder.of(0, 0).insets(5, 5, 5, 20));
+        buttonCompare = new JButton(getMessage("jsync.compare"));
+        buttonCompare.setEnabled(false);
+        buttonCompare.setMinimumSize(new Dimension(150, 20));
+        buttonCompare.setPreferredSize(new Dimension(200, 100));
+        panel.add(buttonCompare, GbcBuilder.of(0, 0).insets(5, 5, 5, 20));
 
         // Optionen
         final JPanel panelOptions = new JPanel();
         panelOptions.setLayout(new GridBagLayout());
         panelOptions.setBorder(new TitledBorder(getMessage("jsync.options")));
-        this.panel.add(panelOptions, GbcBuilder.of(1, 0).anchorWest());
+        panel.add(panelOptions, GbcBuilder.of(1, 0).anchorWest());
 
-        this.checkBoxChecksum = new JCheckBox(getMessage("jsync.options.checksum"), false);
-        panelOptions.add(this.checkBoxChecksum, GbcBuilder.of(0, 0).anchorWest());
+        checkBoxChecksum = new JCheckBox(getMessage("jsync.options.checksum"), false);
+        panelOptions.add(checkBoxChecksum, GbcBuilder.of(0, 0).anchorWest());
 
-        this.checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), true);
-        panelOptions.add(this.checkBoxDryRun, GbcBuilder.of(1, 0).anchorWest());
+        checkBoxDryRun = new JCheckBox(getMessage("jsync.options.dryrun"), true);
+        panelOptions.add(checkBoxDryRun, GbcBuilder.of(1, 0).anchorWest());
 
-        this.checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), false);
-        panelOptions.add(this.checkBoxDelete, GbcBuilder.of(0, 1).anchorWest());
+        checkBoxDelete = new JCheckBox(getMessage("jsync.options.delete"), false);
+        panelOptions.add(checkBoxDelete, GbcBuilder.of(0, 1).anchorWest());
 
-        this.checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), false);
-        panelOptions.add(this.checkBoxFollowSymLinks, GbcBuilder.of(1, 1).anchorWest());
+        checkBoxFollowSymLinks = new JCheckBox(getMessage("jsync.options.followSymLinks"), false);
+        panelOptions.add(checkBoxFollowSymLinks, GbcBuilder.of(1, 1).anchorWest());
 
-        this.checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallel"), false);
-        this.checkBoxParallelism.setName(panelOptions.getName() + ".parallel");
-        panelOptions.add(this.checkBoxParallelism, GbcBuilder.of(0, 2).gridWidth(2).anchorCenter());
+        checkBoxParallelism = new JCheckBox(getMessage("jsync.options.parallel"), false);
+        checkBoxParallelism.setName(panelOptions.getName() + ".parallel");
+        panelOptions.add(checkBoxParallelism, GbcBuilder.of(0, 2).gridWidth(2).anchorCenter());
 
-        this.panel.add(panelOptions, GbcBuilder.of(1, 0));
+        panel.add(panelOptions, GbcBuilder.of(1, 0));
 
         // Button Synchronize
-        this.buttonSynchronize = new JButton(getMessage("jsync.synchronize"));
-        this.buttonSynchronize.setEnabled(false);
-        this.buttonSynchronize.setMinimumSize(new Dimension(150, 20));
-        this.buttonSynchronize.setPreferredSize(new Dimension(200, 100));
-        this.panel.add(this.buttonSynchronize, GbcBuilder.of(2, 0).insets(5, 20, 5, 5));
+        buttonSynchronize = new JButton(getMessage("jsync.synchronize"));
+        buttonSynchronize.setEnabled(false);
+        buttonSynchronize.setMinimumSize(new Dimension(150, 20));
+        buttonSynchronize.setPreferredSize(new Dimension(200, 100));
+        panel.add(buttonSynchronize, GbcBuilder.of(2, 0).insets(5, 20, 5, 5));
     }
 }

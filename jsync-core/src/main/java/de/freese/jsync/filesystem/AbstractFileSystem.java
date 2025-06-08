@@ -19,7 +19,7 @@ import de.freese.jsync.generator.Generator;
 public abstract class AbstractFileSystem implements FileSystem {
     /**
      * -? – this part identifies if the given number is negative<br>
-     * the dash “–” searches for dash literally<br>
+     * the dash "–" searches for dash literally<br>
      * the question mark “?” marks its presence as an optional one<br>
      * \d+ – this searches for one or more digits<br>
      * (\.\d+)? – this part of regex is to identify float numbers<br>
@@ -37,10 +37,10 @@ public abstract class AbstractFileSystem implements FileSystem {
     }
 
     protected Generator getGenerator() {
-        return this.generator;
+        return generator;
     }
 
     protected Logger getLogger() {
-        return this.logger;
+        return logger;
     }
 }

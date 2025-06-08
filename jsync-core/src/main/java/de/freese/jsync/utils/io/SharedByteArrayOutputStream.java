@@ -19,7 +19,7 @@ public class SharedByteArrayOutputStream extends ByteArrayOutputStream {
     }
 
     public ByteBuffer toByteBuffer() {
-        return ByteBuffer.wrap(this.buf, 0, this.count);
+        return ByteBuffer.wrap(buf, 0, count);
     }
 
     public void write(final ByteBuffer buffer) {

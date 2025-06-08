@@ -27,7 +27,7 @@ public class Messages {
     }
 
     public String getString(final String key) {
-        String value = this.messageMap.get(key);
+        String value = messageMap.get(key);
 
         if (value == null) {
             LOGGER.warn("no message for key: {}", key);
@@ -54,6 +54,6 @@ public class Messages {
             map.put(key, value);
         }
 
-        this.messageMap = map;
+        messageMap = map;
     }
 }

@@ -34,30 +34,30 @@ public final class JSyncServerResponse {
     }
 
     public void write(final SelectionKey selectionKey) throws IOException {
-        this.bufferBody.clear();
+        bufferBody.clear();
 
-        this.bufferBody.putInt(this.status); // Status
-        this.bufferBody.putLong(0); // Content-Length
+        bufferBody.putInt(status); // Status
+        bufferBody.putLong(0); // Content-Length
 
-        this.bufferBody.flip();
+        bufferBody.flip();
 
-        write(selectionKey, this.bufferBody);
+        write(selectionKey, bufferBody);
     }
 
     public void write(final SelectionKey selectionKey, final Consumer<ByteBuffer> consumer) throws IOException {
-        this.bufferBody.clear();
+        bufferBody.clear();
 
-        consumer.accept(this.bufferBody);
+        consumer.accept(bufferBody);
 
         final ByteBuffer bufferHeader = ByteBuffer.allocate(12);
-        bufferHeader.putInt(this.status); // Status
-        bufferHeader.putLong(this.bufferBody.position()); // Content-Length
+        bufferHeader.putInt(status); // Status
+        bufferHeader.putLong(bufferBody.position()); // Content-Length
 
         bufferHeader.flip();
-        this.bufferBody.flip();
+        bufferBody.flip();
 
         final SocketChannel channel = (SocketChannel) selectionKey.channel();
-        channel.write(new ByteBuffer[]{bufferHeader, this.bufferBody});
+        channel.write(new ByteBuffer[]{bufferHeader, bufferBody});
     }
 
     void write(final SelectionKey selectionKey, final ByteBuffer buffer) throws IOException {

@@ -25,7 +25,7 @@ public class RSocketClientBuilderRemoteLoadBalancedWithServiceDiscovery extends 
 
     @Override
     public RSocketClient build() {
-        final Publisher<List<LoadbalanceTarget>> serverProducer = Mono.fromSupplier(this.serviceDiscovery)
+        final Publisher<List<LoadbalanceTarget>> serverProducer = Mono.fromSupplier(serviceDiscovery)
                 .map(servers -> {
                     if (getLogger() != null) {
                         getLogger().info("Update Server Instances: {}", servers);

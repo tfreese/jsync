@@ -35,63 +35,63 @@ public class TableFacade {
     public TableFacade() {
         super();
 
-        this.tableSender = new JTable();
-        this.tableStatus = new JTable();
-        this.tableReceiver = new JTable();
+        tableSender = new JTable();
+        tableStatus = new JTable();
+        tableReceiver = new JTable();
 
-        this.tableModelSender = new SyncPairTableModelFileSystem(EFileSystem.SENDER);
-        this.tableModelStatus = new SyncPairTableModelStatus();
-        this.tableModelReceiver = new SyncPairTableModelFileSystem(EFileSystem.RECEIVER);
+        tableModelSender = new SyncPairTableModelFileSystem(EFileSystem.SENDER);
+        tableModelStatus = new SyncPairTableModelStatus();
+        tableModelReceiver = new SyncPairTableModelFileSystem(EFileSystem.RECEIVER);
     }
 
     void addAll(final List<SyncPair> objects) {
-        this.tableModelSender.addAll(objects);
-        this.tableModelStatus.addAll(objects);
-        this.tableModelReceiver.addAll(objects);
+        tableModelSender.addAll(objects);
+        tableModelStatus.addAll(objects);
+        tableModelReceiver.addAll(objects);
     }
 
     void clear() {
-        this.tableModelSender.clear();
-        this.tableModelStatus.clear();
-        this.tableModelReceiver.clear();
+        tableModelSender.clear();
+        tableModelStatus.clear();
+        tableModelReceiver.clear();
     }
 
     void fireTableRowsUpdated(final int firstRow, final int lastRow) {
-        this.tableModelSender.fireTableRowsUpdated(firstRow, lastRow);
-        this.tableModelStatus.fireTableRowsUpdated(firstRow, lastRow);
-        this.tableModelReceiver.fireTableRowsUpdated(firstRow, lastRow);
+        tableModelSender.fireTableRowsUpdated(firstRow, lastRow);
+        tableModelStatus.fireTableRowsUpdated(firstRow, lastRow);
+        tableModelReceiver.fireTableRowsUpdated(firstRow, lastRow);
     }
 
     int getRowCount() {
-        return this.tableModelStatus.getRowCount();
+        return tableModelStatus.getRowCount();
     }
 
     Stream<SyncPair> getStream() {
-        return this.tableModelStatus.getStream();
+        return tableModelStatus.getStream();
     }
 
     AbstractListTableModel<SyncPair> getTableModelReceiver() {
-        return this.tableModelReceiver;
+        return tableModelReceiver;
     }
 
     AbstractListTableModel<SyncPair> getTableModelSender() {
-        return this.tableModelSender;
+        return tableModelSender;
     }
 
     AbstractListTableModel<SyncPair> getTableModelStatus() {
-        return this.tableModelStatus;
+        return tableModelStatus;
     }
 
     JTable getTableReceiver() {
-        return this.tableReceiver;
+        return tableReceiver;
     }
 
     JTable getTableSender() {
-        return this.tableSender;
+        return tableSender;
     }
 
     JTable getTableStatus() {
-        return this.tableStatus;
+        return tableStatus;
     }
 
     void initRowSorter(final Supplier<Predicate<SyncPair>> supplierPredicate) {
@@ -103,35 +103,35 @@ public class TableFacade {
             }
         };
 
-        this.rowSorterSender = new TableRowSorter<>(this.tableModelSender);
-        this.rowSorterSender.setRowFilter(rowFilter);
-        this.tableSender.setRowSorter(this.rowSorterSender);
+        rowSorterSender = new TableRowSorter<>(tableModelSender);
+        rowSorterSender.setRowFilter(rowFilter);
+        tableSender.setRowSorter(rowSorterSender);
 
-        this.rowSorterStatus = new TableRowSorter<>(this.tableModelStatus);
-        this.rowSorterStatus.setRowFilter(rowFilter);
-        this.tableStatus.setRowSorter(this.rowSorterStatus);
+        rowSorterStatus = new TableRowSorter<>(tableModelStatus);
+        rowSorterStatus.setRowFilter(rowFilter);
+        tableStatus.setRowSorter(rowSorterStatus);
 
-        this.rowSorterReceiver = new TableRowSorter<>(this.tableModelReceiver);
-        this.rowSorterReceiver.setRowFilter(rowFilter);
-        this.tableReceiver.setRowSorter(this.rowSorterReceiver);
+        rowSorterReceiver = new TableRowSorter<>(tableModelReceiver);
+        rowSorterReceiver.setRowFilter(rowFilter);
+        tableReceiver.setRowSorter(rowSorterReceiver);
     }
 
     void scrollToLastRow() {
         final int rowCount = getRowCount();
 
-        Rectangle rectangle = this.tableSender.getCellRect(rowCount - 1, 0, false);
-        this.tableSender.scrollRectToVisible(rectangle);
+        Rectangle rectangle = tableSender.getCellRect(rowCount - 1, 0, false);
+        tableSender.scrollRectToVisible(rectangle);
 
-        rectangle = this.tableStatus.getCellRect(rowCount - 1, 0, false);
-        this.tableStatus.scrollRectToVisible(rectangle);
+        rectangle = tableStatus.getCellRect(rowCount - 1, 0, false);
+        tableStatus.scrollRectToVisible(rectangle);
 
-        rectangle = this.tableReceiver.getCellRect(rowCount - 1, 0, false);
-        this.tableReceiver.scrollRectToVisible(rectangle);
+        rectangle = tableReceiver.getCellRect(rowCount - 1, 0, false);
+        tableReceiver.scrollRectToVisible(rectangle);
     }
 
     void sort() {
-        this.rowSorterSender.sort();
-        this.rowSorterStatus.sort();
-        this.rowSorterReceiver.sort();
+        rowSorterSender.sort();
+        rowSorterStatus.sort();
+        rowSorterReceiver.sort();
     }
 }

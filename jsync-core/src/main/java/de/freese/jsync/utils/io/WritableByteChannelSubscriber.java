@@ -45,27 +45,27 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
 
     // @Override
     // public void onComplete() {
-    // this.sink.complete();
+    // sink.complete();
     // }
     //
     // @Override
     // public void onError(final Throwable throwable) {
-    // this.sink.error(throwable);
+    // sink.error(throwable);
     // }
     //
     // @Override
     // public void onNext(final ByteBuffer byteBuffer) {
     // try {
     // while (byteBuffer.hasRemaining()) {
-    // this.channel.write(byteBuffer);
+    // channel.write(byteBuffer);
     // }
     //
-    // this.sink.next(byteBuffer);
-    // this.subscription.request(1);
+    // sink.next(byteBuffer);
+    // subscription.request(1);
     // }
     // catch (IOException ex) {
-    // this.sink.next(byteBuffer);
-    // this.sink.error(ex);
+    // sink.next(byteBuffer);
+    // sink.error(ex);
     // }
     // }
     //
@@ -78,12 +78,12 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
 
     @Override
     protected void hookOnComplete() {
-        this.sink.complete();
+        sink.complete();
     }
 
     @Override
     protected void hookOnError(final Throwable throwable) {
-        this.sink.error(throwable);
+        sink.error(throwable);
     }
 
     @Override
@@ -92,17 +92,17 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
             final long limit = buffer.limit();
 
             while (buffer.hasRemaining()) {
-                this.channel.write(buffer);
+                channel.write(buffer);
             }
 
             ByteBufferPool.DEFAULT.free(buffer);
 
-            this.sink.next(limit);
+            sink.next(limit);
             request(1);
         }
         catch (IOException ex) {
-            this.sink.next(-1L);
-            this.sink.error(ex);
+            sink.next(-1L);
+            sink.error(ex);
         }
     }
 

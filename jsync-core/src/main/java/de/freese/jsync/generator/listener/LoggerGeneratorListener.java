@@ -29,19 +29,19 @@ public class LoggerGeneratorListener extends AbstractGeneratorListener {
 
     @Override
     public void currentItem(final SyncItem syncItem) {
-        final String message = currentItemMessage(syncItem, this.prefix);
+        final String message = currentItemMessage(syncItem, prefix);
 
         getLogger().debug(message);
     }
 
     @Override
     public void itemCount(final Path path, final int itemCount) {
-        final String message = itemCountMessage(path, itemCount, this.prefix);
+        final String message = itemCountMessage(path, itemCount, prefix);
 
         getLogger().info(message);
     }
 
     protected Logger getLogger() {
-        return this.logger;
+        return logger;
     }
 }

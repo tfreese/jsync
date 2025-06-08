@@ -58,12 +58,12 @@ public class DispatcherPool implements Dispatcher {
         final ThreadFactory threadFactoryDispatcher = new JSyncThreadFactory(serverName + "-dispatcher-");
         final ThreadFactory threadFactoryWorker = new JSyncThreadFactory(serverName + "-worker-");
 
-        // this.executorServiceWorker = new ThreadPoolExecutor(1, this.numOfWorker, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactoryWorker);
-        this.executorServiceWorker = Executors.newFixedThreadPool(this.numOfWorker, threadFactoryWorker);
+        // executorServiceWorker = new ThreadPoolExecutor(1, numOfWorker, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactoryWorker);
+        executorServiceWorker = Executors.newFixedThreadPool(numOfWorker, threadFactoryWorker);
 
-        while (this.dispatchers.size() < this.numOfDispatcher) {
-            final DefaultDispatcher dispatcher = new DefaultDispatcher(selectorProvider.openSelector(), ioHandler, this.executorServiceWorker);
-            this.dispatchers.add(dispatcher);
+        while (dispatchers.size() < numOfDispatcher) {
+            final DefaultDispatcher dispatcher = new DefaultDispatcher(selectorProvider.openSelector(), ioHandler, executorServiceWorker);
+            dispatchers.add(dispatcher);
 
             final Thread thread = threadFactoryDispatcher.newThread(dispatcher);
 
@@ -73,8 +73,8 @@ public class DispatcherPool implements Dispatcher {
     }
 
     public void stop() {
-        this.dispatchers.forEach(DefaultDispatcher::stop);
-        this.executorServiceWorker.shutdown();
+        dispatchers.forEach(DefaultDispatcher::stop);
+        executorServiceWorker.shutdown();
     }
 
     protected Logger getLogger() {
@@ -85,11 +85,11 @@ public class DispatcherPool implements Dispatcher {
      * Returns the next {@link Dispatcher} in a Round-Robin procedure.<br>
      */
     private synchronized Dispatcher nextDispatcher() {
-        // Remove first Dispatcher.
-        final DefaultDispatcher dispatcher = this.dispatchers.poll();
+        // Remove the first Dispatcher.
+        final DefaultDispatcher dispatcher = dispatchers.poll();
 
         // Attach Dispatcher at the end.
-        this.dispatchers.add(dispatcher);
+        dispatchers.add(dispatcher);
 
         return dispatcher;
     }

@@ -63,7 +63,7 @@ public abstract class Pool<T> {
 
         @Override
         public void clear() {
-            this.delegate.clear();
+            delegate.clear();
         }
 
         @Override
@@ -93,7 +93,7 @@ public abstract class Pool<T> {
 
         @Override
         public boolean offer(final T e) {
-            return this.delegate.add(new SoftReference<>(e));
+            return delegate.add(new SoftReference<>(e));
         }
 
         @Override
@@ -104,7 +104,7 @@ public abstract class Pool<T> {
         @Override
         public T poll() {
             while (true) {
-                final SoftReference<T> reference = this.delegate.poll();
+                final SoftReference<T> reference = delegate.poll();
 
                 if (reference == null) {
                     return null;
@@ -140,7 +140,7 @@ public abstract class Pool<T> {
 
         @Override
         public int size() {
-            return this.delegate.size();
+            return delegate.size();
         }
 
         @Override
@@ -154,11 +154,11 @@ public abstract class Pool<T> {
         }
 
         void clean() {
-            this.delegate.removeIf(o -> o.get() == null);
+            delegate.removeIf(o -> o.get() == null);
         }
 
         void cleanOne() {
-            for (final Iterator<SoftReference<T>> iter = this.delegate.iterator(); iter.hasNext(); ) {
+            for (final Iterator<SoftReference<T>> iter = delegate.iterator(); iter.hasNext(); ) {
                 if (iter.next().get() == null) {
                     iter.remove();
                     break;
@@ -232,7 +232,7 @@ public abstract class Pool<T> {
             };
         }
 
-        this.freeObjects = softReferences ? new SoftReferenceQueue<>((Queue<SoftReference<T>>) queue) : queue;
+        freeObjects = softReferences ? new SoftReferenceQueue<>((Queue<SoftReference<T>>) queue) : queue;
     }
 
     /**
@@ -241,8 +241,8 @@ public abstract class Pool<T> {
      * before calling {@link #free(Object)}, which will try to remove an empty reference if the maximum capacity has been reached.
      */
     public void clean() {
-        if (this.freeObjects instanceof SoftReferenceQueue) {
-            ((SoftReferenceQueue<T>) this.freeObjects).clean();
+        if (freeObjects instanceof SoftReferenceQueue) {
+            ((SoftReferenceQueue<T>) freeObjects).clean();
         }
     }
 
@@ -250,22 +250,22 @@ public abstract class Pool<T> {
      * Removes all free objects from this pool.
      */
     public void clear() {
-        this.freeObjects.clear();
+        freeObjects.clear();
     }
 
     /**
      * Removes all free objects from this pool.
      */
     public void clear(final Consumer<T> cleanup) {
-        this.freeObjects.forEach(cleanup);
+        freeObjects.forEach(cleanup);
 
-        // for (T obj : this.freeObjects) {
+        // for (T obj : freeObjects) {
         // if (obj != null) {
         // cleanup.accept(obj);
         // }
         // }
 
-        this.freeObjects.clear();
+        freeObjects.clear();
     }
 
     /**
@@ -279,20 +279,20 @@ public abstract class Pool<T> {
 
         reset(object);
 
-        if (!this.freeObjects.offer(object) && this.freeObjects instanceof SoftReferenceQueue) {
-            ((SoftReferenceQueue<T>) this.freeObjects).cleanOne();
+        if (!freeObjects.offer(object) && freeObjects instanceof SoftReferenceQueue) {
+            ((SoftReferenceQueue<T>) freeObjects).cleanOne();
 
-            this.freeObjects.offer(object);
+            freeObjects.offer(object);
         }
 
-        this.peak = Math.max(this.peak, this.freeObjects.size());
+        peak = Math.max(peak, freeObjects.size());
     }
 
     /**
      * The number of created objects.
      */
     public int getCreated() {
-        return this.created;
+        return created;
     }
 
     /**
@@ -301,7 +301,7 @@ public abstract class Pool<T> {
      * references.
      */
     public int getFree() {
-        return this.freeObjects.size();
+        return freeObjects.size();
     }
 
     /**
@@ -310,36 +310,36 @@ public abstract class Pool<T> {
      * If using soft references, this number may include objects that have been garbage collected.
      */
     public int getPeak() {
-        return this.peak;
+        return peak;
     }
 
     /**
      * Returns an object from this pool. The object may be new (from {@link #create()}) or reused (previously {@link #free(Object) freed}).
      */
     public T obtain() {
-        T object = this.freeObjects.poll();
+        T object = freeObjects.poll();
 
         if (object == null) {
             object = create();
 
-            this.created++;
+            created++;
         }
 
         return object;
     }
 
     public void resetPeak() {
-        this.peak = 0;
+        peak = 0;
     }
 
     protected abstract T create();
 
     protected Queue<T> getFreeObjects() {
-        return this.freeObjects;
+        return freeObjects;
     }
 
     protected Logger getLogger() {
-        return this.logger;
+        return logger;
     }
 
     /**

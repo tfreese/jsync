@@ -34,29 +34,29 @@ public class User {
             return false;
         }
 
-        return Objects.equals(this.name, other.name) && this.uid == other.uid;
+        return Objects.equals(name, other.name) && uid == other.uid;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public int getUid() {
-        return this.uid;
+        return uid;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.name, this.uid);
+        return Objects.hash(name, uid);
     }
 
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
         builder.append("User [uid=");
-        builder.append(this.uid);
+        builder.append(uid);
         builder.append(", name=");
-        builder.append(this.name);
+        builder.append(name);
         builder.append("]");
 
         return builder.toString();

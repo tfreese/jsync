@@ -45,15 +45,15 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V> {
         super();
 
         this.controller = controller;
-        this.options = controller.getSyncView().getOptions();
+        options = controller.getSyncView().getOptions();
 
         final URI senderUri = controller.getSyncView().getUri(EFileSystem.SENDER);
         final URI receiverUri = controller.getSyncView().getUri(EFileSystem.RECEIVER);
 
-        controller.createNewClient(this.options, senderUri, receiverUri);
+        controller.createNewClient(options, senderUri, receiverUri);
 
-        // this.parallel = canRunParallel(senderUri, receiverUri);
-        this.parallel = this.options.isParallel();
+        // parallel = canRunParallel(senderUri, receiverUri);
+        parallel = options.isParallel();
     }
 
     /**
@@ -107,15 +107,15 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V> {
     }
 
     protected JSyncController getController() {
-        return this.controller;
+        return controller;
     }
 
     protected Logger getLogger() {
-        return this.logger;
+        return logger;
     }
 
     protected Options getOptions() {
-        return this.options;
+        return options;
     }
 
     protected SyncView getSyncView() {
@@ -123,6 +123,6 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V> {
     }
 
     protected boolean isParallel() {
-        return this.parallel;
+        return parallel;
     }
 }

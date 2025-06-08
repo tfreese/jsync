@@ -51,7 +51,7 @@ public final class JSyncRSocketServer {
     private CloseableChannel server;
 
     public void start(final int port) {
-        getLogger().info("starting '{}' on port: {}", this.name, port);
+        getLogger().info("starting '{}' on port: {}", name, port);
 
         // https://netty.io/wiki/reference-counted-objects.html
         // io.netty.util.ResourceLeakDetector
@@ -69,7 +69,7 @@ public final class JSyncRSocketServer {
         // Hooks.onErrorDropped(th -> {
         // });
 
-        this.server = RSocketBuilders.serverRemote()
+        server = RSocketBuilders.serverRemote()
                 .logger(getLogger())
                 .socketAddress(new InetSocketAddress(port))
                 .socketAcceptor(SocketAcceptor.with(new JSyncRSocketHandlerByteBuf()))
@@ -81,9 +81,9 @@ public final class JSyncRSocketServer {
     }
 
     public void stop() {
-        getLogger().info("stopping '{}'", this.name);
+        getLogger().info("stopping '{}'", name);
 
-        this.server.dispose();
+        server.dispose();
 
         ByteBufferPool.DEFAULT.clear();
     }

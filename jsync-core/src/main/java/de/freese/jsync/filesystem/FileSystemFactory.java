@@ -44,7 +44,7 @@ public final class FileSystemFactory {
 
         final String scheme = uri.getScheme();
 
-        for (FileSystemProvider provider : this.serviceLoader) {
+        for (FileSystemProvider provider : serviceLoader) {
             if (provider.supportsProtocol(scheme)) {
                 return new ReceiverDelegateLogger(provider.createReceiver(uri));
             }
@@ -58,7 +58,7 @@ public final class FileSystemFactory {
 
         final String scheme = uri.getScheme();
 
-        for (FileSystemProvider provider : this.serviceLoader) {
+        for (FileSystemProvider provider : serviceLoader) {
             if (provider.supportsProtocol(scheme)) {
                 return new SenderDelegateLogger(provider.createSender(uri));
             }
@@ -72,7 +72,7 @@ public final class FileSystemFactory {
 
         final Set<JSyncProtocol> availableProtocols = new HashSet<>();
 
-        for (FileSystemProvider provider : this.serviceLoader) {
+        for (FileSystemProvider provider : serviceLoader) {
             for (JSyncProtocol protocol : protocols) {
                 if (provider.supportsProtocol(protocol.getScheme())) {
                     availableProtocols.add(protocol);

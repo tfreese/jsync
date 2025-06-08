@@ -38,7 +38,7 @@ public class NioFrameProtocol {
     }
 
     public ByteBufferPool getBufferPool() {
-        return this.bufferPool;
+        return bufferPool;
     }
 
     /**

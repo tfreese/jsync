@@ -23,21 +23,21 @@ public class PathFilterEndsWith implements PathFilter {
 
     @Override
     public Set<String> getDirectoryFilter() {
-        return this.directoryFilter;
+        return directoryFilter;
     }
 
     @Override
     public Set<String> getFileFilter() {
-        return this.fileFilter;
+        return fileFilter;
     }
 
     @Override
     public boolean isExcludedDirectory(final Path dir) {
-        return this.directoryFilter.stream().anyMatch(filter -> dir.toString().endsWith(filter));
+        return directoryFilter.stream().anyMatch(filter -> dir.toString().endsWith(filter));
     }
 
     @Override
     public boolean isExcludedFile(final Path file) {
-        return this.fileFilter.stream().anyMatch(filter -> file.toString().endsWith(filter));
+        return fileFilter.stream().anyMatch(filter -> file.toString().endsWith(filter));
     }
 }

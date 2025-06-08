@@ -27,47 +27,47 @@ class ShowView extends AbstractView {
 
     @Override
     JPanel getComponent() {
-        return this.panel;
+        return panel;
     }
 
     Predicate<SyncPair> getPredicate() {
-        return this.predicate;
+        return predicate;
     }
 
     void initGUI(final TableFacade tableFacade) {
-        this.panel.setLayout(new GridBagLayout());
-        this.panel.setBorder(new TitledBorder(getMessage("jsync.show")));
+        panel.setLayout(new GridBagLayout());
+        panel.setBorder(new TitledBorder(getMessage("jsync.show")));
 
         tableFacade.initRowSorter(this::getPredicate);
 
-        this.checkBoxSynchronized = new JCheckBox(getMessage("jsync.show.synchronized"), true);
-        this.checkBoxSynchronized.setForeground(Color.BLACK);
-        this.panel.add(this.checkBoxSynchronized, GbcBuilder.of(0, 0).anchorWest());
-        this.checkBoxSynchronized.addItemListener(event -> {
+        checkBoxSynchronized = new JCheckBox(getMessage("jsync.show.synchronized"), true);
+        checkBoxSynchronized.setForeground(Color.BLACK);
+        panel.add(checkBoxSynchronized, GbcBuilder.of(0, 0).anchorWest());
+        checkBoxSynchronized.addItemListener(event -> {
             updatePredicate();
             tableFacade.sort();
         });
 
-        this.checkBoxOnlyInTarget = new JCheckBox(getMessage("jsync.show.onlyInTarget"), true);
-        this.checkBoxOnlyInTarget.setForeground(Color.RED);
-        this.panel.add(this.checkBoxOnlyInTarget, GbcBuilder.of(0, 1).anchorWest());
-        this.checkBoxOnlyInTarget.addItemListener(event -> {
+        checkBoxOnlyInTarget = new JCheckBox(getMessage("jsync.show.onlyInTarget"), true);
+        checkBoxOnlyInTarget.setForeground(Color.RED);
+        panel.add(checkBoxOnlyInTarget, GbcBuilder.of(0, 1).anchorWest());
+        checkBoxOnlyInTarget.addItemListener(event -> {
             updatePredicate();
             tableFacade.sort();
         });
 
-        this.checkBoxOnlyInSource = new JCheckBox(getMessage("jsync.show.onlyInSource"), true);
-        this.checkBoxOnlyInSource.setForeground(Color.ORANGE.darker());
-        this.panel.add(this.checkBoxOnlyInSource, GbcBuilder.of(0, 2).anchorWest());
-        this.checkBoxOnlyInSource.addItemListener(event -> {
+        checkBoxOnlyInSource = new JCheckBox(getMessage("jsync.show.onlyInSource"), true);
+        checkBoxOnlyInSource.setForeground(Color.ORANGE.darker());
+        panel.add(checkBoxOnlyInSource, GbcBuilder.of(0, 2).anchorWest());
+        checkBoxOnlyInSource.addItemListener(event -> {
             updatePredicate();
             tableFacade.sort();
         });
 
-        this.checkBoxDifferent = new JCheckBox(getMessage("jsync.show.different"), true);
-        this.checkBoxDifferent.setForeground(Color.ORANGE.darker());
-        this.panel.add(this.checkBoxDifferent, GbcBuilder.of(0, 3).anchorWest());
-        this.checkBoxDifferent.addItemListener(event -> {
+        checkBoxDifferent = new JCheckBox(getMessage("jsync.show.different"), true);
+        checkBoxDifferent.setForeground(Color.ORANGE.darker());
+        panel.add(checkBoxDifferent, GbcBuilder.of(0, 3).anchorWest());
+        checkBoxDifferent.addItemListener(event -> {
             updatePredicate();
             tableFacade.sort();
         });
@@ -76,22 +76,22 @@ class ShowView extends AbstractView {
     }
 
     private void updatePredicate() {
-        this.predicate = syncPair -> SyncStatus.UNKNOWN.equals(syncPair.getStatus());
+        predicate = syncPair -> SyncStatus.UNKNOWN.equals(syncPair.getStatus());
 
-        if (this.checkBoxSynchronized.isSelected()) {
-            this.predicate = this.predicate.or(syncPair -> SyncStatus.SYNCHRONIZED.equals(syncPair.getStatus()));
+        if (checkBoxSynchronized.isSelected()) {
+            predicate = predicate.or(syncPair -> SyncStatus.SYNCHRONIZED.equals(syncPair.getStatus()));
         }
 
-        if (this.checkBoxOnlyInTarget.isSelected()) {
-            this.predicate = this.predicate.or(syncPair -> SyncStatus.ONLY_IN_TARGET.equals(syncPair.getStatus()));
+        if (checkBoxOnlyInTarget.isSelected()) {
+            predicate = predicate.or(syncPair -> SyncStatus.ONLY_IN_TARGET.equals(syncPair.getStatus()));
         }
 
-        if (this.checkBoxOnlyInSource.isSelected()) {
-            this.predicate = this.predicate.or(syncPair -> SyncStatus.ONLY_IN_SOURCE.equals(syncPair.getStatus()));
+        if (checkBoxOnlyInSource.isSelected()) {
+            predicate = predicate.or(syncPair -> SyncStatus.ONLY_IN_SOURCE.equals(syncPair.getStatus()));
         }
 
-        if (this.checkBoxDifferent.isSelected()) {
-            this.predicate = this.predicate.or(syncPair -> syncPair.getStatus().name().startsWith("DIFFERENT"));
+        if (checkBoxDifferent.isSelected()) {
+            predicate = predicate.or(syncPair -> syncPair.getStatus().name().startsWith("DIFFERENT"));
         }
     }
 }

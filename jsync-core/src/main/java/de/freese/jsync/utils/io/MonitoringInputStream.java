@@ -33,7 +33,7 @@ public class MonitoringInputStream extends FilterInputStream {
 
     @Override
     public void close() throws IOException {
-        if (this.closeDelegate) {
+        if (closeDelegate) {
             super.close();
         }
     }
@@ -42,9 +42,9 @@ public class MonitoringInputStream extends FilterInputStream {
     public int read() throws IOException {
         final int read = super.read();
 
-        this.bytesRead++;
+        bytesRead++;
 
-        this.bytesReadConsumer.accept(this.bytesRead);
+        bytesReadConsumer.accept(bytesRead);
 
         return read;
     }
@@ -54,9 +54,9 @@ public class MonitoringInputStream extends FilterInputStream {
         final int readCount = super.read(b, off, len);
 
         if (readCount > 0) {
-            this.bytesRead += readCount;
+            bytesRead += readCount;
 
-            this.bytesReadConsumer.accept(this.bytesRead);
+            bytesReadConsumer.accept(bytesRead);
         }
 
         return readCount;
@@ -66,9 +66,9 @@ public class MonitoringInputStream extends FilterInputStream {
     public synchronized void reset() throws IOException {
         super.reset();
 
-        this.bytesRead -= available();
+        bytesRead -= available();
 
-        this.bytesReadConsumer.accept(this.bytesRead);
+        bytesReadConsumer.accept(bytesRead);
     }
 
     @Override
@@ -76,9 +76,9 @@ public class MonitoringInputStream extends FilterInputStream {
         final long readCount = super.skip(n);
 
         if (readCount > 0) {
-            this.bytesRead += readCount;
+            bytesRead += readCount;
 
-            this.bytesReadConsumer.accept(this.bytesRead);
+            bytesReadConsumer.accept(bytesRead);
         }
 
         return readCount;

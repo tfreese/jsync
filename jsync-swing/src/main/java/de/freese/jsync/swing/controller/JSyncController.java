@@ -45,12 +45,12 @@ public class JSyncController {
             JSyncContext.startLocalRSocketServer();
         }
 
-        this.client = new DefaultClient(options, senderUri, receiverUri);
-        this.client.connectFileSystems();
+        client = new DefaultClient(options, senderUri, receiverUri);
+        client.connectFileSystems();
     }
 
     Client getClient() {
-        return this.client;
+        return client;
     }
 
     String getMessage(final String key) {
@@ -58,7 +58,7 @@ public class JSyncController {
     }
 
     SyncView getSyncView() {
-        return this.syncView;
+        return syncView;
     }
 
     void runInEdt(final Runnable runnable) {
@@ -66,14 +66,14 @@ public class JSyncController {
     }
 
     void shutdownClient() {
-        if (this.client != null) {
-            this.client.disconnectFileSystems();
-            this.client = null;
+        if (client != null) {
+            client.disconnectFileSystems();
+            client = null;
         }
     }
 
     protected Logger getLogger() {
-        return this.logger;
+        return logger;
     }
 
     private void compare() {

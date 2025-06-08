@@ -21,15 +21,15 @@ public class ConsoleClientListener extends AbstractClientListener {
         // Console console = System.console();
         //
         // if (console != null) {
-        // this.printStream = console.writer();
+        // printStream = console.writer();
         // }
         // else {
-        // this.printStream = System.out;
+        // printStream = System.out;
         // }
 
-        this.printStream = System.out;
+        printStream = System.out;
 
-        this.printStreamError = System.err;
+        printStreamError = System.err;
     }
 
     @Override
@@ -102,10 +102,10 @@ public class ConsoleClientListener extends AbstractClientListener {
     }
 
     protected PrintStream getPrintStream() {
-        return this.printStream;
+        return printStream;
     }
 
     protected PrintStream getPrintStreamError() {
-        return this.printStreamError;
+        return printStreamError;
     }
 }

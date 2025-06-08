@@ -37,38 +37,38 @@ public class SenderDelegateLogger implements Sender {
     public void connect(final URI uri) {
         getLogger().info("connect to {}", uri);
 
-        this.delegate.connect(uri);
+        delegate.connect(uri);
     }
 
     @Override
     public void disconnect() {
         getLogger().info("disconnect");
 
-        this.delegate.disconnect();
+        delegate.disconnect();
     }
 
     @Override
     public String generateChecksum(final String baseDir, final String relativeFile, final LongConsumer consumerChecksumBytesRead) {
         getLogger().info("create checksum: {}/{}", baseDir, relativeFile);
 
-        return this.delegate.generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead);
+        return delegate.generateChecksum(baseDir, relativeFile, consumerChecksumBytesRead);
     }
 
     @Override
     public Flux<SyncItem> generateSyncItems(final String baseDir, final boolean followSymLinks, final PathFilter pathFilter) {
         getLogger().info("generate SyncItems: {}, followSymLinks={}", baseDir, followSymLinks);
 
-        return this.delegate.generateSyncItems(baseDir, followSymLinks, pathFilter);
+        return delegate.generateSyncItems(baseDir, followSymLinks, pathFilter);
     }
 
     @Override
     public Flux<ByteBuffer> readFile(final String baseDir, final String relativeFile, final long sizeOfFile) {
         getLogger().info("read file: {}/{}, sizeOfFile={}", baseDir, relativeFile, sizeOfFile);
 
-        return this.delegate.readFile(baseDir, relativeFile, sizeOfFile);
+        return delegate.readFile(baseDir, relativeFile, sizeOfFile);
     }
 
     protected Logger getLogger() {
-        return this.logger;
+        return logger;
     }
 }

@@ -22,9 +22,9 @@ public class JSyncThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(final Runnable r) {
-        final Thread thread = this.defaultThreadFactory.newThread(r);
+        final Thread thread = defaultThreadFactory.newThread(r);
 
-        thread.setName(this.namePrefix + this.threadNumber.getAndIncrement());
+        thread.setName(namePrefix + threadNumber.getAndIncrement());
         thread.setDaemon(true);
 
         return thread;

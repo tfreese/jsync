@@ -20,7 +20,7 @@ public abstract class AbstractView {
     abstract Component getComponent();
 
     protected Logger getLogger() {
-        return this.logger;
+        return logger;
     }
 
     protected JFrame getMainFrame() {

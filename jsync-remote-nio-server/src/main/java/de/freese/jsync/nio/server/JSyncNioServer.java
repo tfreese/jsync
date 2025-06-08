@@ -79,70 +79,70 @@ public final class JSyncNioServer implements Runnable {
         }
 
         this.port = port;
-        this.dispatcherPool = new DispatcherPool(numOfDispatcher, numOfWorker);
         this.selectorProvider = Objects.requireNonNull(selectorProvider, "selectorProvider required");
 
-        this.startLock.acquireUninterruptibly();
+        dispatcherPool = new DispatcherPool(numOfDispatcher, numOfWorker);
+        startLock.acquireUninterruptibly();
     }
 
     public boolean isStarted() {
-        return this.startLock.availablePermits() > 0;
+        return startLock.availablePermits() > 0;
     }
 
     @Override
     public void run() {
-        getLogger().info("starting '{}' on port: {}", this.name, this.port);
+        getLogger().info("starting '{}' on port: {}", name, port);
 
-        Objects.requireNonNull(this.ioHandler, "ioHandler required");
+        Objects.requireNonNull(ioHandler, "ioHandler required");
 
         try {
-            // this.serverSocketChannel = ServerSocketChannel.open();
-            this.serverSocketChannel = this.selectorProvider.openServerSocketChannel();
-            this.serverSocketChannel.configureBlocking(false);
+            // serverSocketChannel = ServerSocketChannel.open();
+            serverSocketChannel = selectorProvider.openServerSocketChannel();
+            serverSocketChannel.configureBlocking(false);
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.TCP_NODELAY)) {
-                // this.serverSocketChannel.getOption(StandardSocketOptions.TCP_NODELAY);
-                this.serverSocketChannel.setOption(StandardSocketOptions.TCP_NODELAY, true);
+            if (serverSocketChannel.supportedOptions().contains(StandardSocketOptions.TCP_NODELAY)) {
+                // serverSocketChannel.getOption(StandardSocketOptions.TCP_NODELAY);
+                serverSocketChannel.setOption(StandardSocketOptions.TCP_NODELAY, true);
             }
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEADDR)) {
-                // this.serverSocketChannel.getOption(StandardSocketOptions.SO_REUSEADDR);
-                this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+            if (serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEADDR)) {
+                // serverSocketChannel.getOption(StandardSocketOptions.SO_REUSEADDR);
+                serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
             }
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEPORT)) {
-                // this.serverSocketChannel.getOption(StandardSocketOptions.SO_REUSEPORT);
-                this.serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, true);
+            if (serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_REUSEPORT)) {
+                // serverSocketChannel.getOption(StandardSocketOptions.SO_REUSEPORT);
+                serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, true);
             }
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_RCVBUF)) {
-                // this.serverSocketChannel.getOption(StandardSocketOptions.SO_RCVBUF);
-                this.serverSocketChannel.setOption(StandardSocketOptions.SO_RCVBUF, 64 * 1024);
+            if (serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_RCVBUF)) {
+                // serverSocketChannel.getOption(StandardSocketOptions.SO_RCVBUF);
+                serverSocketChannel.setOption(StandardSocketOptions.SO_RCVBUF, 64 * 1024);
             }
 
-            if (this.serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_SNDBUF)) {
-                // this.serverSocketChannel.getOption(StandardSocketOptions.SO_SNDBUF);
-                this.serverSocketChannel.setOption(StandardSocketOptions.SO_SNDBUF, 64 * 1024);
+            if (serverSocketChannel.supportedOptions().contains(StandardSocketOptions.SO_SNDBUF)) {
+                // serverSocketChannel.getOption(StandardSocketOptions.SO_SNDBUF);
+                serverSocketChannel.setOption(StandardSocketOptions.SO_SNDBUF, 64 * 1024);
             }
 
-            this.serverSocketChannel.bind(new InetSocketAddress(this.port), 50);
+            serverSocketChannel.bind(new InetSocketAddress(port), 50);
 
-            // ServerSocket socket = this.serverSocketChannel.socket();
+            // ServerSocket socket = serverSocketChannel.socket();
             // socket.setReuseAddress(true);
-            // socket.bind(new InetSocketAddress(this.port), 50);
+            // socket.bind(new InetSocketAddress(port), 50);
 
             // Create Dispatcher.
-            this.dispatcherPool.start(this.ioHandler, this.selectorProvider, this.name + "-" + this.port);
+            dispatcherPool.start(ioHandler, selectorProvider, name + "-" + port);
 
             // Create Acceptor.
-            this.acceptor = new Acceptor(this.selectorProvider.openSelector(), this.serverSocketChannel, this.dispatcherPool);
+            acceptor = new Acceptor(selectorProvider.openSelector(), serverSocketChannel, dispatcherPool);
 
-            final Thread thread = new JSyncThreadFactory(this.name + "-" + this.port + "-acceptor-").newThread(this.acceptor);
+            final Thread thread = new JSyncThreadFactory(name + "-" + port + "-acceptor-").newThread(acceptor);
             getLogger().debug("start {}", thread.getName());
             thread.start();
 
-            getLogger().info("'{}' listening on port: {}", this.name, this.port);
-            this.startLock.release();
+            getLogger().info("'{}' listening on port: {}", name, port);
+            startLock.release();
         }
         catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);
@@ -161,24 +161,24 @@ public final class JSyncNioServer implements Runnable {
         run();
 
         // Wait if ready.
-        // this.startLock.acquireUninterruptibly();
-        // this.startLock.release();
+        // startLock.acquireUninterruptibly();
+        // startLock.release();
     }
 
     public void stop() {
-        getLogger().info("stopping '{}' on port: {}", this.name, this.port);
+        getLogger().info("stopping '{}' on port: {}", name, port);
 
-        this.acceptor.stop();
-        this.dispatcherPool.stop();
+        acceptor.stop();
+        dispatcherPool.stop();
 
         try {
-            // SelectionKey selectionKey = this.serverSocketChannel.keyFor(this.selector);
+            // SelectionKey selectionKey = serverSocketChannel.keyFor(selector);
             //
             // if (selectionKey != null) {
             // selectionKey.cancel();
             // }
 
-            this.serverSocketChannel.close();
+            serverSocketChannel.close();
         }
         catch (IOException ex) {
             getLogger().error(ex.getMessage(), ex);
@@ -186,7 +186,7 @@ public final class JSyncNioServer implements Runnable {
 
         Schedulers.shutdownNow();
 
-        getLogger().info("'{}' stopped on port: {}", this.name, this.port);
+        getLogger().info("'{}' stopped on port: {}", name, port);
 
         ByteBufferPool.DEFAULT.clear();
     }

@@ -25,42 +25,42 @@ public class DefaultSyncItem implements SyncItem {
 
     @Override
     public String getChecksum() {
-        return this.checksum;
+        return checksum;
     }
 
     //    @Override
     //    public Group getGroup() {
-    //        return this.group;
+    //        return group;
     //    }
 
     @Override
     public long getLastModifiedTime() {
-        return this.lastModifiedTime;
+        return lastModifiedTime;
     }
 
     //    @Override
     //    public Set<PosixFilePermission> getPermissions() {
-    //        return this.permissions;
+    //        return permissions;
     //    }
 
     @Override
     public String getRelativePath() {
-        return this.relativePath;
+        return relativePath;
     }
 
     @Override
     public long getSize() {
-        return this.size;
+        return size;
     }
 
     //    @Override
     //    public User getUser() {
-    //        return this.user;
+    //        return user;
     //    }
 
     @Override
     public boolean isFile() {
-        return this.isFile;
+        return isFile;
     }
 
     @Override

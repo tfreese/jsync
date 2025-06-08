@@ -33,7 +33,7 @@ abstract class AbstractClientBuilder<T extends AbstractBuilder<?, RSocketClient>
     protected RSocketConnector configure(final RSocketConnector rSocketConnector) {
         RSocketConnector connector = rSocketConnector;
 
-        for (UnaryOperator<RSocketConnector> connectorCustomizer : this.rSocketConnectorCustomizers) {
+        for (UnaryOperator<RSocketConnector> connectorCustomizer : rSocketConnectorCustomizers) {
             connector = connectorCustomizer.apply(connector);
         }
 

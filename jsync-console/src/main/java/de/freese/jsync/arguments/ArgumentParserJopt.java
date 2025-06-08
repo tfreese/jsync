@@ -23,50 +23,50 @@
 // private final OptionSet optionSet;
 //
 // private final OptionSpec<Void> optionSpecChecksum =
-// this.optionParser.acceptsAll(Arrays.asList("c", "checksum"), "Zusätzlich Prüfsumme für Vergleich berechnen");
+// optionParser.acceptsAll(Arrays.asList("c", "checksum"), "Zusätzlich Prüfsumme für Vergleich berechnen");
 //
-// private final OptionSpec<Void> optionSpecDelete = this.optionParser.acceptsAll(Arrays.asList("d", "delete"), "Empfänger löscht Dateien vor dem Transfer");
+// private final OptionSpec<Void> optionSpecDelete = optionParser.acceptsAll(Arrays.asList("d", "delete"), "Empfänger löscht Dateien vor dem Transfer");
 //
-// private final OptionSpec<Void> optionSpecDryRun = this.optionParser.acceptsAll(Arrays.asList("n", "dry-run"), "Synchronisation nur Simulieren");
+// private final OptionSpec<Void> optionSpecDryRun = optionParser.acceptsAll(Arrays.asList("n", "dry-run"), "Synchronisation nur Simulieren");
 //
 // private final OptionSpec<Void> optionSpecFollowSymlinks =
-// this.optionParser.acceptsAll(Arrays.asList("f", "follow-symlinks"), "Dateien von SymLinks kopieren");
+// optionParser.acceptsAll(Arrays.asList("f", "follow-symlinks"), "Dateien von SymLinks kopieren");
 //
 // private final OptionSpec<String> optionSpecSender =
-// this.optionParser.acceptsAll(Arrays.asList("s", "sender"), "Quell-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
+// optionParser.acceptsAll(Arrays.asList("s", "sender"), "Quell-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
 //
 // private final OptionSpec<String> optionSpecReceiver =
-// this.optionParser.acceptsAll(Arrays.asList("r", "receiver"), "Ziel-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
+// optionParser.acceptsAll(Arrays.asList("r", "receiver"), "Ziel-Verzeichnis").withRequiredArg().ofType(String.class).defaultsTo("");
 //
 // public ArgumentParserJopt(final String[] args) {
 // super();
 //
-// this.optionSet = this.optionParser.parse(args);
+// optionSet = optionParser.parse(args);
 // }
 //
 // @Override
 // public boolean checksum() {
-// return this.optionSet.has(this.optionSpecChecksum);
+// return optionSet.has(optionSpecChecksum);
 // }
 //
 // @Override
 // public boolean delete() {
-// return this.optionSet.has(this.optionSpecDelete);
+// return optionSet.has(optionSpecDelete);
 // }
 //
 // @Override
 // public boolean dryRun() {
-// return this.optionSet.has(this.optionSpecDryRun);
+// return optionSet.has(optionSpecDryRun);
 // }
 //
 // @Override
 // public boolean followSymlinks() {
-// return this.optionSet.has(this.optionSpecFollowSymlinks);
+// return optionSet.has(optionSpecFollowSymlinks);
 // }
 //
 // @Override
 // public boolean hasArgs() {
-// return this.optionSet.hasOptions();
+// return optionSet.hasOptions();
 // }
 //
 // @Override
@@ -76,7 +76,7 @@
 // printStream.println("usage: jsync [OPTIONS]");
 // printStream.println();
 //
-// this.optionParser.printHelpOn(printStream);
+// optionParser.printHelpOn(printStream);
 // }
 // catch (IOException ex) {
 // throw new UncheckedIOException(ex);
@@ -85,11 +85,11 @@
 //
 // @Override
 // public String sender() {
-// return this.optionSet.valueOf(this.optionSpecSender);
+// return optionSet.valueOf(optionSpecSender);
 // }
 //
 // @Override
 // public String receiver()  {
-// return this.optionSet.valueOf(this.optionSpecReceiver);
+// return optionSet.valueOf(optionSpecReceiver);
 // }
 // }

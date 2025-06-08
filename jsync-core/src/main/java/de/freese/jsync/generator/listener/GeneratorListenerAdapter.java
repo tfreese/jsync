@@ -18,34 +18,34 @@ public class GeneratorListenerAdapter implements GeneratorListener {
 
     @Override
     public final void checksum(final long bytesRead) {
-        if (this.checksumConsumer != null) {
-            this.checksumConsumer.accept(bytesRead);
+        if (checksumConsumer != null) {
+            checksumConsumer.accept(bytesRead);
         }
     }
 
     @Override
     public void currentItem(final SyncItem syncItem) {
-        if (this.currentItemConsumer != null) {
-            this.currentItemConsumer.accept(syncItem);
+        if (currentItemConsumer != null) {
+            currentItemConsumer.accept(syncItem);
         }
     }
 
     public void doOnChecksum(final LongConsumer consumer) {
-        this.checksumConsumer = consumer;
+        checksumConsumer = consumer;
     }
 
     public void doOnCurrentItem(final Consumer<SyncItem> consumer) {
-        this.currentItemConsumer = consumer;
+        currentItemConsumer = consumer;
     }
 
     public void doOnItemCount(final BiConsumer<Path, Integer> consumer) {
-        this.itemCountConsumer = consumer;
+        itemCountConsumer = consumer;
     }
 
     @Override
     public void itemCount(final Path path, final int itemCount) {
-        if (this.itemCountConsumer != null) {
-            this.itemCountConsumer.accept(path, itemCount);
+        if (itemCountConsumer != null) {
+            itemCountConsumer.accept(path, itemCount);
         }
     }
 }

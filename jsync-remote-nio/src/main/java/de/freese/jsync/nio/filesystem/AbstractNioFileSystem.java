@@ -32,7 +32,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
     @Override
     public void connect(final URI uri) {
-        this.channelPool = new SocketChannelPool(uri);
+        channelPool = new SocketChannelPool(uri);
 
         final SocketChannel channel = getChannelPool().obtain();
 
@@ -80,10 +80,10 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
         finally {
             getChannelPool().free(channel);
 
-            this.channelPool.clear();
-            this.channelPool = null;
+            channelPool.clear();
+            channelPool = null;
 
-            this.frameProtocol.getBufferPool().clear();
+            frameProtocol.getBufferPool().clear();
         }
     }
 
@@ -168,14 +168,14 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
     }
 
     protected SocketChannelPool getChannelPool() {
-        return this.channelPool;
+        return channelPool;
     }
 
     protected NioFrameProtocol getFrameProtocol() {
-        return this.frameProtocol;
+        return frameProtocol;
     }
 
     protected Serializer<ByteBuffer, ByteBuffer> getSerializer() {
-        return this.serializer;
+        return serializer;
     }
 }

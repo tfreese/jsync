@@ -172,7 +172,7 @@ public class JSyncRSocketHandlerByteBuf implements RSocket {
     }
 
     protected Serializer<ByteBuf, ByteBuf> getSerializer() {
-        return this.serializer;
+        return serializer;
     }
 
     private Flux<Payload> checksum(final Payload payload, final FileSystem fileSystem) {

@@ -33,28 +33,28 @@ public class Group {
             return false;
         }
 
-        return this.gid == other.gid && Objects.equals(this.name, other.name);
+        return gid == other.gid && Objects.equals(name, other.name);
     }
 
     public int getGid() {
-        return this.gid;
+        return gid;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.gid, this.name);
+        return Objects.hash(gid, name);
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(" [");
-        sb.append("gid=").append(this.gid);
-        sb.append(", name='").append(this.name).append('\'');
+        sb.append("gid=").append(gid);
+        sb.append(", name='").append(name).append('\'');
         sb.append(']');
 
         return sb.toString();

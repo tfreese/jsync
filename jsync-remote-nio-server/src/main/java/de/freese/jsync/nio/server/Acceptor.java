@@ -28,14 +28,14 @@ class Acceptor extends AbstractNioProcessor {
 
     @Override
     protected void beforeSelectorWhile() throws Exception {
-        this.serverSocketChannel.register(getSelector(), SelectionKey.OP_ACCEPT);
+        serverSocketChannel.register(getSelector(), SelectionKey.OP_ACCEPT);
     }
 
     @Override
     protected void onAcceptable(final SelectionKey selectionKey) {
         try {
             // Establish Client Connection.
-            final SocketChannel socketChannel = this.serverSocketChannel.accept();
+            final SocketChannel socketChannel = serverSocketChannel.accept();
 
             if (socketChannel == null) {
                 // In case that another Acceptor has processed the Connection.
@@ -46,7 +46,7 @@ class Acceptor extends AbstractNioProcessor {
             getLogger().debug("{}: connection accepted", socketChannel.getRemoteAddress());
 
             // Delegate the Socket to the Dispatcher.
-            this.dispatcher.register(socketChannel);
+            dispatcher.register(socketChannel);
         }
         catch (Exception ex) {
             getLogger().error(ex.getMessage(), ex);

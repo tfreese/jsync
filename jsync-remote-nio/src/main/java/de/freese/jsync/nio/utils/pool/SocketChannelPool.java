@@ -41,7 +41,7 @@ public final class SocketChannelPool extends Pool<SocketChannel> {
     @Override
     protected SocketChannel create() {
         try {
-            final InetSocketAddress serverAddress = new InetSocketAddress(this.uri.getHost(), this.uri.getPort());
+            final InetSocketAddress serverAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
 
             final SocketChannel channel = SocketChannel.open(serverAddress);
 

@@ -8,9 +8,7 @@ package de.freese.jsync.nio.transport;
  */
 public enum FrameType {
     DATA(1),
-
     ERROR(2),
-
     FINISH(3);
 
     public static FrameType fromEncodedType(final int encodedType) {
@@ -30,6 +28,6 @@ public enum FrameType {
     }
 
     public int getEncodedType() {
-        return this.encodedType;
+        return encodedType;
     }
 }

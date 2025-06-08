@@ -56,25 +56,24 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
         ;
 
         getClient().dispose();
-        this.client = null;
+        client = null;
 
         Schedulers.shutdownNow();
     }
 
     protected void connect(final URI uri, final UnaryOperator<TcpClient> tcpClientCustomizer) {
         if ("rsocket".equals(uri.getScheme())) {
-            this.client = createClientRemote(uri, tcpClientCustomizer);
+            client = createClientRemote(uri, tcpClientCustomizer);
         }
         else {
-            this.client = createClientLocal();
+            client = createClientLocal();
         }
 
         final ByteBuffer bufferMeta = getByteBufferPool().get();
 
         getSerializer().write(bufferMeta, JSyncCommand.CONNECT);
 
-        this.client
-                .requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
+        client.requestResponse(Mono.just(DefaultPayload.create(DefaultPayload.EMPTY_BUFFER, bufferMeta.flip()))
                         .doOnSubscribe(subscription -> getByteBufferPool().free(bufferMeta))
                 )
                 .map(Payload::getDataUtf8)
@@ -158,10 +157,10 @@ public abstract class AbstractRSocketFileSystem extends AbstractFileSystem {
     }
 
     protected RSocketClient getClient() {
-        return this.client;
+        return client;
     }
 
     protected Serializer<ByteBuffer, ByteBuffer> getSerializer() {
-        return this.serializer;
+        return serializer;
     }
 }

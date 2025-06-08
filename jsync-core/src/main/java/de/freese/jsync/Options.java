@@ -29,47 +29,43 @@ public final class Options {
         public Builder() {
             super();
 
-            this.options = new Options();
+            options = new Options();
         }
 
         public Options build() {
-            return this.options;
+            return options;
         }
 
         public Builder checksum(final boolean checksum) {
-            this.options.checksum = checksum;
+            options.checksum = checksum;
             return this;
         }
 
         public Builder delete(final boolean delete) {
-            this.options.delete = delete;
+            options.delete = delete;
             return this;
         }
 
         public Builder dryRun(final boolean dryRun) {
-            this.options.dryRun = dryRun;
+            options.dryRun = dryRun;
             return this;
         }
 
         public Builder followSymLinks(final boolean followSymLinks) {
-            this.options.followSymLinks = followSymLinks;
+            options.followSymLinks = followSymLinks;
             return this;
         }
 
         public Builder parallel(final boolean parallel) {
-            this.options.parallel = parallel;
+            options.parallel = parallel;
             return this;
         }
     }
 
     private boolean checksum;
-
     private boolean delete;
-
     private boolean dryRun = true;
-
     private boolean followSymLinks = true;
-
     private boolean parallel;
 
     private Options() {
@@ -77,22 +73,22 @@ public final class Options {
     }
 
     public boolean isChecksum() {
-        return this.checksum;
+        return checksum;
     }
 
     public boolean isDelete() {
-        return this.delete;
+        return delete;
     }
 
     public boolean isDryRun() {
-        return this.dryRun;
+        return dryRun;
     }
 
     public boolean isFollowSymLinks() {
-        return this.followSymLinks;
+        return followSymLinks;
     }
 
     public boolean isParallel() {
-        return this.parallel;
+        return parallel;
     }
 }

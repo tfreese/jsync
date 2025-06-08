@@ -29,30 +29,30 @@ class UriView extends AbstractView {
     private JTextField textFieldPath;
 
     JButton getButtonOpen() {
-        return this.buttonOpen;
+        return buttonOpen;
     }
 
     JComboBox<JSyncProtocol> getComboBoxProtocol() {
-        return this.comboBoxProtocol;
+        return comboBoxProtocol;
     }
 
     @Override
     Component getComponent() {
-        return this.panel;
+        return panel;
     }
 
     JTextField getTextFieldHostPort() {
-        return this.textFieldHostPort;
+        return textFieldHostPort;
     }
 
     JTextField getTextFieldPath() {
-        return this.textFieldPath;
+        return textFieldPath;
     }
 
     URI getUri() {
-        final JSyncProtocol protocol = (JSyncProtocol) this.comboBoxProtocol.getSelectedItem();
-        final String hostPort = this.textFieldHostPort.getText();
-        final String path = this.textFieldPath.getText();
+        final JSyncProtocol protocol = (JSyncProtocol) comboBoxProtocol.getSelectedItem();
+        final String hostPort = textFieldHostPort.getText();
+        final String path = textFieldPath.getText();
 
         if (path == null || path.isBlank()) {
             return null;
@@ -62,7 +62,7 @@ class UriView extends AbstractView {
     }
 
     UriView initGUI(final EFileSystem fileSystem) {
-        this.panel.setLayout(new GridBagLayout());
+        panel.setLayout(new GridBagLayout());
 
         int row = 0;
 
@@ -75,29 +75,29 @@ class UriView extends AbstractView {
             labelTitle = new JLabel(getMessage("jsync.target"));
         }
 
-        this.panel.add(labelTitle, GbcBuilder.of(0, row).anchorWest());
+        panel.add(labelTitle, GbcBuilder.of(0, row).anchorWest());
 
         row++;
 
-        this.comboBoxProtocol = new JComboBox<>();
+        comboBoxProtocol = new JComboBox<>();
 
-        FileSystemFactory.getInstance().getAvailableProtocols().forEach(this.comboBoxProtocol::addItem);
+        FileSystemFactory.getInstance().getAvailableProtocols().forEach(comboBoxProtocol::addItem);
 
-        this.comboBoxProtocol.setMinimumSize(new Dimension(140, 20));
-        this.comboBoxProtocol.setPreferredSize(new Dimension(140, 20));
-        this.panel.add(this.comboBoxProtocol, GbcBuilder.of(0, row));
+        comboBoxProtocol.setMinimumSize(new Dimension(140, 20));
+        comboBoxProtocol.setPreferredSize(new Dimension(140, 20));
+        panel.add(comboBoxProtocol, GbcBuilder.of(0, row));
 
-        this.textFieldHostPort = new JTextField("localhost:8888");
-        this.textFieldHostPort.setMinimumSize(new Dimension(100, 20));
-        this.textFieldHostPort.setPreferredSize(new Dimension(100, 20));
-        this.textFieldHostPort.setVisible(false);
-        this.panel.add(this.textFieldHostPort, GbcBuilder.of(1, row));
+        textFieldHostPort = new JTextField("localhost:8888");
+        textFieldHostPort.setMinimumSize(new Dimension(100, 20));
+        textFieldHostPort.setPreferredSize(new Dimension(100, 20));
+        textFieldHostPort.setVisible(false);
+        panel.add(textFieldHostPort, GbcBuilder.of(1, row));
 
-        this.textFieldPath = new JTextField();
-        this.panel.add(this.textFieldPath, GbcBuilder.of(2, row).fillHorizontal());
+        textFieldPath = new JTextField();
+        panel.add(textFieldPath, GbcBuilder.of(2, row).fillHorizontal());
 
-        this.buttonOpen = new JButton(getMessage("jsync.open"));
-        this.panel.add(this.buttonOpen, GbcBuilder.of(3, row));
+        buttonOpen = new JButton(getMessage("jsync.open"));
+        panel.add(buttonOpen, GbcBuilder.of(3, row));
 
         return this;
     }

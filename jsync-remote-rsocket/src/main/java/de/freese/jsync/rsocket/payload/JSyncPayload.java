@@ -59,17 +59,17 @@ final class JSyncPayload implements Payload {
 
     @Override
     public ByteBuffer getData() {
-        return this.data.duplicate();
+        return data.duplicate();
     }
 
     @Override
     public ByteBuffer getMetadata() {
-        return this.metadata == null ? DefaultPayload.EMPTY_BUFFER : this.metadata.duplicate();
+        return metadata == null ? DefaultPayload.EMPTY_BUFFER : metadata.duplicate();
     }
 
     @Override
     public boolean hasMetadata() {
-        return this.metadata != null;
+        return metadata != null;
     }
 
     @Override
@@ -84,12 +84,12 @@ final class JSyncPayload implements Payload {
 
     @Override
     public boolean release() {
-        if (this.data != DefaultPayload.EMPTY_BUFFER) {
-            BYTE_BUFFER_POOL.free(this.data);
+        if (data != DefaultPayload.EMPTY_BUFFER) {
+            BYTE_BUFFER_POOL.free(data);
         }
 
-        if (this.metadata != null && this.metadata != DefaultPayload.EMPTY_BUFFER) {
-            BYTE_BUFFER_POOL.free(this.metadata);
+        if (metadata != null && metadata != DefaultPayload.EMPTY_BUFFER) {
+            BYTE_BUFFER_POOL.free(metadata);
         }
 
         return false;
@@ -112,12 +112,12 @@ final class JSyncPayload implements Payload {
 
     @Override
     public ByteBuf sliceData() {
-        return Unpooled.wrappedBuffer(this.data);
+        return Unpooled.wrappedBuffer(data);
     }
 
     @Override
     public ByteBuf sliceMetadata() {
-        return this.metadata == null ? Unpooled.EMPTY_BUFFER : Unpooled.wrappedBuffer(this.metadata);
+        return metadata == null ? Unpooled.EMPTY_BUFFER : Unpooled.wrappedBuffer(metadata);
     }
 
     @Override
