@@ -1,18 +1,18 @@
 // Created: 14.03.2020
 package de.freese.jsync.arguments;
 
+import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+import java.io.UncheckedIOException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.help.HelpFormatter;
 
 /**
  * @author Thomas Freese
@@ -28,15 +28,15 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
         options = new Options();
 
         final OptionGroup groupParams = new OptionGroup();
-        groupParams.addOption(Option.builder("d").longOpt("delete").hasArg(false).desc("Empfänger löscht Dateien vor dem Transfer").build());
+        groupParams.addOption(Option.builder("d").longOpt("delete").hasArg(false).desc("Empfänger löscht Dateien vor dem Transfer").get());
         options.addOptionGroup(groupParams);
 
-        options.addOption(Option.builder("f").longOpt("follow-symlinks").desc("Dateien von SymLinks kopieren").build());
-        options.addOption(Option.builder("n").longOpt("dry-run").desc("Synchronisation nur Simulieren").build());
-        options.addOption(Option.builder("c").longOpt("checksum").desc("Zusätzlich Prüfsumme für Vergleich berechnen").build());
+        options.addOption(Option.builder("f").longOpt("follow-symlinks").desc("Dateien von SymLinks kopieren").get());
+        options.addOption(Option.builder("n").longOpt("dry-run").desc("Synchronisation nur Simulieren").get());
+        options.addOption(Option.builder("c").longOpt("checksum").desc("Zusätzlich Prüfsumme für Vergleich berechnen").get());
 
-        options.addOption(Option.builder("s").longOpt("sender").hasArg().argName("DIR").desc("Quell-Verzeichnis").required().build());
-        options.addOption(Option.builder("r").longOpt("receiver").hasArg().argName("DIR").desc("Ziel-Verzeichnis").required().build());
+        options.addOption(Option.builder("s").longOpt("sender").hasArg().argName("DIR").desc("Quell-Verzeichnis").required().get());
+        options.addOption(Option.builder("r").longOpt("receiver").hasArg().argName("DIR").desc("Ziel-Verzeichnis").required().get());
 
         final CommandLineParser parser = new DefaultParser();
 
@@ -79,16 +79,18 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
 
     @Override
     public void printHelp(final PrintStream printStream) {
-        final HelpFormatter formatter = new HelpFormatter();
-        formatter.setOptionComparator(null);
-        // formatter.setWidth(120);
-        // formatter.printHelp("JSync\n", getCommandOptions(), true);
+        final HelpFormatter formatter = HelpFormatter.builder()
+                .setShowSince(false)
+                .get();
 
         final StringBuilder footer = new StringBuilder();
         footer.append(System.lineSeparator()).append("@Thomas Freese");
 
-        try (PrintWriter pw = new PrintWriter(printStream, true, StandardCharsets.UTF_8)) {
-            formatter.printHelp(pw, 120, "jsync [OPTIONS]" + System.lineSeparator(), System.lineSeparator() + "Parameter:", options, 3, 5, footer.toString(), true);
+        try {
+            formatter.printHelp("jsync [OPTIONS]", "Parameter:", options, footer.toString(), true);
+        }
+        catch (IOException ex) {
+            throw new UncheckedIOException(ex);
         }
     }
 
