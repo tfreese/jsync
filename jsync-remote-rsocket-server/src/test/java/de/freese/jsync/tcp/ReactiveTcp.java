@@ -23,7 +23,7 @@ import reactor.netty.tcp.TcpServer;
 public final class ReactiveTcp {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveTcp.class);
 
-    public static void main(final String[] args) {
+    static void main() {
         TcpResources.set(LoopResources.create("tcpServer", 2, 4, true));
 
         final DisposableServer tcpServer = TcpServer.create()

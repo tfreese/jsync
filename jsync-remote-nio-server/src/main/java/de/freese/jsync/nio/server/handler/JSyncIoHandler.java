@@ -270,7 +270,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
         try {
             return ((SocketChannel) selectionKey.channel()).getRemoteAddress().toString();
         }
-        catch (IOException ex) {
+        catch (IOException _) {
             return "";
         }
     }

@@ -32,7 +32,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 public final class JSyncNioServer implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncNioServer.class);
 
-    public static void main(final String[] args) {
+    static void main(final String[] args) {
         final int port = Integer.parseInt(args[0]);
 
         final JSyncNioServer server = new JSyncNioServer(port, 2, 4);

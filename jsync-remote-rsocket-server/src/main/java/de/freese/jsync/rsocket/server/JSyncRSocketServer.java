@@ -23,7 +23,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 public final class JSyncRSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketServer.class);
 
-    public static void main(final String[] args) {
+    static void main(final String[] args) {
         System.setProperty("reactor.schedulers.defaultPoolSize", Integer.toString(8));
         System.setProperty("reactor.schedulers.defaultBoundedElasticSize", Integer.toString(8));
 

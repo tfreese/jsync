@@ -87,7 +87,7 @@ public final class JSyncUtils {
                 closeable.close();
             }
         }
-        catch (Exception ex) {
+        catch (Exception _) {
             // Ignore
         }
     }
@@ -243,7 +243,7 @@ public final class JSyncUtils {
                 }
             }
         }
-        catch (InterruptedException | IOException ex) {
+        catch (InterruptedException | IOException _) {
             if (logger.isWarnEnabled()) {
                 logger.warn("Interrupted while waiting for ChannelGroup");
             }
@@ -252,7 +252,7 @@ public final class JSyncUtils {
             try {
                 channelGroup.shutdownNow();
             }
-            catch (IOException ex2) {
+            catch (IOException _) {
                 logger.error("ChannelGroup did not terminate");
             }
 
@@ -296,7 +296,7 @@ public final class JSyncUtils {
                 logger.info("ExecutorService terminated");
             }
         }
-        catch (InterruptedException iex) {
+        catch (InterruptedException _) {
             logger.warn("Interrupted while waiting for ExecutorService");
 
             // (Re-)Cancel if current thread also interrupted.
@@ -311,7 +311,7 @@ public final class JSyncUtils {
         try {
             timeUnit.sleep(timeout);
         }
-        catch (InterruptedException ex) {
+        catch (InterruptedException _) {
             // Restore interrupted state.
             Thread.currentThread().interrupt();
         }

@@ -25,7 +25,7 @@ import de.freese.jsync.model.SyncPair;
 public final class JSyncConsole {
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncConsole.class);
 
-    public static void main(final String[] args) throws Exception {
+    static void main(final String[] args) throws Exception {
         String[] arguments = args;
 
         if (arguments.length == 0) {

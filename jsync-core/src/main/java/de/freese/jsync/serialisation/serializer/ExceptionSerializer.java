@@ -44,13 +44,13 @@ public final class ExceptionSerializer implements ClassSerializer<Exception> {
         Exception exception = null;
 
         try {
-            //            // final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            //            // final Class<? extends Exception> clazz = (Class<? extends Exception>) classLoader.loadClass(clazzName);
-            //            // final Class<? extends Exception> clazz = (Class<? extends Exception>) Class.forName(clazzName, true, classLoader);
+            // final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            // final Class<? extends Exception> clazz = (Class<? extends Exception>) classLoader.loadClass(clazzName);
+            // final Class<? extends Exception> clazz = (Class<? extends Exception>) Class.forName(clazzName, true, classLoader);
             final Class<? extends Exception> clazz = (Class<? extends Exception>) Class.forName(clazzName);
-            //            final Constructor<? extends Exception> constructor = clazz.getDeclaredConstructor(String.class);
+            // final Constructor<? extends Exception> constructor = clazz.getDeclaredConstructor(String.class);
             //
-            //            exception = constructor.newInstance(message);
+            // exception = constructor.newInstance(message);
 
             // A look-up that can find public methods.
             final MethodHandles.Lookup publicMethodHandlesLookup = MethodHandles.publicLookup();
@@ -64,7 +64,7 @@ public final class ExceptionSerializer implements ClassSerializer<Exception> {
             // Create an instance of the Invokable class by calling the exact handle, pass in the param value.
             exception = (Exception) invokableClassConstructor.invokeWithArguments(message);
         }
-        catch (Throwable ex) {
+        catch (Throwable _) {
             exception = new Exception(message);
         }
 

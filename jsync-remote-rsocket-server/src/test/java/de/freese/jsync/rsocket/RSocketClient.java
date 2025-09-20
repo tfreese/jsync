@@ -25,7 +25,7 @@ import reactor.util.retry.Retry;
 public final class RSocketClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketClient.class);
 
-    public static void main(final String[] args) {
+    static void main() {
         // Global Default-Resources.
         // TcpResources.set(LoopResources.create("rSocket"));
         // TcpResources.set(LoopResources.create("rSocket", 2, 8, true));

@@ -81,7 +81,7 @@ public abstract class AbstractWorker<T, V> extends SwingWorker<T, V> {
                     canRunParallel = true;
                 }
             }
-            catch (Exception ex) {
+            catch (Exception _) {
                 // Empty
             }
         }

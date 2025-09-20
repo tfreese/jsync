@@ -15,7 +15,7 @@ import de.freese.jsync.swing.messages.Messages;
  * @author Thomas Freese
  */
 public final class JSyncSwingLauncher {
-    public static void main(final String[] args) {
+    static void main(final String[] args) {
         if (args == null) {
             JSyncSwing.getLogger().info("init");
         }

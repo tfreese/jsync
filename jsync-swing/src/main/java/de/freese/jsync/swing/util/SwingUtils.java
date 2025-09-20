@@ -23,7 +23,7 @@ public final class SwingUtils {
             try {
                 c.setBorder(BorderFactory.createLineBorder(Color.MAGENTA));
             }
-            catch (Exception ex) {
+            catch (Exception _) {
                 // Ignore
             }
         }
