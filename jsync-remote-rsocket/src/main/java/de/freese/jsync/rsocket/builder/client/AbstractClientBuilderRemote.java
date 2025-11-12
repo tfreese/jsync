@@ -13,6 +13,7 @@ import java.util.function.UnaryOperator;
 import javax.net.ssl.TrustManagerFactory;
 
 import io.netty.channel.EventLoopGroup;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.rsocket.core.RSocketClient;
 import io.rsocket.core.Resume;
@@ -46,7 +47,7 @@ abstract class AbstractClientBuilderRemote<T extends AbstractBuilder<?, RSocketC
         );
     }
 
-    public T protocolSslContextSpec(final SslProvider.ProtocolSslContextSpec protocolSslContextSpec) {
+    public T protocolSslContextSpec(final SslProvider.GenericSslContextSpec<SslContextBuilder> protocolSslContextSpec) {
         Objects.requireNonNull(protocolSslContextSpec, "protocolSslContextSpec required");
 
         return addTcpClientCustomizer(tcpClient -> tcpClient.secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec)));

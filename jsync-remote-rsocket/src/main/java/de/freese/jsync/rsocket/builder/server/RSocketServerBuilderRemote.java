@@ -18,6 +18,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import io.netty.channel.EventLoopGroup;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.rsocket.core.RSocketServer;
 import io.rsocket.core.Resume;
@@ -66,7 +67,7 @@ public final class RSocketServerBuilderRemote extends AbstractServerBuilder<RSoc
         );
     }
 
-    public RSocketServerBuilderRemote protocolSslContextSpec(final SslProvider.ProtocolSslContextSpec protocolSslContextSpec) {
+    public RSocketServerBuilderRemote protocolSslContextSpec(final SslProvider.GenericSslContextSpec<SslContextBuilder> protocolSslContextSpec) {
         Objects.requireNonNull(protocolSslContextSpec, "protocolSslContextSpec required");
 
         return addTcpServerCustomizer(tcpServer -> tcpServer.secure(sslContextSpec -> sslContextSpec.sslContext(protocolSslContextSpec)));
