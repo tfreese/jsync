@@ -8,13 +8,13 @@ pluginManagement {
 }
 
 // Without rootProject.name the Name of the Projekt-Directory is used.
-//rootProject.name = "jsync"
+// rootProject.name = "jsync"
 
-include "jsync-core"
-include "jsync-console"
-include "jsync-remote-rsocket"
-include "jsync-remote-rsocket-server"
-include "jsync-remote-nio"
-include "jsync-remote-nio-server"
-include "jsync-swing"
-include "jsync-test"
+include("jsync-core")
+include("jsync-console")
+include("jsync-remote-rsocket")
+include("jsync-remote-rsocket-server")
+include("jsync-remote-nio")
+include("jsync-remote-nio-server")
+include("jsync-swing")
+include("jsync-test")
