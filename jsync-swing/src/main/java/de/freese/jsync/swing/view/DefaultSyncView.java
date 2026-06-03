@@ -285,7 +285,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
             try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
                 properties.load(is);
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 getLogger().error(ex.getMessage(), ex);
             }
         }
@@ -323,7 +323,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
         try (OutputStream os = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
             properties.store(os, null);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
     }
@@ -416,8 +416,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
         if (selectedFolder == null || selectedFolder.isBlank()) {
             currentDirectory = Paths.get(System.getProperty("user.home")).toFile();
-        }
-        else {
+        } else {
             selectedDirectory = Paths.get(selectedFolder).toFile();
             currentDirectory = selectedDirectory.getParentFile();
         }
@@ -484,8 +483,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
             if (folder != null) {
                 textFieldPathSender.setText(folder.toString());
-            }
-            else {
+            } else {
                 textFieldPathSender.setText(null);
             }
         });
@@ -495,8 +493,7 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
             if (folder != null) {
                 textFieldPathReceiver.setText(folder.toString());
-            }
-            else {
+            } else {
                 textFieldPathReceiver.setText(null);
             }
         });

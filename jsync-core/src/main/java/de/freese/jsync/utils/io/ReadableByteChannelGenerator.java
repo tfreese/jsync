@@ -34,12 +34,11 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
                 release = false;
                 buffer.flip();
                 sink.next(buffer);
-            }
-            else {
+            } else {
                 sink.complete();
             }
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             sink.error(ex);
         }
         finally {

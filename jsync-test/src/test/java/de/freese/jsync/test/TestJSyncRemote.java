@@ -59,11 +59,11 @@ class TestJSyncRemote extends AbstractJSyncIoTest {
 
     @AfterAll
     static void afterAll() {
-        for (AutoCloseable closeable : CLOSEABLES.values()) {
+        for (final AutoCloseable closeable : CLOSEABLES.values()) {
             try {
                 closeable.close();
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 LoggerFactory.getLogger(TestJSyncRemote.class).error(ex.getMessage(), ex);
             }
         }

@@ -93,7 +93,7 @@ public class JSyncRSocketHandlerByteBuf implements RSocket {
                     default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
                 };
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 getLogger().error(ex.getMessage(), ex);
 
                 return Flux.error(ex);
@@ -124,7 +124,7 @@ public class JSyncRSocketHandlerByteBuf implements RSocket {
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             return Mono.error(ex);
@@ -158,7 +158,7 @@ public class JSyncRSocketHandlerByteBuf implements RSocket {
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             return Flux.error(ex);
@@ -281,7 +281,7 @@ public class JSyncRSocketHandlerByteBuf implements RSocket {
 
                 receiver.validateFile(baseDir, syncItem, withChecksum, consumer);
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 sink.error(ex);
             }
             finally {

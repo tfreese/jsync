@@ -65,7 +65,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
             final JSyncCommand command = getSerializer().readJSyncCommand(buffer);
 
-            frameProtocol.getBufferPool().free(buffer);
+            frameProtocol.bufferPool().free(buffer);
 
             getLogger().debug("{}: read command: {}", getRemoteAddress(selectionKey), command);
 
@@ -75,7 +75,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
                 return;
             }
 
-            getLogger().debug("{}", frameProtocol.getBufferPool());
+            getLogger().debug("{}", frameProtocol.bufferPool());
 
             switch (command) {
                 case DISCONNECT -> {
@@ -113,7 +113,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
                 selectionKey.interestOps(SelectionKey.OP_READ);
             }
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
         finally {
@@ -125,7 +125,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
     @Override
     public void write(final SelectionKey selectionKey) {
         try {
-            if (selectionKey.attachment() instanceof Runnable task) {
+            if (selectionKey.attachment() instanceof final Runnable task) {
                 selectionKey.attach(null);
 
                 task.run();
@@ -133,7 +133,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
             selectionKey.interestOps(SelectionKey.OP_READ);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
     }
@@ -152,7 +152,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
                 try {
                     frameProtocol.writeData(channel, buf -> getSerializer().writeString(buf, Long.toString(checksumBytesRead)));
                 }
-                catch (IOException ex) {
+                catch (final IOException ex) {
                     throw new UncheckedIOException(ex);
                 }
             };
@@ -162,18 +162,18 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
             frameProtocol.writeData(channel, buf -> getSerializer().writeString(buf, checksum));
             frameProtocol.writeFinish(channel);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             try {
                 frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
-            catch (Exception ex2) {
+            catch (final Exception ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally {
-            frameProtocol.getBufferPool().free(buffer);
+            frameProtocol.bufferPool().free(buffer);
         }
     }
 
@@ -188,18 +188,18 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
             frameProtocol.writeFinish(channel);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             try {
                 frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
-            catch (IOException ex2) {
+            catch (final IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally {
-            frameProtocol.getBufferPool().free(buffer);
+            frameProtocol.bufferPool().free(buffer);
         }
     }
 
@@ -215,25 +215,25 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
                 try {
                     frameProtocol.writeData(channel, buf -> getSerializer().write(buf, syncItem));
                 }
-                catch (IOException ex) {
+                catch (final IOException ex) {
                     throw new UncheckedIOException(ex);
                 }
             });
 
             frameProtocol.writeFinish(channel);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             try {
                 frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
-            catch (Exception ex2) {
+            catch (final Exception ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally {
-            frameProtocol.getBufferPool().free(buffer);
+            frameProtocol.bufferPool().free(buffer);
         }
     }
 
@@ -249,16 +249,16 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
             frameProtocol.writeFinish(channel);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             try {
                 frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
-            catch (IOException ex2) {
+            catch (final IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally {
-            frameProtocol.getBufferPool().free(buffer);
+            frameProtocol.bufferPool().free(buffer);
         }
     }
 
@@ -291,26 +291,26 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
                 try {
                     frameProtocol.writeData(channel, buf);
                 }
-                catch (IOException ex) {
+                catch (final IOException ex) {
                     throw new UncheckedIOException(ex);
                 }
                 finally {
-                    frameProtocol.getBufferPool().free(buf);
+                    frameProtocol.bufferPool().free(buf);
                 }
             });
 
             frameProtocol.writeFinish(channel);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             try {
                 frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
-            catch (IOException ex2) {
+            catch (final IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally {
-            frameProtocol.getBufferPool().free(buffer);
+            frameProtocol.bufferPool().free(buffer);
         }
     }
 
@@ -325,18 +325,18 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
             frameProtocol.writeFinish(channel);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             try {
                 frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
-            catch (IOException ex2) {
+            catch (final IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally {
-            frameProtocol.getBufferPool().free(buffer);
+            frameProtocol.bufferPool().free(buffer);
         }
     }
 
@@ -352,7 +352,7 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
                 try {
                     frameProtocol.writeData(channel, buf -> getSerializer().writeLong(buf, checksumBytesRead));
                 }
-                catch (IOException ex) {
+                catch (final IOException ex) {
                     throw new UncheckedIOException(ex);
                 }
             };
@@ -361,18 +361,18 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
 
             frameProtocol.writeFinish(channel);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             try {
                 frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
-            catch (IOException ex2) {
+            catch (final IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally {
-            frameProtocol.getBufferPool().free(buffer);
+            frameProtocol.bufferPool().free(buffer);
         }
     }
 
@@ -390,25 +390,25 @@ public class JSyncIoHandler implements IoHandler<SelectionKey> {
                 try {
                     frameProtocol.writeData(channel, buf -> getSerializer().writeLong(buf, bytesWritten));
                 }
-                catch (IOException ex) {
+                catch (final IOException ex) {
                     throw new UncheckedIOException(ex);
                 }
             });
 
             frameProtocol.writeFinish(channel);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             try {
                 frameProtocol.writeError(channel, buf -> getSerializer().write(buf, ex));
             }
-            catch (IOException ex2) {
+            catch (final IOException ex2) {
                 getLogger().error(ex2.getMessage(), ex2);
             }
         }
         finally {
-            frameProtocol.getBufferPool().free(buffer);
+            frameProtocol.bufferPool().free(buffer);
         }
     }
 }

@@ -38,7 +38,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
                 Files.createDirectories(path);
             }
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
@@ -50,7 +50,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
         try {
             JSyncUtils.delete(path, followSymLinks);
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
@@ -107,7 +107,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
             //     fileAttributeView.setOwner(userPrincipal);
             // }
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
@@ -133,7 +133,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
                 }
             }
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
@@ -157,7 +157,7 @@ public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiv
 
             return ReactiveUtils.write(fileFlux, fileChannelReceiver).doFinally(type -> JSyncUtils.close(fileChannelReceiver));
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }

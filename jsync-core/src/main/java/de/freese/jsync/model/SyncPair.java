@@ -53,13 +53,10 @@ public class SyncPair {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("SyncPair [");
-        builder.append("relativePath=").append(getRelativePath());
-        builder.append(", status=").append(getStatus());
-        builder.append("]");
-
-        return builder.toString();
+        return "SyncPair [" +
+                "relativePath=" + getRelativePath()
+                + ", status=" + getStatus()
+                + "]";
     }
 
     /**
@@ -69,20 +66,16 @@ public class SyncPair {
         if (getSenderItem() == null && getReceiverItem() != null) {
             // Delete: only available in Target but not in Source.
             status = SyncStatus.ONLY_IN_TARGET;
-        }
-        else if (getSenderItem() != null && getReceiverItem() == null) {
+        } else if (getSenderItem() != null && getReceiverItem() == null) {
             // Copy: only available in Source but not in Target.
             status = SyncStatus.ONLY_IN_SOURCE;
-        }
-        else if (getSenderItem() != null && getReceiverItem() != null) {
+        } else if (getSenderItem() != null && getReceiverItem() != null) {
             // Copy: Different Attributes
             if (getSenderItem().getLastModifiedTime() != getReceiverItem().getLastModifiedTime()) {
                 status = SyncStatus.DIFFERENT_LAST_MODIFIEDTIME;
-            }
-            else if (getSenderItem().getSize() != getReceiverItem().getSize()) {
+            } else if (getSenderItem().getSize() != getReceiverItem().getSize()) {
                 status = SyncStatus.DIFFERENT_SIZE;
-            }
-            else if (!Objects.equals(getSenderItem().getChecksum(), getReceiverItem().getChecksum())) {
+            } else if (!Objects.equals(getSenderItem().getChecksum(), getReceiverItem().getChecksum())) {
                 status = SyncStatus.DIFFERENT_CHECKSUM;
             }
             // else if (!Objects.equals(getSenderItem().getPermissionsToString(), getReceiverItem().getPermissionsToString())) {
@@ -97,8 +90,7 @@ public class SyncPair {
             else {
                 status = SyncStatus.SYNCHRONIZED;
             }
-        }
-        else {
+        } else {
             status = SyncStatus.UNKNOWN;
         }
     }

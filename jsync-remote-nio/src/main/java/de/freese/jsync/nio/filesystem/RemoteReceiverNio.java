@@ -37,15 +37,15 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             getFrameProtocol().writeFinish(channel);
 
             // Response
-            getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
+            getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().bufferPool().free(buffer));
         }
-        catch (RuntimeException ex) {
+        catch (final RuntimeException ex) {
             throw ex;
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             throw new RuntimeException(ex);
         }
         finally {
@@ -72,15 +72,15 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             getFrameProtocol().writeFinish(channel);
 
             // Response
-            getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
+            getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().bufferPool().free(buffer));
         }
-        catch (RuntimeException ex) {
+        catch (final RuntimeException ex) {
             throw ex;
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             throw new RuntimeException(ex);
         }
         finally {
@@ -116,15 +116,15 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             getFrameProtocol().writeFinish(channel);
 
             // Response
-            getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
+            getFrameProtocol().readAll(channel).subscribe(buffer -> getFrameProtocol().bufferPool().free(buffer));
         }
-        catch (RuntimeException ex) {
+        catch (final RuntimeException ex) {
             throw ex;
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             throw new RuntimeException(ex);
         }
         finally {
@@ -153,18 +153,18 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             // Response
             getFrameProtocol().readAll(channel).map(buffer -> {
                 final long value = getSerializer().readLong(buffer);
-                getFrameProtocol().getBufferPool().free(buffer);
+                getFrameProtocol().bufferPool().free(buffer);
 
                 return value;
             }).doOnNext(consumerChecksumBytesRead::accept).subscribe();
         }
-        catch (RuntimeException ex) {
+        catch (final RuntimeException ex) {
             throw ex;
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             throw new RuntimeException(ex);
         }
         finally {
@@ -191,7 +191,7 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
                 try {
                     getFrameProtocol().writeData(channel, buffer);
                 }
-                catch (IOException ex) {
+                catch (final IOException ex) {
                     throw new UncheckedIOException(ex);
                 }
             });
@@ -202,18 +202,18 @@ public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver
             // Response
             return getFrameProtocol().readAll(channel).map(buffer -> {
                 final long bytesWritten = getSerializer().readLong(buffer);
-                getFrameProtocol().getBufferPool().free(buffer);
+                getFrameProtocol().bufferPool().free(buffer);
 
                 return bytesWritten;
             });
         }
-        catch (RuntimeException ex) {
+        catch (final RuntimeException ex) {
             throw ex;
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             throw new RuntimeException(ex);
         }
         finally {

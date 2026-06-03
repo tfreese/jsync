@@ -37,7 +37,7 @@ public final class RSocketUtils {
                 bytesWritten += channel.write(buffer);
             }
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
 

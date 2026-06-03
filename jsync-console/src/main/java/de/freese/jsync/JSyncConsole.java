@@ -48,7 +48,7 @@ public final class JSyncConsole {
             argumentParser = new ArgumentParserApacheCommonsCli(arguments);
             // argumentParser = new ArgumentParserJopt(args2);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
 
             System.exit(-1);

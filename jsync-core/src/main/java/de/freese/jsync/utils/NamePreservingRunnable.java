@@ -48,7 +48,7 @@ public class NamePreservingRunnable implements Runnable {
         try {
             thread.setName(name);
         }
-        catch (SecurityException sex) {
+        catch (final SecurityException sex) {
             LOGGER.warn("Failed to set the thread name.", sex);
         }
     }

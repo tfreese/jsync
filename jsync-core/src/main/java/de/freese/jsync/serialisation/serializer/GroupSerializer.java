@@ -20,7 +20,7 @@ public final class GroupSerializer implements ClassSerializer<Group> {
     public static GroupSerializer getInstance() {
         return GroupSerializerHolder.INSTANCE;
     }
-    
+
     private GroupSerializer() {
         super();
     }
@@ -50,9 +50,9 @@ public final class GroupSerializer implements ClassSerializer<Group> {
         writer.writeByte(output, (byte) 1);
 
         // gid
-        writer.writeInteger(output, value.getGid());
+        writer.writeInteger(output, value.gid());
 
         // name
-        writer.writeString(output, value.getName());
+        writer.writeString(output, value.name());
     }
 }

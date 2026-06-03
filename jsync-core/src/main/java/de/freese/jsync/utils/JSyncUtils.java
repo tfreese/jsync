@@ -66,13 +66,13 @@ public final class JSyncUtils {
     public static void close(final Channel channel) {
         if (channel != null && channel.isOpen()) {
             try {
-                if (channel instanceof FileChannel fc) {
+                if (channel instanceof final FileChannel fc) {
                     fc.force(false);
                 }
 
                 channel.close();
             }
-            catch (IOException ex) {
+            catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
             }
         }
@@ -113,8 +113,7 @@ public final class JSyncUtils {
 
         if (Files.isDirectory(path, linkOptions)) {
             Files.walkFileTree(path, Set.of(fileVisitOptions), Integer.MAX_VALUE, new FileVisitorDelete());
-        }
-        else {
+        } else {
             Files.delete(path);
         }
     }
@@ -278,8 +277,8 @@ public final class JSyncUtils {
                 logger.warn("Timed out while waiting for ExecutorService");
 
                 // Cancel currently executing tasks.
-                for (Runnable remainingTask : executorService.shutdownNow()) {
-                    if (remainingTask instanceof Future<?> f) {
+                for (final Runnable remainingTask : executorService.shutdownNow()) {
+                    if (remainingTask instanceof final Future<?> f) {
                         f.cancel(true);
                     }
                 }
@@ -287,12 +286,10 @@ public final class JSyncUtils {
                 // Wait a while for tasks to respond to being cancelled.
                 if (!executorService.awaitTermination(5L, TimeUnit.SECONDS)) {
                     logger.error("ExecutorService did not terminate");
-                }
-                else {
+                } else {
                     logger.info("ExecutorService terminated");
                 }
-            }
-            else {
+            } else {
                 logger.info("ExecutorService terminated");
             }
         }

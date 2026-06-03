@@ -28,6 +28,7 @@ public abstract class Pool<T> {
     /**
      * Objects implementing this interface will have {@link #reset()} called when passed to {@link Pool#free(Object)}.
      */
+    @FunctionalInterface
     public interface Poolable {
         /**
          * Resets the object for reuse. Object references should be nulled and fields may be set to default values.
@@ -197,8 +198,7 @@ public abstract class Pool<T> {
                     return super.offer(o);
                 }
             };
-        }
-        else if (softReferences) {
+        } else if (softReferences) {
             // More efficient clean() than ArrayDeque.
             queue = new LinkedList<>() {
                 @Serial
@@ -215,8 +215,7 @@ public abstract class Pool<T> {
                     return true;
                 }
             };
-        }
-        else {
+        } else {
             queue = new ArrayDeque<>() {
                 @Serial
                 private static final long serialVersionUID = 1L;
@@ -347,7 +346,7 @@ public abstract class Pool<T> {
      * the object is {@link Poolable}.
      */
     protected void reset(final T object) {
-        if (object instanceof Poolable poolable) {
+        if (object instanceof final Poolable poolable) {
             poolable.reset();
         }
     }

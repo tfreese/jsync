@@ -25,10 +25,9 @@ public class ReceiverDelegateLogger implements Receiver {
 
         this.delegate = Objects.requireNonNull(delegate, "delegate required");
 
-        if (this.delegate instanceof AbstractFileSystem fs) {
+        if (this.delegate instanceof final AbstractFileSystem fs) {
             this.logger = fs.getLogger();
-        }
-        else {
+        } else {
             this.logger = LoggerFactory.getLogger(this.delegate.getClass());
         }
     }

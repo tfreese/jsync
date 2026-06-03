@@ -41,7 +41,7 @@ public abstract class AbstractGenerator implements Generator {
         try {
             Files.walkFileTree(base, Set.of(visitOptions), Integer.MAX_VALUE, new FileVisitorHierarchie(base, pathFilter, consumer));
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }

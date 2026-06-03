@@ -46,7 +46,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
 
             getSelector().wakeup();
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
     }
@@ -68,7 +68,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
 
                 socketChannel.close();
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 getLogger().error(ex.getMessage(), ex);
             }
         }
@@ -131,7 +131,7 @@ class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
                 socketChannel.register(getSelector(), SelectionKey.OP_READ);
                 // selectionKey.attach(obj)
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 getLogger().error(ex.getMessage(), ex);
             }
         }

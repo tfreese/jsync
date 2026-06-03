@@ -77,7 +77,7 @@ public final class DigestUtils {
 
             return JSyncUtils.bytesToHex(bytes);
         }
-        catch (IOException iex) {
+        catch (final IOException iex) {
             throw new UncheckedIOException(iex);
         }
     }

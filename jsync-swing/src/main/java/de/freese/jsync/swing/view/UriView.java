@@ -70,8 +70,7 @@ class UriView extends AbstractView {
 
         if (EFileSystem.SENDER.equals(fileSystem)) {
             labelTitle = new JLabel(getMessage("jsync.source"));
-        }
-        else {
+        } else {
             labelTitle = new JLabel(getMessage("jsync.target"));
         }
 

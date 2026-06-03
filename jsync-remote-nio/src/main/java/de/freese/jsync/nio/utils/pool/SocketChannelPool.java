@@ -32,7 +32,7 @@ public final class SocketChannelPool extends Pool<SocketChannel> {
                 channel.shutdownOutput();
                 channel.close();
             }
-            catch (IOException ex) {
+            catch (final IOException ex) {
                 getLogger().warn(ex.getMessage());
             }
         });
@@ -53,7 +53,7 @@ public final class SocketChannelPool extends Pool<SocketChannel> {
 
             return channel;
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }

@@ -77,8 +77,7 @@ public abstract class AbstractClient implements Client {
         if (EFileSystem.SENDER.equals(fileSystem)) {
             fs = getSender();
             baseDir = getSenderPath();
-        }
-        else {
+        } else {
             fs = getReceiver();
             baseDir = getReceiverPath();
         }
@@ -94,8 +93,7 @@ public abstract class AbstractClient implements Client {
         if (EFileSystem.SENDER.equals(fileSystem)) {
             fs = getSender();
             baseDir = getSenderPath();
-        }
-        else {
+        } else {
             fs = getReceiver();
             baseDir = getReceiverPath();
         }
@@ -128,7 +126,7 @@ public abstract class AbstractClient implements Client {
                         clientListener.copyProgress(getOptions(), syncItem, writtenBytesSum);
                     }).blockLast();
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             clientListener.error(ex.getMessage(), ex);
 
             return;
@@ -139,7 +137,7 @@ public abstract class AbstractClient implements Client {
             clientListener.validate(getOptions(), syncItem);
             getReceiver().validateFile(getReceiverPath(), syncItem, getOptions().isChecksum(), bytesRead -> clientListener.checksumProgress(getOptions(), syncItem, bytesRead));
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             clientListener.error(ex.getMessage(), ex);
         }
     }
@@ -191,7 +189,7 @@ public abstract class AbstractClient implements Client {
         try {
             getReceiver().createDirectory(getReceiverPath(), syncItem.getRelativePath());
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             clientListener.error(ex.getMessage(), ex);
         }
     }
@@ -206,7 +204,7 @@ public abstract class AbstractClient implements Client {
         try {
             getReceiver().delete(getReceiverPath(), syncItem.getRelativePath(), getOptions().isFollowSymLinks());
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             clientListener.error(ex.getMessage(), ex);
         }
     }
@@ -283,7 +281,7 @@ public abstract class AbstractClient implements Client {
         try {
             getReceiver().update(getReceiverPath(), syncItem);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             clientListener.error(ex.getMessage(), ex);
         }
     }

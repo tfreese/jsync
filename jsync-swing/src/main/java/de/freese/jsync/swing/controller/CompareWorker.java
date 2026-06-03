@@ -58,8 +58,7 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
         if (isParallel()) {
             getExecutorService().execute(futureSenderItems);
             getExecutorService().execute(futureReceiverItems);
-        }
-        else {
+        } else {
             futureSenderItems.run();
             futureReceiverItems.run();
         }
@@ -73,7 +72,7 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
         getSyncView().setProgressBarFilesMax(syncPairs.size());
 
         // Fill GUI.
-        for (SyncPair syncPair : syncPairs) {
+        for (final SyncPair syncPair : syncPairs) {
             getSyncView().addSyncPair(syncPair);
 
             // Checksum
@@ -84,8 +83,7 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
                 if (isParallel()) {
                     getExecutorService().execute(futureSenderChecksum);
                     getExecutorService().execute(futureReceiverChecksum);
-                }
-                else {
+                } else {
                     futureSenderChecksum.run();
                     futureReceiverChecksum.run();
                 }
@@ -113,13 +111,13 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
         try {
             get();
         }
-        catch (InterruptedException ex) {
+        catch (final InterruptedException ex) {
             getLogger().error(ex.getMessage(), ex);
 
             // Restore interrupted state.
             Thread.currentThread().interrupt();
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
 

@@ -144,7 +144,7 @@ public final class JSyncNioServer implements Runnable {
             getLogger().info("'{}' listening on port: {}", name, port);
             startLock.release();
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
     }
@@ -180,7 +180,7 @@ public final class JSyncNioServer implements Runnable {
 
             serverSocketChannel.close();
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             getLogger().error(ex.getMessage(), ex);
         }
 

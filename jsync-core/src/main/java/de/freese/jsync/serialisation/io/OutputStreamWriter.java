@@ -14,7 +14,7 @@ public class OutputStreamWriter implements DataWriter<OutputStream> {
         try {
             output.write(value);
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
@@ -24,7 +24,7 @@ public class OutputStreamWriter implements DataWriter<OutputStream> {
         try {
             output.write(bytes);
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }

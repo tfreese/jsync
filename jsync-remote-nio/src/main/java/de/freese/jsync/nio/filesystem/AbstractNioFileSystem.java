@@ -44,15 +44,15 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
             getFrameProtocol().writeFinish(channel);
 
             // Response
-            getFrameProtocol().readAll(channel).doFinally(signal -> getLogger().info("client connected")).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
+            getFrameProtocol().readAll(channel).doFinally(signal -> getLogger().info("client connected")).subscribe(buffer -> getFrameProtocol().bufferPool().free(buffer));
         }
-        catch (RuntimeException ex) {
+        catch (final RuntimeException ex) {
             throw ex;
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             throw new RuntimeException(ex);
         }
         finally {
@@ -72,9 +72,9 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
             getFrameProtocol().writeFinish(channel);
 
             // Response
-            getFrameProtocol().readAll(channel).doFinally(signal -> getLogger().info("client disconnected")).subscribe(buffer -> getFrameProtocol().getBufferPool().free(buffer));
+            getFrameProtocol().readAll(channel).doFinally(signal -> getLogger().info("client disconnected")).subscribe(buffer -> getFrameProtocol().bufferPool().free(buffer));
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
         finally {
@@ -83,7 +83,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
             channelPool.clear();
             channelPool = null;
 
-            frameProtocol.getBufferPool().clear();
+            frameProtocol.bufferPool().clear();
         }
     }
 
@@ -106,7 +106,7 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
             // Response
             return getFrameProtocol().readAll(channel).map(buffer -> {
                 final String value = getSerializer().readString(buffer);
-                getFrameProtocol().getBufferPool().free(buffer);
+                getFrameProtocol().bufferPool().free(buffer);
 
                 return value;
             }).doOnNext(value -> {
@@ -115,13 +115,13 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
                 }
             }).blockLast();
         }
-        catch (RuntimeException ex) {
+        catch (final RuntimeException ex) {
             throw ex;
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             throw new RuntimeException(ex);
         }
         finally {
@@ -153,10 +153,10 @@ public abstract class AbstractNioFileSystem extends AbstractFileSystem {
 
                     sink.next(syncItem);
 
-                    getFrameProtocol().getBufferPool().free(buffer);
+                    getFrameProtocol().bufferPool().free(buffer);
                 });
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 sink.error(ex);
             }
             finally {

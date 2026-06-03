@@ -135,7 +135,7 @@ abstract class AbstractClientBuilderRemote<T extends AbstractBuilder<?, RSocketC
     protected TcpClient configure(final TcpClient tcpClient) {
         TcpClient client = tcpClient;
 
-        for (UnaryOperator<TcpClient> clientCustomizer : tcpClientCustomizers) {
+        for (final UnaryOperator<TcpClient> clientCustomizer : tcpClientCustomizers) {
             client = clientCustomizer.apply(client);
         }
 

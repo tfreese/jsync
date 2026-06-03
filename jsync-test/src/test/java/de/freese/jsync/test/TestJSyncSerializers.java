@@ -173,13 +173,13 @@ class TestJSyncSerializers {
         final Object input = dataHolder.getInput();
         group1 = serializer.read(input, GroupSerializer.getInstance());
         assertNotNull(group1);
-        assertEquals("TestGroupA", group1.getName());
-        assertEquals(41, group1.getGid());
+        assertEquals("TestGroupA", group1.name());
+        assertEquals(41, group1.gid());
 
         group2 = serializer.read(input, GroupSerializer.getInstance());
         assertNotNull(group2);
-        assertEquals("TestGroupB", group2.getName());
-        assertEquals(42, group2.getGid());
+        assertEquals("TestGroupB", group2.name());
+        assertEquals(42, group2.gid());
     }
 
     @ParameterizedTest(name = "{index} -> {0}")
@@ -307,12 +307,12 @@ class TestJSyncSerializers {
         final Object input = dataHolder.getInput();
         user1 = serializer.read(input, UserSerializer.getInstance());
         assertNotNull(user1);
-        assertEquals("TestUserA", user1.getName());
-        assertEquals(41, user1.getUid());
+        assertEquals("TestUserA", user1.name());
+        assertEquals(41, user1.uid());
 
         user2 = serializer.read(input, UserSerializer.getInstance());
         assertNotNull(user2);
-        assertEquals("TestUserB", user2.getName());
-        assertEquals(42, user2.getUid());
+        assertEquals("TestUserB", user2.name());
+        assertEquals(42, user2.uid());
     }
 }

@@ -21,8 +21,7 @@ public class FileVisitorDelete extends SimpleFileVisitor<Path> {
     public FileVisitResult postVisitDirectory(final Path dir, final IOException ex) throws IOException {
         if (ex != null) {
             LOGGER.error(dir.toString(), ex);
-        }
-        else {
+        } else {
             Files.delete(dir);
         }
 

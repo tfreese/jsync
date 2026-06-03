@@ -81,7 +81,7 @@ public final class ExceptionSerializer implements ClassSerializer<Exception> {
         final StackTraceElement[] stackTrace = value.getStackTrace();
         writer.writeInteger(output, stackTrace.length);
 
-        for (StackTraceElement stackTraceElement : stackTrace) {
+        for (final StackTraceElement stackTraceElement : stackTrace) {
             StackTraceElementSerializer.getInstance().write(writer, output, stackTraceElement);
         }
     }

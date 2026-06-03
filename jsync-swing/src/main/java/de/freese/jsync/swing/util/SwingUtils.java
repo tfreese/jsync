@@ -19,7 +19,7 @@ public final class SwingUtils {
     public static void enableDebug(final Component component) {
         // System.out.printf("%s%n", component.getClass().getSimpleName());
 
-        if (component instanceof JComponent c) {
+        if (component instanceof final JComponent c) {
             try {
                 c.setBorder(BorderFactory.createLineBorder(Color.MAGENTA));
             }
@@ -35,11 +35,10 @@ public final class SwingUtils {
     public static void enableDebug(final Container container) {
         enableDebug((Component) container);
 
-        for (Component child : container.getComponents()) {
-            if (child instanceof Container c) {
+        for (final Component child : container.getComponents()) {
+            if (child instanceof final Container c) {
                 enableDebug(c);
-            }
-            else {
+            } else {
                 enableDebug(child);
             }
         }
@@ -48,8 +47,7 @@ public final class SwingUtils {
     public static void runInEdt(final Runnable runnable) {
         if (SwingUtilities.isEventDispatchThread()) {
             runnable.run();
-        }
-        else {
+        } else {
             SwingUtilities.invokeLater(runnable);
         }
     }

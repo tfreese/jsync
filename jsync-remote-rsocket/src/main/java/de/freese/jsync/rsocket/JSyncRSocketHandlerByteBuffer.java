@@ -69,7 +69,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     private static Logger getLogger() {
         return LOGGER;
     }
-    
+
     private final Serializer<ByteBuffer, ByteBuffer> serializer = new DefaultSerializer<>(new ByteBufferReader(), new ByteBufferWriter());
 
     @Override
@@ -90,7 +90,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
                     default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
                 };
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 getLogger().error(ex.getMessage(), ex);
 
                 return Flux.error(ex);
@@ -122,7 +122,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             return Mono.error(ex);
@@ -155,7 +155,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
                 default -> throw new IllegalStateException("unknown JSyncCommand: " + command);
             };
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
 
             return Flux.error(ex);

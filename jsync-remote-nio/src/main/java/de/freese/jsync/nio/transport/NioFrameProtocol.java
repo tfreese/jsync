@@ -19,26 +19,19 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  *
  * @author Thomas Freese
  */
-public class NioFrameProtocol {
+public record NioFrameProtocol(ByteBufferPool bufferPool) {
     /**
      * Default: 4 MB
      */
-    protected static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 4;
-
-    private final ByteBufferPool bufferPool;
+    private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 4;
 
     public NioFrameProtocol() {
         this(ByteBufferPool.DEFAULT);
     }
 
     public NioFrameProtocol(final ByteBufferPool bufferPool) {
-        super();
 
         this.bufferPool = Objects.requireNonNull(bufferPool, "bufferPool required");
-    }
-
-    public ByteBufferPool getBufferPool() {
-        return bufferPool;
     }
 
     /**
@@ -50,7 +43,7 @@ public class NioFrameProtocol {
             try {
                 readAll(channel, sink::next);
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 sink.error(ex);
             }
             finally {
@@ -88,17 +81,16 @@ public class NioFrameProtocol {
         final FrameType frameType = FrameType.fromEncodedType(buffer.getInt());
         final int contentLength = buffer.getInt();
 
-        getBufferPool().free(buffer);
+        bufferPool().free(buffer);
 
         // Content
-        buffer = getBufferPool().get();
+        buffer = bufferPool().get();
 
         if (FrameType.DATA.equals(frameType)) {
             read(channel, buffer, contentLength);
 
             return buffer.flip();
-        }
-        else if (FrameType.ERROR.equals(frameType)) {
+        } else if (FrameType.ERROR.equals(frameType)) {
             read(channel, buffer, contentLength);
             buffer.flip();
 
@@ -106,13 +98,13 @@ public class NioFrameProtocol {
             buffer.get(bytes);
             final String message = new String(bytes, StandardCharsets.UTF_8);
 
-            getBufferPool().free(buffer);
+            bufferPool().free(buffer);
 
             throw new Exception(message);
         }
 
         // FINISH-Frame
-        getBufferPool().free(buffer);
+        bufferPool().free(buffer);
 
         return null;
     }
@@ -125,8 +117,7 @@ public class NioFrameProtocol {
 
         if (buffer.position() == 0) {
             contentLength = buffer.limit();
-        }
-        else {
+        } else {
             contentLength = buffer.position();
         }
 
@@ -138,7 +129,7 @@ public class NioFrameProtocol {
      * Write the DATA-Frame.
      */
     public void writeData(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException {
-        final ByteBuffer buffer = getBufferPool().get();
+        final ByteBuffer buffer = bufferPool().get();
 
         try {
             consumer.accept(buffer);
@@ -146,7 +137,7 @@ public class NioFrameProtocol {
             writeData(channel, buffer);
         }
         finally {
-            getBufferPool().free(buffer);
+            bufferPool().free(buffer);
         }
     }
 
@@ -154,7 +145,7 @@ public class NioFrameProtocol {
      * Write the ERROR-Frame.
      */
     public void writeError(final WritableByteChannel channel, final Consumer<ByteBuffer> consumer) throws IOException {
-        final ByteBuffer buffer = getBufferPool().get();
+        final ByteBuffer buffer = bufferPool().get();
 
         try {
             consumer.accept(buffer);
@@ -163,8 +154,7 @@ public class NioFrameProtocol {
 
             if (buffer.position() == 0) {
                 contentLength = buffer.limit();
-            }
-            else {
+            } else {
                 contentLength = buffer.position();
             }
 
@@ -172,7 +162,7 @@ public class NioFrameProtocol {
             write(channel, buffer);
         }
         finally {
-            getBufferPool().free(buffer);
+            bufferPool().free(buffer);
         }
     }
 
@@ -197,7 +187,7 @@ public class NioFrameProtocol {
     /**
      * Guarantees that all Data from the Channel are read as expected.
      */
-    protected void read(final ReadableByteChannel channel, final ByteBuffer buffer, final int contentLength) throws IOException {
+    private void read(final ReadableByteChannel channel, final ByteBuffer buffer, final int contentLength) throws IOException {
         // The Buffer can be bigger than required.
         final ByteBuffer bb = buffer.slice(0, contentLength);
 
@@ -212,15 +202,15 @@ public class NioFrameProtocol {
         buffer.limit(bb.limit());
     }
 
-    protected ByteBuffer readFrameHeader(final ReadableByteChannel channel) throws IOException {
-        final ByteBuffer buffer = getBufferPool().get();
+    private ByteBuffer readFrameHeader(final ReadableByteChannel channel) throws IOException {
+        final ByteBuffer buffer = bufferPool().get();
 
         read(channel, buffer, 8);
 
         return buffer.flip();
     }
 
-    protected long write(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException {
+    private long write(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException {
         // for (ByteBuffer buffer : buffers) {
         // if (buffer.position() > 0)
         // // if (buffer.remaining() != buffer.limit()) {
@@ -235,7 +225,7 @@ public class NioFrameProtocol {
             buffer.flip();
         }
 
-        long totalWritten = 0;
+        long totalWritten = 0L;
 
         while (buffer.hasRemaining()) {
             final long bytesWritten = channel.write(buffer);
@@ -246,8 +236,8 @@ public class NioFrameProtocol {
         return totalWritten;
     }
 
-    protected void writeFrameHeader(final WritableByteChannel channel, final FrameType frameType, final int contentLength) throws IOException {
-        final ByteBuffer buffer = getBufferPool().get();
+    private void writeFrameHeader(final WritableByteChannel channel, final FrameType frameType, final int contentLength) throws IOException {
+        final ByteBuffer buffer = bufferPool().get();
 
         try {
             buffer.putInt(frameType.getEncodedType());
@@ -256,7 +246,7 @@ public class NioFrameProtocol {
             write(channel, buffer.flip());
         }
         finally {
-            getBufferPool().free(buffer);
+            bufferPool().free(buffer);
         }
     }
 }

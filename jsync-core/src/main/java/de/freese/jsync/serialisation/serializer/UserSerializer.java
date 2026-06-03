@@ -20,7 +20,7 @@ public final class UserSerializer implements ClassSerializer<User> {
     public static UserSerializer getInstance() {
         return UserSerializerHolder.INSTANCE;
     }
-    
+
     private UserSerializer() {
         super();
     }
@@ -50,9 +50,9 @@ public final class UserSerializer implements ClassSerializer<User> {
         writer.writeByte(output, (byte) 1);
 
         // uid
-        writer.writeInteger(output, value.getUid());
+        writer.writeInteger(output, value.uid());
 
         // name
-        writer.writeString(output, value.getName());
+        writer.writeString(output, value.name());
     }
 }

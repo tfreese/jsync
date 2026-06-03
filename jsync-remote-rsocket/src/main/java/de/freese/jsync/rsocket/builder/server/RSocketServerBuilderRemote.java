@@ -173,7 +173,7 @@ public final class RSocketServerBuilderRemote extends AbstractServerBuilder<RSoc
     private TcpServer configure(final TcpServer tcpServer) {
         TcpServer server = tcpServer;
 
-        for (UnaryOperator<TcpServer> serverCustomizer : tcpServerCustomizers) {
+        for (final UnaryOperator<TcpServer> serverCustomizer : tcpServerCustomizers) {
             server = serverCustomizer.apply(server);
         }
 

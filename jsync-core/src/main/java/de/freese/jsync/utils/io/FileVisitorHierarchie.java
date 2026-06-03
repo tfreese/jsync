@@ -38,8 +38,7 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
 
         if (ex != null) {
             getLogger().error(dir.toString(), ex);
-        }
-        else if (!basePath.endsWith(dir)) {
+        } else if (!basePath.endsWith(dir)) {
             // We do not want the Base-Directory.
             consumer.accept(dir);
         }
@@ -68,8 +67,7 @@ public class FileVisitorHierarchie implements FileVisitor<Path> {
 
         if (pathFilter.isExcludedFile(file)) {
             getLogger().debug("exclude file: {}", file);
-        }
-        else {
+        } else {
             consumer.accept(file);
         }
 

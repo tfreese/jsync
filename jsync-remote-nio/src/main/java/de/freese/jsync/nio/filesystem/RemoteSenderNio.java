@@ -49,13 +49,13 @@ public class RemoteSenderNio extends AbstractNioFileSystem implements Sender {
             // Response
             return getFrameProtocol().readAll(channel);
         }
-        catch (RuntimeException ex) {
+        catch (final RuntimeException ex) {
             throw ex;
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             throw new RuntimeException(ex);
         }
         finally {

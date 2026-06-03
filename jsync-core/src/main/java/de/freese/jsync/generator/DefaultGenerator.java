@@ -105,7 +105,7 @@ public class DefaultGenerator extends AbstractGenerator {
             //     // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
             // }
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
 
@@ -159,7 +159,7 @@ public class DefaultGenerator extends AbstractGenerator {
             //     // UserPrincipal joe = lookupService.lookupPrincipalByName("joe");
             // }
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
 

@@ -57,23 +57,19 @@ public abstract class AbstractNioProcessor implements Runnable {
                                 getLogger().debug("{}: selectionKey not valid", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                                 onInValid(selectionKey);
-                            }
-                            else if (selectionKey.isAcceptable()) {
+                            } else if (selectionKey.isAcceptable()) {
                                 getLogger().debug("new client accepted");
 
                                 onAcceptable(selectionKey);
-                            }
-                            else if (selectionKey.isReadable()) {
+                            } else if (selectionKey.isReadable()) {
                                 getLogger().debug("{}: read request", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                                 onReadable(selectionKey);
-                            }
-                            else if (selectionKey.isWritable()) {
+                            } else if (selectionKey.isWritable()) {
                                 getLogger().debug("{}: write response", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                                 onWritable(selectionKey);
-                            }
-                            else if (selectionKey.isConnectable()) {
+                            } else if (selectionKey.isConnectable()) {
                                 getLogger().debug("{}: client connected", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                                 onConnectable(selectionKey);
@@ -90,7 +86,7 @@ public abstract class AbstractNioProcessor implements Runnable {
 
             afterSelectorWhile();
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
         finally {
@@ -154,7 +150,7 @@ public abstract class AbstractNioProcessor implements Runnable {
             try {
                 selectionKey.cancel();
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 getLogger().error(ex.getMessage(), ex);
             }
         }
@@ -165,7 +161,7 @@ public abstract class AbstractNioProcessor implements Runnable {
             try {
                 getSelector().close();
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 getLogger().error(ex.getMessage(), ex);
             }
         }

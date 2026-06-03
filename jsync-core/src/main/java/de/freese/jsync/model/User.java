@@ -4,21 +4,16 @@ package de.freese.jsync.model;
 import java.util.Objects;
 
 /**
+ * @param uid unix:uid
+ *
  * @author Thomas Freese
  */
-public class User {
+public record User(String name, int uid) {
     public static final int ID_MAX = 65535;
     public static final User NOBODY = new User("nobody", ID_MAX - 1);
     public static final User ROOT = new User("root", 0);
 
-    private final String name;
-    /**
-     * unix:uid
-     */
-    private final int uid;
-
     public User(final String name, final int uid) {
-        super();
 
         this.name = Objects.requireNonNull(name, "name required");
         this.uid = uid;
@@ -30,35 +25,18 @@ public class User {
             return true;
         }
 
-        if (!(obj instanceof User other)) {
+        if (!(obj instanceof User(final String name1, final int uid1))) {
             return false;
         }
 
-        return Objects.equals(name, other.name) && uid == other.uid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getUid() {
-        return uid;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, uid);
+        return Objects.equals(name, name1) && uid == uid1;
     }
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("User [uid=");
-        builder.append(uid);
-        builder.append(", name=");
-        builder.append(name);
-        builder.append("]");
-
-        return builder.toString();
+        return "User ["
+                + "uid=" + uid +
+                ", name=" + name
+                + "]";
     }
 }

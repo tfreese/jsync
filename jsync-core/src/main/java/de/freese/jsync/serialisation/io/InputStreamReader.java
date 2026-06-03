@@ -14,7 +14,7 @@ public class InputStreamReader implements DataReader<InputStream> {
         try {
             return (byte) input.read();
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
@@ -24,7 +24,7 @@ public class InputStreamReader implements DataReader<InputStream> {
         try {
             return input.readNBytes(length);
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }

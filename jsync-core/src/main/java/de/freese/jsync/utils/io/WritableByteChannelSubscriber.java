@@ -100,7 +100,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
             sink.next(limit);
             request(1);
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             sink.next(-1L);
             sink.error(ex);
         }

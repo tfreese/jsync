@@ -18,8 +18,7 @@ public final class JSyncSwingLauncher {
     static void main(final String[] args) {
         if (args == null) {
             JSyncSwing.getLogger().info("init");
-        }
-        else {
+        } else {
             if (JSyncSwing.getLogger().isInfoEnabled()) {
                 JSyncSwing.getLogger().info("init: {}", Arrays.toString(args));
             }
@@ -55,7 +54,7 @@ public final class JSyncSwingLauncher {
                     JSyncContext.setMainFrame(frame);
                 });
             }
-            catch (Exception ex) {
+            catch (final Exception ex) {
                 throw new RuntimeException(ex);
             }
         });
