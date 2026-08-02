@@ -5,8 +5,8 @@ plugins {
 description = "A Java rsync clone: Test Module"
 
 dependencies {
-    testImplementation(project(":jsync-remote-rsocket-server"))
     testImplementation(project(":jsync-remote-nio-server"))
+    testImplementation(project(":jsync-remote-rsocket-server"))
 
     testImplementation("org.awaitility:awaitility")
     testImplementation("io.projectreactor:reactor-test")
@@ -15,6 +15,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-//    test {
-//        maxParallelForks = 1 // Will not do parallel execution
-//    }
+tasks.named<Test>("test") {
+    dependsOn(":jsync-remote-nio-server:build")
+    dependsOn(":jsync-remote-rsocket-server:build")
+}

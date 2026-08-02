@@ -1,15 +1,16 @@
 plugins {
-    id("java")
+    id("java-library")
     id("org.springframework.boot")
 }
 
-description = "A Java rsync clone: Swing-GUI"
+description = "A Java rsync clone: RSocket-Server Module"
 
 dependencies {
-    implementation(project(":jsync-remote-rsocket"))
-    implementation(project(":jsync-remote-nio"))
+    api(project(":jsync-remote-rsocket"))
 
     runtimeOnly("ch.qos.logback:logback-classic")
+
+    testImplementation("org.awaitility:awaitility")
 }
 
 // Start: gradle bootRun --args="--spring.profiles.active=dev"
@@ -17,16 +18,19 @@ dependencies {
 // [archiveBaseName]-[archiveAppendix]-[archiveVersion]-[archiveClassifier].[archiveExtension]
 // archiveFileName = "my-boot.jar"
 springBoot {
-    mainClass = "de.freese.jsync.swing.JSyncSwingLauncher"
+    mainClass.set("de.freese.jsync.rsocket.server.JSyncRSocketServer")
 }
 
 // gradle bootRun --args="--spring.profiles.active=Server,HsqldbEmbeddedServer --server.port=65111"
 // gradle bootRun Dspring-boot.run.arguments="65111"
-bootRun {
-//        args = [
-//                "--spring.profiles.active=Server,HsqldbEmbeddedServer"
-//                , "--server.port=65111"
-//        ]
-    jvmArgs = ["-Xms32m", "-Xmx512m", "-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom"]
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    args = listOf("65111")
+    jvmArgs = listOf(
+        "-Xms32m",
+        "-Xmx512m",
+        "-XX:TieredStopAtLevel=1",
+        "-Djava.security.egd=file:/dev/./urandom",
+        "--enable-native-access=ALL-UNNAMED"
+    )
     // -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005
 }
