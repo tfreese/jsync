@@ -1,4 +1,3 @@
-// Created: 31.07.2021
 package de.freese.jsync.rsocket.builder.client;
 
 import java.io.FileInputStream;
@@ -28,6 +27,7 @@ import de.freese.jsync.rsocket.builder.AbstractBuilder;
 
 /**
  * @author Thomas Freese
+ * @since 31.07.2021
  */
 abstract class AbstractClientBuilderRemote<T extends AbstractBuilder<?, RSocketClient>> extends AbstractClientBuilder<T> {
     private final List<UnaryOperator<TcpClient>> tcpClientCustomizers = new ArrayList<>();
@@ -91,14 +91,14 @@ abstract class AbstractClientBuilderRemote<T extends AbstractBuilder<?, RSocketC
     }
 
     public T resumeDefault() {
-        RetryBackoffSpec retry = Retry.fixedDelay(5, Duration.ofMillis(500));
+        RetryBackoffSpec retry = Retry.fixedDelay(5L, Duration.ofMillis(500L));
 
         if (getLogger() != null) {
             retry = retry.doBeforeRetry(signal -> getLogger().info("Disconnected. Trying to resume..."));
         }
 
         final Resume resume = new Resume()
-                .sessionDuration(Duration.ofMinutes(5))
+                .sessionDuration(Duration.ofMinutes(5L))
                 .retry(retry);
 
         return resume(resume);
@@ -111,7 +111,7 @@ abstract class AbstractClientBuilderRemote<T extends AbstractBuilder<?, RSocketC
     }
 
     public T retryDefault() {
-        RetryBackoffSpec retry = Retry.fixedDelay(5, Duration.ofMillis(500));
+        RetryBackoffSpec retry = Retry.fixedDelay(5L, Duration.ofMillis(500L));
 
         if (getLogger() != null) {
             retry = retry.doBeforeRetry(signal -> getLogger().info("Trying to retry..."));

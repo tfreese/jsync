@@ -1,4 +1,3 @@
-// Created: 16.07.2021
 package de.freese.jsync.utils.pool.bytebuffer;
 
 import java.nio.ByteBuffer;
@@ -8,6 +7,7 @@ import de.freese.jsync.utils.pool.Pool;
 
 /**
  * @author Thomas Freese
+ * @since 16.07.2021
  */
 class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBufferPool {
     SoftReferenceByteBufferPool() {
@@ -21,13 +21,10 @@ class SoftReferenceByteBufferPool extends Pool<ByteBuffer> implements ByteBuffer
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append(":");
-        sb.append(" created=").append(getCreated());
-        sb.append(", free=").append(getFree());
-        sb.append(", peak=").append(getPeak());
-
-        return sb.toString();
+        return getClass().getSimpleName() + ":"
+                + " created=" + getCreated()
+                + ", free=" + getFree()
+                + ", peak=" + getPeak();
     }
 
     @Override

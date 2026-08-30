@@ -1,4 +1,3 @@
-// Created: 08.09.2020
 package de.freese.jsync.nio.server;
 
 import java.nio.channels.SelectionKey;
@@ -13,6 +12,7 @@ import de.freese.jsync.nio.server.dispatcher.Dispatcher;
  * The {@link Acceptor} handles new Client-Connections and delegate them to the {@link Dispatcher}.<br>
  *
  * @author Thomas Freese
+ * @since 08.09.2020
  */
 class Acceptor extends AbstractNioProcessor {
     private final Dispatcher dispatcher;
@@ -48,7 +48,7 @@ class Acceptor extends AbstractNioProcessor {
             // Delegate the Socket to the Dispatcher.
             dispatcher.register(socketChannel);
         }
-        catch (Exception ex) {
+        catch (final Exception ex) {
             getLogger().error(ex.getMessage(), ex);
         }
     }

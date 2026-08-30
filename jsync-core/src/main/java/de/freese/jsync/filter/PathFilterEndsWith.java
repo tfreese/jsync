@@ -1,4 +1,3 @@
-// Created: 15.08.2021
 package de.freese.jsync.filter;
 
 import java.nio.file.Path;
@@ -9,26 +8,13 @@ import java.util.Set;
  * Exclude-Filter, uses {@link String#endsWith(String)}.
  *
  * @author Thomas Freese
+ * @since 15.08.2021
  */
-public class PathFilterEndsWith implements PathFilter {
-    private final Set<String> directoryFilter;
-    private final Set<String> fileFilter;
-
+public record PathFilterEndsWith(Set<String> directoryFilter, Set<String> fileFilter) implements PathFilter {
     public PathFilterEndsWith(final Set<String> directoryFilter, final Set<String> fileFilter) {
-        super();
 
         this.directoryFilter = Set.copyOf(Objects.requireNonNull(directoryFilter, "directoryFilter required"));
         this.fileFilter = Set.copyOf(Objects.requireNonNull(fileFilter, "fileFilter required"));
-    }
-
-    @Override
-    public Set<String> getDirectoryFilter() {
-        return directoryFilter;
-    }
-
-    @Override
-    public Set<String> getFileFilter() {
-        return fileFilter;
     }
 
     @Override

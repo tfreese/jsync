@@ -1,4 +1,3 @@
-// Created: 20.10.2020
 package de.freese.jsync.utils.io;
 
 import java.io.IOException;
@@ -8,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import org.jspecify.annotations.NonNull;
 import org.reactivestreams.Subscription;
 import reactor.core.publisher.BaseSubscriber;
 import reactor.core.publisher.FluxSink;
@@ -18,6 +18,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  * Geklaut von org.springframework.core.io.buffer.DataBufferUtils#WritableByteChannelSubscriber
  *
  * @author Thomas Freese
+ * @since 20.10.2020
  */
 public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> // implements Subscriber<ByteBuffer>
 {
@@ -82,7 +83,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     }
 
     @Override
-    protected void hookOnError(final Throwable throwable) {
+    protected void hookOnError(final @NonNull Throwable throwable) {
         sink.error(throwable);
     }
 
@@ -107,7 +108,7 @@ public class WritableByteChannelSubscriber extends BaseSubscriber<ByteBuffer> //
     }
 
     @Override
-    protected void hookOnSubscribe(final Subscription subscription) {
+    protected void hookOnSubscribe(final @NonNull Subscription subscription) {
         request(1);
     }
 }

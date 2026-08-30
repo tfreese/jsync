@@ -1,4 +1,3 @@
-// Created: 25.07.2021
 package de.freese.jsync.swing.view;
 
 import java.awt.Component;
@@ -19,6 +18,7 @@ import de.freese.jsync.swing.util.GbcBuilder;
 
 /**
  * @author Thomas Freese
+ * @since 25.07.2021
  */
 class UriView extends AbstractView {
     private final JPanel panel = new JPanel();
@@ -70,7 +70,8 @@ class UriView extends AbstractView {
 
         if (EFileSystem.SENDER.equals(fileSystem)) {
             labelTitle = new JLabel(getMessage("jsync.source"));
-        } else {
+        }
+        else {
             labelTitle = new JLabel(getMessage("jsync.target"));
         }
 

@@ -1,4 +1,3 @@
-// Created: 29.07.2021
 package de.freese.jsync.swing.view;
 
 import java.awt.Color;
@@ -15,6 +14,7 @@ import de.freese.jsync.swing.util.GbcBuilder;
 
 /**
  * @author Thomas Freese
+ * @since 29.07.2021
  */
 class ShowView extends AbstractView {
     private final JPanel panel = new JPanel();

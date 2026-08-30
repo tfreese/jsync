@@ -1,4 +1,3 @@
-// Created: 15.08.2021
 package de.freese.jsync.filter;
 
 import java.nio.file.Path;
@@ -7,6 +6,7 @@ import java.util.Set;
 
 /**
  * @author Thomas Freese
+ * @since 15.08.2021
  */
 public final class PathFilterNoOp implements PathFilter {
     public static final PathFilter INSTANCE = new PathFilterNoOp();
@@ -16,12 +16,12 @@ public final class PathFilterNoOp implements PathFilter {
     }
 
     @Override
-    public Set<String> getDirectoryFilter() {
+    public Set<String> directoryFilter() {
         return Collections.emptySet();
     }
 
     @Override
-    public Set<String> getFileFilter() {
+    public Set<String> fileFilter() {
         return Collections.emptySet();
     }
 

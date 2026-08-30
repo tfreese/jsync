@@ -1,4 +1,3 @@
-// Created: 01.08.2021
 package de.freese.jsync.model;
 
 import java.net.URI;
@@ -6,6 +5,7 @@ import java.nio.file.Paths;
 
 /**
  * @author Thomas Freese
+ * @since 01.08.2021
  */
 public enum JSyncProtocol {
     FILE {

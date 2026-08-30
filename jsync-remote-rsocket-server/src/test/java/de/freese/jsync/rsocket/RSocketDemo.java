@@ -1,4 +1,3 @@
-// Created: 11.07.2021
 package de.freese.jsync.rsocket;
 
 import static org.awaitility.Awaitility.await;
@@ -34,6 +33,7 @@ import de.freese.jsync.rsocket.builder.RSocketBuilders;
 
 /**
  * @author Thomas Freese
+ * @since 11.07.2021
  */
 public final class RSocketDemo {
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketDemo.class);

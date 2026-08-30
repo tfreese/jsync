@@ -1,4 +1,3 @@
-// Created: 17.11.2018
 package de.freese.jsync.utils;
 
 import java.io.IOException;
@@ -18,6 +17,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * @author Thomas Freese
+ * @since 17.11.2018
  */
 public final class DigestUtils {
     /**
@@ -108,7 +108,7 @@ public final class DigestUtils {
      */
     private static byte[] sha256Digest(final ReadableByteChannel readableByteChannel, final LongConsumer consumerBytesRead) throws IOException {
         final MessageDigest messageDigest = createSha256Digest();
-        byte[] bytes = null;
+        final byte[] bytes;
 
         if (consumerBytesRead != null) {
             consumerBytesRead.accept(0);

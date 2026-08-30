@@ -1,4 +1,3 @@
-// Created: 06.04.2018
 package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,6 +39,7 @@ import de.freese.jsync.serialisation.serializer.UserSerializer;
 
 /**
  * @author Thomas Freese
+ * @since 06.04.2018
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncSerializers {
@@ -220,8 +220,8 @@ class TestJSyncSerializers {
         final PathFilter pathFilter = serializer.readPathFilter(input);
 
         assertEquals(PathFilterEndsWith.class, pathFilter.getClass());
-        assertEquals(directoryFiltersOrigin, pathFilter.getDirectoryFilter());
-        assertEquals(fileFiltersOrigin, pathFilter.getFileFilter());
+        assertEquals(directoryFiltersOrigin, pathFilter.directoryFilter());
+        assertEquals(fileFiltersOrigin, pathFilter.fileFilter());
     }
 
     @ParameterizedTest(name = "{index} -> {0}")

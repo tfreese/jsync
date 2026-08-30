@@ -1,4 +1,3 @@
-// Created: 03.08.2021
 package de.freese.jsync.swing.controller;
 
 import java.util.List;
@@ -17,6 +16,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * @author Thomas Freese
+ * @since 03.08.2021
  */
 public class CompareWorker extends AbstractWorker<Void, Void> {
     CompareWorker(final JSyncController controller) {
@@ -58,7 +58,8 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
         if (isParallel()) {
             getExecutorService().execute(futureSenderItems);
             getExecutorService().execute(futureReceiverItems);
-        } else {
+        }
+        else {
             futureSenderItems.run();
             futureReceiverItems.run();
         }
@@ -83,7 +84,8 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
                 if (isParallel()) {
                     getExecutorService().execute(futureSenderChecksum);
                     getExecutorService().execute(futureReceiverChecksum);
-                } else {
+                }
+                else {
                     futureSenderChecksum.run();
                     futureReceiverChecksum.run();
                 }
@@ -99,7 +101,7 @@ public class CompareWorker extends AbstractWorker<Void, Void> {
 
         // Wait until all GUI-Events are processed.
         // TODO BAD SOLUTION !!!
-        TimeUnit.MILLISECONDS.sleep(200);
+        TimeUnit.MILLISECONDS.sleep(200L);
 
         return null;
     }

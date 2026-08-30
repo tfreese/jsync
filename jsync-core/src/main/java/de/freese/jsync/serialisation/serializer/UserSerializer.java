@@ -1,4 +1,3 @@
-// Created: 22.09.2020
 package de.freese.jsync.serialisation.serializer;
 
 import de.freese.jsync.model.User;
@@ -7,6 +6,7 @@ import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
+ * @since 22.09.2020
  */
 public final class UserSerializer implements ClassSerializer<User> {
     private static final class UserSerializerHolder {

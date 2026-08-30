@@ -1,4 +1,3 @@
-// Created: 14.08.2021
 package de.freese.jsync.swing.view;
 
 import java.awt.Rectangle;
@@ -19,6 +18,7 @@ import de.freese.jsync.swing.components.SyncPairTableModelStatus;
 
 /**
  * @author Thomas Freese
+ * @since 14.08.2021
  */
 public class TableFacade {
     private final AbstractListTableModel<SyncPair> tableModelReceiver;

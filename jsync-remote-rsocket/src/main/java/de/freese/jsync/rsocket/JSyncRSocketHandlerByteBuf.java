@@ -1,4 +1,3 @@
-// Created: 19.10.2020
 package de.freese.jsync.rsocket;
 
 import java.util.function.LongConsumer;
@@ -36,6 +35,7 @@ import de.freese.jsync.utils.pool.Pool;
  * Uses {@link ByteBuf} and {@link ByteBufPayload}.
  *
  * @author Thomas Freese
+ * @since 19.10.2020
  */
 public class JSyncRSocketHandlerByteBuf implements RSocket {
     private static final ByteBufAllocator BYTE_BUF_ALLOCATOR = ByteBufAllocator.DEFAULT;

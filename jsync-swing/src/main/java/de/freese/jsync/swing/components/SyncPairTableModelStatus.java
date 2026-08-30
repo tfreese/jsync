@@ -1,4 +1,3 @@
-// Created: 12.07.2020
 package de.freese.jsync.swing.components;
 
 import java.io.Serial;
@@ -9,6 +8,7 @@ import de.freese.jsync.swing.JSyncContext;
 
 /**
  * @author Thomas Freese
+ * @since 12.07.2020
  */
 public class SyncPairTableModelStatus extends AbstractListTableModel<SyncPair> {
     @Serial

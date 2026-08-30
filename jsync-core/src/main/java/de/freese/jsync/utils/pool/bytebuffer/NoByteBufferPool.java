@@ -1,4 +1,3 @@
-// Created: 23.08.2021
 package de.freese.jsync.utils.pool.bytebuffer;
 
 import java.nio.ByteBuffer;
@@ -7,6 +6,7 @@ import de.freese.jsync.Options;
 
 /**
  * @author Thomas Freese
+ * @since 23.08.2021
  */
 class NoByteBufferPool implements ByteBufferPool {
     private int created;
@@ -35,11 +35,8 @@ class NoByteBufferPool implements ByteBufferPool {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append(":");
-        sb.append(" created=").append(created);
-        sb.append(", free=").append(free);
-
-        return sb.toString();
+        return getClass().getSimpleName() + ":"
+                + " created=" + created
+                + ", free=" + free;
     }
 }

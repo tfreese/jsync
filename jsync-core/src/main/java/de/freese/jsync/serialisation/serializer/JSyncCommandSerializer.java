@@ -1,4 +1,3 @@
-// Created: 24.09.2020
 package de.freese.jsync.serialisation.serializer;
 
 import de.freese.jsync.model.JSyncCommand;
@@ -7,6 +6,7 @@ import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
+ * @since 24.09.2020
  */
 public final class JSyncCommandSerializer implements ClassSerializer<JSyncCommand> {
     private static final class JSyncCommandSerializerHolder {
@@ -20,7 +20,7 @@ public final class JSyncCommandSerializer implements ClassSerializer<JSyncComman
     public static JSyncCommandSerializer getInstance() {
         return JSyncCommandSerializerHolder.INSTANCE;
     }
-    
+
     private JSyncCommandSerializer() {
         super();
     }

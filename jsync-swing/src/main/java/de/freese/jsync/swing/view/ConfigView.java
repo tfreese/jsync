@@ -1,4 +1,3 @@
-// Created: 09.08.2021
 package de.freese.jsync.swing.view;
 
 import java.awt.Component;
@@ -17,6 +16,7 @@ import de.freese.jsync.swing.util.GbcBuilder;
 
 /**
  * @author Thomas Freese
+ * @since 09.08.2021
  */
 public class ConfigView extends AbstractView {
     private final JPanel panel = new JPanel();

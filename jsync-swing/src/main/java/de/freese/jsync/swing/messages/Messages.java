@@ -1,4 +1,3 @@
-// Created: 12.07.2020
 package de.freese.jsync.swing.messages;
 
 import java.util.Collections;
@@ -14,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Thomas Freese
+ * @since 12.07.2020
  */
 public class Messages {
     public static final Logger LOGGER = LoggerFactory.getLogger(Messages.class);

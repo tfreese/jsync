@@ -1,4 +1,3 @@
-// Created: 23.11.2018
 package de.freese.jsync.client.listener;
 
 import java.util.EventListener;
@@ -8,6 +7,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 23.11.2018
  */
 public interface ClientListener extends EventListener {
     void checksumProgress(Options options, SyncItem syncItem, long bytesRead);

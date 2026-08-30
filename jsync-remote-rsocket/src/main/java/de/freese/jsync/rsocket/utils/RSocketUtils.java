@@ -1,4 +1,3 @@
-// Created: 21.10.2020
 package de.freese.jsync.rsocket.utils;
 
 import java.io.IOException;
@@ -10,6 +9,7 @@ import io.rsocket.Payload;
 
 /**
  * @author Thomas Freese
+ * @since 21.10.2020
  */
 public final class RSocketUtils {
     public static void release(final Payload payload) {

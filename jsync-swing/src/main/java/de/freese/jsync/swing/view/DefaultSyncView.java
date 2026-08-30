@@ -1,4 +1,3 @@
-// Created: 09.08.2021
 package de.freese.jsync.swing.view;
 
 import java.awt.Component;
@@ -55,6 +54,7 @@ import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
+ * @since 09.08.2021
  */
 public class DefaultSyncView extends AbstractView implements SyncView {
     private final Map<EFileSystem, Sinks.Many<Tuple3<Integer, Integer, String>>> accumulatorProgressBarMinMaxText = new EnumMap<>(EFileSystem.class);
@@ -416,7 +416,8 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
         if (selectedFolder == null || selectedFolder.isBlank()) {
             currentDirectory = Paths.get(System.getProperty("user.home")).toFile();
-        } else {
+        }
+        else {
             selectedDirectory = Paths.get(selectedFolder).toFile();
             currentDirectory = selectedDirectory.getParentFile();
         }
@@ -483,7 +484,8 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
             if (folder != null) {
                 textFieldPathSender.setText(folder.toString());
-            } else {
+            }
+            else {
                 textFieldPathSender.setText(null);
             }
         });
@@ -493,7 +495,8 @@ public class DefaultSyncView extends AbstractView implements SyncView {
 
             if (folder != null) {
                 textFieldPathReceiver.setText(folder.toString());
-            } else {
+            }
+            else {
                 textFieldPathReceiver.setText(null);
             }
         });

@@ -1,10 +1,10 @@
-// Created: 20.08.2021
 package de.freese.jsync.nio.transport;
 
 /**
  * See io.rsocket.frame.FrameType
  *
  * @author Thomas Freese
+ * @since 20.08.2021
  */
 public enum FrameType {
     DATA(1),

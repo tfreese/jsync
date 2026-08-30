@@ -1,4 +1,3 @@
-// Created: 23.10.2016
 package de.freese.jsync;
 
 import java.net.URI;
@@ -21,6 +20,7 @@ import de.freese.jsync.model.SyncPair;
 
 /**
  * @author Thomas Freese
+ * @since 23.10.2016
  */
 public final class JSyncConsole {
     public static final Logger LOGGER = LoggerFactory.getLogger(JSyncConsole.class);
@@ -30,8 +30,7 @@ public final class JSyncConsole {
 
         if (arguments.length == 0) {
             arguments = new String[]{"--delete", "--follow-symlinks", "--checksum", "-s", "file:///home/tommy/git/jsync/jsync-console", "-r", "file:///tmp/jsync-console"};
-            // args2 = new String[]
-            // {
+            // args2 = new String[] {
             // "--delete",
             // "--follow-symlinks",
             // "--checksum",

@@ -1,4 +1,3 @@
-// Created: 24.10.2020
 package de.freese.jsync.rsocket.filesystem;
 
 import java.net.URI;
@@ -19,6 +18,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 24.10.2020
  */
 public class RemoteReceiverRSocket extends AbstractRSocketFileSystem implements Receiver {
     /**

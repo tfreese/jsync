@@ -1,10 +1,10 @@
-// Created: 20.08.2021
 package de.freese.jsync.utils.pool.bytebuffer;
 
 import java.nio.ByteBuffer;
 
 /**
  * @author Thomas Freese
+ * @since 20.08.2021
  */
 public interface ByteBufferPool {
     ByteBufferPool DEFAULT = new SimpleByteBufferPool();

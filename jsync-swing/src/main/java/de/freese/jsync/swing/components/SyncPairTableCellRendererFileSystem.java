@@ -1,4 +1,3 @@
-// Created: 18.08.20
 package de.freese.jsync.swing.components;
 
 import java.awt.Component;
@@ -10,6 +9,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  * @author Thomas Freese
+ * @since 18.08.2020
  */
 public class SyncPairTableCellRendererFileSystem extends DefaultTableCellRenderer {
     @Serial

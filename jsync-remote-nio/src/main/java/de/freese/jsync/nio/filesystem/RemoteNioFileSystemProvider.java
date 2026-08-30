@@ -1,4 +1,3 @@
-// Created: 21.07.2021
 package de.freese.jsync.nio.filesystem;
 
 import java.net.URI;
@@ -10,6 +9,7 @@ import de.freese.jsync.model.JSyncProtocol;
 
 /**
  * @author Thomas Freese
+ * @since 21.07.2021
  */
 public class RemoteNioFileSystemProvider implements FileSystemProvider {
     @Override

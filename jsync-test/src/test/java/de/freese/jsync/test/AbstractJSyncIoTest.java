@@ -1,4 +1,3 @@
-// Created: 06.04.2018
 package de.freese.jsync.test;
 
 import java.io.FileOutputStream;
@@ -16,6 +15,7 @@ import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
+ * @since 06.04.2018
  */
 abstract class AbstractJSyncIoTest {
     private static final Path PATH_TEST = Paths.get(System.getProperty("java.io.tmpdir"), "jsync");
@@ -91,7 +91,7 @@ abstract class AbstractJSyncIoTest {
         JSyncUtils.delete(pathSource, false);
         JSyncUtils.delete(pathDest, false);
     }
-    
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected Logger getLogger() {

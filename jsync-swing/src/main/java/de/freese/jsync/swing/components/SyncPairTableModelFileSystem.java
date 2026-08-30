@@ -1,4 +1,3 @@
-// Created: 12.07.2020
 package de.freese.jsync.swing.components;
 
 import java.io.Serial;
@@ -13,6 +12,7 @@ import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
+ * @since 12.07.2020
  */
 public class SyncPairTableModelFileSystem extends AbstractListTableModel<SyncPair> {
     @Serial

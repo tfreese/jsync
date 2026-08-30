@@ -1,4 +1,3 @@
-// Created: 04.11.2018
 package de.freese.jsync.utils;
 
 import java.util.Objects;
@@ -11,6 +10,7 @@ import org.slf4j.LoggerFactory;
  * After execution, the name is restored.
  *
  * @author Thomas Freese
+ * @since 04.11.2018
  */
 public class NamePreservingRunnable implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(NamePreservingRunnable.class);

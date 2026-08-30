@@ -1,4 +1,3 @@
-// Created: 22.10.2016
 package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,6 +23,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 22.10.2016
  */
 class TestJSyncGenerator extends AbstractJSyncIoTest {
     private static final Path PATH_DEST = createDestPath(TestJSyncGenerator.class);
@@ -42,7 +42,7 @@ class TestJSyncGenerator extends AbstractJSyncIoTest {
     @Test
     void testFileAttributes() {
         final SyncItem syncItem = new DefaultGenerator().generateItems(System.getProperty("user.dir"), false, PathFilterNoOp.INSTANCE)
-                .filter(si -> si.getRelativePath().endsWith("build.gradle"))
+                .filter(si -> si.getRelativePath().endsWith("build.gradle.kts"))
                 .blockFirst();
 
         assertNotNull(syncItem);

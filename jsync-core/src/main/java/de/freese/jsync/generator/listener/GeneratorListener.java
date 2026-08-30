@@ -1,4 +1,3 @@
-// Created: 22.11.2018
 package de.freese.jsync.generator.listener;
 
 import java.nio.file.Path;
@@ -8,6 +7,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 22.11.2018
  */
 public interface GeneratorListener extends EventListener {
     /**

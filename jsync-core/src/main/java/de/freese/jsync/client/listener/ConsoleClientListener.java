@@ -1,4 +1,3 @@
-// Created: 23.11.2018
 package de.freese.jsync.client.listener;
 
 import java.io.PrintStream;
@@ -10,6 +9,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 23.11.2018
  */
 public class ConsoleClientListener extends AbstractClientListener {
     private final PrintStream printStream;

@@ -1,4 +1,3 @@
-// Created: 05.04.2018
 package de.freese.jsync.client;
 
 import java.net.URI;
@@ -28,6 +27,7 @@ import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
+ * @since 05.04.2018
  */
 public abstract class AbstractClient implements Client {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -77,7 +77,8 @@ public abstract class AbstractClient implements Client {
         if (EFileSystem.SENDER.equals(fileSystem)) {
             fs = getSender();
             baseDir = getSenderPath();
-        } else {
+        }
+        else {
             fs = getReceiver();
             baseDir = getReceiverPath();
         }
@@ -93,7 +94,8 @@ public abstract class AbstractClient implements Client {
         if (EFileSystem.SENDER.equals(fileSystem)) {
             fs = getSender();
             baseDir = getSenderPath();
-        } else {
+        }
+        else {
             fs = getReceiver();
             baseDir = getReceiverPath();
         }

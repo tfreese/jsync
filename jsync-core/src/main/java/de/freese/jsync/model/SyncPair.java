@@ -1,4 +1,3 @@
-// Created: 22.10.2016
 package de.freese.jsync.model;
 
 import java.util.Objects;
@@ -7,6 +6,7 @@ import java.util.Objects;
  * Object for Informationen about Source- and Target-Destination.<br>
  *
  * @author Thomas Freese
+ * @since 22.10.2016
  */
 public class SyncPair {
     private final SyncItem receiverItem;
@@ -21,14 +21,14 @@ public class SyncPair {
      * @param receiverItem {@link SyncItem}; if null only existing in Sender
      */
     public SyncPair(final SyncItem senderItem, final SyncItem receiverItem) {
+        if (senderItem == null && receiverItem == null) {
+            throw new IllegalArgumentException("only one SyncItem can be null");
+        }
+
         super();
 
         this.senderItem = senderItem;
         this.receiverItem = receiverItem;
-
-        if (senderItem == null && receiverItem == null) {
-            throw new IllegalArgumentException("only one SyncItem can be null");
-        }
     }
 
     public SyncItem getReceiverItem() {
@@ -53,8 +53,8 @@ public class SyncPair {
 
     @Override
     public String toString() {
-        return "SyncPair [" +
-                "relativePath=" + getRelativePath()
+        return "SyncPair ["
+                + "relativePath=" + getRelativePath()
                 + ", status=" + getStatus()
                 + "]";
     }
@@ -66,16 +66,20 @@ public class SyncPair {
         if (getSenderItem() == null && getReceiverItem() != null) {
             // Delete: only available in Target but not in Source.
             status = SyncStatus.ONLY_IN_TARGET;
-        } else if (getSenderItem() != null && getReceiverItem() == null) {
+        }
+        else if (getSenderItem() != null && getReceiverItem() == null) {
             // Copy: only available in Source but not in Target.
             status = SyncStatus.ONLY_IN_SOURCE;
-        } else if (getSenderItem() != null && getReceiverItem() != null) {
+        }
+        else if (getSenderItem() != null && getReceiverItem() != null) {
             // Copy: Different Attributes
             if (getSenderItem().getLastModifiedTime() != getReceiverItem().getLastModifiedTime()) {
                 status = SyncStatus.DIFFERENT_LAST_MODIFIEDTIME;
-            } else if (getSenderItem().getSize() != getReceiverItem().getSize()) {
+            }
+            else if (getSenderItem().getSize() != getReceiverItem().getSize()) {
                 status = SyncStatus.DIFFERENT_SIZE;
-            } else if (!Objects.equals(getSenderItem().getChecksum(), getReceiverItem().getChecksum())) {
+            }
+            else if (!Objects.equals(getSenderItem().getChecksum(), getReceiverItem().getChecksum())) {
                 status = SyncStatus.DIFFERENT_CHECKSUM;
             }
             // else if (!Objects.equals(getSenderItem().getPermissionsToString(), getReceiverItem().getPermissionsToString())) {
@@ -90,7 +94,8 @@ public class SyncPair {
             else {
                 status = SyncStatus.SYNCHRONIZED;
             }
-        } else {
+        }
+        else {
             status = SyncStatus.UNKNOWN;
         }
     }

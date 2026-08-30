@@ -1,4 +1,3 @@
-// Created: 15.07.2021
 package de.freese.jsync.utils.io;
 
 import java.io.IOException;
@@ -14,6 +13,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 /**
  * @author Thomas Freese
  * @see org.springframework.core.io.buffer.DataBufferUtils.ReadableByteChannelGenerator
+ * @since 15.07.2021
  */
 public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<ByteBuffer>> {
     private final ReadableByteChannel channel;
@@ -34,7 +34,8 @@ public class ReadableByteChannelGenerator implements Consumer<SynchronousSink<By
                 release = false;
                 buffer.flip();
                 sink.next(buffer);
-            } else {
+            }
+            else {
                 sink.complete();
             }
         }

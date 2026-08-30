@@ -1,8 +1,8 @@
-// Created: 14.11.2018
 package de.freese.jsync.model;
 
 /**
  * @author Thomas Freese
+ * @since 14.11.2018
  */
 public enum JSyncCommand {
     CONNECT,

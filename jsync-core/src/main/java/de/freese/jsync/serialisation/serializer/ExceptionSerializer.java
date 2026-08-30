@@ -1,4 +1,3 @@
-// Created: 24.09.2020
 package de.freese.jsync.serialisation.serializer;
 
 import java.lang.invoke.MethodHandle;
@@ -10,6 +9,7 @@ import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
+ * @since 24.09.2020
  */
 public final class ExceptionSerializer implements ClassSerializer<Exception> {
     private static final class ExceptionSerializerHolder {

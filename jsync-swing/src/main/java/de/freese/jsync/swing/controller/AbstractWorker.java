@@ -1,4 +1,3 @@
-// Created: 16.08.2020
 package de.freese.jsync.swing.controller;
 
 import java.net.URI;
@@ -25,6 +24,7 @@ import de.freese.jsync.utils.JSyncUtils;
  * @param <V> Publish-Type
  *
  * @author Thomas Freese
+ * @since 16.08.2020
  */
 public abstract class AbstractWorker<T, V> extends SwingWorker<T, V> {
     protected static ExecutorService getExecutorService() {

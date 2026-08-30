@@ -1,4 +1,3 @@
-// Created: 05.04.2018
 package de.freese.jsync.filesystem.local;
 
 import java.nio.ByteBuffer;
@@ -17,6 +16,7 @@ import de.freese.jsync.utils.ReactiveUtils;
  * {@link Sender} für Localhost-Filesysteme.
  *
  * @author Thomas Freese
+ * @since 05.04.2018
  */
 public class LocalhostSender extends AbstractLocalFileSystem implements Sender {
     @Override

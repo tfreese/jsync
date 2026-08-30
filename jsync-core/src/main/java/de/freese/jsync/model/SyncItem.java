@@ -1,8 +1,8 @@
-// Created: 30.10.2016
 package de.freese.jsync.model;
 
 /**
  * @author Thomas Freese
+ * @since 30.10.2016
  */
 public interface SyncItem {
     String getChecksum();

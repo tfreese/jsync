@@ -1,4 +1,3 @@
-// Created: 20.07.2021
 package de.freese.jsync.tcp;
 
 import static org.awaitility.Awaitility.await;
@@ -19,6 +18,7 @@ import reactor.netty.tcp.TcpServer;
 
 /**
  * @author Thomas Freese
+ * @since 20.07.2021
  */
 public final class ReactiveTcp {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveTcp.class);

@@ -1,4 +1,3 @@
-// Created: 20.08.2021
 package de.freese.jsync.utils.pool.bytebuffer;
 
 import java.nio.ByteBuffer;
@@ -11,6 +10,7 @@ import de.freese.jsync.Options;
  * SimpleByteBufferPool: created=9, free=951: 2192x1: 8176x1: 18235x1: 25538x1: 1242454x1: 1990756x1: 4194304x3
  *
  * @author Thomas Freese
+ * @since 20.08.2021
  */
 class SimpleByteBufferPool implements ByteBufferPool {
     private final Queue<ByteBuffer> cache = new LinkedBlockingQueue<>(Integer.MAX_VALUE);
@@ -56,12 +56,9 @@ class SimpleByteBufferPool implements ByteBufferPool {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append(":");
-        sb.append(" created=").append(created);
-        sb.append(", free=").append(free);
-        sb.append(", size=").append(cache.size());
-
-        return sb.toString();
+        return getClass().getSimpleName() + ":"
+                + " created=" + created
+                + ", free=" + free
+                + ", size=" + cache.size();
     }
 }

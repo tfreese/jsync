@@ -1,4 +1,3 @@
-// Created: 04.10.2020
 package de.freese.jsync.rsocket.serialisation;
 
 import io.netty.buffer.ByteBuf;
@@ -7,6 +6,7 @@ import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
+ * @since 04.10.2020
  */
 public class ByteBufWriter implements DataWriter<ByteBuf> {
     @Override

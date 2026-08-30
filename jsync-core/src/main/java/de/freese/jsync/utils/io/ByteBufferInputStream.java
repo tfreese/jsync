@@ -1,4 +1,3 @@
-// Created: 15.09.2020
 package de.freese.jsync.utils.io;
 
 import java.io.IOException;
@@ -8,6 +7,7 @@ import java.util.Objects;
 
 /**
  * @author Thomas Freese
+ * @since 15.09.2020
  */
 public class ByteBufferInputStream extends InputStream {
     private final ByteBuffer buffer;

@@ -1,4 +1,3 @@
-// Created: 11.01.2017
 package de.freese.jsync.utils.io;
 
 import java.io.FilterInputStream;
@@ -10,6 +9,7 @@ import java.util.function.LongConsumer;
 
 /**
  * @author Thomas Freese
+ * @since 11.01.2017
  */
 public class MonitoringInputStream extends FilterInputStream {
     private final LongConsumer bytesReadConsumer;

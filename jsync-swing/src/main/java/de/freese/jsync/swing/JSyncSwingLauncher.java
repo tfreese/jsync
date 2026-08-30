@@ -1,4 +1,3 @@
-// Created: 31.07.2021
 package de.freese.jsync.swing;
 
 import java.util.Arrays;
@@ -13,12 +12,14 @@ import de.freese.jsync.swing.messages.Messages;
 
 /**
  * @author Thomas Freese
+ * @since 31.07.2021
  */
 public final class JSyncSwingLauncher {
     static void main(final String[] args) {
         if (args == null) {
             JSyncSwing.getLogger().info("init");
-        } else {
+        }
+        else {
             if (JSyncSwing.getLogger().isInfoEnabled()) {
                 JSyncSwing.getLogger().info("init: {}", Arrays.toString(args));
             }

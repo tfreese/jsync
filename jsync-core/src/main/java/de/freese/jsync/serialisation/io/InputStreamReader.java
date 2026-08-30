@@ -1,4 +1,3 @@
-// Created: 30.09.22
 package de.freese.jsync.serialisation.io;
 
 import java.io.IOException;
@@ -7,6 +6,7 @@ import java.io.UncheckedIOException;
 
 /**
  * @author Thomas Freese
+ * @since 30.09.22
  */
 public class InputStreamReader implements DataReader<InputStream> {
     @Override

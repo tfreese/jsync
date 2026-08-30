@@ -1,4 +1,3 @@
-// Created: 06.08.2021
 package de.freese.jsync.swing;
 
 import java.util.concurrent.ExecutorService;
@@ -16,6 +15,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * @author Thomas Freese
+ * @since 06.08.2021
  */
 public final class JSyncContext {
     private static ExecutorService executorService;

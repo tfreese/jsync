@@ -1,4 +1,3 @@
-// Created: 12.07.2020
 package de.freese.jsync.swing.view;
 
 import java.awt.Component;
@@ -13,6 +12,7 @@ import de.freese.jsync.swing.util.SwingUtils;
 
 /**
  * @author Thomas Freese
+ * @since 12.07.2020
  */
 public abstract class AbstractView {
     private final Logger logger = LoggerFactory.getLogger(getClass());

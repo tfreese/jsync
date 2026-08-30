@@ -1,4 +1,3 @@
-// Created: 14.08.2021
 package de.freese.jsync.swing.util;
 
 import java.awt.Color;
@@ -11,6 +10,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * @author Thomas Freese
+ * @since 14.08.2021
  */
 public final class SwingUtils {
     /**
@@ -38,7 +38,8 @@ public final class SwingUtils {
         for (final Component child : container.getComponents()) {
             if (child instanceof final Container c) {
                 enableDebug(c);
-            } else {
+            }
+            else {
                 enableDebug(child);
             }
         }
@@ -47,7 +48,8 @@ public final class SwingUtils {
     public static void runInEdt(final Runnable runnable) {
         if (SwingUtilities.isEventDispatchThread()) {
             runnable.run();
-        } else {
+        }
+        else {
             SwingUtilities.invokeLater(runnable);
         }
     }

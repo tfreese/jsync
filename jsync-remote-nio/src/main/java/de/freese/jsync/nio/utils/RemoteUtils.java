@@ -1,8 +1,8 @@
-// Created: 04.09.20
 package de.freese.jsync.nio.utils;
 
 /**
  * @author Thomas Freese
+ * @since 04.09.20
  */
 public final class RemoteUtils {
     public static final int STATUS_ERROR = 500;

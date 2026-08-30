@@ -1,4 +1,3 @@
-// Created: 19.10.2020
 package de.freese.jsync.rsocket.server;
 
 import java.net.InetSocketAddress;
@@ -19,6 +18,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * @author Thomas Freese
+ * @since 19.10.2020
  */
 public final class JSyncRSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncRSocketServer.class);

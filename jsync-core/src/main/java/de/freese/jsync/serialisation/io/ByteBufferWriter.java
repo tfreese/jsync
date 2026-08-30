@@ -1,10 +1,10 @@
-// Created: 22.09.2020
 package de.freese.jsync.serialisation.io;
 
 import java.nio.ByteBuffer;
 
 /**
  * @author Thomas Freese
+ * @since 22.09.2020
  */
 public class ByteBufferWriter implements DataWriter<ByteBuffer> {
     @Override

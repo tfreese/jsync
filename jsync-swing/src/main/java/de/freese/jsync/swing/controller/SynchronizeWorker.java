@@ -1,4 +1,3 @@
-// Created: 15.08.2020
 package de.freese.jsync.swing.controller;
 
 import java.util.List;
@@ -13,6 +12,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
 
 /**
  * @author Thomas Freese
+ * @since 15.08.2020
  */
 class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientListener {
     SynchronizeWorker(final JSyncController controller) {
@@ -79,7 +79,7 @@ class SynchronizeWorker extends AbstractWorker<Void, Void> implements ClientList
 
         // Wait until all GUI-Events are processed.
         // TODO BAD SOLUTION !!!
-        TimeUnit.MILLISECONDS.sleep(200);
+        TimeUnit.MILLISECONDS.sleep(200L);
 
         return null;
     }

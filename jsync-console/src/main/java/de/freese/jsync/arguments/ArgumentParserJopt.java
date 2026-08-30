@@ -1,7 +1,3 @@
-/// **
-// * Created: 14.03.2020
-// */
-//
 // package de.freese.jsync.arguments;
 //
 // import java.io.IOException;
@@ -16,6 +12,7 @@
 // * Die Parser-Klassen liegen auch intern im JDK-Package jdk.internal.joptsimple.
 // *
 // * @author Thomas Freese
+// * @since 14.03.2020
 // */
 // @SuppressWarnings("javadoc")
 // public class ArgumentParserJopt implements ArgumentParser {

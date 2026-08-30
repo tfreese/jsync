@@ -1,4 +1,3 @@
-// Created: 15 Juni 2024
 package de.freese.jsync.rsocket.builder.server;
 
 import java.io.FileInputStream;
@@ -35,6 +34,7 @@ import reactor.util.retry.RetryBackoffSpec;
 
 /**
  * @author Thomas Freese
+ * @since 15.06.2024
  */
 @SuppressWarnings("java:S6437")
 public final class RSocketServerBuilderRemote extends AbstractServerBuilder<RSocketServerBuilderRemote, Mono<CloseableChannel>> {
@@ -131,14 +131,14 @@ public final class RSocketServerBuilderRemote extends AbstractServerBuilder<RSoc
     }
 
     public RSocketServerBuilderRemote resumeDefault() {
-        RetryBackoffSpec retry = Retry.fixedDelay(5, Duration.ofMillis(500));
+        RetryBackoffSpec retry = Retry.fixedDelay(5L, Duration.ofMillis(500L));
 
         if (getLogger() != null) {
             retry = retry.doBeforeRetry(signal -> getLogger().info("Disconnected. Trying to resume..."));
         }
 
         final Resume resume = new Resume()
-                .sessionDuration(Duration.ofMinutes(5))
+                .sessionDuration(Duration.ofMinutes(5L))
                 .retry(retry);
 
         return resume(resume);

@@ -1,4 +1,3 @@
-// Created: 22.10.2016
 package de.freese.jsync.test;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -38,6 +37,7 @@ import de.freese.jsync.utils.JSyncUtils;
 
 /***
  * @author Thomas Freese
+ * @since 22.10.2016
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class TestJSyncRemote extends AbstractJSyncIoTest {

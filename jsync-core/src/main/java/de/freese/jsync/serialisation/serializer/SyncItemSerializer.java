@@ -1,4 +1,3 @@
-// Created: 24.09.2020
 package de.freese.jsync.serialisation.serializer;
 
 import de.freese.jsync.model.DefaultSyncItem;
@@ -8,6 +7,7 @@ import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
+ * @since 24.09.2020
  */
 public final class SyncItemSerializer implements ClassSerializer<SyncItem> {
     private static final class SyncItemSerializerHolder {
@@ -21,7 +21,7 @@ public final class SyncItemSerializer implements ClassSerializer<SyncItem> {
     public static SyncItemSerializer getInstance() {
         return SyncItemSerializerHolder.INSTANCE;
     }
-    
+
     private SyncItemSerializer() {
         super();
     }
@@ -48,8 +48,7 @@ public final class SyncItemSerializer implements ClassSerializer<SyncItem> {
         //        // permissions
         //        String permissions = reader.readString(source, getCharset());
         //
-        //        if (permissions != null)
-        //        {
+        //        if (permissions != null) {
         //            syncItem.setPermissions(PosixFilePermissions.fromString(permissions));
         //        }
         //

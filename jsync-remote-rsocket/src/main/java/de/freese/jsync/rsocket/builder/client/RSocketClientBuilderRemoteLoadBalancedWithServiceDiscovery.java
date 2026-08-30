@@ -1,4 +1,3 @@
-// Created: 31.07.2021
 package de.freese.jsync.rsocket.builder.client;
 
 import java.net.SocketAddress;
@@ -19,6 +18,7 @@ import reactor.netty.tcp.TcpClient;
 
 /**
  * @author Thomas Freese
+ * @since 31.07.2021
  */
 public class RSocketClientBuilderRemoteLoadBalancedWithServiceDiscovery extends AbstractClientBuilderRemote<RSocketClientBuilderRemoteLoadBalancedWithServiceDiscovery> {
     private Supplier<List<SocketAddress>> serviceDiscovery;
@@ -41,7 +41,7 @@ public class RSocketClientBuilderRemoteLoadBalancedWithServiceDiscovery extends 
                             .toList()
                             ;
                 })
-                .repeatWhen(flux -> flux.delayElements(Duration.ofMillis(600))) // Flux regelmäßig aktualisieren.
+                .repeatWhen(flux -> flux.delayElements(Duration.ofMillis(600L))) // Flux regelmäßig aktualisieren.
                 ;
 
         final RSocketConnector rSocketConnector = configure(RSocketConnector.create());

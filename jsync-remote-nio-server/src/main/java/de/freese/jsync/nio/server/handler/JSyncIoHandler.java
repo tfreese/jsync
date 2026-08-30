@@ -1,4 +1,3 @@
-// Created: 04.11.2018
 package de.freese.jsync.nio.server.handler;
 
 import java.io.IOException;
@@ -31,6 +30,7 @@ import de.freese.jsync.utils.pool.Pool;
 
 /**
  * @author Thomas Freese
+ * @since 04.11.2018
  */
 public class JSyncIoHandler implements IoHandler<SelectionKey> {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncIoHandler.class);

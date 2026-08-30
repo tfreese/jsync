@@ -1,4 +1,3 @@
-// Created: 13.11.2018
 package de.freese.jsync.utils;
 
 import java.io.Closeable;
@@ -30,6 +29,7 @@ import de.freese.jsync.utils.io.FileVisitorDelete;
 
 /**
  * @author Thomas Freese
+ * @since 13.11.2018
  */
 public final class JSyncUtils {
     private static final FileVisitOption[] FILEVISITOPTION_NO_SYNLINKS = {};
@@ -113,7 +113,8 @@ public final class JSyncUtils {
 
         if (Files.isDirectory(path, linkOptions)) {
             Files.walkFileTree(path, Set.of(fileVisitOptions), Integer.MAX_VALUE, new FileVisitorDelete());
-        } else {
+        }
+        else {
             Files.delete(path);
         }
     }
@@ -236,7 +237,7 @@ public final class JSyncUtils {
                 // Cancel currently executing tasks.
                 channelGroup.shutdownNow();
 
-                // Wait a while for tasks to respond to being cancelled.
+                // Wait a while for tasks to respond to being canceled.
                 if (!channelGroup.awaitTermination(5L, TimeUnit.SECONDS)) {
                     logger.error("ChannelGroup did not terminate");
                 }
@@ -283,13 +284,15 @@ public final class JSyncUtils {
                     }
                 }
 
-                // Wait a while for tasks to respond to being cancelled.
+                // Wait a while for tasks to respond to being canceled.
                 if (!executorService.awaitTermination(5L, TimeUnit.SECONDS)) {
                     logger.error("ExecutorService did not terminate");
-                } else {
+                }
+                else {
                     logger.info("ExecutorService terminated");
                 }
-            } else {
+            }
+            else {
                 logger.info("ExecutorService terminated");
             }
         }

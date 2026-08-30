@@ -1,4 +1,3 @@
-// Created: 30.09.2020
 package de.freese.jsync.nio.server;
 
 import java.io.IOException;
@@ -12,6 +11,7 @@ import de.freese.jsync.nio.utils.RemoteUtils;
 
 /**
  * @author Thomas Freese
+ * @since 30.09.2020
  */
 public final class JSyncServerResponse {
     public static JSyncServerResponse error(final ByteBuffer bufferBody) {

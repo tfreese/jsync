@@ -1,4 +1,3 @@
-// Created: 08.09.2020
 package de.freese.jsync.nio.server.dispatcher;
 
 import java.nio.channels.SelectionKey;
@@ -18,6 +17,7 @@ import de.freese.jsync.nio.server.handler.IoHandler;
  * The {@link IoHandler} handles the Request and Response in a separate Thread.<br>
  *
  * @author Thomas Freese
+ * @since 08.09.2020
  */
 class DefaultDispatcher extends AbstractNioProcessor implements Dispatcher {
     private final Executor executor;

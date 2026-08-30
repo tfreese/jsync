@@ -1,4 +1,3 @@
-// Created: 14.07.2020
 package de.freese.jsync.generator.listener;
 
 import java.nio.file.Path;
@@ -10,6 +9,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 14.07.2020
  */
 public class GeneratorListenerAdapter implements GeneratorListener {
     private LongConsumer checksumConsumer;

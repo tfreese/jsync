@@ -1,4 +1,3 @@
-// Created: 28.04.2020
 package de.freese.jsync.filesystem;
 
 import java.nio.ByteBuffer;
@@ -12,6 +11,7 @@ import de.freese.jsync.model.SyncItem;
  * Datensenke.
  *
  * @author Thomas Freese
+ * @since 28.04.2020
  */
 public interface Receiver extends FileSystem {
     void createDirectory(String baseDir, String relativePath);

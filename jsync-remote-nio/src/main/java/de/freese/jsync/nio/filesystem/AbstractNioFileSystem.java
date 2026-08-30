@@ -1,4 +1,3 @@
-// Created: 17.08.2021
 package de.freese.jsync.nio.filesystem;
 
 import java.io.IOException;
@@ -23,6 +22,7 @@ import de.freese.jsync.serialisation.io.ByteBufferWriter;
 
 /**
  * @author Thomas Freese
+ * @since 17.08.2021
  */
 public abstract class AbstractNioFileSystem extends AbstractFileSystem {
     private final NioFrameProtocol frameProtocol = new NioFrameProtocol();

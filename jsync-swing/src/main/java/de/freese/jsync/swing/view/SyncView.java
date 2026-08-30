@@ -1,4 +1,3 @@
-// Created: 12.08.20
 package de.freese.jsync.swing.view;
 
 import java.awt.Component;
@@ -15,6 +14,7 @@ import de.freese.jsync.model.SyncPair;
 
 /**
  * @author Thomas Freese
+ * @since 12.08.20
  */
 public interface SyncView {
     void addSyncPair(SyncPair syncPair);

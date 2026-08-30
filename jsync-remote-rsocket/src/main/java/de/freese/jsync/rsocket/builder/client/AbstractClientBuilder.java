@@ -1,4 +1,3 @@
-// Created: 15.06.2024
 package de.freese.jsync.rsocket.builder.client;
 
 import java.util.ArrayList;
@@ -14,6 +13,7 @@ import de.freese.jsync.rsocket.builder.AbstractBuilder;
 
 /**
  * @author Thomas Freese
+ * @since 15.06.2024
  */
 abstract class AbstractClientBuilder<T extends AbstractBuilder<?, RSocketClient>> extends AbstractBuilder<T, RSocketClient> {
     private final List<UnaryOperator<RSocketConnector>> rSocketConnectorCustomizers = new ArrayList<>();

@@ -1,4 +1,3 @@
-// Created: 12.07.2020
 package de.freese.jsync.swing.controller;
 
 import java.net.URI;
@@ -15,6 +14,7 @@ import de.freese.jsync.swing.view.SyncView;
 
 /**
  * @author Thomas Freese
+ * @since 12.07.2020
  */
 public class JSyncController {
     private final Logger logger = LoggerFactory.getLogger(getClass());

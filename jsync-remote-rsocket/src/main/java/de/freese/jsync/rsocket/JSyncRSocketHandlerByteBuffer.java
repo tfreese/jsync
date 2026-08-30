@@ -1,4 +1,3 @@
-// Created: 19.10.2020
 package de.freese.jsync.rsocket;
 
 import java.nio.ByteBuffer;
@@ -7,6 +6,7 @@ import java.util.function.LongConsumer;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.util.DefaultPayload;
+import org.jspecify.annotations.NonNull;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +35,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  * Uses {@link ByteBuffer} and {@link DefaultPayload}.
  *
  * @author Thomas Freese
+ * @since 19.10.2020
  * @deprecated Throws a BufferUnderflowException during copy process
  */
 @Deprecated(since = "now")
@@ -73,7 +74,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     private final Serializer<ByteBuffer, ByteBuffer> serializer = new DefaultSerializer<>(new ByteBufferReader(), new ByteBufferWriter());
 
     @Override
-    public Flux<Payload> requestChannel(final Publisher<Payload> payloads) {
+    public @NonNull Flux<Payload> requestChannel(final @NonNull Publisher<Payload> payloads) {
         final Receiver receiver = POOL_RECEIVER.obtain();
 
         return Flux.from(payloads).switchOnFirst((firstSignal, flux) -> {
@@ -102,7 +103,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     }
 
     @Override
-    public Mono<Payload> requestResponse(final Payload payload) {
+    public @NonNull Mono<Payload> requestResponse(final @NonNull Payload payload) {
         final Sender sender = POOL_SENDER.obtain();
         final Receiver receiver = POOL_RECEIVER.obtain();
 
@@ -136,7 +137,7 @@ class JSyncRSocketHandlerByteBuffer implements RSocket {
     }
 
     @Override
-    public Flux<Payload> requestStream(final Payload payload) {
+    public @NonNull Flux<Payload> requestStream(final @NonNull Payload payload) {
         final Sender sender = POOL_SENDER.obtain();
         final Receiver receiver = POOL_RECEIVER.obtain();
 

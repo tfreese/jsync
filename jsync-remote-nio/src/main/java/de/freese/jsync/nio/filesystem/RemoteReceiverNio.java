@@ -1,4 +1,3 @@
-// Created: 17.08.2021
 package de.freese.jsync.nio.filesystem;
 
 import java.io.IOException;
@@ -17,6 +16,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 17.08.2021
  */
 public class RemoteReceiverNio extends AbstractNioFileSystem implements Receiver {
     @Override

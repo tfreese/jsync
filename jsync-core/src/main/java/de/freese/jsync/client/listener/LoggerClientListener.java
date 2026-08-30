@@ -1,4 +1,3 @@
-// Created: 23.11.2018
 package de.freese.jsync.client.listener;
 
 import org.slf4j.Logger;
@@ -9,6 +8,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 23.11.2018
  */
 public class LoggerClientListener extends AbstractClientListener {
     private final Logger logger = LoggerFactory.getLogger("Client");

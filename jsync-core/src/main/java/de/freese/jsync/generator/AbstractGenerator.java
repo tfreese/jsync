@@ -1,4 +1,3 @@
-// Created: 05.04.2018
 package de.freese.jsync.generator;
 
 import java.io.IOException;
@@ -17,6 +16,7 @@ import de.freese.jsync.utils.io.FileVisitorHierarchie;
 
 /**
  * @author Thomas Freese
+ * @since 05.04.2018
  */
 public abstract class AbstractGenerator implements Generator {
     protected Flux<Path> getPathsAsFlux(final Path base, final FileVisitOption[] visitOptions, final PathFilter pathFilter) {

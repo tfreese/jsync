@@ -1,4 +1,3 @@
-// Created: 23.11.2018
 package de.freese.jsync.client.listener;
 
 import de.freese.jsync.Options;
@@ -7,6 +6,7 @@ import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
+ * @since 23.11.2018
  */
 public abstract class AbstractClientListener implements ClientListener {
     protected String appendDryRun(final Options options, final String message) {

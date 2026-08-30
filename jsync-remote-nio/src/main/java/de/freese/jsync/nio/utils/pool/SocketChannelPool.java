@@ -1,4 +1,3 @@
-// Created: 27.08.20
 package de.freese.jsync.nio.utils.pool;
 
 import java.io.IOException;
@@ -14,6 +13,7 @@ import de.freese.jsync.utils.pool.Pool;
 
 /**
  * @author Thomas Freese
+ * @since 27.08.20
  */
 public final class SocketChannelPool extends Pool<SocketChannel> {
     private final URI uri;

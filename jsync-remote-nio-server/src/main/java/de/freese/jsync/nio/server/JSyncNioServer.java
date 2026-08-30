@@ -1,4 +1,3 @@
-// Created: 31.10.2016
 package de.freese.jsync.nio.server;
 
 import java.io.IOException;
@@ -28,6 +27,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  * The {@link IoHandler} handles the Request and Response in a separate Thread.<br>
  *
  * @author Thomas Freese
+ * @since 31.10.2016
  */
 public final class JSyncNioServer implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(JSyncNioServer.class);
@@ -72,11 +72,11 @@ public final class JSyncNioServer implements Runnable {
     }
 
     public JSyncNioServer(final int port, final int numOfDispatcher, final int numOfWorker, final SelectorProvider selectorProvider) {
-        super();
-
         if (port <= 0) {
             throw new IllegalArgumentException("port <= 0: " + port);
         }
+
+        super();
 
         this.port = port;
         this.selectorProvider = Objects.requireNonNull(selectorProvider, "selectorProvider required");

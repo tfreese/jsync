@@ -1,10 +1,10 @@
-// Created: 22.10.2016
 package de.freese.jsync.model;
 
 /**
  * Differences between Source and Target.
  *
  * @author Thomas Freese
+ * @since 22.10.2016
  */
 public enum SyncStatus {
     /**

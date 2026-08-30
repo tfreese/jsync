@@ -1,4 +1,3 @@
-// Created: 07.08.2021
 package de.freese.jsync.filesystem;
 
 import java.net.URI;
@@ -15,19 +14,21 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 07.08.2021
  */
 public class ReceiverDelegateLogger implements Receiver {
     private final Receiver delegate;
     private final Logger logger;
 
     public ReceiverDelegateLogger(final Receiver delegate) {
-        super();
-
         this.delegate = Objects.requireNonNull(delegate, "delegate required");
+
+        super();
 
         if (this.delegate instanceof final AbstractFileSystem fs) {
             this.logger = fs.getLogger();
-        } else {
+        }
+        else {
             this.logger = LoggerFactory.getLogger(this.delegate.getClass());
         }
     }

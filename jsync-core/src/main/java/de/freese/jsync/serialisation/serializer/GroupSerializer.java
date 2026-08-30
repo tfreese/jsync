@@ -1,4 +1,3 @@
-// Created: 22.09.2020
 package de.freese.jsync.serialisation.serializer;
 
 import de.freese.jsync.model.Group;
@@ -7,6 +6,7 @@ import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
+ * @since 22.09.2020
  */
 public final class GroupSerializer implements ClassSerializer<Group> {
     private static final class GroupSerializerHolder {

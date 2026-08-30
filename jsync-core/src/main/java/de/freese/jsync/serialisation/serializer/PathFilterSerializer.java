@@ -1,4 +1,3 @@
-// Created: 15.08.2021
 package de.freese.jsync.serialisation.serializer;
 
 import java.util.HashSet;
@@ -12,6 +11,7 @@ import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
+ * @since 15.08.2021
  */
 public final class PathFilterSerializer implements ClassSerializer<PathFilter> {
     private static final class PathFilterSerializerHolder {
@@ -25,7 +25,7 @@ public final class PathFilterSerializer implements ClassSerializer<PathFilter> {
     public static PathFilterSerializer getInstance() {
         return PathFilterSerializerHolder.INSTANCE;
     }
-    
+
     private PathFilterSerializer() {
         super();
     }
@@ -57,11 +57,11 @@ public final class PathFilterSerializer implements ClassSerializer<PathFilter> {
 
     @Override
     public <W> void write(final DataWriter<W> writer, final W output, final PathFilter value) {
-        Set<String> filters = value.getDirectoryFilter();
+        Set<String> filters = value.directoryFilter();
         writer.writeInteger(output, filters.size());
         filters.forEach(filter -> writer.writeString(output, filter));
 
-        filters = value.getFileFilter();
+        filters = value.fileFilter();
         writer.writeInteger(output, filters.size());
         filters.forEach(filter -> writer.writeString(output, filter));
     }

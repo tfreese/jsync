@@ -1,4 +1,3 @@
-// Created: 05.04.2018
 package de.freese.jsync.filesystem.local;
 
 import java.io.IOException;
@@ -27,6 +26,7 @@ import de.freese.jsync.utils.ReactiveUtils;
  * {@link Receiver} für Localhost-Filesysteme.
  *
  * @author Thomas Freese
+ * @since 05.04.2018
  */
 public class LocalhostReceiver extends AbstractLocalFileSystem implements Receiver {
     @Override

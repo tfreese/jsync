@@ -1,4 +1,3 @@
-// Created: 24.09.2020
 package de.freese.jsync.serialisation.serializer;
 
 import de.freese.jsync.Options;
@@ -8,6 +7,7 @@ import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
+ * @since 24.09.2020
  */
 public final class OptionsSerializer implements ClassSerializer<Options> {
     private static final class OptionsSerializerHolder {
@@ -21,7 +21,7 @@ public final class OptionsSerializer implements ClassSerializer<Options> {
     public static OptionsSerializer getInstance() {
         return OptionsSerializerHolder.INSTANCE;
     }
-    
+
     private OptionsSerializer() {
         super();
     }

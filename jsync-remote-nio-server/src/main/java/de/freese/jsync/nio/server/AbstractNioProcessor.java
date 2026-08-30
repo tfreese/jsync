@@ -1,4 +1,3 @@
-// Created: 09.09.2020
 package de.freese.jsync.nio.server;
 
 import java.nio.channels.SelectionKey;
@@ -14,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Thomas Freese
+ * @since 09.09.2020
  */
 public abstract class AbstractNioProcessor implements Runnable {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -57,19 +57,23 @@ public abstract class AbstractNioProcessor implements Runnable {
                                 getLogger().debug("{}: selectionKey not valid", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                                 onInValid(selectionKey);
-                            } else if (selectionKey.isAcceptable()) {
+                            }
+                            else if (selectionKey.isAcceptable()) {
                                 getLogger().debug("new client accepted");
 
                                 onAcceptable(selectionKey);
-                            } else if (selectionKey.isReadable()) {
+                            }
+                            else if (selectionKey.isReadable()) {
                                 getLogger().debug("{}: read request", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                                 onReadable(selectionKey);
-                            } else if (selectionKey.isWritable()) {
+                            }
+                            else if (selectionKey.isWritable()) {
                                 getLogger().debug("{}: write response", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                                 onWritable(selectionKey);
-                            } else if (selectionKey.isConnectable()) {
+                            }
+                            else if (selectionKey.isConnectable()) {
                                 getLogger().debug("{}: client connected", ((SocketChannel) selectionKey.channel()).getRemoteAddress());
 
                                 onConnectable(selectionKey);

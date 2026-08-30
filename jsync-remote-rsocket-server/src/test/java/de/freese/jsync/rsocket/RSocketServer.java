@@ -1,4 +1,3 @@
-// Created: 12.02.2022
 package de.freese.jsync.rsocket;
 
 import java.time.Duration;
@@ -20,6 +19,7 @@ import reactor.util.retry.Retry;
 
 /**
  * @author Thomas Freese
+ * @since 12.02.2022
  */
 public final class RSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RSocketServer.class);
@@ -65,8 +65,8 @@ public final class RSocketServer {
         });
 
         final Resume resume = new Resume()
-                .sessionDuration(Duration.ofMinutes(5))
-                .retry(Retry.fixedDelay(5, Duration.ofMillis(500))
+                .sessionDuration(Duration.ofMinutes(5L))
+                .retry(Retry.fixedDelay(5L, Duration.ofMillis(500L))
                         .doBeforeRetry(signal -> LOGGER.info("Disconnected. Trying to resume..."))
                 );
 

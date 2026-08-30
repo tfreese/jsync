@@ -1,4 +1,3 @@
-// Created: 23.11.2018
 package de.freese.jsync.generator.listener;
 
 import java.io.PrintStream;
@@ -9,6 +8,7 @@ import de.freese.jsync.model.SyncItem;
 
 /**
  * @author Thomas Freese
+ * @since 23.11.2018
  */
 public class ConsoleGeneratorListener extends AbstractGeneratorListener {
     private final String prefix;

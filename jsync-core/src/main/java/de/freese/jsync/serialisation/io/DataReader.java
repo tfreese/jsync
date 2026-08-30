@@ -1,4 +1,3 @@
-// Created: 22.09.2020
 package de.freese.jsync.serialisation.io;
 
 import java.nio.charset.Charset;
@@ -8,6 +7,7 @@ import java.nio.charset.StandardCharsets;
  * @param <R> Type of Input
  *
  * @author Thomas Freese
+ * @since 22.09.2020
  */
 public interface DataReader<R> {
     default boolean readBoolean(final R input) {

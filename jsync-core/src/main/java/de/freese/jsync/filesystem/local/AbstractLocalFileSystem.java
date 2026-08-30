@@ -1,4 +1,3 @@
-// Created: 05.04.2018
 package de.freese.jsync.filesystem.local;
 
 import java.net.URI;
@@ -15,6 +14,7 @@ import de.freese.jsync.model.SyncItem;
  * Basis-Implementierung des {@link FileSystem}.
  *
  * @author Thomas Freese
+ * @since 05.04.2018
  */
 public abstract class AbstractLocalFileSystem extends AbstractFileSystem {
     @Override

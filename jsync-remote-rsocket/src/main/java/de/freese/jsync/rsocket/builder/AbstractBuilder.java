@@ -1,4 +1,3 @@
-// Created: 15.06.2024
 package de.freese.jsync.rsocket.builder;
 
 import java.util.Objects;
@@ -7,6 +6,7 @@ import org.slf4j.Logger;
 
 /**
  * @author Thomas Freese
+ * @since 15.06.2024
  */
 public abstract class AbstractBuilder<T extends AbstractBuilder<?, B>, B> {
     private Logger logger;

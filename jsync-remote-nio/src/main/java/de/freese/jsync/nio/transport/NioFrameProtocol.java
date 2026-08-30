@@ -1,4 +1,3 @@
-// Created: 22.08.2021
 package de.freese.jsync.nio.transport;
 
 import java.io.IOException;
@@ -18,6 +17,7 @@ import de.freese.jsync.utils.pool.bytebuffer.ByteBufferPool;
  * See <a href="https://github.com/rsocket/rsocket/blob/master/Protocol.md">rSocket-Protocol</a>
  *
  * @author Thomas Freese
+ * @since 22.08.2021
  */
 public record NioFrameProtocol(ByteBufferPool bufferPool) {
     /**
@@ -30,7 +30,6 @@ public record NioFrameProtocol(ByteBufferPool bufferPool) {
     }
 
     public NioFrameProtocol(final ByteBufferPool bufferPool) {
-
         this.bufferPool = Objects.requireNonNull(bufferPool, "bufferPool required");
     }
 
@@ -90,7 +89,8 @@ public record NioFrameProtocol(ByteBufferPool bufferPool) {
             read(channel, buffer, contentLength);
 
             return buffer.flip();
-        } else if (FrameType.ERROR.equals(frameType)) {
+        }
+        else if (FrameType.ERROR.equals(frameType)) {
             read(channel, buffer, contentLength);
             buffer.flip();
 
@@ -113,11 +113,12 @@ public record NioFrameProtocol(ByteBufferPool bufferPool) {
      * Write the DATA-Frame.
      */
     public void writeData(final WritableByteChannel channel, final ByteBuffer buffer) throws IOException {
-        int contentLength = 0;
+        final int contentLength;
 
         if (buffer.position() == 0) {
             contentLength = buffer.limit();
-        } else {
+        }
+        else {
             contentLength = buffer.position();
         }
 
@@ -150,11 +151,12 @@ public record NioFrameProtocol(ByteBufferPool bufferPool) {
         try {
             consumer.accept(buffer);
 
-            int contentLength = 0;
+            final int contentLength;
 
             if (buffer.position() == 0) {
                 contentLength = buffer.limit();
-            } else {
+            }
+            else {
                 contentLength = buffer.position();
             }
 

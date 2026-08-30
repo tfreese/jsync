@@ -1,4 +1,3 @@
-// Created: 22.06.2021
 package de.freese.jsync.utils.pool;
 
 import java.io.Serial;
@@ -12,6 +11,7 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
  * @author Nathan Sweet
  * @author Martin Grotzke
  * @author Thomas Freese
+ * @since 22.06.2021
  */
 public abstract class Pool<T> {
     /**
@@ -58,7 +59,7 @@ public abstract class Pool<T> {
         }
 
         @Override
-        public boolean addAll(final Collection<? extends T> c) {
+        public boolean addAll(final @NonNull Collection<? extends T> c) {
             return false;
         }
 
@@ -73,7 +74,7 @@ public abstract class Pool<T> {
         }
 
         @Override
-        public boolean containsAll(final Collection<?> c) {
+        public boolean containsAll(final @NonNull Collection<?> c) {
             return false;
         }
 
@@ -130,12 +131,12 @@ public abstract class Pool<T> {
         }
 
         @Override
-        public boolean removeAll(final Collection<?> c) {
+        public boolean removeAll(final @NonNull Collection<?> c) {
             return false;
         }
 
         @Override
-        public boolean retainAll(final Collection<?> c) {
+        public boolean retainAll(final @NonNull Collection<?> c) {
             return false;
         }
 
@@ -150,7 +151,7 @@ public abstract class Pool<T> {
         }
 
         @Override
-        public <E> E[] toArray(final E[] a) {
+        public <E> E[] toArray(final E @NonNull [] a) {
             return null;
         }
 
@@ -198,7 +199,8 @@ public abstract class Pool<T> {
                     return super.offer(o);
                 }
             };
-        } else if (softReferences) {
+        }
+        else if (softReferences) {
             // More efficient clean() than ArrayDeque.
             queue = new LinkedList<>() {
                 @Serial
@@ -215,7 +217,8 @@ public abstract class Pool<T> {
                     return true;
                 }
             };
-        } else {
+        }
+        else {
             queue = new ArrayDeque<>() {
                 @Serial
                 private static final long serialVersionUID = 1L;

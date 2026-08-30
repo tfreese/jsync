@@ -1,4 +1,3 @@
-// Created: 10.09.2020
 package de.freese.jsync.nio.server.dispatcher;
 
 import java.nio.channels.SelectionKey;
@@ -19,6 +18,7 @@ import de.freese.jsync.utils.JSyncThreadFactory;
  * The {@link Dispatcher} handles the Client Connections after the 'accept'.<br>
  *
  * @author Thomas Freese
+ * @since 10.09.2020
  */
 public class DispatcherPool implements Dispatcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherPool.class);
@@ -30,8 +30,6 @@ public class DispatcherPool implements Dispatcher {
     private ExecutorService executorServiceWorker;
 
     public DispatcherPool(final int numOfDispatcher, final int numOfWorker) {
-        super();
-
         if (numOfDispatcher < 1) {
             throw new IllegalArgumentException("numOfDispatcher < 1: " + numOfDispatcher);
         }
@@ -44,6 +42,8 @@ public class DispatcherPool implements Dispatcher {
             final String message = String.format("numOfDispatcher > numOfWorker: %d < %d", numOfDispatcher, numOfWorker);
             throw new IllegalArgumentException(message);
         }
+
+        super();
 
         this.numOfDispatcher = numOfDispatcher;
         this.numOfWorker = numOfWorker;

@@ -1,4 +1,3 @@
-// Created: 24.09.2020
 package de.freese.jsync.serialisation.serializer;
 
 import de.freese.jsync.serialisation.io.DataReader;
@@ -6,6 +5,7 @@ import de.freese.jsync.serialisation.io.DataWriter;
 
 /**
  * @author Thomas Freese
+ * @since 24.09.2020
  */
 public final class StackTraceElementSerializer implements ClassSerializer<StackTraceElement> {
     private static final class StackTraceElementSerializerHolder {
@@ -19,7 +19,7 @@ public final class StackTraceElementSerializer implements ClassSerializer<StackT
     public static StackTraceElementSerializer getInstance() {
         return StackTraceElementSerializerHolder.INSTANCE;
     }
-    
+
     private StackTraceElementSerializer() {
         super();
     }

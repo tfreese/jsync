@@ -1,4 +1,3 @@
-// Created: 05.04.2018
 package de.freese.jsync.generator;
 
 import java.io.IOException;
@@ -23,6 +22,7 @@ import de.freese.jsync.utils.JSyncUtils;
 
 /**
  * @author Thomas Freese
+ * @since 05.04.2018
  */
 public class DefaultGenerator extends AbstractGenerator {
     @Override

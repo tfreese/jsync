@@ -1,4 +1,3 @@
-// Created: 31.07.2021
 package de.freese.jsync.rsocket.builder.client;
 
 import java.net.SocketAddress;
@@ -18,6 +17,7 @@ import reactor.netty.tcp.TcpClient;
 
 /**
  * @author Thomas Freese
+ * @since 31.07.2021
  */
 public class RSocketClientBuilderRemoteLoadBalanced extends AbstractClientBuilderRemote<RSocketClientBuilderRemoteLoadBalanced> {
     private final List<SocketAddress> remoteAddresses = new ArrayList<>();

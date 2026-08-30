@@ -1,4 +1,3 @@
-// Created: 14.03.2020
 package de.freese.jsync.arguments;
 
 import java.io.IOException;
@@ -16,6 +15,7 @@ import org.apache.commons.cli.help.HelpFormatter;
 
 /**
  * @author Thomas Freese
+ * @since 14.03.2020
  */
 public class ArgumentParserApacheCommonsCli implements ArgumentParser {
     private final CommandLine line;
@@ -43,7 +43,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
         try {
             line = parser.parse(options, args);
         }
-        catch (ParseException pex) {
+        catch (final ParseException pex) {
             printHelp(System.out);
 
             throw pex;
@@ -89,7 +89,7 @@ public class ArgumentParserApacheCommonsCli implements ArgumentParser {
         try {
             formatter.printHelp("jsync [OPTIONS]", "Parameter:", options, footer.toString(), true);
         }
-        catch (IOException ex) {
+        catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }

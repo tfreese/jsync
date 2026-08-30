@@ -1,4 +1,3 @@
-// Created: 29.07.2020
 package de.freese.jsync.model;
 
 import java.util.Comparator;
@@ -6,6 +5,7 @@ import java.util.Optional;
 
 /**
  * @author Thomas Freese
+ * @since 29.07.2020
  */
 public class SyncPairComparator implements Comparator<SyncPair> {
     @Override

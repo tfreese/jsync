@@ -1,4 +1,3 @@
-// Created: 18.08.20
 package de.freese.jsync.swing.components;
 
 import java.awt.Color;
@@ -13,6 +12,7 @@ import de.freese.jsync.model.SyncStatus;
 
 /**
  * @author Thomas Freese
+ * @since 18.08.2020
  */
 public class SyncPairTableCellRendererStatus extends DefaultTableCellRenderer {
     @Serial

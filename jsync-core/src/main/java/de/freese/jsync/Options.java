@@ -1,4 +1,3 @@
-// Created: 28.10.2016
 package de.freese.jsync;
 
 import java.nio.charset.Charset;
@@ -6,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * @author Thomas Freese
+ * @since 28.10.2016
  */
 public final class Options {
     /**
