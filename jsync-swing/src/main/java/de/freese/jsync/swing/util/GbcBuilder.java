@@ -34,48 +34,48 @@ public final class GbcBuilder extends GridBagConstraints {
     private GbcBuilder(final int gridX, final int gridY) {
         super();
 
-        this.gridx = gridX;
-        this.gridy = gridY;
+        super.gridx = gridX;
+        super.gridy = gridY;
     }
 
     public GbcBuilder anchorCenter() {
-        anchor = CENTER;
+        super.anchor = CENTER;
 
         return this;
     }
 
     public GbcBuilder anchorEast() {
-        anchor = EAST;
+        super.anchor = EAST;
 
         return this;
     }
 
     public GbcBuilder anchorNorth() {
-        anchor = NORTH;
+        super.anchor = NORTH;
 
         return this;
     }
 
     public GbcBuilder anchorNorthEast() {
-        anchor = NORTHEAST;
+        super.anchor = NORTHEAST;
 
         return this;
     }
 
     public GbcBuilder anchorNorthWest() {
-        anchor = NORTHWEST;
+        super.anchor = NORTHWEST;
 
         return this;
     }
 
     public GbcBuilder anchorSouth() {
-        anchor = SOUTH;
+        super.anchor = SOUTH;
 
         return this;
     }
 
     public GbcBuilder anchorWest() {
-        anchor = WEST;
+        super.anchor = WEST;
 
         return this;
     }
@@ -88,7 +88,7 @@ public final class GbcBuilder extends GridBagConstraints {
      * </ul>
      */
     public GbcBuilder fillBoth() {
-        fill = BOTH;
+        super.fill = BOTH;
 
         weightX(1.0D);
         weightY(1.0D);
@@ -104,7 +104,7 @@ public final class GbcBuilder extends GridBagConstraints {
      * </ul>
      */
     public GbcBuilder fillHorizontal() {
-        fill = HORIZONTAL;
+        super.fill = HORIZONTAL;
 
         weightX(1.0D);
         weightY(0.0D);
@@ -120,7 +120,7 @@ public final class GbcBuilder extends GridBagConstraints {
      * </ul>
      */
     public GbcBuilder fillNone() {
-        fill = NONE;
+        super.fill = NONE;
 
         weightX(0.0D);
         weightY(0.0D);
@@ -136,7 +136,7 @@ public final class GbcBuilder extends GridBagConstraints {
      * </ul>
      */
     public GbcBuilder fillVertical() {
-        fill = VERTICAL;
+        super.fill = VERTICAL;
 
         weightX(0.0D);
         weightY(1.0D);
@@ -145,37 +145,37 @@ public final class GbcBuilder extends GridBagConstraints {
     }
 
     public GbcBuilder gridHeight(final int gridHeight) {
-        this.gridheight = gridHeight;
+        super.gridheight = gridHeight;
 
         return this;
     }
 
     public GbcBuilder gridWidth(final int gridWidth) {
-        this.gridwidth = gridWidth;
+        super.gridwidth = gridWidth;
 
         return this;
     }
 
     public GbcBuilder insets(final Insets insets) {
-        this.insets = insets;
+        super.insets = insets;
 
         return this;
     }
 
     public GbcBuilder insets(final int top, final int left, final int bottom, final int right) {
-        insets = new Insets(top, left, bottom, right);
+        super.insets = new Insets(top, left, bottom, right);
 
         return this;
     }
 
     public GbcBuilder weightX(final double weightX) {
-        this.weightx = weightX;
+        super.weightx = weightX;
 
         return this;
     }
 
     public GbcBuilder weightY(final double weightY) {
-        this.weighty = weightY;
+        super.weighty = weightY;
 
         return this;
     }
